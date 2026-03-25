@@ -1,0 +1,1 @@
+const id=new URLSearchParams(location.search).get("judge_id");(async()=>{const j=await apiGet("judges"),a=await apiGet("attendance");const u=j.find(x=>x.judge_id===id);name.innerText=u.name;rows.innerHTML=a.filter(r=>r.judge_id===id).map(r=>`<tr><td>${r.timestamp.split("T")[0]}</td><td>${r.role}</td><td>${r.attend}</td></tr>`).join("");})();

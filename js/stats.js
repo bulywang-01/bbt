@@ -1,0 +1,1 @@
+(async()=>{const j=await apiGet("judges"),a=await apiGet("attendance");tb.innerHTML=j.map(x=>{const c=a.filter(r=>r.judge_id===x.judge_id&&r.attend==="出勤").length;return c?`<tr><td>${x.name}</td><td>${c}</td></tr>`:""}).join("");})();
