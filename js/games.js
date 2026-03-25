@@ -1,3 +1,5 @@
+alert('games.js loaded');
+
 (async () => {
   const gamesDiv = document.getElementById('games');
   const games = await apiGet('games');
