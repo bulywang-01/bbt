@@ -15,6 +15,9 @@ js/config.js</script>
 js/api.js</script>
 
 <script>
+const role = localStorage.getItem('role');
+if(!role) location.href='login.html';
+
 (async () => {
   const judges = await apiGet('judges');
   const ul = document.getElementById('list');
