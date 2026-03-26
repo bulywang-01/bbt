@@ -1,25 +1,60 @@
-<h2>🔐 登入</h2>
-<input id="u" placeholder="帳號">
-<input id="p" type="password" placeholder="密碼">
-<button onclick="login()">登入</button>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>登入</title>
+</head>
+<body>
 
+<h2>🔐 登入</h2>
+
+<div>
+  <input id="u" placeholder="帳號"><br><br>
+  <input id="p" type="password" placeholder="密碼"><br><br>
+  <button onclick="login()">登入</button>
+</div>
+
+<!-- ✅ 一定要用 script src 正確載入 -->
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
+
 <script>
 async function login() {
-  const res = await fetch(
-    API_URL +
-    '?action=login' +
-    '&username=' + encodeURIComponent(u.value) +
-    '&password=' + encodeURIComponent(p.value)
-  ).then(r => r.json());
+  alert('login() called'); // ✅ 一定會先跳這個
 
-  if (res.result === 'ok') {
-    localStorage.setItem('role', res.role);
-    localStorage.setItem('judge_id', res.judge_id || '');
-    location.href = 'index.html';
-  } else {
-    alert('登入失敗');
+  console.log('username:', u.value);
+  console.log('password:', p.value);
+  console.log('API_URL:', API_URL);
+
+  try {
+    const url =
+      API_URL +
+      '?action=login' +
+      '&username=' + encodeURIComponent(u.value) +
+      '&password=' + encodeURIComponent(p.value);
+
+    console.log('fetch url:', url);
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    console.log('response:', data);
+
+    if (data.result === 'ok') {
+      localStorage.setItem('role', data.role);
+      localStorage.setItem('judge_id', data.judge_id || '');
+      alert('登入成功');
+      location.href = 'index.html';
+    } else {
+      alert('登入失敗');
+    }
+  } catch (e) {
+    console.error(e);
+    alert('系統錯誤，請看 Console');
   }
 }
 </script>
+
+</body>
+</html>
+``
