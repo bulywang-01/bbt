@@ -4,6 +4,15 @@ if (!localStorage.getItem('role')) {
 }
 </script>
 
+<button onclick="logout()">登出</button>
+
+<script>
+function logout() {
+  localStorage.clear();
+  location.href = 'login.html';
+}
+</script>
+
 <h2>📅 月班表</h2>
 <script src="js/api.js"></script>
 <script>
