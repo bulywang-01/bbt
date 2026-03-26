@@ -1,4 +1,4 @@
-const API_URL='https://script.google.com/macros/s/AKfycbwGZUiAcNpjOSf-8IcA5_VQ-96n2n0k4HUlTL0f0OUUZ1Zt0keIJmG1tiQb1WRWCK18/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbxjIio090bRxazKv90xDbID2VkySwCRbIXHUDGlG5j0HJMYVWBtj8c31nrMAnZ8uYsf/exec';
 // const ROLE='admin'; const MY_JUDGE_ID='U001';
 // const API_URL = '你的 Apps Script Web App URL';
 
