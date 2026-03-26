@@ -16,11 +16,15 @@
 <script src="js/api.js"></script>
 
 <script>
-const gameId = new URLSearchParams(location.search).get('game_id');
-document.getElementById('gameInfo').innerText = '目前比賽 ID：' + gameId;
-
 const role = localStorage.getItem('role');
 if(!role) location.href='login.html';
+
+if(role!=='admin'){
+  submitBtn.style.display='none';
+}
+  
+const gameId = new URLSearchParams(location.search).get('game_id');
+document.getElementById('gameInfo').innerText = '目前比賽 ID：' + gameId;
 
 let maxUmpires = 0;
 
