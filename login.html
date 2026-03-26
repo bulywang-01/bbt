@@ -13,7 +13,12 @@
 <button onclick="login()">登入</button>
 
 <script>
-function handleLogin(res) {
+
+const API_URL =
+  'https://script.google.com/macros/s/【你最新新增部署的 exec ID】/exec';
+
+  
+  function handleLogin(res) {
   if (res.result === 'ok') {
     localStorage.setItem('role', res.role);
     localStorage.setItem('judge_id', res.judge_id || '');
