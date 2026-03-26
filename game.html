@@ -8,15 +8,61 @@
 
 <h2>✅ 出勤點名頁</h2>
 
-<p id="info"></p>
+<p id="gameInfo"></p>
+
+<div id="judges">載入裁判中…</div>
+
+<button id="submitBtn">送出出勤</button>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
 
 <script>
-  const params = new URLSearchParams(location.search);
-  const gameId = params.get('game_id');
-  document.getElementById('info').innerText =
-    '目前比賽 ID：' + gameId;
+const params = new URLSearchParams(location.search);
+const gameId = params.get('game_id');
+document.getElementById('gameInfo').innerText =
+  '目前比賽 ID：' + gameId;
+
+// 載入裁判名冊
+(async () => {
+  const judgesDiv = document.getElementById('judges');
+  const judges = await apiGet('judges');
+
+  judgesDiv.innerHTML = '';
+
+  judges.forEach(j => {
+    const label = document.createElement('label');
+    label.style.display = 'block';
+    label.innerHTML = `
+      <input type="checkbox" value="${j.judge_id}">
+      ${j.name}
+    `;
+    judgesDiv.appendChild(label);
+  });
+})();
+
+// 送出出勤
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const checked = document.querySelectorAll('input[type=checkbox]:checked');
+
+  if (checked.length === 0) {
+    alert('請至少勾選一位裁判');
+    return;
+  }
+
+  for (const cb of checked) {
+    await apiPost({
+      action: 'attendance',
+      game_id: gameId,
+      judge_id: cb.value,
+      role: '裁判',
+      attend: '出席'
+    });
+  }
+
+  alert('✅ 出勤已成功登錄！');
+});
 </script>
 
 </body>
 </html>
-``
