@@ -23,46 +23,81 @@ const gameId = params.get('game_id');
 document.getElementById('gameInfo').innerText =
   '目前比賽 ID：' + gameId;
 
-// 載入裁判名冊
+let judgesData = [];
+
+// 載入裁判與已出勤名單
 (async () => {
   const judgesDiv = document.getElementById('judges');
+
   const judges = await apiGet('judges');
+  const attendance = await apiGet('attendance');
+
+  const checked = attendance
+    .filter(a => a.game_id === gameId)
+    .map(a => a.judge_id);
+
+  judgesData = judges;
 
   judgesDiv.innerHTML = '';
 
   judges.forEach(j => {
-    const label = document.createElement('label');
-    label.style.display = 'block';
-    label.innerHTML = `
-      <input type="checkbox" value="${j.judge_id}">
-      ${j.name}
+    const disabled = checked.includes(j.judge_id);
+
+    const div = document.createElement('div');
+    div.style.marginBottom = '10px';
+
+    div.innerHTML = `
+      <label>
+        <input type="checkbox" value="${j.judge_id}"
+          ${disabled ? 'checked disabled' : ''}>
+        ${j.name}
+      </label>
+      <select id="role_${j.judge_id}">
+        <option value="主審">主審</option>
+        <option value="一壘審">一壘審</option>
+        <option value="二壘審">二壘審</option>
+      </select>
+      <input type="text" id="note_${j.judge_id}"
+        placeholder="備註（選填）">
     `;
-    judgesDiv.appendChild(label);
+
+    judgesDiv.appendChild(div);
   });
 })();
 
 // 送出出勤
 document.getElementById('submitBtn').addEventListener('click', async () => {
   const checked = document.querySelectorAll('input[type=checkbox]:checked');
-
-  if (checked.length === 0) {
-    alert('請至少勾選一位裁判');
-    return;
-  }
+  let submitted = 0;
 
   for (const cb of checked) {
-    await apiPost({
+    if (cb.disabled) continue;
+
+    const role = document.getElementById(`role_${cb.value}`).value;
+    const note = document.getElementById(`note_${cb.value}`).value;
+
+    const res = await apiPost({
       action: 'attendance',
       game_id: gameId,
       judge_id: cb.value,
-      role: '裁判',
-      attend: '出席'
+      role,
+      attend: '出席',
+      note
     });
+
+    if (res.result === 'ok') submitted++;
+    if (res.result === 'duplicate') {
+      alert('⚠️ 有裁判已點過名');
+    }
   }
 
-  alert('✅ 出勤已成功登錄！');
+  if (submitted > 0) {
+    alert('✅ 出勤成功登錄');
+    location.reload();
+  }
 });
 </script>
 
 </body>
 </html>
+``
