@@ -1,0 +1,27 @@
+<h2>📅 月班表</h2>
+
+js/config.js</script>
+js/api.js</script>
+
+<script>
+(async()=>{
+const att=await apiGet('attendance');
+const judges=await apiGet('judges');
+const table=document.createElement('table');
+table.border=1;
+
+const dates=[...new Set(att.map(a=>a.timestamp.substr(0,10)))];
+table.innerHTML='<tr><th>裁判</th>'+dates.map(d=>`<th>${d}</th>`).join('')+'</tr>';
+
+judges.forEach(j=>{
+  const row=document.createElement('tr');
+  row.innerHTML=`<td>${j.name}</td>`;
+  dates.forEach(d=>{
+    const hit=att.find(a=>a.judge_id===j.judge_id && a.timestamp.startsWith(d));
+    row.innerHTML+=`<td>${hit?'✅':'❌'}</td>`;
+  });
+  table.appendChild(row);
+});
+document.body.appendChild(table);
+})();
+</script>
