@@ -1,81 +1,75 @@
 <script>
+/* 登入檢查 */
 if (!localStorage.getItem('role')) {
   location.href = 'login.html';
 }
-</script>
 
-<button onclick="logout()">登出</button>
+/* 讀取 game_id */
+const params = new URLSearchParams(location.search);
+const gameId = params.get('game_id');
 
-<script>
-function logout() {
-  localStorage.clear();
-  location.href = 'login.html';
+document.getElementById('info').innerText =
+  '比賽 ID：' + gameId;
+
+/* 全域暫存 */
+let allJudges = [];
+let checkedJudges = [];
+
+/* JSONP callback：裁判名冊 */
+function handleJudges(list) {
+  allJudges = list;
+  render();
 }
-</script>
 
-<script>
-if (localStorage.getItem('role') !== 'admin') {
-  alert('無權限');
-  location.href = 'index.html';
+/* JSONP callback：已出勤名單 */
+function handleAttendance(list) {
+  checkedJudges = list
+    .filter(a => a.game_id === gameId)
+    .map(a => a.judge_id);
+  render();
 }
-</script>
 
-<div>
-  <button onclick="history.back()">⬅ 回上一頁</button>
-  <a href="index.html">🏠 回首頁</a>
-</div>
+/* 畫面渲染 */
+function render() {
+  if (!allJudges.length) return;
 
-<h2>✅ 出勤點名頁</h2>
-<p id="info"></p>
-<div id="list"></div>
-<button id="submit">送出出勤</button>
+  const box = document.getElementById('judges');
+  box.innerHTML = '';
 
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
-<script>
-if(USER_ROLE!=='admin'){ submit.style.display='none'; }
-
-const gameId=new URLSearchParams(location.search).get('game_id');
-info.innerText='比賽ID：'+gameId;
-
-(async()=>{
-const games=await apiGet('games');
-const judges=await apiGet('judges');
-const att=await apiGet('attendance');
-const g=games.find(x=>x.game_id===gameId);
-const used=att.filter(a=>a.game_id===gameId).map(a=>a.judge_id);
-
-judges.forEach(j=>{
-  const disabled=used.includes(j.judge_id);
-  list.innerHTML+=`
-  <div>
-    <input type="checkbox" value="${j.judge_id}" ${disabled?'checked disabled':''}>
-    ${j.name}
-    <select id="r_${j.judge_id}">
-      <option>主審</option><option>一壘審</option>
-      <option>二壘審</option><option>三壘審</option>
-    </select>
-    <input id="n_${j.judge_id}" placeholder="備註">
-  </div>`;
-});
-window.max=g.umpire_count;
-})();
-
-submit.onclick=async()=>{
-const c=[...document.querySelectorAll('input[type=checkbox]:checked')].filter(x=>!x.disabled);
-if(c.length>max){ alert('超過人數限制'); return; }
-
-for(const cb of c){
-  await apiPost({
-    action:'attendance',
-    game_id:gameId,
-    judge_id:cb.value,
-    role:document.getElementById('r_'+cb.value).value,
-    attend:'出席',
-    note:document.getElementById('n_'+cb.value).value
+  allJudges.forEach(j => {
+    const checked = checkedJudges.includes(j.judge_id);
+    box.innerHTML += `
+      <div>
+        <label>
+          <input type="checkbox"
+                 value="${j.judge_id}"
+                 ${checked ? 'checked disabled' : ''}>
+          ${j.name}
+        </label>
+      </div>
+    `;
   });
 }
-alert('✅ 出勤完成');
-location.reload();
-};
+
+/* 載入裁判名冊（JSONP） */
+(function loadJudges(){
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=judges' +
+    '&callback=handleJudges' +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+})();
+
+/* 載入已出勤紀錄（JSONP） */
+(function loadAttendance(){
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=attendance' +
+    '&callback=handleAttendance' +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+})();
 </script>
