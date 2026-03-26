@@ -14,12 +14,11 @@ function doPost(e) {
   const data = JSON.parse(e.postData.contents);
 
   if (data.action === 'attendance') {
-    const sheet = SpreadsheetApp.getActive()
-      .getSheetByName(SHEET_ATTEND);
+    const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_ATTEND);
+    const rows = sheet.getDataRange().getValues();
 
-    // ✅ 防止重複點名
-    const existing = sheet.getDataRange().getValues();
-    const duplicated = existing.some(
+    // ✅ 防重複點名
+    const duplicated = rows.some(
       r => r[0] === data.game_id && r[1] === data.judge_id
     );
     if (duplicated) {
@@ -42,8 +41,7 @@ function doPost(e) {
 }
 
 function getSheet(name) {
-  const sheet = SpreadsheetApp.getActive()
-    .getSheetByName(name);
+  const sheet = SpreadsheetApp.getActive().getSheetByName(name);
   const [header, ...rows] = sheet.getDataRange().getValues();
   return output(
     rows.map(r =>
