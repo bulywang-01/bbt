@@ -3,10 +3,8 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwCYCuE1FLyvRygzBesUf-Y
 async function apiPost(data) {
   const res = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
+    body: JSON.stringify(data)   // 只送 body，不送 header
   });
   return res.json();
 }
+
