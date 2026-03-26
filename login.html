@@ -8,53 +8,40 @@
 
 <h2>🔐 登入</h2>
 
-<div>
-  <input id="u" placeholder="帳號"><br><br>
-  <input id="p" type="password" placeholder="密碼"><br><br>
-  <button onclick="login()">登入</button>
-</div>
-
-<!-- ✅ 一定要用 script src 正確載入 -->
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
+<input id="u" placeholder="帳號"><br><br>
+<input id="p" type="password" placeholder="密碼"><br><br>
+<button onclick="login()">登入</button>
 
 <script>
-async function login() {
-  alert('login() called'); // ✅ 一定會先跳這個
+const API_URL = 'https://script.google.com/macros/s/你的最新部署ID/exec';
 
-  console.log('username:', u.value);
-  console.log('password:', p.value);
-  console.log('API_URL:', API_URL);
+function login() {
+  const username = encodeURIComponent(u.value);
+  const password = encodeURIComponent(p.value);
 
-  try {
-    const url =
-      API_URL +
-      '?action=login' +
-      '&username=' + encodeURIComponent(u.value) +
-      '&password=' + encodeURIComponent(p.value);
+  const script = document.createElement('script');
+  script.src =
+    API_URL +
+    '?action=login' +
+    '&username=' + username +
+    '&password=' + password +
+    '&callback=handleLogin';
 
-    console.log('fetch url:', url);
+  document.body.appendChild(script);
+}
 
-    const res = await fetch(url);
-    const data = await res.json();
-
-    console.log('response:', data);
-
-    if (data.result === 'ok') {
-      localStorage.setItem('role', data.role);
-      localStorage.setItem('judge_id', data.judge_id || '');
-      alert('登入成功');
-      location.href = 'index.html';
-    } else {
-      alert('登入失敗');
-    }
-  } catch (e) {
-    console.error(e);
-    alert('系統錯誤，請看 Console');
+// ✅ 這個函式會被 GAS 呼叫
+function handleLogin(res) {
+  if (res.result === 'ok') {
+    localStorage.setItem('role', res.role);
+    localStorage.setItem('judge_id', res.judge_id || '');
+    alert('登入成功');
+    location.href = 'index.html';
+  } else {
+    alert('登入失敗');
   }
 }
 </script>
 
 </body>
 </html>
-``
