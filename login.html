@@ -2,44 +2,44 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>登入</title>
+  <title>登入（JSONP 測試）</title>
 </head>
 <body>
 
-<h2>🔐 登入</h2>
+<h2>🔐 登入（JSONP 測試）</h2>
 
-<input id="u" placeholder="帳號"><br><br>
-<input id="p" type="password" placeholder="密碼"><br><br>
+<input id="u" value="admin"><br><br>
+<input id="p" value="1234" type="password"><br><br>
 <button onclick="login()">登入</button>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/你的最新部署ID/exec';
-
-function login() {
-  const username = encodeURIComponent(u.value);
-  const password = encodeURIComponent(p.value);
-
-  const script = document.createElement('script');
-  script.src =
-    API_URL +
-    '?action=login' +
-    '&username=' + username +
-    '&password=' + password +
-    '&callback=handleLogin';
-
-  document.body.appendChild(script);
+/* ✅ 一定要是全域 */
+function handleLogin(res) {
+  console.log('✅ handleLogin called:', res);
+  alert('handleLogin 有被呼叫，請看 Console');
 }
 
-// ✅ 這個函式會被 GAS 呼叫
-function handleLogin(res) {
-  if (res.result === 'ok') {
-    localStorage.setItem('role', res.role);
-    localStorage.setItem('judge_id', res.judge_id || '');
-    alert('登入成功');
-    location.href = 'index.html';
-  } else {
-    alert('登入失敗');
-  }
+/* ✅ 一定要先有 handleLogin 再動態加 script */
+function login() {
+  console.log('login() invoked');
+
+  const script = document.createElement('script');
+
+  /* ✅ 一定加時間戳，避免 cache */
+  script.src =
+    'https://script.google.com/macros/s/【你最新的 exec ID】/exec' +
+    '?action=login' +
+    '&username=' + encodeURIComponent(u.value) +
+    '&password=' + encodeURIComponent(p.value) +
+    '&callback=handleLogin' +
+    '&_=' + Date.now();
+
+  script.onerror = () => {
+    console.error('❌ script load error');
+    alert('script load error（請看 Console）');
+  };
+
+  document.body.appendChild(script);
 }
 </script>
 
