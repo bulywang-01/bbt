@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>出勤點名</title>
+</head>
+<body>
+
+<h2>✅ 出勤點名頁</h2>
+
+<p id="info"></p>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const gameId = params.get('game_id');
+  document.getElementById('info').innerText =
+    '目前比賽 ID：' + gameId;
+</script>
+
+</body>
+</html>
+``
