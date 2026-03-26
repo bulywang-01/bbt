@@ -6,16 +6,18 @@
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script>
-async function login(){
-  const res = await apiPost({
-    action:'login',
-    username:u.value,
-    password:p.value
-  });
-  if(res.result==='ok'){
-    localStorage.setItem('role',res.role);
-    localStorage.setItem('judge_id',res.judge_id || '');
-    location.href='index.html';
+async function login() {
+  const res = await fetch(
+    API_URL +
+    '?action=login' +
+    '&username=' + encodeURIComponent(u.value) +
+    '&password=' + encodeURIComponent(p.value)
+  ).then(r => r.json());
+
+  if (res.result === 'ok') {
+    localStorage.setItem('role', res.role);
+    localStorage.setItem('judge_id', res.judge_id || '');
+    location.href = 'index.html';
   } else {
     alert('登入失敗');
   }
