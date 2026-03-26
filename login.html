@@ -1,11 +1,10 @@
 <h2>🔐 登入</h2>
 <input id="u" placeholder="帳號">
-<input id="p" placeholder="密碼" type="password">
+<input id="p" type="password" placeholder="密碼">
 <button onclick="login()">登入</button>
 
-js/config.js</script>
-js/api.js</script>
-
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script>
 async function login(){
   const res = await apiPost({
@@ -15,8 +14,10 @@ async function login(){
   });
   if(res.result==='ok'){
     localStorage.setItem('role',res.role);
-    localStorage.setItem('judge_id',res.judge_id||'');
+    localStorage.setItem('judge_id',res.judge_id || '');
     location.href='index.html';
-  }else alert('登入失敗');
+  } else {
+    alert('登入失敗');
+  }
 }
 </script>
