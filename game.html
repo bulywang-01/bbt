@@ -1,151 +1,67 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>出勤點名</title>
-</head>
+<html>
 <body>
 
-<!-- ===== 登入檢查 ===== -->
 <script>
-if (!localStorage.getItem('role')) {
-  location.href = 'login.html';
-}
+if (!localStorage.getItem('role')) location.href='login.html';
 </script>
 
-<!-- ===== 操作列 ===== -->
-<div style="margin-bottom:10px;">
-  <button onclick="logout()">登出</button>
-  <button onclick="history.back()">← 回上一頁</button>
-  <a href="index.html">🏠 回首頁</a>
-</div>
-
-<h2>✅ 出勤點名頁</h2>
-
+<h2>✅ 出勤點名</h2>
 <p id="info"></p>
-
-<div id="judges">載入裁判名冊中…</div>
-
-<br>
+<div id="judges">載入中…</div>
 <button onclick="submitAttendance()">送出出勤</button>
 
-<!-- ===== 載入 API 設定（關鍵，一定要正確） ===== -->
 <script src="js/config.js"></script>
-
 <script>
-/* ===== 登出 ===== */
-function logout() {
-  localStorage.clear();
-  location.href = 'login.html';
-}
+const gid = new URLSearchParams(location.search).get('game_id');
+document.getElementById('info').innerText='比賽ID：'+gid;
 
-/* ===== 讀取 URL 參數 ===== */
-const params = new URLSearchParams(location.search);
-const gameId = params.get('game_id');
+let judges=[], checked=[];
 
-document.getElementById('info').innerText =
-  '比賽 ID：' + gameId;
-
-/* ===== 暫存資料 ===== */
-let allJudges = [];
-let attendedJudges = [];
-
-/* ===== JSONP callback：裁判名冊 ===== */
-function handleJudges(list) {
-  allJudges = list || [];
+function handleJudges(list){judges=list; render();}
+function handleAttendance(list){
+  checked=list.filter(a=>a.game_id===gid).map(a=>a.judge_id);
   render();
 }
 
-/* ===== JSONP callback：出勤紀錄 ===== */
-function handleAttendance(list) {
-  attendedJudges = (list || [])
-    .filter(a => a.game_id === gameId)
-    .map(a => a.judge_id);
-  render();
-}
-
-/* ===== 畫面渲染 ===== */
-function render() {
-  if (!allJudges.length) return;
-
-  const box = document.getElementById('judges');
-  box.innerHTML = '';
-
-  allJudges.forEach(j => {
-    const checked = attendedJudges.includes(j.judge_id);
-
-    box.innerHTML += `
-      <div style="margin-bottom:4px;">
-        <label>
-          <input type="checkbox"
-                 value="${j.judge_id}"
-                 ${checked ? 'checked disabled' : ''}>
-          ${j.name}
-        </label>
-      </div>
-    `;
+function render(){
+  const d=document.getElementById('judges'); d.innerHTML='';
+  judges.forEach(j=>{
+    const lock=checked.includes(j.judge_id);
+    d.innerHTML+=`
+      <div>
+        <input type="checkbox" value="${j.judge_id}" ${lock?'checked disabled':''}>
+        ${j.name}
+        <select>
+          <option>主審</option>
+          <option>一壘審</option>
+          <option>二壘審</option>
+          <option>三壘審</option>
+        </select>
+      </div>`;
   });
 }
 
-/* ===== 載入裁判名冊（JSONP） ===== */
-(function loadJudges() {
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=judges' +
-    '&callback=handleJudges' +
-    '&_=' + Date.now();
-  document.body.appendChild(s);
-})();
-
-/* ===== 載入已點名紀錄（JSONP） ===== */
-(function loadAttendance() {
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=attendance' +
-    '&callback=handleAttendance' +
-    '&_=' + Date.now();
-  document.body.appendChild(s);
-})();
-
-/* ===== 送出出勤（JSONP 寫入 Attendance） ===== */
-function submitAttendance() {
-  const checks =
-    document.querySelectorAll('input[type=checkbox]:checked');
-
-  if (checks.length === 0) {
-    alert('請至少勾選一位裁判');
-    return;
-  }
-
-  checks.forEach(c => {
-    if (c.disabled) return;
-
-    const s = document.createElement('script');
-    s.src =
-      API_URL +
-      '?action=attend' +
-      '&game_id=' + gameId +
-      '&judge_id=' + c.value +
-      '&role=裁判' +
-      '&callback=handleAttendResult' +
-      '&_=' + Date.now();
+function submitAttendance(){
+  document.querySelectorAll('input[type=checkbox]:checked').forEach((c,i)=>{
+    if(c.disabled) return;
+    const role=c.nextElementSibling.nextElementSibling.value;
+    const s=document.createElement('script');
+    s.src=API_URL+
+      '?action=attend'+
+      '&game_id='+gid+
+      '&judge_id='+c.value+
+      '&role='+encodeURIComponent(role)+
+      '&callback=alert';
     document.body.appendChild(s);
   });
 }
 
-/* ===== JSONP callback：出勤結果 ===== */
-function handleAttendResult(res) {
-  if (res.result === 'ok') {
-    alert('出勤完成');
-    location.reload();
-  } else if (res.result === 'duplicate') {
-    alert('此裁判已點名');
-  } else {
-    alert('出勤失敗');
-  }
-}
+['judges','attendance'].forEach((a,cb)=>
+  document.body.appendChild(Object.assign(document.createElement('script'),{
+    src:API_URL+'?action='+a+'&callback='+(a==='judges'?'handleJudges':'handleAttendance')
+  }))
+);
 </script>
 
 </body>
