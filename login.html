@@ -2,44 +2,44 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>登入（JSONP 測試）</title>
+  <title>登入</title>
 </head>
 <body>
 
-<h2>🔐 登入（JSONP 測試）</h2>
+<h2>🔐 登入</h2>
 
-<input id="u" value="admin"><br><br>
-<input id="p" value="1234" type="password"><br><br>
+<input id="u" placeholder="帳號"><br><br>
+<input id="p" type="password" placeholder="密碼"><br><br>
 <button onclick="login()">登入</button>
 
 <script>
 /* ✅ 一定要是全域 */
 function handleLogin(res) {
-  console.log('✅ handleLogin called:', res);
-  alert('handleLogin 有被呼叫，請看 Console');
+  console.log('handleLogin:', res);
+
+  if (res.result === 'ok') {
+    localStorage.setItem('role', res.role);
+    localStorage.setItem('judge_id', res.judge_id || '');
+    alert('登入成功');
+    location.href = 'index.html';
+  } else {
+    alert('登入失敗');
+  }
 }
 
-/* ✅ 一定要先有 handleLogin 再動態加 script */
 function login() {
-  console.log('login() invoked');
+  // 每次登入都建立新的 script，避免快取
+  const s = document.createElement('script');
 
-  const script = document.createElement('script');
-
-  /* ✅ 一定加時間戳，避免 cache */
-  script.src =
-    'https://script.google.com/macros/s/AKfycbxjIio090bRxazKv90xDbID2VkySwCRbIXHUDGlG5j0HJMYVWBtj8c31nrMAnZ8uYsf/exec' +
+  s.src =
+    'https://script.google.com/macros/s/【你最新新增部署的ID】/exec' +
     '?action=login' +
     '&username=' + encodeURIComponent(u.value) +
     '&password=' + encodeURIComponent(p.value) +
     '&callback=handleLogin' +
     '&_=' + Date.now();
 
-  script.onerror = () => {
-    console.error('❌ script load error');
-    alert('script load error（請看 Console）');
-  };
-
-  document.body.appendChild(script);
+  document.body.appendChild(s);
 }
 </script>
 
