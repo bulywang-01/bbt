@@ -1,13 +1,34 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head><meta charset="UTF-8"><title>裁判個人頁</title><link rel="stylesheet" href="css/style.css"></head>
-<body><h2 id="name"></h2><table border="1" width="100%"><thead><tr><th>日期</th><th>角色</th><th>出勤</th></tr></thead><tbody id="rows"></tbody></table>
-<script src="js/config.js"></script><script src="js/api.js"></script><script src="js/judge.js"></script></body></html>
+<h2>👤 裁判個人紀錄</h2>
+<div id="info"></div>
+<ul id="records"></ul>
+
+js/config.js</script>
+js/api.js</script>
 
 
 <script>
 const role = localStorage.getItem('role');
 if(!role) location.href='login.html';
+  
+(async()=>{
+const id=new URLSearchParams(location.search).get('judge_id')
+|| localStorage.getItem('judge_id');
+
+const judges=await apiGet('judges');
+const att=await apiGet('attendance');
+const j=judges.find(x=>x.judge_id===id);
+
+info.innerText=`姓名：${j.name}`;
+
+att.filter(a=>a.judge_id===id)
+.forEach(a=>{
+  const li=document.createElement('li');
+  li.innerText=`${a.game_id}｜${a.role}｜${a.attend}`;
+  records.appendChild(li);
+});
+})();
+</script>
+
 
 <div style="margin-bottom:10px">
   <button onclick="history.back()">⬅ 回上一頁</button>
