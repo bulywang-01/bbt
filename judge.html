@@ -1,36 +1,15 @@
 <h2>👤 裁判個人紀錄</h2>
 <div id="info"></div>
-<ul id="records"></ul>
+<ul id="rec"></ul>
 
-js/config.js</script>
-js/api.js</script>
-
-
+<script src="js/api.js"></script>
 <script>
-const role = localStorage.getItem('role');
-if(!role) location.href='login.html';
-  
 (async()=>{
-const id=new URLSearchParams(location.search).get('judge_id')
-|| localStorage.getItem('judge_id');
-
-const judges=await apiGet('judges');
-const att=await apiGet('attendance');
-const j=judges.find(x=>x.judge_id===id);
-
+const id=new URLSearchParams(location.search).get('judge_id')||USER_JUDGE_ID;
+const j=(await apiGet('judges')).find(x=>x.judge_id===id);
+const a=await apiGet('attendance');
 info.innerText=`姓名：${j.name}`;
-
-att.filter(a=>a.judge_id===id)
-.forEach(a=>{
-  const li=document.createElement('li');
-  li.innerText=`${a.game_id}｜${a.role}｜${a.attend}`;
-  records.appendChild(li);
-});
+a.filter(x=>x.judge_id===id)
+ .forEach(x=>rec.innerHTML+=`<li>${x.game_id}｜${x.role}</li>`);
 })();
 </script>
-
-
-<div style="margin-bottom:10px">
-  <button onclick="history.back()">⬅ 回上一頁</button>
-  <a href="index.html">🏠 回首頁</a>
-</div>
