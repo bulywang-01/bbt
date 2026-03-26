@@ -1,39 +1,39 @@
-<script>
-if (!localStorage.getItem('role')) {
-  location.href = 'login.html';
-}
-</script>
-
-<button onclick="logout()">登出</button>
-
-<script>
-function logout() {
-  localStorage.clear();
-  location.href = 'login.html';
-}
-</script>
-
 <!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>裁判出勤系統</title>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="manifest" href="manifest.json">
-</head>
+<html>
 <body>
+
+<script>
+if (!localStorage.getItem('role')) location.href='login.html';
+</script>
+
 <h2>🏠 裁判出勤系統</h2>
 
 <ul>
   <li><a href="games.html">比賽列表</a></li>
-  <li><a href="schedule.html">月班表</a></li>
   <li><a href="judges.html">裁判名冊</a></li>
+  <li><a href="schedule.html">月班表</a></li>
   <li><a href="stats.html">出勤統計</a></li>
 </ul>
 
 <script>
-if(!localStorage.getItem('role')){
+if (localStorage.getItem('role') === 'admin') {
+  document.write(`
+    <h3>🔧 管理者功能</h3>
+    <ul>
+      <li><a href="judges_manage.html">管理裁判</a></li>
+      <li><a href="games_manage.html">管理比賽</a></li>
+    </ul>
+  `);
+}
+</script>
+
+<button onclick="logout()">登出</button>
+<script>
+function logout(){
+  localStorage.clear();
   location.href='login.html';
 }
 </script>
+
+</body>
+</html>
