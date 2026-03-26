@@ -4,6 +4,11 @@
 <body><h2 id="name"></h2><table border="1" width="100%"><thead><tr><th>日期</th><th>角色</th><th>出勤</th></tr></thead><tbody id="rows"></tbody></table>
 <script src="js/config.js"></script><script src="js/api.js"></script><script src="js/judge.js"></script></body></html>
 
+
+<script>
+const role = localStorage.getItem('role');
+if(!role) location.href='login.html';
+
 <div style="margin-bottom:10px">
   <button onclick="history.back()">⬅ 回上一頁</button>
   <a href="index.html">🏠 回首頁</a>
