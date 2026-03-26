@@ -1,61 +1,12 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>出勤統計</title>
-</head>
-<body>
-
 <h2>📊 出勤統計</h2>
-
-<table border="1">
-  <tr>
-    <th>裁判</th>
-    <th>出席次數</th>
-    <th>主審</th>
-    <th>一壘審</th>
-    <th>二壘審</th>
-    <th>三壘審</th>
-  </tr>
-</table>
-
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
-
+js/api.js</script>
 <script>
-(async () => {
-  const judges = await apiGet('judges');
-  const attendance = await apiGet('attendance');
-  const stats = {};
-
-  attendance.forEach(a => {
-    if (a.attend !== '出席') return;
-    stats[a.judge_id] ||= { total:0, 主審:0, 一壘審:0, 二壘審:0, 三壘審:0 };
-    stats[a.judge_id].total++;
-    stats[a.judge_id][a.role]++;
-  });
-
-  const table = document.querySelector('table');
-
-  judges.forEach(j => {
-    const s = stats[j.judge_id] || {};
-    const row = table.insertRow();
-    row.innerHTML = `
-      <td>${j.name}</td>
-      <td>${s.total||0}</td>
-      <td>${s.主審||0}</td>
-      <td>${s.一壘審||0}</td>
-      <td>${s.二壘審||0}</td>
-      <td>${s.三壘審||0}</td>
-    `;
-  });
+(async()=>{
+const j=await apiGet('judges');
+const a=await apiGet('attendance');
+document.write('<table border=1><tr><th>裁判</th><th>次數</th></tr>');
+j.forEach(x=>{
+  document.write(`<tr><td>${x.name}</td><td>${a.filter(y=>y.judge_id===x.judge_id).length}</td></tr>`);
+});
 })();
 </script>
-
-</body>
-</html>
-
-<div style="margin-bottom:10px">
-  <button onclick="history.back()">⬅ 回上一頁</button>
-  <a href="index.html">🏠 回首頁</a>
-</div>
