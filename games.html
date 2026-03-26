@@ -1,54 +1,23 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>比賽列表</title>
-</head>
-<body>
-
-<h2>⚾ 比賽列表</h2>
-<div id="games">載入中…</div>
-
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
-
-<script>
-(async () => {
-  const gamesDiv = document.getElementById('games');
-  const games = await apiGet('games');
-
-<script>
-const role = localStorage.getItem('role');
-if(!role) location.href='login.html';
-
-  gamesDiv.innerHTML = '';
-
-  games.forEach(g => {
-    const d = new Date(g.date);
-    d.setHours(d.getHours() + 8);
-    const y = d.getFullYear();
-    const m = d.getMonth() + 1;
-    const day = d.getDate();
-    const w = ['日','一','二','三','四','五','六'][d.getDay()];
-
-    const div = document.createElement('div');
-    div.style.border = '1px solid #ccc';
-    div.style.padding = '10px';
-    div.style.marginBottom = '10px';
-
-    div.innerHTML = `
-      <b>${y}/${m}/${day}（${w}）</b>｜${g.field}<br>
-      ${g.category}｜裁判制：${g.umpire_count} 人<br>
-      game.html?game_id=${g.game_id}→ 出勤點名</a>
-    `;
-    gamesDiv.appendChild(div);
-  });
-})();
-</script>
-
-</body>
-</html>
-<div style="margin-bottom:10px">
+<div>
   <button onclick="history.back()">⬅ 回上一頁</button>
   <a href="index.html">🏠 回首頁</a>
 </div>
+
+<h2>⚾ 比賽列表</h2>
+<div id="games"></div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+(async()=>{
+const games=await apiGet('games');
+const div=document.getElementById('games');
+games.forEach(g=>{
+  div.innerHTML+=`
+  <div style="border:1px solid #ccc;margin:5px;padding:5px">
+    ${g.date}｜${g.field}｜${g.category}｜${g.umpire_count}人制
+    <a href="game.html?game_id=${g.game_id}">→ 出勤點名</a>
+  </div>`;
+});
+})();
+</script>
