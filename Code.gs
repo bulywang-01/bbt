@@ -55,3 +55,18 @@ function output(data) {
     .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
+
+if (data.action === 'login') {
+  const users = getSheetRaw('Users');
+  const user = users.find(
+    u => u.username === data.username && u.password === data.password
+  );
+  if (!user) return output({ result:'fail' });
+  return output({ result:'ok', role:user.role, judge_id:user.judge_id });
+}
+
+function getSheetRaw(name){
+  const s=SpreadsheetApp.getActive().getSheetByName(name);
+  const [h,...r]=s.getDataRange().getValues();
+  return r.map(row=>Object.fromEntries(row.map((v,i)=>[h[i],v])));
+}
