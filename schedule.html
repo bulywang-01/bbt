@@ -1,27 +1,17 @@
 <h2>📅 月班表</h2>
-
-js/config.js</script>
-js/api.js</script>
-
+<script src="js/api.js"></script>
 <script>
 (async()=>{
-const att=await apiGet('attendance');
-const judges=await apiGet('judges');
-const table=document.createElement('table');
-table.border=1;
-
-const dates=[...new Set(att.map(a=>a.timestamp.substr(0,10)))];
-table.innerHTML='<tr><th>裁判</th>'+dates.map(d=>`<th>${d}</th>`).join('')+'</tr>';
-
-judges.forEach(j=>{
-  const row=document.createElement('tr');
-  row.innerHTML=`<td>${j.name}</td>`;
-  dates.forEach(d=>{
-    const hit=att.find(a=>a.judge_id===j.judge_id && a.timestamp.startsWith(d));
-    row.innerHTML+=`<td>${hit?'✅':'❌'}</td>`;
+const j=await apiGet('judges');
+const a=await apiGet('attendance');
+const days=[...new Set(a.map(x=>x.timestamp.substr(0,10)))];
+document.write('<table border=1><tr><th>裁判</th>'+days.map(d=>`<th>${d}</th>`).join('')+'</tr>');
+j.forEach(x=>{
+  document.write('<tr><td>'+x.name+'</td>');
+  days.forEach(d=>{
+    document.write('<td>'+ (a.find(y=>y.judge_id===x.judge_id && y.timestamp.startsWith(d))?'✅':'❌') +'</td>');
   });
-  table.appendChild(row);
+  document.write('</tr>');
 });
-document.body.appendChild(table);
 })();
 </script>
