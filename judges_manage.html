@@ -91,38 +91,48 @@ function renderJudges(list) {
   });
 }
 
-/* ========= 新增裁判（自動編號） ========= */
-function addJudge() {
-  const name = new_name.value.trim();
-  if (!name) {
-    alert('請輸入裁判姓名');
-    return;
-  }
-
-  const cb = 'afterAddJudge_' + Date.now();
-  window[cb] = function(res) {
-    console.log('add_judge response:', res);
-
-    if (res && res.result === 'ok') {
-      alert('新增成功，裁判編號：' + res.judge_id);
-      new_name.value = '';
-      loadJudges();
-    } else {
-      alert('新增失敗：' + JSON.stringify(res));
+/* ========= 新增裁判（診斷版） ========= */
+if (action === 'add_judge') {
+  try {
+    const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_JUDGES);
+    if (!sheet) {
+      return jsonp(callback, { result: 'fail', message: '找不到 Judges Sheet' });
     }
 
-    delete window[cb];
-  };
+    const rows = sheet.getDataRange().getValues();
+    const name = String(e.parameter.name || '').trim();
+    if (!name) {
+      return jsonp(callback, { result: 'fail', message: '缺少姓名' });
+    }
 
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=add_judge' +
-    '&name=' + encodeURIComponent(name) +
-    '&callback=' + cb +
-    '&_=' + Date.now();
-  document.body.appendChild(s);
+    // 取得最大編號
+    let maxNum = 0;
+    for (let i = 1; i < rows.length; i++) {
+      const id = rows[i][0];
+      if (typeof id === 'string' && id.startsWith('U')) {
+        const num = parseInt(id.substring(1), 10);
+        if (!isNaN(num)) maxNum = Math.max(maxNum, num);
+      }
+    }
+
+    const newId = 'U' + String(maxNum + 1).padStart(3, '0');
+
+    sheet.appendRow([newId, name]);  // ✅ 真正關鍵行
+
+    return jsonp(callback, {
+      result: 'ok',
+      judge_id: newId,
+      debug: 'appendRow 成功'
+    });
+
+  } catch (err) {
+    return jsonp(callback, {
+      result: 'fail',
+      message: err.toString()
+    });
+  }
 }
+``
 
 /* ========= 修改裁判 ========= */
 function updateJudge(id) {
