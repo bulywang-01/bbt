@@ -93,7 +93,6 @@ function renderJudges(list) {
 /* ===========================
    新增裁判（關鍵修正版）
 =========================== */
-<script>
 function addJudge() {
   const name = new_name.value.trim();
   if (!name) {
@@ -122,12 +121,10 @@ function addJudge() {
     '&_=' + Date.now();
   document.body.appendChild(s);
 }
-</script>
 
 /* ===========================
    修改裁判
 =========================== */
-  <script>
 function updateJudge(id) {
   const name = document.getElementById('name_' + id).value.trim();
   if (!name) {
