@@ -40,6 +40,32 @@ function handleGames(list) {
     `;
   });
 }
+  
+<script>
+function formatDate(iso) {
+  const d = new Date(iso);
+  d.setHours(d.getHours() + 8); // 轉台灣時間
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const w = ['日','一','二','三','四','五','六'][d.getDay()];
+  return `${y}/${m}/${day}（${w}）`;
+}
+
+function handleGames(list) {
+  const div = document.getElementById('games');
+  div.innerHTML = '';
+
+  list.forEach(g => {
+    div.innerHTML += `
+      <div style="border:1px solid #ccc;margin:5px;padding:5px">
+        ${formatDate(g.date)} ｜ ${g.field} ｜ ${g.category} ｜ ${g.umpire_count} 人制
+        game.html?game_id=${g.game_id}出勤點名</a>
+      </div>
+    `;
+  });
+}
+</script>
 
 /* 載入比賽 */
 (function loadGames() {
