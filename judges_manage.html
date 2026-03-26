@@ -96,25 +96,22 @@ function renderJudges(list) {
 /* ===========================
    新增裁判（關鍵修正版）
 =========================== */
+<script>
 function addJudge() {
-  const id = new_id.value.trim();
   const name = new_name.value.trim();
-
-  if (!id || !name) {
-    alert('請輸入裁判編號與姓名');
+  if (!name) {
+    alert('請輸入裁判姓名');
     return;
   }
 
   const cb = 'afterAddJudge_' + Date.now();
   window[cb] = function(res) {
-    console.log('add_judge:', res);
     if (res && res.result === 'ok') {
-      alert('新增成功');
-      new_id.value = '';
+      alert('新增成功，裁判編號：' + res.judge_id);
       new_name.value = '';
       loadJudges();
     } else {
-      alert('新增失敗：' + JSON.stringify(res));
+      alert('新增失敗');
     }
     delete window[cb];
   };
@@ -123,12 +120,12 @@ function addJudge() {
   s.src =
     API_URL +
     '?action=add_judge' +
-    '&judge_id=' + encodeURIComponent(id) +
     '&name=' + encodeURIComponent(name) +
     '&callback=' + cb +
     '&_=' + Date.now();
   document.body.appendChild(s);
 }
+</script>
 
 /* ===========================
    修改裁判
