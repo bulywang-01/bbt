@@ -8,7 +8,7 @@
 
 <h2>📊 出勤統計</h2>
 
-<table border="1" cellpadding="5" id="statTable">
+<table border="1">
   <tr>
     <th>裁判</th>
     <th>出席次數</th>
@@ -26,34 +26,27 @@
 (async () => {
   const judges = await apiGet('judges');
   const attendance = await apiGet('attendance');
-
   const stats = {};
 
   attendance.forEach(a => {
     if (a.attend !== '出席') return;
-    stats[a.judge_id] ||= {
-      total: 0,
-      主審: 0,
-      一壘審: 0,
-      二壘審: 0,
-      三壘審: 0
-    };
+    stats[a.judge_id] ||= { total:0, 主審:0, 一壘審:0, 二壘審:0, 三壘審:0 };
     stats[a.judge_id].total++;
     stats[a.judge_id][a.role]++;
   });
 
-  const table = document.getElementById('statTable');
+  const table = document.querySelector('table');
 
   judges.forEach(j => {
     const s = stats[j.judge_id] || {};
     const row = table.insertRow();
     row.innerHTML = `
       <td>${j.name}</td>
-      <td>${s.total || 0}</td>
-      <td>${s.主審 || 0}</td>
-      <td>${s.一壘審 || 0}</td>
-      <td>${s.二壘審 || 0}</td>
-      <td>${s.三壘審 || 0}</td>
+      <td>${s.total||0}</td>
+      <td>${s.主審||0}</td>
+      <td>${s.一壘審||0}</td>
+      <td>${s.二壘審||0}</td>
+      <td>${s.三壘審||0}</td>
     `;
   });
 })();
@@ -61,4 +54,3 @@
 
 </body>
 </html>
-``
