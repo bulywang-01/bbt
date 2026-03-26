@@ -4,6 +4,15 @@ if (!localStorage.getItem('role')) {
 }
 </script>
 
+<button onclick="logout()">登出</button>
+
+<script>
+function logout() {
+  localStorage.clear();
+  location.href = 'login.html';
+}
+</script>
+
 <div>
   <button onclick="history.back()">⬅ 回上一頁</button>
   <a href="index.html">🏠 回首頁</a>
