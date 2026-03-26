@@ -1,101 +1,59 @@
-
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>出勤點名</title>
-</head>
-<body>
-
-<h2>✅ 出勤點名頁</h2>
-<p id="gameInfo"></p>
-<div id="judges">載入中…</div>
-<button id="submitBtn">送出出勤</button>
-
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
-
-<script>
-const role = localStorage.getItem('role');
-if(!role) location.href='login.html';
-
-if(role!=='admin'){
-  submitBtn.style.display='none';
-}
-  
-const gameId = new URLSearchParams(location.search).get('game_id');
-document.getElementById('gameInfo').innerText = '目前比賽 ID：' + gameId;
-
-let maxUmpires = 0;
-
-(async () => {
-  const games = await apiGet('games');
-  const judges = await apiGet('judges');
-  const attendance = await apiGet('attendance');
-
-  const game = games.find(g => g.game_id === gameId);
-  maxUmpires = Number(game.umpire_count);
-
-  const already = attendance
-    .filter(a => a.game_id === gameId)
-    .map(a => a.judge_id);
-
-  const div = document.getElementById('judges');
-  div.innerHTML = '';
-
-  judges.forEach(j => {
-    const disabled = already.includes(j.judge_id);
-
-    div.innerHTML += `
-      <div style="margin-bottom:8px">
-        <input type="checkbox" value="${j.judge_id}" ${disabled ? 'checked disabled' : ''}>
-        ${j.name}
-        <select id="role_${j.judge_id}">
-          <option value="主審">主審</option>
-          <option value="一壘審">一壘審</option>
-          <option value="二壘審">二壘審</option>
-          <option value="三壘審">三壘審</option>
-        </select>
-        <input id="note_${j.judge_id}" placeholder="備註">
-      </div>
-    `;
-  });
-})();
-
-document.getElementById('submitBtn').onclick = async () => {
-  const checked = [...document.querySelectorAll('input[type=checkbox]:checked')]
-    .filter(cb => !cb.disabled);
-
-  if (checked.length > maxUmpires) {
-    alert(`本場比賽為 ${maxUmpires} 人制，請勿超過`);
-    return;
-  }
-
-  for (const cb of checked) {
-    const role = document.getElementById(`role_${cb.value}`).value;
-    const note = document.getElementById(`note_${cb.value}`).value;
-
-    const res = await apiPost({
-      action: 'attendance',
-      game_id: gameId,
-      judge_id: cb.value,
-      role,
-      attend: '出席',
-      note
-    });
-
-    if (res.result === 'duplicate') {
-      alert('⚠️ 重複點名');
-    }
-  }
-
-  alert('✅ 出勤完成');
-  location.reload();
-};
-</script>
-<div style="margin-bottom:10px">
+<div>
   <button onclick="history.back()">⬅ 回上一頁</button>
   <a href="index.html">🏠 回首頁</a>
 </div>
-</body>
-</html>
+
+<h2>✅ 出勤點名頁</h2>
+<p id="info"></p>
+<div id="list"></div>
+<button id="submit">送出出勤</button>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+if(USER_ROLE!=='admin'){ submit.style.display='none'; }
+
+const gameId=new URLSearchParams(location.search).get('game_id');
+info.innerText='比賽ID：'+gameId;
+
+(async()=>{
+const games=await apiGet('games');
+const judges=await apiGet('judges');
+const att=await apiGet('attendance');
+const g=games.find(x=>x.game_id===gameId);
+const used=att.filter(a=>a.game_id===gameId).map(a=>a.judge_id);
+
+judges.forEach(j=>{
+  const disabled=used.includes(j.judge_id);
+  list.innerHTML+=`
+  <div>
+    <input type="checkbox" value="${j.judge_id}" ${disabled?'checked disabled':''}>
+    ${j.name}
+    <select id="r_${j.judge_id}">
+      <option>主審</option><option>一壘審</option>
+      <option>二壘審</option><option>三壘審</option>
+    </select>
+    <input id="n_${j.judge_id}" placeholder="備註">
+  </div>`;
+});
+window.max=g.umpire_count;
+})();
+
+submit.onclick=async()=>{
+const c=[...document.querySelectorAll('input[type=checkbox]:checked')].filter(x=>!x.disabled);
+if(c.length>max){ alert('超過人數限制'); return; }
+
+for(const cb of c){
+  await apiPost({
+    action:'attendance',
+    game_id:gameId,
+    judge_id:cb.value,
+    role:document.getElementById('r_'+cb.value).value,
+    attend:'出席',
+    note:document.getElementById('n_'+cb.value).value
+  });
+}
+alert('✅ 出勤完成');
+location.reload();
+};
+</script>
