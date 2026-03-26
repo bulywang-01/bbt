@@ -17,6 +17,10 @@
   const gamesDiv = document.getElementById('games');
   const games = await apiGet('games');
 
+<script>
+const role = localStorage.getItem('role');
+if(!role) location.href='login.html';
+
   gamesDiv.innerHTML = '';
 
   games.forEach(g => {
