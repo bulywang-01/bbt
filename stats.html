@@ -1,5 +1,64 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head><meta charset="UTF-8"><title>出勤統計</title><link rel="stylesheet" href="css/style.css"></head>
-<body><h2>出勤統計</h2><table border="1" width="100%"><thead><tr><th>裁判</th><th>場次</th></tr></thead><tbody id="tb"></tbody></table>
-<script src="js/config.js"></script><script src="js/api.js"></script><script src="js/stats.js"></script></body></html>
+<head>
+  <meta charset="UTF-8">
+  <title>出勤統計</title>
+</head>
+<body>
+
+<h2>📊 出勤統計</h2>
+
+<table border="1" cellpadding="5" id="statTable">
+  <tr>
+    <th>裁判</th>
+    <th>出席次數</th>
+    <th>主審</th>
+    <th>一壘審</th>
+    <th>二壘審</th>
+    <th>三壘審</th>
+  </tr>
+</table>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+
+<script>
+(async () => {
+  const judges = await apiGet('judges');
+  const attendance = await apiGet('attendance');
+
+  const stats = {};
+
+  attendance.forEach(a => {
+    if (a.attend !== '出席') return;
+    stats[a.judge_id] ||= {
+      total: 0,
+      主審: 0,
+      一壘審: 0,
+      二壘審: 0,
+      三壘審: 0
+    };
+    stats[a.judge_id].total++;
+    stats[a.judge_id][a.role]++;
+  });
+
+  const table = document.getElementById('statTable');
+
+  judges.forEach(j => {
+    const s = stats[j.judge_id] || {};
+    const row = table.insertRow();
+    row.innerHTML = `
+      <td>${j.name}</td>
+      <td>${s.total || 0}</td>
+      <td>${s.主審 || 0}</td>
+      <td>${s.一壘審 || 0}</td>
+      <td>${s.二壘審 || 0}</td>
+      <td>${s.三壘審 || 0}</td>
+    `;
+  });
+})();
+</script>
+
+</body>
+</html>
+``
