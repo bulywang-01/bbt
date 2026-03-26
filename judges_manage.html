@@ -20,8 +20,9 @@ if (localStorage.getItem('role') !== 'admin') {
 <h2>👨‍⚖️ 裁判管理（Admin）</h2>
 
 <div style="margin-bottom:10px;">
-  index.html🏠 回首頁</a> |
-  <button onclick="logout()">登出</button>
+  index.html🏠 回首頁</a>
+  |
+  <a href="login.html" onclick="logout()">登出</a>
 </div>
 
 <hr>
@@ -46,29 +47,43 @@ if (localStorage.getItem('role') !== 'admin') {
 <script>
 function logout() {
   localStorage.clear();
-  location.href = 'login.html';
 }
 
-/* ===== 載入裁判清單 ===== */
+/* ===========================
+   載入裁判清單
+=========================== */
 function loadJudges() {
+  const cb = 'handleJudges_' + Date.now();
+  window[cb] = function(list) {
+    renderJudges(list);
+    delete window[cb];
+  };
+
   const s = document.createElement('script');
   s.src =
     API_URL +
     '?action=judges' +
-    '&callback=handleJudges' +
+    '&callback=' + cb +
     '&_=' + Date.now();
   document.body.appendChild(s);
 }
 
-/* ===== 顯示裁判清單 ===== */
-function handleJudges(list) {
+/* ===========================
+   顯示裁判清單
+=========================== */
+function renderJudges(list) {
   const box = document.getElementById('judges');
   box.innerHTML = '';
+
+  if (!list || list.length === 0) {
+    box.innerHTML = '<p>目前沒有裁判資料</p>';
+    return;
+  }
 
   list.forEach(j => {
     box.innerHTML += `
       <div style="margin-bottom:6px;">
-        <b>${j.judge_id}</b>｜
+        <b>${j.judge_id}</b>
         <input id="name_${j.judge_id}" value="${j.name}">
         <button onclick="updateJudge('${j.judge_id}')">💾 修改</button>
         <button onclick="deleteJudge('${j.judge_id}')">🗑 刪除</button>
@@ -77,7 +92,9 @@ function handleJudges(list) {
   });
 }
 
-/* ===== 新增裁判 ===== */
+/* ===========================
+   新增裁判（關鍵修正版）
+=========================== */
 function addJudge() {
   const id = new_id.value.trim();
   const name = new_name.value.trim();
@@ -87,36 +104,51 @@ function addJudge() {
     return;
   }
 
+  const cb = 'afterAddJudge_' + Date.now();
+  window[cb] = function(res) {
+    console.log('add_judge:', res);
+    if (res && res.result === 'ok') {
+      alert('新增成功');
+      new_id.value = '';
+      new_name.value = '';
+      loadJudges();
+    } else {
+      alert('新增失敗：' + JSON.stringify(res));
+    }
+    delete window[cb];
+  };
+
   const s = document.createElement('script');
   s.src =
     API_URL +
     '?action=add_judge' +
     '&judge_id=' + encodeURIComponent(id) +
     '&name=' + encodeURIComponent(name) +
-    '&callback=afterAdd' +
+    '&callback=' + cb +
     '&_=' + Date.now();
   document.body.appendChild(s);
 }
 
-function afterAdd(res) {
-  if (res.result === 'ok') {
-    alert('新增成功');
-    new_id.value = '';
-    new_name.value = '';
-    loadJudges();
-  } else {
-    alert('新增失敗');
-  }
-}
-
-/* ===== 修改裁判 ===== */
+/* ===========================
+   修改裁判
+=========================== */
 function updateJudge(id) {
   const name = document.getElementById('name_' + id).value.trim();
-
   if (!name) {
     alert('姓名不可空白');
     return;
   }
+
+  const cb = 'afterUpdateJudge_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('修改成功');
+      loadJudges();
+    } else {
+      alert('修改失敗');
+    }
+    delete window[cb];
+  };
 
   const s = document.createElement('script');
   s.src =
@@ -124,46 +156,39 @@ function updateJudge(id) {
     '?action=update_judge' +
     '&judge_id=' + encodeURIComponent(id) +
     '&name=' + encodeURIComponent(name) +
-    '&callback=afterUpdate' +
+    '&callback=' + cb +
     '&_=' + Date.now();
   document.body.appendChild(s);
 }
 
-function afterUpdate(res) {
-  if (res.result === 'ok') {
-    alert('修改成功');
-    loadJudges();
-  } else if (res.result === 'not_found') {
-    alert('找不到該裁判');
-  } else {
-    alert('修改失敗');
-  }
-}
-
-/* ===== 刪除裁判 ===== */
+/* ===========================
+   刪除裁判
+=========================== */
 function deleteJudge(id) {
   if (!confirm('確定要刪除此裁判？')) return;
+
+  const cb = 'afterDeleteJudge_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('已刪除');
+      loadJudges();
+    } else {
+      alert('刪除失敗');
+    }
+    delete window[cb];
+  };
 
   const s = document.createElement('script');
   s.src =
     API_URL +
     '?action=delete_judge' +
     '&judge_id=' + encodeURIComponent(id) +
-    '&callback=afterDelete' +
+    '&callback=' + cb +
     '&_=' + Date.now();
   document.body.appendChild(s);
 }
 
-function afterDelete(res) {
-  if (res.result === 'ok') {
-    alert('已刪除');
-    loadJudges();
-  } else {
-    alert('刪除失敗');
-  }
-}
-
-/* ===== 初始載入 ===== */
+/* 初始載入 */
 loadJudges();
 </script>
 
