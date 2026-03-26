@@ -7,73 +7,63 @@
 <body>
 
 <h2>✅ 出勤點名頁</h2>
-
 <p id="gameInfo"></p>
-
-<div id="judges">載入裁判中…</div>
-
+<div id="judges">載入中…</div>
 <button id="submitBtn">送出出勤</button>
 
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 
 <script>
-const params = new URLSearchParams(location.search);
-const gameId = params.get('game_id');
-document.getElementById('gameInfo').innerText =
-  '目前比賽 ID：' + gameId;
+const gameId = new URLSearchParams(location.search).get('game_id');
+document.getElementById('gameInfo').innerText = '目前比賽 ID：' + gameId;
 
-let judgesData = [];
+let maxUmpires = 0;
 
-// 載入裁判與已出勤名單
 (async () => {
-  const judgesDiv = document.getElementById('judges');
-
+  const games = await apiGet('games');
   const judges = await apiGet('judges');
   const attendance = await apiGet('attendance');
 
-  const checked = attendance
+  const game = games.find(g => g.game_id === gameId);
+  maxUmpires = Number(game.umpire_count);
+
+  const already = attendance
     .filter(a => a.game_id === gameId)
     .map(a => a.judge_id);
 
-  judgesData = judges;
-
-  judgesDiv.innerHTML = '';
+  const div = document.getElementById('judges');
+  div.innerHTML = '';
 
   judges.forEach(j => {
-    const disabled = checked.includes(j.judge_id);
+    const disabled = already.includes(j.judge_id);
 
-    const div = document.createElement('div');
-    div.style.marginBottom = '10px';
-
-    div.innerHTML = `
-      <label>
-        <input type="checkbox" value="${j.judge_id}"
-          ${disabled ? 'checked disabled' : ''}>
+    div.innerHTML += `
+      <div style="margin-bottom:8px">
+        <input type="checkbox" value="${j.judge_id}" ${disabled ? 'checked disabled' : ''}>
         ${j.name}
-      </label>
-      <select id="role_${j.judge_id}">
-        <option value="主審">主審</option>
-        <option value="一壘審">一壘審</option>
-        <option value="二壘審">二壘審</option>
-        <option value="三壘審">三壘審</option>
-      </select>
-      <input type="text" id="note_${j.judge_id}"
-        placeholder="備註（選填）">
+        <select id="role_${j.judge_id}">
+          <option value="主審">主審</option>
+          <option value="一壘審">一壘審</option>
+          <option value="二壘審">二壘審</option>
+          <option value="三壘審">三壘審</option>
+        </select>
+        <input id="note_${j.judge_id}" placeholder="備註">
+      </div>
     `;
-
-    judgesDiv.appendChild(div);
   });
 })();
 
-// 送出出勤
-document.getElementById('submitBtn').addEventListener('click', async () => {
-  const checked = document.querySelectorAll('input[type=checkbox]:checked');
-  let submitted = 0;
+document.getElementById('submitBtn').onclick = async () => {
+  const checked = [...document.querySelectorAll('input[type=checkbox]:checked')]
+    .filter(cb => !cb.disabled);
+
+  if (checked.length > maxUmpires) {
+    alert(`本場比賽為 ${maxUmpires} 人制，請勿超過`);
+    return;
+  }
 
   for (const cb of checked) {
-    if (cb.disabled) continue;
-
     const role = document.getElementById(`role_${cb.value}`).value;
     const note = document.getElementById(`note_${cb.value}`).value;
 
@@ -86,19 +76,15 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
       note
     });
 
-    if (res.result === 'ok') submitted++;
     if (res.result === 'duplicate') {
-      alert('⚠️ 有裁判已點過名');
+      alert('⚠️ 重複點名');
     }
   }
 
-  if (submitted > 0) {
-    alert('✅ 出勤成功登錄');
-    location.reload();
-  }
-});
+  alert('✅ 出勤完成');
+  location.reload();
+};
 </script>
 
 </body>
 </html>
-``
