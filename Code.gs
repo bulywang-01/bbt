@@ -4,50 +4,51 @@ const SHEET_ATTEND = 'Attendance';
 
 function doGet(e) {
   const action = e.parameter.action;
-  if (action === 'judges') return getJudges();
-  if (action === 'games') return getGames();
-  if (action === 'attendance') return getAttendance();
-  
-  return output({ error: 'Invalid action' });
+  if (action === 'judges') return getSheet(SHEET_JUDGES);
+  if (action === 'games') return getSheet(SHEET_GAMES);
+  if (action === 'attendance') return getSheet(SHEET_ATTEND);
+  return output({ error: 'invalid action' });
 }
 
 function doPost(e) {
   const data = JSON.parse(e.postData.contents);
-  if (data.action === 'attendance') return saveAttendance(data);
-  
-  return output({ error: 'Invalid action' });
+
+  if (data.action === 'attendance') {
+    const sheet = SpreadsheetApp.getActive()
+      .getSheetByName(SHEET_ATTEND);
+
+    // ✅ 防止重複點名
+    const existing = sheet.getDataRange().getValues();
+    const duplicated = existing.some(
+      r => r[0] === data.game_id && r[1] === data.judge_id
+    );
+    if (duplicated) {
+      return output({ result: 'duplicate' });
+    }
+
+    sheet.appendRow([
+      data.game_id,
+      data.judge_id,
+      data.role,
+      data.attend,
+      data.note || '',
+      new Date()
+    ]);
+
+    return output({ result: 'ok' });
+  }
+
+  return output({ error: 'invalid post' });
 }
 
-function getJudges() {
-  return output(readSheet(SHEET_JUDGES));
-}
-
-function getGames() {
-  return output(readSheet(SHEET_GAMES));
-}
-
-function getAttendance() {
-  return output(readSheet(SHEET_ATTEND));
-}
-
-function saveAttendance(data) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_ATTEND);
-  sheet.appendRow([
-    data.game_id,
-    data.judge_id,
-    data.role,
-    data.attend,
-    data.note || '',
-    new Date()
-  ]);
-  return output({ result: 'ok' });
-}
-
-function readSheet(name) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName(name);
+function getSheet(name) {
+  const sheet = SpreadsheetApp.getActive()
+    .getSheetByName(name);
   const [header, ...rows] = sheet.getDataRange().getValues();
-  return rows.map(r =>
-    Object.fromEntries(r.map((v, i) => [header[i], v]))
+  return output(
+    rows.map(r =>
+      Object.fromEntries(r.map((v, i) => [header[i], v]))
+    )
   );
 }
 
