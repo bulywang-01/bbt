@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -17,6 +18,9 @@
 <script>
 const gameId = new URLSearchParams(location.search).get('game_id');
 document.getElementById('gameInfo').innerText = '目前比賽 ID：' + gameId;
+
+const role = localStorage.getItem('role');
+if(!role) location.href='login.html';
 
 let maxUmpires = 0;
 
