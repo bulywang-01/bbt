@@ -3,20 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <title>比賽列表</title>
-
-  <!-- ✅ CSS 一定要用 link -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <h2>⚾ 比賽列表</h2>
 
-<div id="games"></div>
+<div id="games">載入中…</div>
 
-<!-- ✅ JS 一定要用 script src -->
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
-<script src="js/games.js?v=1"></script>
 
-</body>
-</html>
+<!-- ✅ 直接內嵌 games.js 內容 -->
+<script>
+function formatDateToTW(iso) {
+  const d = new Date(iso);
+  d.setHours(d.getHours() + 8); // 台灣時區
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const week = ['日','一','二','三','四','五','六'][d.getDay()];
+  return `${y}/${m}/${day}（${week}）`;
+}
+
+(async () => {
+  const gamesDiv = document.getElementById('games');
+  try {
+    const games = await apiGet('games');
+
+    if (!games || games.length === 0) {
+      gamesDiv.innerHTML = '<p>目前沒有比賽資料</p>';
+      return;
+    }
+
+    gamesDiv.innerHTML = '';
+
+    games.forEach(g => {
+      const div = document.createElement('div');
+      div.style.border = '1px solid #ccc';
+      div.style.padding = '10px';
+      div.style.marginBottom = '10px';
+
+      div.innerHTML = `
