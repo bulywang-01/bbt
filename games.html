@@ -1,47 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>比賽列表</title>
+</head>
+<body>
+
+<!-- ===== 登入檢查 ===== -->
 <script>
-/* 登入檢查 */
 if (!localStorage.getItem('role')) {
   location.href = 'login.html';
 }
 </script>
 
-<button onclick="logout()">登出</button>
-
-<div>
-  <button onclick="history.back()">⬅ 回上一頁</button>
+<!-- ===== 操作列 ===== -->
+<div style="margin-bottom:10px;">
+  <button onclick="logout()">登出</button>
+  <button onclick="history.back()">← 回上一頁</button>
   <a href="index.html">🏠 回首頁</a>
 </div>
 
+<h2>⚾ 比賽列表</h2>
+
+<div id="games">載入中…</div>
+
+<!-- ===== API 設定（一定要先載入） ===== -->
+<script src="js/config.js"></script>
+
 <script>
+/* ===== 登出 ===== */
 function logout() {
   localStorage.clear();
   location.href = 'login.html';
 }
-</script>
 
-<h2>⚾ 比賽列表</h2>
-<div id="games"></div>
-
-<!-- ✅ 一定要先載入 config.js -->
-<script src="js/config.js"></script>
-
-<script>
-/* JSONP callback */
-function handleGames(list) {
-  const div = document.getElementById('games');
-  div.innerHTML = '';
-
-  list.forEach(g => {
-    div.innerHTML += `
-      <div style="border:1px solid #ccc;margin:5px;padding:5px">
-        ${g.date}｜${g.field}｜${g.category}｜${g.umpire_count} 人制
-        <a href="game.html?game_id=${g.game_id}">出勤點名</a>
-      </div>
-    ;
-  });
-}
-  
-<script>
+/* ===== 時間格式轉換（UTC → 台灣） ===== */
 function formatDate(iso) {
   const d = new Date(iso);
   d.setHours(d.getHours() + 8); // 轉台灣時間
@@ -52,29 +45,42 @@ function formatDate(iso) {
   return `${y}/${m}/${day}（${w}）`;
 }
 
+/* ===== JSONP callback：接收比賽列表 ===== */
 function handleGames(list) {
-  const div = document.getElementById('games');
-  div.innerHTML = '';
+  const box = document.getElementById('games');
+  box.innerHTML = '';
+
+  if (!list || list.length === 0) {
+    box.innerHTML = '<p>目前沒有比賽資料</p>';
+    return;
+  }
 
   list.forEach(g => {
-    div.innerHTML += `
-      <div style="border:1px solid #ccc;margin:5px;padding:5px">
-        ${formatDate(g.date)} ｜ ${g.field} ｜ ${g.category} ｜ ${g.umpire_count} 人制
-        game.html?game_id=${g.game_id}出勤點名</a>
+    box.innerHTML += `
+      <div style="border:1px solid #ccc;margin:6px;padding:6px;">
+        <b>${formatDate(g.date)}</b>｜
+        ${g.field}｜
+        ${g.category}｜
+        ${g.umpire_count} 人制
+        <br>
+        <a href="game.html?game_id=${g.game_id}">➡ 出勤點名</a>
       </div>
     `;
   });
 }
-</script>
 
-/* 載入比賽 */
+/* ===== 載入比賽列表（JSONP） ===== */
 (function loadGames() {
   const s = document.createElement('script');
   s.src =
     API_URL +
     '?action=games' +
     '&callback=handleGames' +
-    '&_=' + Date.now();
+    '&_=' + Date.now();   // 防快取
   document.body.appendChild(s);
 })();
 </script>
+
+</body>
+</html>
+``
