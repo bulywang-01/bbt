@@ -1,3 +1,9 @@
+<script>
+if (!localStorage.getItem('role')) {
+  location.href = 'login.html';
+}
+</script>
+
 <div>
   <button onclick="history.back()">⬅ 回上一頁</button>
   <a href="index.html">🏠 回首頁</a>
