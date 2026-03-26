@@ -1,9 +1,35 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head><meta charset="UTF-8"><title>裁判名冊</title><link rel="stylesheet" href="css/style.css"></head>
-<body><h2>裁判名冊</h2><div id="list"></div>
-<script src="js/config.js"></script><script src="js/api.js"></script><script src="js/judges.js"></script></body></html>
+<head><meta charset="UTF-8"><title>裁判名冊</title></head>
+<body>
 
+<div>
+  <button onclick="history.back()">⬅ 回上一頁</button>
+  <a href="index.html">🏠 回首頁</a>
+</div>
+
+<h2>👥 裁判名冊</h2>
+<ul id="list"></ul>
+
+js/config.js</script>
+js/api.js</script>
+
+<script>
+(async () => {
+  const judges = await apiGet('judges');
+  const ul = document.getElementById('list');
+  judges.forEach(j => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      ${j.name}
+      <a href="judge.html?judge_id=${j.judge_id}">→ 個人紀錄</a>
+    `;
+    ul.appendChild(li);
+  });
+})();
+</script>
+</body>
+</html>
 <div style="margin-bottom:10px">
   <button onclick="history.back()">⬅ 回上一頁</button>
   <a href="index.html">🏠 回首頁</a>
