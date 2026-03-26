@@ -3,6 +3,14 @@ if (!localStorage.getItem('role')) {
   location.href = 'login.html';
 }
 </script>
+<button onclick="logout()">登出</button>
+
+<script>
+function logout() {
+  localStorage.clear();
+  location.href = 'login.html';
+}
+</script>
 
 <h2>📊 出勤統計</h2>
 js/api.js</script>
