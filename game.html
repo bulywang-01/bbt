@@ -13,6 +13,13 @@ function logout() {
 }
 </script>
 
+<script>
+if (localStorage.getItem('role') !== 'admin') {
+  alert('無權限');
+  location.href = 'index.html';
+}
+</script>
+
 <div>
   <button onclick="history.back()">⬅ 回上一頁</button>
   <a href="index.html">🏠 回首頁</a>
