@@ -1,24 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>登入</title>
-</head>
+<head><meta charset="UTF-8"><title>登入</title></head>
 <body>
 
-<h2>🔐 登入</h2>
+<h2>🔐 裁判系統登入</h2>
 
 <input id="u" placeholder="帳號"><br><br>
 <input id="p" type="password" placeholder="密碼"><br><br>
 <button onclick="login()">登入</button>
 
+<script src="js/config.js"></script>
 <script>
-
-const API_URL =
-  'https://script.google.com/macros/s/AKfycbxa5fs_StPAK_40lU_3znaHf0NcdOEp4PfMcxnyVJB_1yUvA3gu1plC_31oYOhWUeoA/exec';
-
-  
-  function handleLogin(res) {
+function handleLogin(res) {
   if (res.result === 'ok') {
     localStorage.setItem('role', res.role);
     localStorage.setItem('judge_id', res.judge_id || '');
@@ -37,9 +30,4 @@ function login() {
     '&password=' + encodeURIComponent(p.value) +
     '&callback=handleLogin' +
     '&_=' + Date.now();
-  document.body.appendChild(s);
-}
-</script>
-
-</body>
-</html>
+  document.body.appendChild
