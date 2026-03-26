@@ -29,19 +29,19 @@ if (localStorage.getItem('role') !== 'admin') {
 <h3>➕ 新增裁判</h3>
 
 裁判編號：
-<input id="new_id" placeholder="例如 U010">
+<input id="new_id" placeholder="例如 U003">
 裁判姓名：
-<input id="new_name" placeholder="例如 張三">
+<input id="new_name" placeholder="例如 李四">
 <button onclick="addJudge()">新增</button>
 
 <hr>
 
-<h3>📋 裁判清單</h3>
+<h3>📋 裁判清單（可修改姓名）</h3>
 
 <div id="judges">載入中…</div>
 
-<!-- ===== 一定要載入 API_URL ===== -->
-<script src="js/config.js"></script>
+<!-- ===== 載入 API 設定 ===== -->
+js/config.js</script>
 
 <script>
 function logout() {
@@ -49,27 +49,7 @@ function logout() {
   location.href = 'login.html';
 }
 
-/* ===== JSONP：顯示裁判 ===== */
-function handleJudges(list) {
-  const box = document.getElementById('judges');
-  box.innerHTML = '';
-
-  if (!list || list.length === 0) {
-    box.innerHTML = '<p>目前沒有裁判資料</p>';
-    return;
-  }
-
-  list.forEach(j => {
-    box.innerHTML += `
-      <div style="margin-bottom:4px;">
-        ${j.judge_id} ｜ ${j.name}
-        <button onclick="deleteJudge('${j.judge_id}')">刪除</button>
-      </div>
-    `;
-  });
-}
-
-/* ===== 載入裁判 ===== */
+/* ===== 載入裁判清單 ===== */
 function loadJudges() {
   const s = document.createElement('script');
   s.src =
@@ -78,6 +58,23 @@ function loadJudges() {
     '&callback=handleJudges' +
     '&_=' + Date.now();
   document.body.appendChild(s);
+}
+
+/* ===== 顯示裁判清單 ===== */
+function handleJudges(list) {
+  const box = document.getElementById('judges');
+  box.innerHTML = '';
+
+  list.forEach(j => {
+    box.innerHTML += `
+      <div style="margin-bottom:6px;">
+        <b>${j.judge_id}</b>｜
+        <input id="name_${j.judge_id}" value="${j.name}">
+        <button onclick="updateJudge('${j.judge_id}')">💾 修改</button>
+        <button onclick="deleteJudge('${j.judge_id}')">🗑 刪除</button>
+      </div>
+    `;
+  });
 }
 
 /* ===== 新增裁判 ===== */
@@ -112,6 +109,37 @@ function afterAdd(res) {
   }
 }
 
+/* ===== 修改裁判 ===== */
+function updateJudge(id) {
+  const name = document.getElementById('name_' + id).value.trim();
+
+  if (!name) {
+    alert('姓名不可空白');
+    return;
+  }
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=update_judge' +
+    '&judge_id=' + encodeURIComponent(id) +
+    '&name=' + encodeURIComponent(name) +
+    '&callback=afterUpdate' +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+}
+
+function afterUpdate(res) {
+  if (res.result === 'ok') {
+    alert('修改成功');
+    loadJudges();
+  } else if (res.result === 'not_found') {
+    alert('找不到該裁判');
+  } else {
+    alert('修改失敗');
+  }
+}
+
 /* ===== 刪除裁判 ===== */
 function deleteJudge(id) {
   if (!confirm('確定要刪除此裁判？')) return;
@@ -135,7 +163,7 @@ function afterDelete(res) {
   }
 }
 
-/* 初始載入 */
+/* ===== 初始載入 ===== */
 loadJudges();
 </script>
 
