@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>裁判管理</title>
+</head>
+<body>
+
+<!-- ===== 登入與權限檢查 ===== -->
+<script>
+if (!localStorage.getItem('role')) {
+  location.href = 'login.html';
+}
+if (localStorage.getItem('role') !== 'admin') {
+  alert('無管理權限');
+  location.href = 'index.html';
+}
+</script>
+
+<h2>👨‍⚖️ 裁判管理（Admin）</h2>
+
+<div style="margin-bottom:10px;">
+  index.html🏠 回首頁</a> |
+  <button onclick="logout()">登出</button>
+</div>
+
+<hr>
+
+<h3>➕ 新增裁判</h3>
+
+裁判編號：
+<input id="new_id" placeholder="例如 U010">
+裁判姓名：
+<input id="new_name" placeholder="例如 張三">
+<button onclick="addJudge()">新增</button>
+
+<hr>
+
+<h3>📋 裁判清單</h3>
+
+<div id="judges">載入中…</div>
+
+<!-- ===== 一定要載入 API_URL ===== -->
+js/config.js</script>
+
+<script>
+function logout() {
+  localStorage.clear();
+  location.href = 'login.html';
+}
+
+/* ===== JSONP：顯示裁判 ===== */
+function handleJudges(list) {
+  const box = document.getElementById('judges');
+  box.innerHTML = '';
+
+  if (!list || list.length === 0) {
+    box.innerHTML = '<p>目前沒有裁判資料</p>';
+    return;
+  }
+
+  list.forEach(j => {
+    box.innerHTML += `
+      <div style="margin-bottom:4px;">
+        ${j.judge_id} ｜ ${j.name}
+        <button onclick="deleteJudge('${j.judge_id}')">刪除</button>
+      </div>
+    `;
+  });
+}
+
+/* ===== 載入裁判 ===== */
+function loadJudges() {
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=judges' +
+    '&callback=handleJudges' +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+}
+
+/* ===== 新增裁判 ===== */
+function addJudge() {
+  const id = new_id.value.trim();
+  const name = new_name.value.trim();
+
+  if (!id || !name) {
+    alert('請輸入裁判編號與姓名');
+    return;
+  }
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=add_judge' +
+    '&judge_id=' + encodeURIComponent(id) +
+    '&name=' + encodeURIComponent(name) +
+    '&callback=afterAdd' +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+}
+
+function afterAdd(res) {
+  if (res.result === 'ok') {
+    alert('新增成功');
+    new_id.value = '';
+    new_name.value = '';
+    loadJudges();
+  } else {
+    alert('新增失敗');
+  }
+}
+
+/* ===== 刪除裁判 ===== */
+function deleteJudge(id) {
+  if (!confirm('確定要刪除此裁判？')) return;
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=delete_judge' +
+    '&judge_id=' + encodeURIComponent(id) +
+    '&callback=afterDelete' +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+}
+
+function afterDelete(res) {
+  if (res.result === 'ok') {
+    alert('已刪除');
+    loadJudges();
+  } else {
+    alert('刪除失敗');
+  }
+}
+
+/* 初始載入 */
+loadJudges();
+</script>
+
+</body>
+</html>
