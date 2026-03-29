@@ -1,26 +1,70 @@
-<script>
-if (!localStorage.getItem('role')) {
-  location.href = 'login.html';
-}
-</script>
-<button onclick="logout()">登出</button>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>出勤統計</title>
+</head>
+<body>
 
 <script>
-function logout() {
-  localStorage.clear();
-  location.href = 'login.html';
-}
+if (!localStorage.getItem('role')) location.href='login.html';
 </script>
 
-<h2>📊 出勤統計</h2>
-js/api.js</script>
+<h2>📊 裁判出勤統計</h2>
+
+<table border="1" cellpadding="4">
+<thead>
+<tr>
+<th>裁判</th>
+<th>總出勤</th>
+<th>主審</th>
+<th>一壘審</th>
+<th>二壘審</th>
+<th>三壘審</th>
+</tr>
+</thead>
+<tbody id="stats"></tbody>
+</table>
+
+js/config.js>
 <script>
-(async()=>{
-const j=await apiGet('judges');
-const a=await apiGet('attendance');
-document.write('<table border=1><tr><th>裁判</th><th>次數</th></tr>');
-j.forEach(x=>{
-  document.write(`<tr><td>${x.name}</td><td>${a.filter(y=>y.judge_id===x.judge_id).length}</td></tr>`);
-});
-})();
+const judges=[], attends=[];
+
+/* JSONP 載入 */
+function load(action, store){
+  const cb='cb_'+action+'_'+Date.now();
+  window[cb]=list=>{
+    list.forEach(x=>store.push(x));
+    delete window[cb];
+    if(judges.length && attends.length) render();
+  };
+  const s=document.createElement('script');
+  s.src=API_URL+'?action='+action+'&callback='+cb;
+  document.body.appendChild(s);
+}
+
+/* 統計渲染 */
+function render(){
+  const box=document.getElementById('stats');
+  box.innerHTML='';
+  judges.forEach(j=>{
+    const a=attends.filter(x=>x.judge_id===j.judge_id);
+    const c=r=>a.filter(x=>x.role===r).length;
+    box.innerHTML+=`
+<tr>
+<td>${j.name}</td>
+<td>${a.length}</td>
+<td>${c('主審')}</td>
+<td>${c('一壘審')}</td>
+<td>${c('二壘審')}</td>
+<td>${c('三壘審')}</td>
+</tr>`;
+  });
+}
+
+load('judges',judges);
+load('attendance',attends);
 </script>
+</body>
+</html>
+``
