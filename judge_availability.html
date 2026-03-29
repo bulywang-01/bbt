@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>可上班時段</title>
+</head>
+<body>
+
+<script>
+if (!localStorage.getItem('judge_id')) location.href='login.html';
+</script>
+
+<h2>🕒 可上班時段填報</h2>
+
+日期：
+<input id="date" type="date">
+
+<select id="span">
+  <option>全天</option>
+  <option>上午</option>
+  <option>下午</option>
+  <option>晚上</option>
+</select>
+
+備註：
+<input id="note">
+
+<button onclick="submit()">送出</button>
+
+<script src="js/config.js"></script>
+<script>
+const jid = localStorage.getItem('judge_id');
+
+function submit(){
+  const cb='a'+Date.now();
+  window[cb]=()=>{ alert('已送出'); delete window[cb]; };
+
+  const s=document.createElement('script');
+  s.src=
+    API_URL+
+    '?action=judge_availability'+
+    '&judge_id='+jid+
+    '&date='+date.value+
+    '&availability='+span.value+
+    '&note='+note.value+
+    '&callback='+cb;
+
+  document.body.appendChild(s);
+}
+</script>
+
+</body>
+</html>
