@@ -1,30 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>比賽清單</title>
+</head>
 <body>
 
 <script>
 if (!localStorage.getItem('role')) location.href='login.html';
 </script>
 
-<h2>⚾ 比賽列表</h2>
+<h2>⚾ 比賽清單</h2>
+
 <div id="games">載入中…</div>
 
 <script src="js/config.js"></script>
+  
 <script>
-function handleGames(list){
-  const d=document.getElementById('games');
-  d.innerHTML='';
-  list.forEach(g=>{
-    d.innerHTML+=`
-      <div>
-        ${g.date}｜${g.field}｜${g.category}｜${g.umpire_count}人制
-        <a href="game.html?game_id=${g.game_id}">出勤點名</a>
-      </div>`;
-  });
+function formatROC(d){
+  const x=new Date(d);
+  return (x.getFullYear()-1911)+'/'+(x.getMonth()+1)+'/'+x.getDate();
 }
-const s=document.createElement('script');
-s.src=API_URL+'?action=games&callback=handleGames';
-document.body.appendChild(s);
+
+function load(){
+  const cb='g'+Date.now();
+  window[cb]=list=>{
+    const box=document.getElementById('games');
+    box.innerHTML='';
+    list.forEach(g=>{
+      box.innerHTML+=`
+<div>
+<b>${g.game_id}</b>
+${formatROC(g.date)}｜
+${g.tournament}｜
+${g.category}｜
+${g.away_team} vs ${g.home_team}｜
+${g.field}｜
+裁判 ${g.umpire_count} 人
+</div>`;
+    });
+    delete window[cb];
+  };
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=games&callback='+cb;
+  document.body.appendChild(s);
+}
+load();
 </script>
 
-</body
+</body>
+</html>
