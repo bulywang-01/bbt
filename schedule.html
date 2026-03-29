@@ -1,32 +1,95 @@
-<script>
-if (!localStorage.getItem('role')) {
-  location.href = 'login.html';
-}
-</script>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>月班表</title>
+</head>
+<body>
 
-<button onclick="logout()">登出</button>
-
 <script>
-function logout() {
-  localStorage.clear();
-  location.href = 'login.html';
-}
+if (!localStorage.getItem('role')) location.href='login.html';
 </script>
 
 <h2>📅 月班表</h2>
-<script src="js/api.js"></script>
+
+<select id="year"></select> 年
+<select id="month"></select> 月
+<button onclick="renderSchedule()">查詢</button>
+
+<hr>
+<div id="schedule">載入中…</div>
+
+js/config.js>
 <script>
-(async()=>{
-const j=await apiGet('judges');
-const a=await apiGet('attendance');
-const days=[...new Set(a.map(x=>x.timestamp.substr(0,10)))];
-document.write('<table border=1><tr><th>裁判</th>'+days.map(d=>`<th>${d}</th>`).join('')+'</tr>');
-j.forEach(x=>{
-  document.write('<tr><td>'+x.name+'</td>');
-  days.forEach(d=>{
-    document.write('<td>'+ (a.find(y=>y.judge_id===x.judge_id && y.timestamp.startsWith(d))?'✅':'❌') +'</td>');
-  });
-  document.write('</tr>');
-});
+const games = [];
+const attends = [];
+
+/* 民國日期顯示 */
+function roc(d){
+  const x=new Date(d);
+  return (x.getFullYear()-1911)+'/'+(x.getMonth()+1)+'/'+x.getDate();
+}
+
+/* 初始化年月選單 */
+(function initYM(){
+  const y=document.getElementById('year');
+  const now=new Date().getFullYear();
+  for(let i=now-1;i<=now+1;i++){
+    y.innerHTML+=`<option value="${i}">${i-1911}</option>`;
+  }
+  const m=document.getElementById('month');
+  for(let i=1;i<=12;i++){
+    m.innerHTML+=`<option value="${i}">${i}</option>`;
+  }
+  y.value=now;
+  m.value=new Date().getMonth()+1;
 })();
+
+/* JSONP 載入 */
+function load(action, store){
+  const cb='cb_'+action+'_'+Date.now();
+  window[cb]=list=>{
+    list.forEach(x=>store.push(x));
+    delete window[cb];
+    if(games.length && attends.length) renderSchedule();
+  };
+  const s=document.createElement('script');
+  s.src=API_URL+'?action='+action+'&callback='+cb;
+  document.body.appendChild(s);
+}
+
+/* 月班表渲染 */
+function renderSchedule(){
+  const box=document.getElementById('schedule');
+  box.innerHTML='';
+  const y=year.value, m=month.value;
+
+  const msGames=games.filter(g=>{
+    const d=new Date(g.date);
+    return d.getFullYear()==y && (d.getMonth()+1)==m;
+  });
+
+  if(msGames.length===0){
+    box.textContent='本月無賽事';
+    return;
+  }
+
+  msGames.forEach(g=>{
+    const at=attends.filter(a=>a.game_id===g.game_id);
+    box.innerHTML+=`
+<div style="margin-bottom:10px;">
+<b>${roc(g.date)}</b>｜
+${g.tournament} ${g.category}｜
+${g.away_team} vs ${g.home_team}｜
+${g.field}<br>
+裁判：
+${at.map(a=>a.judge_id+'('+a.role+')').join('、') || '尚未排定'}
+</div>`;
+  });
+}
+
+load('games',games);
+load('attendance',attends);
 </script>
+</body>
+</html>
