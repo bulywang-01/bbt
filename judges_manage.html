@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<!-- ===== 登入與權限檢查 ===== -->
+<!-- ===== 登入與權限檢查（一定要最前面） ===== -->
 <script>
 if (!localStorage.getItem('role')) {
   location.href = 'login.html';
@@ -17,11 +17,11 @@ if (localStorage.getItem('role') !== 'admin') {
 }
 </script>
 
-<h2>👨‍⚖️ 裁判管理（Admin）</h2>
+<h2>📋 裁判清單（可修改姓名）</h2>
 
 <div style="margin-bottom:10px;">
   <a href="index.html">🏠 回首頁</a> |
-  <a href="#" onclick="logout()">登出</a>
+  <a href="login.html" onclick="logout()">登出</a>
 </div>
 
 <hr>
@@ -29,34 +29,35 @@ if (localStorage.getItem('role') !== 'admin') {
 <h3>➕ 新增裁判（系統自動編號）</h3>
 
 裁判姓名：
-<input id="new_name" placeholder="例如 李四">
+<input id="new_name" placeholder="例如 王小明">
 <button onclick="addJudge()">新增</button>
 
-<p style="color:#555;">
-  ※ 裁判編號將由系統自動產生（U001、U002…）
+<p style="color:#666;">
+  ※ 裁判編號由系統自動產生（U001、U002…）
 </p>
 
 <hr>
 
-<h3>📋 裁判清單（可修改姓名）</h3>
-
 <div id="judges">載入中…</div>
 
-<!-- ===== 載入 API 設定（一定要正確） ===== -->
+<!-- ==================================================
+     ✅ 關鍵：一定要正確載入 config.js
+     ================================================== -->
 <script src="js/config.js"></script>
 
 <script>
-/* ========= 登出 ========= */
+/* ===== 登出 ===== */
 function logout() {
   localStorage.clear();
-  location.href = 'login.html';
 }
 
-/* ========= 載入裁判清單 ========= */
+/* ==================================================
+   載入裁判清單
+================================================== */
 function loadJudges() {
   const cb = 'handleJudges_' + Date.now();
   window[cb] = function(list) {
-    renderJudges(list);
+    renderJudges(list || []);
     delete window[cb];
   };
 
@@ -69,13 +70,15 @@ function loadJudges() {
   document.body.appendChild(s);
 }
 
-/* ========= 顯示裁判清單 ========= */
+/* ==================================================
+   顯示裁判清單
+================================================== */
 function renderJudges(list) {
   const box = document.getElementById('judges');
   box.innerHTML = '';
 
-  if (!list || list.length === 0) {
-    box.innerHTML = '<p>目前沒有裁判資料</p>';
+  if (list.length === 0) {
+    box.textContent = '目前沒有裁判資料';
     return;
   }
 
@@ -91,50 +94,41 @@ function renderJudges(list) {
   });
 }
 
-/* ========= 新增裁判（診斷版） ========= */
-if (action === 'add_judge') {
-  try {
-    const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_JUDGES);
-    if (!sheet) {
-      return jsonp(callback, { result: 'fail', message: '找不到 Judges Sheet' });
-    }
-
-    const rows = sheet.getDataRange().getValues();
-    const name = String(e.parameter.name || '').trim();
-    if (!name) {
-      return jsonp(callback, { result: 'fail', message: '缺少姓名' });
-    }
-
-    // 取得最大編號
-    let maxNum = 0;
-    for (let i = 1; i < rows.length; i++) {
-      const id = rows[i][0];
-      if (typeof id === 'string' && id.startsWith('U')) {
-        const num = parseInt(id.substring(1), 10);
-        if (!isNaN(num)) maxNum = Math.max(maxNum, num);
-      }
-    }
-
-    const newId = 'U' + String(maxNum + 1).padStart(3, '0');
-
-    sheet.appendRow([newId, name]);  // ✅ 真正關鍵行
-
-    return jsonp(callback, {
-      result: 'ok',
-      judge_id: newId,
-      debug: 'appendRow 成功'
-    });
-
-  } catch (err) {
-    return jsonp(callback, {
-      result: 'fail',
-      message: err.toString()
-    });
+/* ==================================================
+   新增裁判（後端自動編號）
+================================================== */
+function addJudge() {
+  const name = new_name.value.trim();
+  if (!name) {
+    alert('請輸入裁判姓名');
+    return;
   }
-}
-``
 
-/* ========= 修改裁判 ========= */
+  const cb = 'afterAddJudge_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('新增成功，裁判編號：' + res.judge_id);
+      new_name.value = '';
+      loadJudges();
+    } else {
+      alert('新增失敗：' + JSON.stringify(res));
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=add_judge' +
+    '&name=' + encodeURIComponent(name) +
+    '&callback=' + cb +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+}
+
+/* ==================================================
+   修改裁判姓名
+================================================== */
 function updateJudge(id) {
   const name = document.getElementById('name_' + id).value.trim();
   if (!name) {
@@ -164,7 +158,9 @@ function updateJudge(id) {
   document.body.appendChild(s);
 }
 
-/* ========= 刪除裁判 ========= */
+/* ==================================================
+   刪除裁判
+================================================== */
 function deleteJudge(id) {
   if (!confirm('確定要刪除此裁判？')) return;
 
@@ -189,9 +185,12 @@ function deleteJudge(id) {
   document.body.appendChild(s);
 }
 
-/* ========= 初始載入 ========= */
+/* ==================================================
+   初始載入
+================================================== */
 loadJudges();
 </script>
 
 </body>
 </html>
+``
