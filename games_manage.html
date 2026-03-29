@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>比賽管理</title>
+</head>
+<body>
+
+<!-- ===== 登入與權限檢查 ===== -->
+<script>
+if (!localStorage.getItem('role')) {
+  location.href = 'login.html';
+}
+if (localStorage.getItem('role') !== 'admin') {
+  alert('無管理權限');
+  location.href = 'index.html';
+}
+</script>
+
+<h2>⚾ 比賽管理（Admin）</h2>
+
+<div style="margin-bottom:10px;">
+  <index.html🏠 回首頁</a> |
+  <button onclick="logout()">登出</button>
+</div>
+
+<hr>
+
+<h3>➕ 新增比賽（系統自動編號）</h3>
+
+日期：
+<input id="new_date" placeholder="2026-06-01 09:00"><br>
+球場：
+<input id="new_field" placeholder="三峽球場"><br>
+組別：
+<input id="new_category" placeholder="U12"><br>
+裁判人數：
+<select id="new_count">
+  <option value="1">1 人制</option>
+  <option value="2">2 人制</option>
+  <option value="3">3 人制</option>
+  <option value="4">4 人制</option>
+</select>
+<br><br>
+<button onclick="addGame()">新增比賽</button>
+
+<hr>
+
+<h3>📋 比賽清單（可修改）</h3>
+
+<div id="games">載入中…</div>
+
+<!-- ===== 載入 API 設定 ===== -->
+<script src="js/config.js"></script>
+
+<script>
+function logout() {
+  localStorage.clear();
+  location.href = 'login.html';
+}
+
+/* ===============================
+   載入比賽清單
+=============================== */
+function loadGames() {
+  const cb = 'handleGames_' + Date.now();
+  window[cb] = function(list) {
+    renderGames(list || []);
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=games' +
+    '&callback=' + cb +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+}
+
+/* ===============================
+   顯示比賽清單
+=============================== */
+function renderGames(list) {
+  const box = document.getElementById('games');
+  box.innerHTML = '';
+
+  if (list.length === 0) {
+    box.textContent = '目前沒有比賽資料';
+    return;
+  }
+
+  list.forEach(g => {
+    box.innerHTML += `
+      <div style="margin-bottom:8px;">
+        <b>${g.game_id}</b>
+        日期：<input id="date_${g.game_id}" value="${g.date}">
+        球場：<input id="field_${g.game_id}" value="${g.field}">
+        組別：<input id="cat_${g.game_id}" value="${g.category}">
+        裁判數：
+        <select id="count_${g.game_id}">
+          <option value="1" ${g.umpire_count==1?'selected':''}>1</option>
+          <option value="2" ${g.umpire_count==2?'selected':''}>2</option>
+          <option value="3" ${g.umpire_count==3?'selected':''}>3</option>
+          <option value="4" ${g.umpire_count==4?'selected':''}>4</option>
+        </select>
+        <button onclick="updateGame('${g.game_id}')">💾 修改</button>
+        <button onclick="deleteGame('${g.game_id}')">🗑 刪除</button>
+      </div>
+    `;
+  });
+}
+
+/* ===============================
+   新增比賽
+=============================== */
+function addGame() {
+  const date = new_date.value.trim();
+  const field = new_field.value.trim();
+  const cat = new_category.value.trim();
+  const cnt = new_count.value;
+
+  if (!date || !field || !cat) {
+    alert('請填寫完整比賽資料');
+    return;
+  }
+
+  const cb = 'afterAddGame_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('新增成功，編號：' + res.game_id);
+      new_date.value = '';
+      new_field.value = '';
+      new_category.value = '';
+      loadGames();
+    } else {
+      alert('新增失敗：' + JSON.stringify(res));
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=add_game' +
+    '&date=' + encodeURIComponent(date) +
+    '&field=' + encodeURIComponent(field) +
+    '&category=' + encodeURIComponent(cat) +
+    '&umpire_count=' + cnt +
+    '&callback=' + cb +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+}
+
+/* ===============================
+   修改比賽
+=============================== */
+function updateGame(id) {
+  const date = document.getElementById('date_' + id).value.trim();
+  const field = document.getElementById('field_' + id).value.trim();
+  const cat = document.getElementById('cat_' + id).value.trim();
+  const cnt = document.getElementById('count_' + id).value;
+
+  const cb = 'afterUpdateGame_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('修改成功');
+      loadGames();
+    } else {
+      alert('修改失敗');
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=update_game' +
+    '&game_id=' + id +
+    '&date=' + encodeURIComponent(date) +
+    '&field=' + encodeURIComponent(field) +
+    '&category=' + encodeURIComponent(cat) +
+    '&umpire_count=' + cnt +
+    '&callback=' + cb +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+}
+
+/* ===============================
+   刪除比賽
+=============================== */
+function deleteGame(id) {
+  if (!confirm('確定要刪除此比賽？')) return;
+
+  const cb = 'afterDeleteGame_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('已刪除');
+      loadGames();
+    } else {
+      alert('刪除失敗');
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=delete_game' +
+    '&game_id=' + id +
+    '&callback=' + cb +
+    '&_=' + Date.now();
+  document.body.appendChild(s);
+}
+
+/* 初始載入 */
+loadGames();
+</script>
+
+</body>
+</html>
