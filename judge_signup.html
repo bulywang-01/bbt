@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>盃賽報名</title>
+</head>
+<body>
+
+<script>
+if (!localStorage.getItem('judge_id')) location.href='login.html';
+</script>
+
+<h2>📋 盃賽／場次報名</h2>
+
+<div id="games">載入中…</div>
+
+<script src="js/config.js"></script>
+<script>
+const judgeId = localStorage.getItem('judge_id');
+
+function loadGames(){
+  const cb='g'+Date.now();
+  window[cb]=list=>{
+    render(list);
+    delete window[cb];
+  };
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=games&callback='+cb;
+  document.body.appendChild(s);
+}
+
+function render(list){
+  const box=document.getElementById('games');
+  box.innerHTML='';
+  list.forEach(g=>{
+    box.innerHTML+=`
+<div>
+<b>${g.game_id}</b> ${g.tournament} ${g.category}
+<br>
+角色偏好：
+<select id="role_${g.game_id}">
+  <option>不指定</option>
+  <option>主審</option>
+  <option>壘審</option>
+</select>
+備註：
+<input id="note_${g.game_id}">
+<button onclick="signup('${g.game_id}')">報名</button>
+</div>`;
+  });
+}
+
+function signup(gameId){
+  const cb='s'+Date.now();
+  window[cb]=()=>{ alert('已送出報名'); delete window[cb]; };
+
+  const s=document.createElement('script');
+  s.src=
+    API_URL+
+    '?action=judge_signup'+
+    '&judge_id='+judgeId+
+    '&game_id='+gameId+
+    '&preferred_role='+document.getElementById('role_'+gameId).value+
+    '&note='+document.getElementById('note_'+gameId).value+
+    '&callback='+cb;
+  document.body.appendChild(s);
+}
+
+loadGames();
+</script>
+
+</body>
+</html>
+``
