@@ -1,146 +1,95 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>裁判出勤統計</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.6;
-    }
-    h2 {
-      margin-top: 0;
-    }
-    .msg {
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      background: #f7f7f7;
-    }
-    .error {
-      color: #c00;
-    }
-    table {
-      border-collapse: collapse;
-      margin-top: 10px;
-      min-width: 600px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 6px 10px;
-      text-align: center;
-    }
-    th {
-      background: #eee;
-    }
-    .actions {
-      margin: 10px 0;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>裁判出勤統計</title>
+<style>
+  body { font-family: system-ui; }
+  table { border-collapse: collapse; margin-top: 10px; }
+  th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center; }
+  th { background: #eee; }
+  .msg { margin: 10px 0; padding: 8px; background: #f7f7f7; }
+</style>
 </head>
 <body>
 
-<!-- ===== 登入 / 權限檢查 ===== -->
 <script>
-if (!localStorage.getItem('role')) {
-  location.href = 'login.html';
-}
+if (!localStorage.getItem('role')) location.href='login.html';
 if (localStorage.getItem('role') !== 'admin') {
-  alert('此頁僅限管理者使用');
-  location.href = 'index.html';
+  alert('僅限管理者');
+  location.href='index.html';
 }
 </script>
 
 <h2>📊 裁判出勤統計</h2>
 
-<div class="actions">
-  <button onclick="exportExcel()">📥 匯出裁判出勤統計 Excel</button>
-  |
+<div class="msg">
+  <button onclick="exportExcel()">📥 匯出 Excel</button> |
   <a href="index.html">🏠 回首頁</a>
 </div>
 
 <div id="content" class="msg">載入中…</div>
 
-<!-- 一定要載入 API 設定 -->
 <script src="js/config.js"></script>
-
 <script>
-const content = document.getElementById('content');
 const token = localStorage.getItem('token');
+const content = document.getElementById('content');
+const cb = 'cb_' + Date.now();
 
-if (!token) {
-  content.innerHTML = '<span class="error">❌ 尚未登入（無 token）</span>';
-} else {
-
-  let finished = false;
-  const cb = 'cb_' + Date.now();
-
-  // ===== 防止 API 無回應卡死 =====
-  setTimeout(() => {
-    if (!finished) {
-      content.innerHTML = '<span class="error">❌ 連線逾時，請檢查 API 部署</span>';
-    }
-  }, 5000);
-
-  window[cb] = function (res) {
-    finished = true;
-    console.log('stats response:', res);
-
-    if (!res || !res.result) {
-      content.innerHTML = '<span class="error">❌ API 回傳格式錯誤</span>';
-      return;
-    }
-
-    if (res.result === 'forbidden') {
-      content.innerHTML = '<span class="error">❌ 權限不足或登入已過期，請重新登入</span>';
-      return;
-    }
-
-    // 注意：這個 API 是「匯出用」，本身不回資料表
-    // 所以這裡我們只顯示提示說明
-    content.innerHTML = `
-      ✅ 系統可正常匯出裁判出勤統計<br>
-      請使用上方「📥 匯出裁判出勤統計 Excel」下載完整資料。
-    `;
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=exportAttendanceStats' +
-    '&token=' + encodeURIComponent(token) +
-    '&callback=' + cb;
-
-  document.body.appendChild(s);
-}
-
-/* ===== 匯出 Excel ===== */
-function exportExcel() {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert('尚未登入');
+window[cb] = function(res){
+  if (res.result !== 'ok') {
+    content.innerHTML = '❌ 無法取得統計資料';
     return;
   }
 
-  const cb = 'cb_' + Date.now();
-  window[cb] = function (res) {
-    if (res && res.result === 'ok' && res.url) {
-      window.open(res.url, '_blank');
-    } else if (res && res.result === 'forbidden') {
-      alert('權限不足或登入已過期');
-    } else {
-      alert('匯出失敗');
-    }
+  let html = `<table>
+    <tr>
+      <th>裁判</th><th>總出勤</th>
+      <th>主審</th><th>一壘審</th>
+      <th>二壘審</th><th>三壘審</th>
+    </tr>`;
+
+  if (res.rows.length === 0) {
+    html += `<tr><td colspan="6">尚無資料</td></tr>`;
+  } else {
+    res.rows.forEach(r=>{
+      html += `
+        <tr>
+          <td>${r.name}</td>
+          <td>${r.total}</td>
+          <td>${r.主審}</td>
+          <td>${r.一壘審}</td>
+          <td>${r.二壘審}</td>
+          <td>${r.三壘審}</td>
+        </tr>`;
+    });
+  }
+
+  html += '</table>';
+  content.innerHTML = html;
+};
+
+const s = document.createElement('script');
+s.src =
+  API_URL +
+  '?action=getAttendanceStatsView' +
+  '&token=' + encodeURIComponent(token) +
+  '&callback=' + cb;
+document.body.appendChild(s);
+
+function exportExcel(){
+  const cb2='cb_'+Date.now();
+  window[cb2]=res=>{
+    if(res.result==='ok') window.open(res.url,'_blank');
+    else alert('匯出失敗');
   };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=exportAttendanceStats' +
-    '&token=' + encodeURIComponent(token) +
-    '&callback=' + cb;
-
-  document.body.appendChild(s);
+  const s2=document.createElement('script');
+  s2.src=
+    API_URL+
+    '?action=exportAttendanceStats'+
+    '&token='+encodeURIComponent(token)+
+    '&callback='+cb2;
+  document.body.appendChild(s2);
 }
 </script>
 
