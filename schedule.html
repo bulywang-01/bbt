@@ -68,6 +68,7 @@ s.src =
 
 document.body.appendChild(s);
 </script>
+
 <button onclick="exportSchedule()">📥 匯出月班表 Excel</button>
 
 <script>
@@ -76,7 +77,7 @@ function exportSchedule() {
   const cb = 'cb_' + Date.now();
 
   window[cb] = function(res) {
-    if (res.result === 'ok') {
+    if (res.result === 'ok' && res.url) {
       window.open(res.url, '_blank');
     } else {
       alert('匯出失敗');
@@ -89,10 +90,38 @@ function exportSchedule() {
     '?action=exportSchedule' +
     '&token=' + encodeURIComponent(token) +
     '&callback=' + cb;
+
   document.body.appendChild(s);
 }
 </script>
 
+<button onclick="exportStats()">📥 匯出裁判出勤統計 Excel</button>
+
+<script>
+function exportStats() {
+  const token = localStorage.getItem('token');
+  const cb = 'cb_' + Date.now();
+
+  window[cb] = function(res) {
+    if (res.result === 'ok' && res.url) {
+      window.open(res.url, '_blank');
+    } else {
+      alert('匯出失敗（權限或連線錯誤）');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=exportAttendanceStats' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
+</script>
+
+  
 </body>
 </html>
 
