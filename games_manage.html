@@ -124,6 +124,54 @@ if (localStorage.getItem('role') !== 'admin') {
 const token = localStorage.getItem('token');
 const listBox = document.getElementById('list');
 
+function applyBulk() {
+  const selected = [...document.querySelectorAll('.sel:checked')]
+    .map(c => c.value);
+
+  if (selected.length === 0) {
+    alert('請先勾選比賽');
+    return;
+  }
+
+  // 組 payload：只送有填的欄位
+  const payload = {
+    ids: selected,
+    data: {}
+  };
+
+  if (b_date.value) payload.data.date = fromInputDate(b_date.value);
+  if (b_field.value) payload.data.field = b_field.value;
+  if (b_tournament.value) payload.data.tournament = b_tournament.value;
+  if (b_count.value) payload.data.umpire_count = b_count.value;
+
+  if (Object.keys(payload.data).length === 0) {
+    alert('沒有填任何修改欄位');
+    return;
+  }
+
+  if (!confirm(`確定套用到 ${selected.length} 筆比賽？`)) return;
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (res && res.result === 'ok') {
+      alert(`✅ 已修改 ${res.updated} 筆比賽`);
+      loadGames();
+    } else {
+      alert('❌ 大量修改失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=bulkUpdateGames' +
+    '&token=' + encodeURIComponent(token) +
+    '&payload=' + encodeURIComponent(JSON.stringify(payload)) +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
+
 function toInputDate(str) {
   return str ? str.replace(/\//g, '-') : '';
 }
