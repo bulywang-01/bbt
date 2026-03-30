@@ -111,7 +111,7 @@ function loadGames() {
       html += `
         <tr>
           <td>${g.game_id}</td>
-          <td><input type="date" id="d_${g.game_id}" value="${g.date}"></td>
+          <td><input type="date" id="d_${g.game_id}" value="${toInputDate(g.date)}"></td>
           <td><input type="text" id="f_${g.game_id}" value="${g.field}"></td>
           <td><input type="text" id="t_${g.game_id}" value="${g.tournament}"></td>
           <td><input type="text" id="c_${g.game_id}" value="${g.category}"></td>
