@@ -1,65 +1,61 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>我的班表與統計</title>
+  <meta charset="UTF-8">
+  <title>我的班表</title>
 </head>
 <body>
 
 <script>
-if (!localStorage.getItem('judge_id')) location.href='login.html';
+if (!localStorage.getItem('role')) location.href = 'login.html';
+if (localStorage.getItem('role') !== 'judge') {
+  alert('無權限');
+  location.href = 'index.html';
+}
 </script>
 
 <h2>📊 我的班表</h2>
-<div id="schedule"></div>
+<div id="content">載入中…</div>
 
-<h2>📈 我的出勤統計</h2>
-<div id="stats"></div>
-
-<script src="js/config.js"></script>
 <script>
-const jid = localStorage.getItem('judge_id');
+const token = localStorage.getItem('token');
+const cb = 'cb_' + Date.now();
 
-function roc(d){
-  const x=new Date(d);
-  return (x.getFullYear()-1911)+'/'+(x.getMonth()+1)+'/'+x.getDate();
-}
+window[cb] = function(res) {
+  if (res.result !== 'ok') {
+    document.getElementById('content').textContent = '無法取得資料';
+    return;
+  }
 
-function loadAll(){
-  load('games');
-  load('attendance');
-}
+  const { games, attendance } = res;
+  let html = '<ul>';
 
-const data={games:[],att:[]};
+  attendance.forEach(a => {
+    const g = games.find(g => g.game_id === a.game_id);
+    if (!g) return;
 
-function load(action){
-  const cb=action+Date.now();
-  window[cb]=list=>{
-    data[action]=list;
-    if(data.games.length&&data.att.length)render();
-    delete window[cb];
-  };
-  const s=document.createElement('script');
-  s.src=API_URL+'?action='+action+'&callback='+cb;
-  document.body.appendChild(s);
-}
+    html += `
+      <li>
+        ${g.date}｜
+        ${g.tournament} ${g.category}｜
+        ${g.away_team} vs ${g.home_team}｜
+        ${a.role}（${a.attend || '未確認'}）
+      </li>
+    `;
+  });
 
-function render(){
-  const my=data.att.filter(a=>a.judge_id===jid);
-  document.getElementById('schedule').innerHTML=
-    my.map(a=>{
-      const g=data.games.find(x=>x.game_id===a.game_id);
-      return `<div>${roc(g.date)} ${g.away_team} vs ${g.home_team}（${a.role}）</div>`;
-    }).join('');
+  html += '</ul>';
+  document.getElementById('content').innerHTML = html;
+};
 
-  const total=my.length;
-  document.getElementById('stats').innerHTML=
-    `總出勤：${total}<br>`+
-    ['主審','一壘審','二壘審','三壘審']
-      .map(r=>r+'：'+my.filter(x=>x.role===r).length).join('<br>');
-}
+const s = document.createElement('script');
+s.src =
+  API_URL +
+  '?action=getMySchedule' +
+  '&token=' + encodeURIComponent(token) +
+  '&callback=' + cb;
 
-loadAll();
+document.body.appendChild(s);
 </script>
 
 </body>
