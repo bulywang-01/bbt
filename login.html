@@ -10,32 +10,25 @@
 
 <div>
   帳號：
-  <input id="u" value="admin"><br><br>
+  <input id="u"><br><br>
 
   密碼：
-  <input id="p" type="password" value="1234"><br><br>
+  <input id="p" type="password"><br><br>
 
   <button id="loginBtn">登入</button>
 </div>
 
-<!-- ✅ 正確載入設定檔 -->
 <script src="js/config.js"></script>
 
 <script>
-console.log('login.html loaded, API_URL =', API_URL);
-
 document.getElementById('loginBtn').addEventListener('click', login);
 
 function login() {
-  console.log('login clicked');
-
   const user = document.getElementById('u').value.trim();
   const pass = document.getElementById('p').value.trim();
 
   const cb = 'login_cb_' + Date.now();
   window[cb] = function(res) {
-    console.log('login response:', res);
-
     if (res && res.result === 'ok') {
       localStorage.setItem('role', res.role);
       localStorage.setItem('judge_id', res.judge_id || '');
@@ -61,3 +54,4 @@ function login() {
 
 </body>
 </html>
+``
