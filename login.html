@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>裁判系統登入</title>
+<meta charset="UTF-8">
+<title>裁判系統登入</title>
 </head>
 <body>
 
@@ -14,16 +14,18 @@
 <input id="p" type="password"><br><br>
 <button onclick="login()">登入</button>
 
+<!-- ✅ 正確載入 config.js -->
 <script src="js/config.js"></script>
 
 <script>
-function login() {
+function login(){
   const user = u.value.trim();
   const pass = p.value.trim();
 
-  const cb = 'loginCB_' + Date.now();
-  window[cb] = function(res) {
+  const cb = 'login_cb_' + Date.now();
+  window[cb] = function(res){
     console.log('login response:', res);
+
     if (res && res.result === 'ok') {
       localStorage.setItem('role', res.role);
       localStorage.setItem('judge_id', res.judge_id || '');
@@ -42,6 +44,7 @@ function login() {
     '&password=' + encodeURIComponent(pass) +
     '&callback=' + cb +
     '&_=' + Date.now();
+
   document.body.appendChild(s);
 }
 </script>
