@@ -36,6 +36,7 @@ function login() {
       localStorage.setItem('username', user);
       localStorage.setItem('role', res.role);
       localStorage.setItem('judge_id', res.judge_id || '');
+      localStorage.setItem('token', res.token);
       location.href = 'index.html';
     } else {
       alert('登入失敗');
