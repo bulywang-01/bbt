@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>裁判系統登入</title>
+  <title>裁判系統登入 V1</title>
 </head>
 <body>
 
@@ -25,21 +25,21 @@ function login() {
   const user = document.getElementById('u').value.trim();
   const pass = document.getElementById('p').value.trim();
 
+  if (!user || !pass) {
+    alert('請輸入帳號與密碼');
+    return;
+  }
+
   const cb = 'login_cb_' + Date.now();
   window[cb] = function(res) {
-
     if (res && res.result === 'ok') {
-      // ✅ 這一行就是你現在缺的關鍵
       localStorage.setItem('username', user);
-
       localStorage.setItem('role', res.role);
       localStorage.setItem('judge_id', res.judge_id || '');
-
       location.href = 'index.html';
     } else {
       alert('登入失敗');
     }
-
     delete window[cb];
   };
 
