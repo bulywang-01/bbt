@@ -156,10 +156,20 @@ function addGame() {
 
 /* ===== 修改 ===== */
 function updateGame(id) {
+  const dateVal = document.getElementById('d_' + id).value;
+  if (!dateVal) {
+    alert('❌ 日期不可為空');
+    return;
+  }
+
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
-    if (res.result === 'ok') alert('已更新');
-    else alert('更新失敗');
+    if (res.result === 'ok') {
+      alert('✅ 已更新');
+      loadGames(); // ✅ 重新載入，避免誤判
+    } else {
+      alert('❌ 更新失敗');
+    }
   };
 
   const s = document.createElement('script');
@@ -168,14 +178,15 @@ function updateGame(id) {
     '?action=updateGame' +
     '&token=' + encodeURIComponent(token) +
     '&game_id=' + id +
-    '&date=' + document.getElementById('d_'+id).value +
-    '&field=' + document.getElementById('f_'+id).value +
-    '&tournament=' + document.getElementById('t_'+id).value +
-    '&category=' + document.getElementById('c_'+id).value +
-    '&away_team=' + document.getElementById('a_'+id).value +
-    '&home_team=' + document.getElementById('h_'+id).value +
-    '&umpire_count=' + document.getElementById('u_'+id).value +
+    '&date=' + encodeURIComponent(dateVal) +
+    '&field=' + encodeURIComponent(document.getElementById('f_'+id).value) +
+    '&tournament=' + encodeURIComponent(document.getElementById('t_'+id).value) +
+    '&category=' + encodeURIComponent(document.getElementById('c_'+id).value) +
+    '&away_team=' + encodeURIComponent(document.getElementById('a_'+id).value) +
+    '&home_team=' + encodeURIComponent(document.getElementById('h_'+id).value) +
+    '&umpire_count=' + encodeURIComponent(document.getElementById('u_'+id).value) +
     '&callback=' + cb;
+
   document.body.appendChild(s);
 }
 
