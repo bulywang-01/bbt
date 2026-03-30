@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<!-- ✅ 登入檢查：沒登入就去 login.html -->
+<!-- ✅ 未登入者一律導向 login.html -->
 <script>
 if (!localStorage.getItem('role')) {
   location.href = 'login.html';
@@ -30,22 +30,21 @@ const menu = document.getElementById('menu');
 
 if (role === 'admin') {
   menu.innerHTML = `
-    <li><a href="gamestml比賽管理</a></li>
-    <li><a href="judgestml裁判管理</a></li>
-    <li><a href="html月班表</a></li>
-    <li><a hreftml出勤統計</a></li>
+    <li><a href="games_manage.html/li>
+    <li><a hrefmanage.html裁判管理</a></li>
+    <li><a href="schedule.htmlli>
+    <li>stats.html出勤統計</a></li>
   `;
 }
 
 if (role === 'judge') {
   menu.innerHTML = `
-    <li><a href="nup.html報名盃賽／場次</a></li>
-    <li><a href="ilability.html可上班時段</a></li>
-    <li><a href="judge_dashboard／我的統計</a></li>
+    <li><a href="judge_signup.htmla></li>
+    <li><a href="judge_availability.html</li>
+    <li>judge_dashboard.html我的班表／我的統計</a></li>
   `;
 }
 </script>
 
 </body>
 </html>
-``
