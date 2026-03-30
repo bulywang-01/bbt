@@ -82,6 +82,35 @@ if (localStorage.getItem('role') !== 'admin') {
   </table>
 </div>
 
+<!-- ===== Bulk 修改 ===== -->
+<div class="section">
+  <h3>🧰 大量修改（套用到勾選的比賽）</h3>
+  <table>
+    <tr>
+      <th>日期</th>
+      <th>球場</th>
+      <th>盃賽</th>
+      <th>裁判數</th>
+      <th></th>
+    </tr>
+    <tr>
+      <td><input type="date" id="b_date"></td>
+      <td><input type="text" id="b_field"></td>
+      <td><input type="text" id="b_tournament"></td>
+      <td>
+        <select id="b_count">
+          <option value="">(不變)</option>
+          <option>1</option><option>2</option>
+          <option>3</option><option>4</option>
+        </select>
+      </td>
+      <td><button onclick="applyBulk()">✅ 套用</button></td>
+    </tr>
+  </table>
+  <small>※ 留空代表該欄位不修改</small>
+</div>
+
+  
 <!-- ===== 比賽清單 ===== -->
 <div class="section">
   <h3>📋 目前比賽清單</h3>
