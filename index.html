@@ -2,32 +2,36 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>裁判系統首頁 V1</title>
-
-  <!-- ✅ 明確指定樣式，避免文字被吃掉 -->
+  <title>裁判系統首頁</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     ul {
-      margin-left: 20px;
+      margin-left: 24px;
     }
     li {
-      margin: 6px 0;
+      margin: 8px 0;
     }
     a {
-      color: #0b5ed7;          /* 明確指定藍色 */
+      color: #0b5ed7;
+      font-size: 18px;
       text-decoration: none;
-      font-size: 16px;
     }
     a:hover {
       text-decoration: underline;
+    }
+    .debug {
+      margin-bottom: 12px;
+      padding: 8px;
+      background: #f7f7f7;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
 
-<!-- ✅ 未登入就轉登入頁 -->
+<!-- ✅ 未登入直接導向登入頁 -->
 <script>
 if (!localStorage.getItem('role')) {
   location.href = 'login.html';
@@ -36,14 +40,10 @@ if (!localStorage.getItem('role')) {
 
 <h1>🏠 裁判系統首頁</h1>
 
-<!-- 狀態顯示 -->
-<div id="status" style="margin-bottom: 12px;"></div>
-
-<hr>
+<!-- ✅ 狀態顯示（正式版可保留或之後拿掉） -->
+<div class="debug" id="status"></div>
 
 <ul id="menu"></ul>
-
-<hr>
 
 <button onclick="logout()">登出</button>
 
@@ -53,30 +53,47 @@ function logout() {
   location.href = 'login.html';
 }
 
+// ===== 讀取登入資訊 =====
 const username = localStorage.getItem('username') || '(unknown)';
 const role = (localStorage.getItem('role') || '').trim().toLowerCase();
 
-document.getElementById('status').innerHTML =
-  '<b>目前登入帳號：</b>' + username + '<br>' +
-  '<b>角色：</b>' + role;
+// 顯示目前登入狀態
+document.getElementById('status').textContent =
+  '目前登入帳號：' + username + '｜角色：' + role;
 
 const menu = document.getElementById('menu');
 
-if (role === 'admin') {
-  menu.innerHTML = `
-    <li><a href="games_manage.html></li>
-    <li><a href="jude.html👨‍⚖️ 裁判管理</a></li>
-    <li><a href="schedule.html></li>
-    <li><a href="stats.htmla></li>
-  `;
+// 保證 menu 是空的
+menu.innerHTML = '';
+
+// ===== 一個安全的「加選單項目」函式 =====
+function addMenu(text, href) {
+  const li = document.createElement('li');
+  const a = document.createElement('a');
+  a.textContent = text;
+  a.href = href;
+  li.appendChild(a);
+  menu.appendChild(li);
 }
 
+// ===== 管理者選單 =====
+if (role === 'admin') {
+  addMenu('⚾ 比賽管理', 'games_manage.html');
+  addMenu('👨‍⚖️ 裁判管理', 'judges_manage.html');
+  addMenu('📅 月班表', 'schedule.html');
+  addMenu('📊 出勤統計', 'stats.html');
+}
+
+// ===== 裁判選單 =====
 if (role === 'judge') {
-  menu.innerHTML = `
-    <li><a hrefignup.html📋 報名盃賽／場次</a></li>
-    <li><a href="judge_availability.html/a></li>
-    <li><a href="judge_dashboard.html計</a></li>
-  `;
+  addMenu('📋 報名盃賽／場次', 'judge_signup.html');
+  addMenu('🕒 可上班時段', 'judge_availability.html');
+  addMenu('📊 我的班表／統計', 'judge_dashboard.html');
+}
+
+// 防呆
+if (!menu.children.length) {
+  addMenu('⚠ 選單未產生（role=' + role + '）', '#');
 }
 </script>
 
