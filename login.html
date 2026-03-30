@@ -16,15 +16,16 @@
 
 <button onclick="login()">登入</button>
 
-<!-- ✅ 這一行「一定要長這樣」 -->
-<script src="js/config.js"></script>
-
+<!-- ✅ 這一行是整個系統目前最重要的一行 -->
+<script src="js/config
 <script>
+console.log('login.html loaded, API_URL =', typeof API_URL, API_URL);
+
 function login() {
+  console.log('login clicked');
+
   const user = document.getElementById('u').value.trim();
   const pass = document.getElementById('p').value.trim();
-
-  console.log('login clicked', user, pass, API_URL);
 
   const cb = 'login_cb_' + Date.now();
   window[cb] = function(res) {
