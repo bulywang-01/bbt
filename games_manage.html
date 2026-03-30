@@ -176,14 +176,23 @@ function updateGame(id) {
     return;
   }
 
-  const cb = 'cb_' + Date.now();
+  // ✅ callback 保證唯一
+  const cb = 'cb_' + id + '_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+
+  let replied = false;
+
   window[cb] = res => {
+    replied = true;
+
     if (res && res.result === 'ok') {
       alert('✅ 修改完成');
-      loadGames();          // ✅ 關鍵：重新載入畫面
+      loadGames();  // ✅ 一定重新載入
     } else {
-      alert('❌ 更新失敗：' + (res ? res.result : 'no response'));
+      alert('❌ 更新回傳異常：' + JSON.stringify(res));
     }
+
+    // ✅ 清掉 callback，避免污染
+    delete window[cb];
   };
 
   const s = document.createElement('script');
@@ -192,7 +201,7 @@ function updateGame(id) {
     '?action=updateGame' +
     '&token=' + encodeURIComponent(token) +
     '&game_id=' + encodeURIComponent(id) +
-    '&date=' + encodeURIComponent(fromInputDate(dateVal)) +     // ⭐ 重點在這
+    '&date=' + encodeURIComponent(fromInputDate(dateVal)) +
     '&field=' + encodeURIComponent(document.getElementById('f_'+id).value) +
     '&tournament=' + encodeURIComponent(document.getElementById('t_'+id).value) +
     '&category=' + encodeURIComponent(document.getElementById('c_'+id).value) +
@@ -202,7 +211,12 @@ function updateGame(id) {
     '&callback=' + cb;
 
   document.body.appendChild(s);
-}
+
+  // ✅ 防止 callback 沒來時誤判
+  setTimeout(() => {
+    if (!replied) {
+      // 後端已改成功但 callback 沒吃到
+
 
 /* ===== 刪除 ===== */
 function deleteGame(id) {
