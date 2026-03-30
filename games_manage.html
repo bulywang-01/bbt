@@ -2,135 +2,261 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>比賽管理</title>
+<title>⚾ 比賽管理</title>
 <style>
-  body { font-family: system-ui; }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: center; }
-  th { background: #eee; }
-  tr.editing { background: #fff8dc; }
-  .toolbar { margin: 10px 0; }
-  button { margin: 0 2px; }
+  body {
+    font-family: system-ui;
+    line-height: 1.6;
+    margin: 20px;
+  }
+  h2 { margin-top: 0; }
+  a { text-decoration: none; color: #0066cc; }
+  a:hover { text-decoration: underline; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: center;
+  }
+  th {
+    background: #f0f0f0;
+  }
+  input, select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .section {
+    background: #f9f9f9;
+    padding: 12px;
+    margin-top: 15px;
+  }
+
+  .actions button {
+    margin: 0 2px;
+  }
 </style>
 </head>
 <body>
 
+<!-- ===== 權限檢查 ===== -->
 <script>
-if (!localStorage.getItem('role')) location.href='login.html';
+if (!localStorage.getItem('role')) location.href = 'login.html';
 if (localStorage.getItem('role') !== 'admin') {
-  alert('僅限管理者');
-  location.href='index.html';
+  alert('僅限管理者使用');
+  location.href = 'index.html';
 }
 </script>
 
 <h2>⚾ 比賽管理</h2>
-index.html🏠 回首頁</a>
+<a href="index.html">🏠 回首頁</a>
 
-<div class="toolbar">
-  <button onclick="selectAll()">✅ 全選</button>
-  <button onclick="bulkDelete()">🗑 大量刪除</button>
+<!-- ===== 新增比賽 ===== -->
+<div class="section">
+  <h3>➕ 新增比賽</h3>
+  <table>
+    <tr>
+      <th>日期</th><th>球場</th><th>盃賽</th><th>組別</th>
+      <th>客隊</th><th>主隊</th><th>裁判數</th><th></th>
+    </tr>
+    <tr>
+      <td><input type="date" id="n_date"></td>
+      <td><input type="text" id="n_field"></td>
+      <td><input type="text" id="n_tournament"></td>
+      <td><input type="text" id="n_category"></td>
+      <td><input type="text" id="n_away"></td>
+      <td><input type="text" id="n_home"></td>
+      <td>
+        <select id="n_count">
+          <option>1</option><option>2</option>
+          <option>3</option><option>4</option>
+        </select>
+      </td>
+      <td><button onclick="addGame()">新增</button></td>
+    </tr>
+  </table>
 </div>
 
-<div id="content">載入中…</div>
+<!-- ===== 比賽清單 ===== -->
+<div class="section">
+  <h3>📋 目前比賽清單</h3>
+  <div id="list">載入中…</div>
+</div>
 
-<!-- ✅ 正確載入，避免再踩雷 -->
+<!-- ✅ 一定要正確載入 -->
 <script src="js/config.js"></script>
 
 <script>
 const token = localStorage.getItem('token');
-const content = document.getElementById('content');
+const listBox = document.getElementById('list');
 
-/* ===== 載入比賽清單 ===== */
-function loadGames(){
-  content.textContent = '載入中…';
-  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+function toInputDate(str) {
+  return str ? str.replace(/\//g, '-') : '';
+}
+function fromInputDate(str) {
+  return str ? str.replace(/-/g, '/') : '';
+}
 
-  window[cb] = res => {
+/* ===== 載入比賽 ===== */
+function loadGames() {
+  listBox.textContent = '載入中…';
+  const cb = 'cb_' + Date.now();
+
+  window[cb] = function(res) {
     if (!res || res.result !== 'ok') {
-      content.textContent = '❌ 無法載入比賽清單';
+      listBox.textContent = '❌ 無法取得比賽資料';
       return;
     }
 
     if (!res.games.length) {
-      content.textContent = '目前尚無比賽資料';
+      listBox.textContent = '目前尚無比賽資料';
       return;
     }
 
     let html = `<table>
       <tr>
-        <th><input type="checkbox" onclick="toggleAll(this)"></th>
-        <th>ID</th><th>日期</th><th>盃賽</th><th>組別</th>
-        <th>客隊</th><th>主隊</th><th>裁判數</th><th>操作</th>
+        <th>ID</th><th>日期</th><th>球場</th>
+        <th>盃賽</th><th>組別</th>
+        <th>客隊</th><th>主隊</th>
+        <th>裁判數</th><th>操作</th>
       </tr>`;
 
-    res.games.forEach(g=>{
+    res.games.forEach(g => {
       html += `
-      <tr id="row_${g.game_id}">
-        <td><input type="checkbox" class="sel" data-id="${g.game_id}"></td>
+      <tr>
         <td>${g.game_id}</td>
-        <td>${g.date}</td>
-        <td>${g.tournament}</td>
-        <td>${g.category}</td>
-        <td>${g.away_team}</td>
-        <td>${g.home_team}</td>
-        <td>${g.umpire_count}</td>
+        <td><input type="date" id="d_${g.game_id}" value="${toInputDate(g.date)}"></td>
+        <td><input type="text" id="f_${g.game_id}" value="${g.field}"></td>
+        <td><input type="text" id="t_${g.game_id}" value="${g.tournament}"></td>
+        <td><input type="text" id="c_${g.game_id}" value="${g.category}"></td>
+        <td><input type="text" id="a_${g.game_id}" value="${g.away_team}"></td>
+        <td><input type="text" id="h_${g.game_id}" value="${g.home_team}"></td>
         <td>
-          <button onclick="editRow('${g.game_id}')">✏️ 修改</button>
-          <button onclick="deleteOne('${g.game_id}')">🗑</button>
+          <select id="u_${g.game_id}">
+            <option ${g.umpire_count==1?'selected':''}>1</option>
+            <option ${g.umpire_count==2?'selected':''}>2</option>
+            <option ${g.umpire_count==3?'selected':''}>3</option>
+            <option ${g.umpire_count==4?'selected':''}>4</option>
+          </select>
+        </td>
+        <td class="actions">
+          <button onclick="updateGame('${g.game_id}')">儲存</button>
+          <button onclick="deleteGame('${g.game_id}')">刪除</button>
         </td>
       </tr>`;
     });
 
     html += '</table>';
-    content.innerHTML = html;
+    listBox.innerHTML = html;
   };
 
-  const s=document.createElement('script');
+  const s = document.createElement('script');
   s.src =
     API_URL +
     '?action=getAllSchedule' +
-    '&token='+encodeURIComponent(token) +
-    '&callback='+cb;
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-/* ===== 操作 ===== */
-function toggleAll(cb){
-  document.querySelectorAll('.sel').forEach(c=>c.checked = cb.checked);
+/* ===== 新增 ===== */
+function addGame() {
+  if (!n_date.value) {
+    alert('請填寫日期');
+    return;
+  }
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (res.result === 'ok') {
+      alert('✅ 新增完成');
+      loadGames();
+    } else {
+      alert('❌ 新增失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=addGame' +
+    '&token=' + encodeURIComponent(token) +
+    '&date=' + encodeURIComponent(fromInputDate(n_date.value)) +
+    '&field=' + encodeURIComponent(n_field.value) +
+    '&tournament=' + encodeURIComponent(n_tournament.value) +
+    '&category=' + encodeURIComponent(n_category.value) +
+    '&away_team=' + encodeURIComponent(n_away.value) +
+    '&home_team=' + encodeURIComponent(n_home.value) +
+    '&umpire_count=' + encodeURIComponent(n_count.value) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
 }
 
-function selectAll(){
-  document.querySelectorAll('.sel').forEach(c=>c.checked = true);
+/* ===== 修改 ===== */
+function updateGame(id) {
+  const dateVal = document.getElementById('d_' + id).value;
+  if (!dateVal) {
+    alert('日期不可為空');
+    return;
+  }
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (res && res.result === 'ok') {
+      alert('✅ 修改完成');
+      loadGames();
+    } else {
+      alert('❌ 修改失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=updateGame' +
+    '&token=' + encodeURIComponent(token) +
+    '&game_id=' + encodeURIComponent(id) +
+    '&date=' + encodeURIComponent(fromInputDate(dateVal)) +
+    '&field=' + encodeURIComponent(document.getElementById('f_'+id).value) +
+    '&tournament=' + encodeURIComponent(document.getElementById('t_'+id).value) +
+    '&category=' + encodeURIComponent(document.getElementById('c_'+id).value) +
+    '&away_team=' + encodeURIComponent(document.getElementById('a_'+id).value) +
+    '&home_team=' + encodeURIComponent(document.getElementById('h_'+id).value) +
+    '&umpire_count=' + encodeURIComponent(document.getElementById('u_'+id).value) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
 }
 
-function deleteOne(id){
+/* ===== 刪除 ===== */
+function deleteGame(id) {
   if (!confirm('確定刪除？')) return;
-  callDelete([id]);
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (res.result === 'ok') {
+      alert('✅ 已刪除');
+      loadGames();
+    } else {
+      alert('❌ 刪除失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=deleteGame' +
+    '&token=' + encodeURIComponent(token) +
+    '&game_id=' + encodeURIComponent(id) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
 }
 
-function bulkDelete(){
-  const ids=[...document.querySelectorAll('.sel:checked')].map(c=>c.dataset.id);
-  if (!ids.length) return alert('未選擇任何比賽');
-  if (!confirm(`確定刪除 ${ids.length} 筆？`)) return;
-  callDelete(ids);
-}
-
-function callDelete(ids){
-  ids.forEach(id=>{
-    const cb='cb_'+id+'_'+Date.now();
-    window[cb]=()=>loadGames();
-    const s=document.createElement('script');
-    s.src=
-      API_URL+
-      '?action=deleteGame'+
-      '&token='+encodeURIComponent(token)+
-      '&game_id='+encodeURIComponent(id)+
-      '&callback='+cb;
-    document.body.appendChild(s);
-  });
-}
-
-/* ===== 初始化 ===== */
+/* 初始載入 */
 loadGames();
 </script>
 
