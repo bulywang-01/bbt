@@ -1,1 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>裁判系統首頁</title>
+</head>
+<body>
 
+<!-- ✅ 未登入者一律導向登入頁 -->
+<script>
+if (!localStorage.getItem('role')) {
+  location.href = 'login.html';
+}
+</script>
+
+<h1>🏠 裁判系統首頁</h1>
+
+<!-- ✅ 狀態顯示（驗證用，之後可拿掉） -->
+<div id="status" style="margin-bottom:12px;"></div>
+
+<hr>
+
+<!-- ✅ 選單（完全由 JS 產生） -->
+<ul id="menu"></ul>
+
+<hr>
+
+<button onclick="logout()">登出</button>
+
+<script>
+function logout() {
+  localStorage.clear();
+  location.href = 'login.html';
+}
+
+/* ===== 讀取登入資訊 ===== */
+const username = localStorage.getItem('username') || '(unknown)';
+const role = (localStorage.getItem('role') || '').trim().toLowerCase();
+
+/* ✅ 顯示狀態（讓你用眼睛確認） */
+document.getElementById('status').innerHTML =
+  '<b>目前登入帳號：</b>' + username + '<br>' +
+  '<b>角色：</b>' + role;
+
+const menu = document.getElementById('menu');
+
+/* ===== 管理者選單 ===== */
+if (role === 'admin') {
+  menu.innerHTML = `
+    <li><a href="games_manage.html></li>
+    <li><a href="judges_manage.html理</a></li>
+    <li><a href="html📅 月班表</a></li>
+    <li><a href="stats勤統計</a></li>
+  `;
+}
+
+/* ===== 裁判選單 ===== */
+if (role === 'judge') {
+  menu.innerHTML = `
+    <li><a href="judge_signup.html次</a></li>
+    <li><a href="judge_availability.html/a></li>
+    <li><a href="judge_dashboard.html計</a></li>
+  `;
+}
+
+/* ===== 防呆 ===== */
+if (!menu.innerHTML.trim()) {
+  menu.innerHTML =
+    '<li style="color:red;">⚠ 選單未產生，角色值：' + role + '</li>';
+}
+</script>
+
+</body>
+</html>
