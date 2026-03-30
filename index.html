@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<!-- ✅ 登入檢查（關鍵） -->
+<!-- ✅ 登入檢查：沒登入就去 login.html -->
 <script>
 if (!localStorage.getItem('role')) {
   location.href = 'login.html';
@@ -17,27 +17,35 @@ if (!localStorage.getItem('role')) {
 
 <ul id="menu"></ul>
 
+<button onclick="logout()">登出</button>
+
 <script>
+function logout() {
+  localStorage.clear();
+  location.href = 'login.html';
+}
+
 const role = localStorage.getItem('role');
 const menu = document.getElementById('menu');
 
 if (role === 'admin') {
   menu.innerHTML = `
-    <li><a href="games_manage.html/li>
-    <li><a href="jude.html裁判管理</a></li>
-    <li><a href="schedule.htmlli>
-    <li><a href="l出勤統計</a></li>
+    <li><a href="gamestml比賽管理</a></li>
+    <li><a href="judgestml裁判管理</a></li>
+    <li><a href="html月班表</a></li>
+    <li><a hreftml出勤統計</a></li>
   `;
 }
 
 if (role === 'judge') {
   menu.innerHTML = `
-    <li><udge_signup.html報名盃賽／場次</a></li>
-    <li>judge_availability.html可上班時段</a></li>
-    <li>judge_dashboard.html我的班表／我的統計</a></li>
+    <li><a href="nup.html報名盃賽／場次</a></li>
+    <li><a href="ilability.html可上班時段</a></li>
+    <li><a href="judge_dashboard／我的統計</a></li>
   `;
 }
 </script>
 
 </body>
 </html>
+``
