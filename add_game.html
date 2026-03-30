@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>新增比賽</title>
+</head>
+<body>
+
+<script>
+if (!localStorage.getItem('role')) location.href = 'login.html';
+if (localStorage.getItem('role') !== 'admin') {
+  alert('無權限');
+  location.href = 'index.html';
+}
+</script>
+
+<h2>⚾ 新增比賽</h2>
+
+<div>
+  比賽編號：<input id="game_id"><br>
+  日期：<input id="date"><br>
+  球場：<input id="field"><br>
+  盃賽：<input id="tournament"><br>
+  組別：<input id="category"><br>
+  客隊：<input id="away_team"><br>
+  主隊：<input id="home_team"><br>
+  裁判數：<input id="umpire_count"><br><br>
+
+  <button onclick="add()">送出</button>
+</div>
+
+<script>
+function add() {
+  const token = localStorage.getItem('token');
+  const cb = 'cb_' + Date.now();
+
+  window[cb] = function(res) {
+    if (res.result === 'ok') {
+      alert('新增成功');
+      location.href='index.html';
+    } else {
+      alert('失敗：' + (res.message||''));
+    }
+  };
+
+  const params = [
+    'game_id','date','field','tournament',
+    'category','away_team','home_team','umpire_count'
+  ].map(k => k + '=' + encodeURIComponent(document.getElementById(k).value)).join('&');
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=addGame' +
+    '&token=' + encodeURIComponent(token) +
+    '&' + params +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
+</script>
+
+</body>
+</html>
