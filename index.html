@@ -2,36 +2,17 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>裁判系統首頁</title>
+  <title>裁判系統首頁 V1</title>
   <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    ul {
-      margin-left: 24px;
-    }
-    li {
-      margin: 8px 0;
-    }
-    a {
-      color: #0b5ed7;
-      font-size: 18px;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-    .debug {
-      margin-bottom: 12px;
-      padding: 8px;
-      background: #f7f7f7;
-      border: 1px solid #ccc;
-    }
+    body { font-family: system-ui; }
+    li { margin: 6px 0; }
+    a { color: #0b5ed7; text-decoration: none; font-size: 18px; }
+    a:hover { text-decoration: underline; }
+    .box { background:#f7f7f7; padding:8px; margin-bottom:12px; }
   </style>
 </head>
 <body>
 
-<!-- ✅ 未登入直接導向登入頁 -->
 <script>
 if (!localStorage.getItem('role')) {
   location.href = 'login.html';
@@ -40,8 +21,7 @@ if (!localStorage.getItem('role')) {
 
 <h1>🏠 裁判系統首頁</h1>
 
-<!-- ✅ 狀態顯示（正式版可保留或之後拿掉） -->
-<div class="debug" id="status"></div>
+<div class="box" id="status"></div>
 
 <ul id="menu"></ul>
 
@@ -53,20 +33,14 @@ function logout() {
   location.href = 'login.html';
 }
 
-// ===== 讀取登入資訊 =====
 const username = localStorage.getItem('username') || '(unknown)';
 const role = (localStorage.getItem('role') || '').trim().toLowerCase();
 
-// 顯示目前登入狀態
 document.getElementById('status').textContent =
-  '目前登入帳號：' + username + '｜角色：' + role;
+  '目前登入帳號：' + username + ' ｜ 角色：' + role;
 
 const menu = document.getElementById('menu');
 
-// 保證 menu 是空的
-menu.innerHTML = '';
-
-// ===== 一個安全的「加選單項目」函式 =====
 function addMenu(text, href) {
   const li = document.createElement('li');
   const a = document.createElement('a');
@@ -76,7 +50,6 @@ function addMenu(text, href) {
   menu.appendChild(li);
 }
 
-// ===== 管理者選單 =====
 if (role === 'admin') {
   addMenu('⚾ 比賽管理', 'games_manage.html');
   addMenu('👨‍⚖️ 裁判管理', 'judges_manage.html');
@@ -84,16 +57,12 @@ if (role === 'admin') {
   addMenu('📊 出勤統計', 'stats.html');
 }
 
-// ===== 裁判選單 =====
 if (role === 'judge') {
-  addMenu('📋 報名盃賽／場次', 'judge_signup.html');
-  addMenu('🕒 可上班時段', 'judge_availability.html');
   addMenu('📊 我的班表／統計', 'judge_dashboard.html');
 }
 
-// 防呆
 if (!menu.children.length) {
-  addMenu('⚠ 選單未產生（role=' + role + '）', '#');
+  addMenu('⚠ 權限異常，請重新登入', '#');
 }
 </script>
 
