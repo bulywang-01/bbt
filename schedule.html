@@ -1,72 +1,107 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>月班表（管理者）</title>
+<meta charset="UTF-8">
+<title>月班表（管理者）</title>
+<style>
+  body { font-family: system-ui; }
+  h2 { margin-top: 0; }
+  .msg { padding: 8px; border: 1px solid #ccc; margin-top: 10px; }
+  .error { color: red; }
+</style>
 </head>
 <body>
 
+<!-- ✅ 登入與角色檢查 -->
 <script>
-if (!localStorage.getItem('role')) location.href = 'login.html';
+if (!localStorage.getItem('role')) location.href='login.html';
 if (localStorage.getItem('role') !== 'admin') {
   alert('無權限');
-  location.href = 'index.html';
+  location.href='index.html';
 }
 </script>
 
 <h2>📅 月班表（管理者）</h2>
-<div id="content">載入中…</div>
+
+<div id="content" class="msg">載入中…</div>
+
+<!-- ✅ 一定要有 -->
+<script src="js/config.js"></script>
 
 <script>
+const content = document.getElementById('content');
 const token = localStorage.getItem('token');
-const cb = 'cb_' + Date.now();
 
-window[cb] = function(res) {
-  if (res.result !== 'ok') {
-    document.getElementById('content').textContent = '無法取得資料';
-    return;
-  }
+if (!token) {
+  content.innerHTML = '<span class="error">❌ 尚未登入（無 token）</span>';
+} else {
 
-  const { games, attendance, judges } = res;
-  let html = '';
+  let finished = false;
+  const cb = 'cb_' + Date.now();
 
-  games.forEach(g => {
-    html += `
-      <h3>
-        ${g.date}｜
-        ${g.tournament} ${g.category}｜
-        ${g.away_team} vs ${g.home_team}｜
-        ${g.field}
-      </h3>
-      <ul>
-    `;
+  /* ✅ 防止 API 無回應卡死（5 秒） */
+  setTimeout(() => {
+    if (!finished) {
+      content.innerHTML = '<span class="error">❌ 連線逾時，請檢查 API</span>';
+    }
+  }, 5000);
 
-    attendance
-      .filter(a => a.game_id === g.game_id)
-      .forEach(a => {
-        const j = judges.find(j => j.judge_id === a.judge_id);
-        html += `
-          <li>
-            ${j ? j.name : a.judge_id}
-            （${a.role}，${a.attend || '未確認'}）
-          </li>
-        `;
-      });
+  window[cb] = function(res) {
+    finished = true;
 
-    html += '</ul>';
-  });
+    if (!res || !res.result) {
+      content.innerHTML = '<span class="error">❌ API 回傳格式錯誤</span>';
+      return;
+    }
 
-  document.getElementById('content').innerHTML = html;
-};
+    if (res.result === 'forbidden') {
+      content.innerHTML = '<span class="error">❌ 權限不足或登入已過期</span>';
+      return;
+    }
 
-const s = document.createElement('script');
-s.src =
-  API_URL +
-  '?action=getAllSchedule' +
-  '&token=' + encodeURIComponent(token) +
-  '&callback=' + cb;
+    if (res.result !== 'ok') {
+      content.innerHTML = '<span class="error">❌ 讀取失敗</span>';
+      return;
+    }
 
-document.body.appendChild(s);
+    const { games, attendance, judges } = res;
+
+    if (!games || games.length === 0) {
+      content.innerHTML = '📭 目前尚無任何比賽資料';
+      return;
+    }
+
+    let html = '';
+    games.forEach(g => {
+      html += `
+        <h3>${g.date}｜${g.tournament} ${g.category}</h3>
+        <div>${g.away_team} vs ${g.home_team}（${g.field}）</div>
+        <ul>
+      `;
+      const list = attendance.filter(a => a.game_id === g.game_id);
+      if (list.length === 0) {
+        html += '<li>尚未安排裁判</li>';
+      } else {
+        list.forEach(a => {
+          const j = judges.find(j => j.judge_id === a.judge_id);
+          html += `<li>${j ? j.name : a.judge_id}（${a.role}）</li>`;
+        });
+      }
+      html += '</ul>';
+    });
+
+    content.innerHTML = html;
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=getAllSchedule' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
 </script>
 
 <button onclick="exportSchedule()">📥 匯出月班表 Excel</button>
