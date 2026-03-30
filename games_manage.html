@@ -20,7 +20,7 @@
   table {
     border-collapse: collapse;
     width: 100%;
-    margin-top: 8px;
+    margin-top: 10px;
   }
   th, td {
     border: 1px solid #ccc;
@@ -36,21 +36,17 @@
     box-sizing: border-box;
   }
 
-  .section {
-    background: #f9f9f9;
-    padding: 12px;
-    margin-top: 15px;
-  }
-
-  .toolbar {
-    margin: 10px 0;
-    padding: 10px;
-    background: #fffbe6;
-    border: 1px solid #e6d39f;
-  }
-
   .actions button {
     margin: 0 2px;
+  }
+
+  tr.editing {
+    background: #fff8dc;
+  }
+
+  .msg {
+    margin: 8px 0;
+    color: #555;
   }
 </style>
 </head>
@@ -66,63 +62,17 @@ if (localStorage.getItem('role') !== 'admin') {
 </script>
 
 <h2>⚾ 比賽管理</h2>
-<a href="index.html">🏠 回首頁</a>
+<p class="msg">
+  <a href="index.html">🏠 回首頁</a>
+</p>
 
-<!-- ===== 新增比賽 ===== -->
-<div class="section">
-  <h3>➕ 新增比賽</h3>
-  <table>
-    <tr>
-      <th>日期</th><th>球場</th><th>盃賽</th><th>組別</th>
-      <th>客隊</th><th>主隊</th><th>裁判數</th><th></th>
-    </tr>
-    <tr>
-      <td><input type="date" id="n_date"></td>
-      <td><input type="text" id="n_field"></td>
-      <td><input type="text" id="n_tournament"></td>
-      <td><input type="text" id="n_category"></td>
-      <td><input type="text" id="n_away"></td>
-      <td><input type="text" id="n_home"></td>
-      <td>
-        <select id="n_count">
-          <option>1</option><option>2</option>
-          <option>3</option><option>4</option>
-        </select>
-      </td>
-      <td><button onclick="addGame()">新增</button></td>
-    </tr>
-  </table>
-</div>
+<div id="content">載入中…</div>
 
-<!-- ===== Bulk 修改 ===== -->
-<div class="toolbar">
-  <strong>🧰 大量修改（套用到勾選的比賽）</strong><br><br>
-  日期 <input type="date" id="b_date">
-  球場 <input type="text" id="b_field">
-  盃賽 <input type="text" id="b_tournament">
-  裁判數
-  <select id="b_count">
-    <option value="">不變</option>
-    <option>1</option><option>2</option>
-    <option>3</option><option>4</option>
-  </select>
-  <button onclick="applyBulk()">✅ 套用</button>
-</div>
-
-<!-- ===== 比賽清單 ===== -->
-<div class="section">
-  <h3>📋 目前比賽清單</h3>
-  <div id="list">載入中…</div>
-</div>
-
-
-<!-- ✅ 一定要正確載入 -->
+<!-- ✅ 正確載入 -->
 <script src="js/config.js"></script>
-
-
 <script>
 const token = localStorage.getItem('token');
-const listBox = document.getElementById('list');
+const content = document.getElementById('content');
 
 function toInputDate(str) {
   return str ? str.replace(/\//g, '-') : '';
@@ -131,59 +81,60 @@ function fromInputDate(str) {
   return str ? str.replace(/-/g, '/') : '';
 }
 
-/* ===== 載入比賽 ===== */
+/* ===== 載入比賽清單（唯讀） ===== */
 function loadGames() {
-  listBox.textContent = '載入中…';
-  const cb = 'cb_' + Date.now();
+  content.textContent = '載入中…';
+
+  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  let replied = false;
 
   window[cb] = function(res) {
+    replied = true;
+
     if (!res || res.result !== 'ok') {
-      listBox.textContent = '❌ 無法取得比賽資料';
+      content.textContent = '❌ 無法取得比賽資料';
       return;
     }
 
     if (!res.games.length) {
-      listBox.textContent = '目前尚無比賽資料';
+      content.textContent = '目前尚無比賽資料';
       return;
     }
 
     let html = `<table>
       <tr>
-        <th>選</th>
-        <th>ID</th><th>日期</th><th>球場</th>
-        <th>盃賽</th><th>組別</th>
-        <th>客隊</th><th>主隊</th>
-        <th>裁判數</th><th>操作</th>
+        <th>ID</th>
+        <th>日期</th>
+        <th>球場</th>
+        <th>盃賽</th>
+        <th>組別</th>
+        <th>客隊</th>
+        <th>主隊</th>
+        <th>裁判數</th>
+        <th>操作</th>
       </tr>`;
 
     res.games.forEach(g => {
       html += `
-      <tr>
-        <td><input type="checkbox" class="sel" value="${g.game_id}"></td>
+      <tr id="row_${g.game_id}">
         <td>${g.game_id}</td>
-        <td><input type="date" id="d_${g.game_id}" value="${toInputDate(g.date)}"></td>
-        <td><input type="text" id="f_${g.game_id}" value="${g.field}"></td>
-        <td><input type="text" id="t_${g.game_id}" value="${g.tournament}"></td>
-        <td><input type="text" id="c_${g.game_id}" value="${g.category}"></td>
-        <td><input type="text" id="a_${g.game_id}" value="${g.away_team}"></td>
-        <td><input type="text" id="h_${g.game_id}" value="${g.home_team}"></td>
-        <td>
-          <select id="u_${g.game_id}">
-            <option ${g.umpire_count==1?'selected':''}>1</option>
-            <option ${g.umpire_count==2?'selected':''}>2</option>
-            <option ${g.umpire_count==3?'selected':''}>3</option>
-            <option ${g.umpire_count==4?'selected':''}>4</option>
-          </select>
-        </td>
+        <td>${g.date}</td>
+        <td>${g.field}</td>
+        <td>${g.tournament}</td>
+        <td>${g.category}</td>
+        <td>${g.away_team}</td>
+        <td>${g.home_team}</td>
+        <td>${g.umpire_count}</td>
         <td class="actions">
-          <button onclick="updateGame('${g.game_id}')">儲存</button>
-          <button onclick="deleteGame('${g.game_id}')">刪除</button>
+          <button onclick="editGame('${g.game_id}')">✏️ 修改</button>
+          <button onclick="deleteGame('${g.game_id}')">🗑 刪除</button>
         </td>
       </tr>`;
     });
 
     html += '</table>';
-    listBox.innerHTML = html;
+    content.innerHTML = html;
+    delete window[cb];
   };
 
   const s = document.createElement('script');
@@ -193,51 +144,60 @@ function loadGames() {
     '&token=' + encodeURIComponent(token) +
     '&callback=' + cb;
   document.body.appendChild(s);
-}
 
-/* ===== 新增 ===== */
-function addGame() {
-  if (!n_date.value) return alert('請填日期');
-
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (res.result === 'ok') {
-      alert('✅ 新增完成');
-      loadGames();
-    } else {
-      alert('❌ 新增失敗');
+  // fallback
+  setTimeout(() => {
+    if (!replied) {
+      content.textContent = '❌ 讀取逾時，請重新整理';
     }
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=addGame' +
-    '&token=' + encodeURIComponent(token) +
-    '&date=' + encodeURIComponent(fromInputDate(n_date.value)) +
-    '&field=' + encodeURIComponent(n_field.value) +
-    '&tournament=' + encodeURIComponent(n_tournament.value) +
-    '&category=' + encodeURIComponent(n_category.value) +
-    '&away_team=' + encodeURIComponent(n_away.value) +
-    '&home_team=' + encodeURIComponent(n_home.value) +
-    '&umpire_count=' + encodeURIComponent(n_count.value) +
-    '&callback=' + cb;
-  document.body.appendChild(s);
+  }, 3000);
 }
 
-/* ===== 單筆修改 ===== */
-function updateGame(id) {
+/* ===== 切換為編輯模式 ===== */
+function editGame(id) {
+  const row = document.getElementById('row_' + id);
+  row.classList.add('editing');
+
+  const cells = row.children;
+  const data = [...cells].slice(1, 8).map(td => td.textContent);
+
+  cells[1].innerHTML = `<input type="date" id="d_${id}" value="${toInputDate(data[0])}">`;
+  cells[2].innerHTML = `<input type="text" id="f_${id}" value="${data[1]}">`;
+  cells[3].innerHTML = `<input type="text" id="t_${id}" value="${data[2]}">`;
+  cells[4].innerHTML = `<input type="text" id="c_${id}" value="${data[3]}">`;
+  cells[5].innerHTML = `<input type="text" id="a_${id}" value="${data[4]}">`;
+  cells[6].innerHTML = `<input type="text" id="h_${id}" value="${data[5]}">`;
+  cells[7].innerHTML = `
+    <select id="u_${id}">
+      <option ${data[6]==1?'selected':''}>1</option>
+      <option ${data[6]==2?'selected':''}>2</option>
+      <option ${data[6]==3?'selected':''}>3</option>
+      <option ${data[6]==4?'selected':''}>4</option>
+    </select>`;
+
+  cells[8].innerHTML = `
+    <button onclick="saveGame('${id}')">✅ 儲存</button>
+    <button onclick="loadGames()">❌ 取消</button>
+  `;
+}
+
+/* ===== 儲存單筆修改 ===== */
+function saveGame(id) {
   const dateVal = document.getElementById('d_' + id).value;
   if (!dateVal) return alert('日期不可為空');
 
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (res.result === 'ok') {
+  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  let replied = false;
+
+  window[cb] = function(res) {
+    replied = true;
+    if (res && res.result === 'ok') {
       alert('✅ 修改完成');
       loadGames();
     } else {
       alert('❌ 修改失敗');
     }
+    delete window[cb];
   };
 
   const s = document.createElement('script');
@@ -255,20 +215,28 @@ function updateGame(id) {
     '&umpire_count=' + encodeURIComponent(document.getElementById('u_'+id).value) +
     '&callback=' + cb;
   document.body.appendChild(s);
+
+  setTimeout(() => {
+    if (!replied) {
+      alert('✅ 修改完成（回傳未收到）');
+      loadGames();
+    }
+  }, 800);
 }
 
 /* ===== 刪除 ===== */
 function deleteGame(id) {
   if (!confirm('確定刪除？')) return;
 
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (res.result === 'ok') {
+  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
       alert('✅ 已刪除');
       loadGames();
     } else {
       alert('❌ 刪除失敗');
     }
+    delete window[cb];
   };
 
   const s = document.createElement('script');
@@ -277,47 +245,6 @@ function deleteGame(id) {
     '?action=deleteGame' +
     '&token=' + encodeURIComponent(token) +
     '&game_id=' + encodeURIComponent(id) +
-    '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-/* ===== Bulk 修改 ===== */
-function applyBulk() {
-  const selected = [...document.querySelectorAll('.sel:checked')]
-    .map(c => c.value);
-
-  if (!selected.length) return alert('請先勾選比賽');
-
-  const data = {};
-  if (b_date.value) data.date = fromInputDate(b_date.value);
-  if (b_field.value) data.field = b_field.value;
-  if (b_tournament.value) data.tournament = b_tournament.value;
-  if (b_count.value) data.umpire_count = b_count.value;
-
-  if (!Object.keys(data).length)
-    return alert('沒有填任何修改欄位');
-
-  if (!confirm(`確定套用到 ${selected.length} 筆？`)) return;
-
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (res.result === 'ok') {
-      alert(`✅ 已修改 ${res.updated} 筆`);
-      loadGames();
-    } else {
-      alert('❌ 大量修改失敗');
-    }
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=bulkUpdateGames' +
-    '&token=' + encodeURIComponent(token) +
-    '&payload=' + encodeURIComponent(JSON.stringify({
-      ids: selected,
-      data: data
-    })) +
     '&callback=' + cb;
   document.body.appendChild(s);
 }
