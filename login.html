@@ -1,6 +1,3 @@
-<h1 style="color:red">LOGIN V999</h1>
-
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -9,57 +6,66 @@
 </head>
 <body>
 
+<h1 style="color:red">LOGIN V1000</h1>
+
 <h2>🔒 裁判系統登入</h2>
 
 <div>
   帳號：
-  <input id="u" placeholder="admin"><br><br>
+  <input id="u" value="admin"><br><br>
 
   密碼：
-  <input id="p" type="password" placeholder="1234"><br><br>
+  <input id="p" type="password" value="1234"><br><br>
 
-  <button onclick="login()">登入</button>
+  <button id="loginBtn">登入</button>
 </div>
 
-<!-- ✅【關鍵】正確載入 config.js（在 /bbt/js/config.js） -->
+<!-- ✅ 正確載入設定檔（唯一責任：提供 API_URL） -->
 <script src="js/config.js"></script>
-/* ✅ 只要這行有印出來，代表 JS 正常執行 */
-console.log('login.html loaded, API_URL =', API_URL);
 
-function login() {
-  console.log('login clicked');
+<!-- ✅ 登入邏輯 -->
+<script>
+(function () {
+  console.log('login.html loaded');
 
-  const user = document.getElementById('u').value.trim();
-  const pass = document.getElementById('p').value.trim();
+  var btn = document.getElementById('loginBtn');
+  btn.addEventListener('click', login);
 
-  const cb = 'login_cb_' + Date.now();
+  function login() {
+    console.log('login clicked');
 
-  window[cb] = function(res) {
-    console.log('login response:', res);
+    var user = document.getElementById('u').value.trim();
+    var pass = document.getElementById('p').value.trim();
 
-    if (res && res.result === 'ok') {
-      localStorage.setItem('role', res.role);
-      localStorage.setItem('judge_id', res.judge_id || '');
-      location.href = 'index.html';
-    } else {
-      alert('登入失敗');
-    }
+    var cb = 'login_cb_' + Date.now();
+    window[cb] = function (res) {
+      console.log('login response:', res);
 
-    delete window[cb];
-  };
+      if (res && res.result === 'ok') {
+        localStorage.setItem('role', res.role);
+        localStorage.setItem('judge_id', res.judge_id || '');
+        location.href = 'index.html';
+      } else {
+        alert('登入失敗');
+      }
 
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=login' +
-    '&username=' + encodeURIComponent(user) +
-    '&password=' + encodeURIComponent(pass) +
-    '&callback=' + cb +
-    '&_=' + Date.now();
+      delete window[cb];
+    };
 
-  document.body.appendChild(s);
-}
+    var s = document.createElement('script');
+    s.src =
+      API_URL +
+      '?action=login' +
+      '&username=' + encodeURIComponent(user) +
+      '&password=' + encodeURIComponent(pass) +
+      '&callback=' + cb +
+      '&_=' + Date.now();
+
+    document.body.appendChild(s);
+  }
+})();
 </script>
 
 </body>
 </html>
+``
