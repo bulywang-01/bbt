@@ -68,7 +68,31 @@ s.src =
 
 document.body.appendChild(s);
 </script>
+<button onclick="exportSchedule()">📥 匯出月班表 Excel</button>
+
+<script>
+function exportSchedule() {
+  const token = localStorage.getItem('token');
+  const cb = 'cb_' + Date.now();
+
+  window[cb] = function(res) {
+    if (res.result === 'ok') {
+      window.open(res.url, '_blank');
+    } else {
+      alert('匯出失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=exportSchedule' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+</script>
 
 </body>
 </html>
-``
+
