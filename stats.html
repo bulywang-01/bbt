@@ -7,6 +7,15 @@
 <body>
 
 <script>
+  if (res.result === 'forbidden') {
+  alert('登入已過期，請重新登入');
+  localStorage.clear();
+  location.href = 'login.html';
+  return;
+}
+</script>
+  
+<script>
 if (!localStorage.getItem('role')) location.href='login.html';
 </script>
 
