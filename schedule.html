@@ -1,96 +1,74 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>月班表</title>
+  <meta charset="UTF-8">
+  <title>月班表（管理者）</title>
 </head>
 <body>
 
 <script>
-if (!localStorage.getItem('role')) location.href='login.html';
+if (!localStorage.getItem('role')) location.href = 'login.html';
+if (localStorage.getItem('role') !== 'admin') {
+  alert('無權限');
+  location.href = 'index.html';
+}
 </script>
 
-<h2>📅 月班表</h2>
+<h2>📅 月班表（管理者）</h2>
+<div id="content">載入中…</div>
 
-<select id="year"></select> 年
-<select id="month"></select> 月
-<button onclick="renderSchedule()">查詢</button>
-
-<hr>
-<div id="schedule">載入中…</div>
-
-<script src="js/config.js"></script>
-  
 <script>
-const games = [];
-const attends = [];
+const token = localStorage.getItem('token');
+const cb = 'cb_' + Date.now();
 
-/* 民國日期顯示 */
-function roc(d){
-  const x=new Date(d);
-  return (x.getFullYear()-1911)+'/'+(x.getMonth()+1)+'/'+x.getDate();
-}
-
-/* 初始化年月選單 */
-(function initYM(){
-  const y=document.getElementById('year');
-  const now=new Date().getFullYear();
-  for(let i=now-1;i<=now+1;i++){
-    y.innerHTML+=`<option value="${i}">${i-1911}</option>`;
-  }
-  const m=document.getElementById('month');
-  for(let i=1;i<=12;i++){
-    m.innerHTML+=`<option value="${i}">${i}</option>`;
-  }
-  y.value=now;
-  m.value=new Date().getMonth()+1;
-})();
-
-/* JSONP 載入 */
-function load(action, store){
-  const cb='cb_'+action+'_'+Date.now();
-  window[cb]=list=>{
-    list.forEach(x=>store.push(x));
-    delete window[cb];
-    if(games.length && attends.length) renderSchedule();
-  };
-  const s=document.createElement('script');
-  s.src=API_URL+'?action='+action+'&callback='+cb;
-  document.body.appendChild(s);
-}
-
-/* 月班表渲染 */
-function renderSchedule(){
-  const box=document.getElementById('schedule');
-  box.innerHTML='';
-  const y=year.value, m=month.value;
-
-  const msGames=games.filter(g=>{
-    const d=new Date(g.date);
-    return d.getFullYear()==y && (d.getMonth()+1)==m;
-  });
-
-  if(msGames.length===0){
-    box.textContent='本月無賽事';
+window[cb] = function(res) {
+  if (res.result !== 'ok') {
+    document.getElementById('content').textContent = '無法取得資料';
     return;
   }
 
-  msGames.forEach(g=>{
-    const at=attends.filter(a=>a.game_id===g.game_id);
-    box.innerHTML+=`
-<div style="margin-bottom:10px;">
-<b>${roc(g.date)}</b>｜
-${g.tournament} ${g.category}｜
-${g.away_team} vs ${g.home_team}｜
-${g.field}<br>
-裁判：
-${at.map(a=>a.judge_id+'('+a.role+')').join('、') || '尚未排定'}
-</div>`;
-  });
-}
+  const { games, attendance, judges } = res;
+  let html = '';
 
-load('games',games);
-load('attendance',attends);
+  games.forEach(g => {
+    html += `
+      <h3>
+        ${g.date}｜
+        ${g.tournament} ${g.category}｜
+        ${g.away_team} vs ${g.home_team}｜
+        ${g.field}
+      </h3>
+      <ul>
+    `;
+
+    attendance
+      .filter(a => a.game_id === g.game_id)
+      .forEach(a => {
+        const j = judges.find(j => j.judge_id === a.judge_id);
+        html += `
+          <li>
+            ${j ? j.name : a.judge_id}
+            （${a.role}，${a.attend || '未確認'}）
+          </li>
+        `;
+      });
+
+    html += '</ul>';
+  });
+
+  document.getElementById('content').innerHTML = html;
+};
+
+const s = document.createElement('script');
+s.src =
+  API_URL +
+  '?action=getAllSchedule' +
+  '&token=' + encodeURIComponent(token) +
+  '&callback=' + cb;
+
+document.body.appendChild(s);
 </script>
+
 </body>
 </html>
+``
