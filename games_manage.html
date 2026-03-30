@@ -164,11 +164,11 @@ function updateGame(id) {
 
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
-    if (res.result === 'ok') {
-      alert('✅ 已更新');
-      loadGames(); // ✅ 重新載入，避免誤判
+    if (res && res.result === 'ok') {
+      alert('✅ 修改完成');
+      loadGames();          // ✅ 關鍵：重新載入畫面
     } else {
-      alert('❌ 更新失敗');
+      alert('❌ 更新失敗：' + (res ? res.result : 'no response'));
     }
   };
 
@@ -177,8 +177,8 @@ function updateGame(id) {
     API_URL +
     '?action=updateGame' +
     '&token=' + encodeURIComponent(token) +
-    '&game_id=' + id +
-    '&date=' + encodeURIComponent(dateVal) +
+    '&game_id=' + encodeURIComponent(id) +
+    '&date=' + encodeURIComponent(fromInputDate(dateVal)) +     // ⭐ 重點在這
     '&field=' + encodeURIComponent(document.getElementById('f_'+id).value) +
     '&tournament=' + encodeURIComponent(document.getElementById('t_'+id).value) +
     '&category=' + encodeURIComponent(document.getElementById('c_'+id).value) +
