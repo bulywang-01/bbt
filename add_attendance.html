@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>出勤回報</title>
+</head>
+<body>
+
+<script>
+if (!localStorage.getItem('role')) location.href='login.html';
+if (localStorage.getItem('role') !== 'judge') {
+  alert('無權限');
+  location.href='index.html';
+}
+</script>
+
+<h2>🧑‍⚖️ 出勤回報</h2>
+
+比賽編號：<input id="game_id"><br>
+角色：
+<select id="role">
+  <option value="主審">主審</option>
+  <option value="壘審">壘審</option>
+</select><br>
+備註：<input id="note"><br><br>
+
+<button onclick="send()">送出</button>
+
+<script>
+function send() {
+  const token = localStorage.getItem('token');
+  const cb = 'cb_' + Date.now();
+
+  window[cb] = function(res) {
+    if (res.result === 'ok') {
+      alert('出勤完成');
+      location.href='index.html';
+    } else {
+      alert('失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=addAttendance' +
+    '&token=' + encodeURIComponent(token) +
+    '&game_id=' + encodeURIComponent(game_id.value) +
+    '&role=' + encodeURIComponent(role.value) +
+    '&note=' + encodeURIComponent(note.value) +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
+</script>
+
+</body>
+</html>
