@@ -25,7 +25,8 @@ function logout() {
   location.href = 'login.html';
 }
 
-const role = localStorage.getItem('role');
+// const role = localStorage.getItem('role');
+const role = (localStorage.getItem('role') || '').trim().toLowerCase();
 const menu = document.getElementById('menu');
 
 /* ===== 管理者選單 ===== */
