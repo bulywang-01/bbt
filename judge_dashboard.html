@@ -1,61 +1,108 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>我的班表</title>
+<meta charset="UTF-8">
+<title>我的班表 / 出勤</title>
+<style>
+  body { font-family: system-ui; }
+  li { margin: 6px 0; }
+  button { margin-left: 6px; }
+</style>
 </head>
 <body>
 
+<!-- ✅ 登入 / 角色檢查 -->
 <script>
-if (!localStorage.getItem('role')) location.href = 'login.html';
+if (!localStorage.getItem('role')) location.href='login.html';
 if (localStorage.getItem('role') !== 'judge') {
-  alert('無權限');
-  location.href = 'index.html';
+  alert('此頁僅限裁判');
+  location.href='index.html';
 }
 </script>
 
-<h2>📊 我的班表</h2>
-<div id="content">載入中…</div>
+<h2>📊 我的班表 / 出勤紀錄</h2>
 
+<div id="info"></div>
+<hr>
+<div id="list">載入中…</div>
+
+index.html← 回首頁</a>
+
+<script src="js/config.js"></script>
 <script>
 const token = localStorage.getItem('token');
+const judgeId = localStorage.getItem('judge_id');
 const cb = 'cb_' + Date.now();
 
-window[cb] = function(res) {
+/* 顯示基本資訊 */
+document.getElementById('info').textContent =
+  '裁判編號：' + judgeId;
+
+/* 取得自己的出勤 */
+window[cb] = function(res){
   if (res.result !== 'ok') {
-    document.getElementById('content').textContent = '無法取得資料';
+    document.getElementById('list').textContent='無法讀取資料';
     return;
   }
 
   const { games, attendance } = res;
-  let html = '<ul>';
+  if (!attendance.length) {
+    document.getElementById('list').textContent='目前尚無出勤紀錄';
+    return;
+  }
 
-  attendance.forEach(a => {
-    const g = games.find(g => g.game_id === a.game_id);
-    if (!g) return;
+  let html='<ul>';
+  attendance.forEach(a=>{
+    const g = games.find(x=>x.game_id===a.game_id);
+    if(!g) return;
 
-    html += `
+    html+=`
       <li>
         ${g.date}｜
         ${g.tournament} ${g.category}｜
         ${g.away_team} vs ${g.home_team}｜
-        ${a.role}（${a.attend || '未確認'}）
+        ${a.role}（${a.attend||'未確認'}）
+        <button onclick="delAttend('${a.game_id}')">取消</button>
       </li>
     `;
   });
+  html+='</ul>';
 
-  html += '</ul>';
-  document.getElementById('content').innerHTML = html;
+  document.getElementById('list').innerHTML=html;
 };
 
-const s = document.createElement('script');
-s.src =
-  API_URL +
-  '?action=getMySchedule' +
-  '&token=' + encodeURIComponent(token) +
-  '&callback=' + cb;
+const s=document.createElement('script');
+s.src=
+  API_URL+
+  '?action=getMySchedule'+
+  '&token='+encodeURIComponent(token)+
+  '&callback='+cb;
 
 document.body.appendChild(s);
+
+/* 刪除自己的出勤 */
+function delAttend(game_id){
+  if(!confirm('確定取消出勤？')) return;
+
+  const cb2='cb_'+Date.now();
+  window[cb2]=res=>{
+    if(res.result==='ok'){
+      alert('已取消');
+      location.reload();
+    }else{
+      alert('失敗');
+    }
+  };
+
+  const s2=document.createElement('script');
+  s2.src=
+    API_URL+
+    '?action=deleteAttendance'+
+    '&token='+encodeURIComponent(token)+
+    '&game_id='+encodeURIComponent(game_id)+
+    '&callback='+cb2;
+  document.body.appendChild(s2);
+}
 </script>
 
 </body>
