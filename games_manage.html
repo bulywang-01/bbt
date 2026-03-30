@@ -2,23 +2,14 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>比賽管理</title>
+<title>⚾ 比賽管理（整合）</title>
 <style>
   body { font-family: system-ui; line-height: 1.6; }
-  h2 { margin-top: 0; }
-  table { border-collapse: collapse; margin-top: 10px; width: 100%; }
-  th, td {
-    border: 1px solid #ccc;
-    padding: 6px;
-    text-align: center;
-  }
+  table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+  th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
   th { background: #eee; }
-  input[type="text"], input[type="date"], select {
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .actions button { margin: 0 2px; }
-  .section { margin: 15px 0; padding: 10px; background: #f7f7f7; }
+  input, select { width: 100%; box-sizing: border-box; }
+  .section { background: #f7f7f7; padding: 10px; margin: 12px 0; }
 </style>
 </head>
 <body>
@@ -34,7 +25,8 @@ if (localStorage.getItem('role') !== 'admin') {
 
 <h2>⚾ 比賽管理（整合）</h2>
 
-index.html🏠 回首頁</a>
+<!-- ✅ 這次是正確的連結 -->
+<a href="index.html">🏠 回首頁</a>
 
 <!-- ===== 新增比賽 ===== -->
 <div class="section">
@@ -57,9 +49,7 @@ index.html🏠 回首頁</a>
           <option>3</option><option>4</option>
         </select>
       </td>
-      <td>
-        <button onclick="addGame()">新增</button>
-      </td>
+      <td><button onclick="addGame()">新增</button></td>
     </tr>
   </table>
 </div>
@@ -70,25 +60,25 @@ index.html🏠 回首頁</a>
   <div id="list">載入中…</div>
 </div>
 
+<!-- ✅ 一定要正確載入 -->
 <script src="js/config.js"></script>
-  
-<script>
-const token = localStorage.getItem('token');
-const listBox = document.getElementById('list');
 
-/* ===== 取得比賽資料 ===== */
+<script>
+const listBox = document.getElementById('list');
+const token = localStorage.getItem('token');
+
+/* ===== 載入比賽 ===== */
 function loadGames() {
   listBox.textContent = '載入中…';
   const cb = 'cb_' + Date.now();
 
   window[cb] = function(res) {
-    if (res.result !== 'ok') {
-      listBox.textContent = '❌ 無法取得資料';
+    if (!res || res.result !== 'ok') {
+      listBox.textContent = '❌ 無法讀取比賽資料';
       return;
     }
 
-    const games = res.games;
-    if (games.length === 0) {
+    if (!res.games || res.games.length === 0) {
       listBox.textContent = '目前尚無比賽資料';
       return;
     }
@@ -103,7 +93,7 @@ function loadGames() {
         </tr>
     `;
 
-    games.forEach(g => {
+    res.games.forEach(g => {
       html += `
         <tr>
           <td>${g.game_id}</td>
@@ -121,14 +111,12 @@ function loadGames() {
               <option ${g.umpire_count==4?'selected':''}>4</option>
             </select>
           </td>
-          <td class="actions">
+          <td>
             <button onclick="updateGame('${g.game_id}')">儲存</button>
             <button onclick="deleteGame('${g.game_id}')">刪除</button>
           </td>
-        </tr>
-      `;
+        </tr>`;
     });
-
     html += '</table>';
     listBox.innerHTML = html;
   };
@@ -193,7 +181,26 @@ function updateGame(id) {
 
 /* ===== 刪除 ===== */
 function deleteGame(id) {
-  if (!confirm('確定刪除這場比賽？')) return;
-
+  if (!confirm('確定刪除？')) return;
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
+    if (res.result === 'ok') loadGames();
+    else alert('刪除失敗');
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=deleteGame' +
+    '&token=' + encodeURIComponent(token) +
+    '&game_id=' + id +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* 初始載入 */
+loadGames();
+</script>
+
+</body>
+</html>
