@@ -1,93 +1,135 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>出勤統計</title>
+  <meta charset="UTF-8">
+  <title>裁判出勤統計</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    .msg {
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      background: #f7f7f7;
+    }
+    .error {
+      color: #c00;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 10px;
+      min-width: 600px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: center;
+    }
+    th {
+      background: #eee;
+    }
+    .actions {
+      margin: 10px 0;
+    }
+  </style>
 </head>
 <body>
 
+<!-- ===== 登入 / 權限檢查 ===== -->
 <script>
-  if (res.result === 'forbidden') {
-  alert('登入已過期，請重新登入');
-  localStorage.clear();
+if (!localStorage.getItem('role')) {
   location.href = 'login.html';
-  return;
 }
-</script>
-  
-<script>
-if (!localStorage.getItem('role')) location.href='login.html';
+if (localStorage.getItem('role') !== 'admin') {
+  alert('此頁僅限管理者使用');
+  location.href = 'index.html';
+}
 </script>
 
 <h2>📊 裁判出勤統計</h2>
 
-<table border="1" cellpadding="4">
-<thead>
-<tr>
-<th>裁判</th>
-<th>總出勤</th>
-<th>主審</th>
-<th>一壘審</th>
-<th>二壘審</th>
-<th>三壘審</th>
-</tr>
-</thead>
-<tbody id="stats"></tbody>
-</table>
+<div class="actions">
+  <button onclick="exportExcel()">📥 匯出裁判出勤統計 Excel</button>
+  |
+  <a href="index.html">🏠 回首頁</a>
+</div>
 
+<div id="content" class="msg">載入中…</div>
+
+<!-- 一定要載入 API 設定 -->
 <script src="js/config.js"></script>
-  
-<script>
-const judges=[], attends=[];
 
-/* JSONP 載入 */
-function load(action, store){
-  const cb='cb_'+action+'_'+Date.now();
-  window[cb]=list=>{
-    list.forEach(x=>store.push(x));
-    delete window[cb];
-    if(judges.length && attends.length) render();
+<script>
+const content = document.getElementById('content');
+const token = localStorage.getItem('token');
+
+if (!token) {
+  content.innerHTML = '<span class="error">❌ 尚未登入（無 token）</span>';
+} else {
+
+  let finished = false;
+  const cb = 'cb_' + Date.now();
+
+  // ===== 防止 API 無回應卡死 =====
+  setTimeout(() => {
+    if (!finished) {
+      content.innerHTML = '<span class="error">❌ 連線逾時，請檢查 API 部署</span>';
+    }
+  }, 5000);
+
+  window[cb] = function (res) {
+    finished = true;
+    console.log('stats response:', res);
+
+    if (!res || !res.result) {
+      content.innerHTML = '<span class="error">❌ API 回傳格式錯誤</span>';
+      return;
+    }
+
+    if (res.result === 'forbidden') {
+      content.innerHTML = '<span class="error">❌ 權限不足或登入已過期，請重新登入</span>';
+      return;
+    }
+
+    // 注意：這個 API 是「匯出用」，本身不回資料表
+    // 所以這裡我們只顯示提示說明
+    content.innerHTML = `
+      ✅ 系統可正常匯出裁判出勤統計<br>
+      請使用上方「📥 匯出裁判出勤統計 Excel」下載完整資料。
+    `;
   };
-  const s=document.createElement('script');
-  s.src=API_URL+'?action='+action+'&callback='+cb;
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=exportAttendanceStats' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
+
   document.body.appendChild(s);
 }
 
-/* 統計渲染 */
-function render(){
-  const box=document.getElementById('stats');
-  box.innerHTML='';
-  judges.forEach(j=>{
-    const a=attends.filter(x=>x.judge_id===j.judge_id);
-    const c=r=>a.filter(x=>x.role===r).length;
-    box.innerHTML+=`
-<tr>
-<td>${j.name}</td>
-<td>${a.length}</td>
-<td>${c('主審')}</td>
-<td>${c('一壘審')}</td>
-<td>${c('二壘審')}</td>
-<td>${c('三壘審')}</td>
-</tr>`;
-  });
-}
-
-load('judges',judges);
-load('attendance',attends);
-</script>
-
-<button onclick="exportStats()">📥 匯出裁判出勤統計 Excel</button>
-
-<script>
-function exportStats() {
+/* ===== 匯出 Excel ===== */
+function exportExcel() {
   const token = localStorage.getItem('token');
-  const cb = 'cb_' + Date.now();
+  if (!token) {
+    alert('尚未登入');
+    return;
+  }
 
-  window[cb] = function(res) {
-    if (res.result === 'ok' && res.url) {
+  const cb = 'cb_' + Date.now();
+  window[cb] = function (res) {
+    if (res && res.result === 'ok' && res.url) {
       window.open(res.url, '_blank');
+    } else if (res && res.result === 'forbidden') {
+      alert('權限不足或登入已過期');
     } else {
-      alert('匯出失敗（權限或連線錯誤）');
+      alert('匯出失敗');
     }
   };
 
@@ -101,7 +143,6 @@ function exportStats() {
   document.body.appendChild(s);
 }
 </script>
-``
+
 </body>
 </html>
-
