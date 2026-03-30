@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<!-- ✅ 未登入者導向 login.html -->
+<!-- ✅ 登入門禁 -->
 <script>
 if (!localStorage.getItem('role')) {
   location.href = 'login.html';
@@ -25,26 +25,29 @@ function logout() {
   location.href = 'login.html';
 }
 
-// const role = localStorage.getItem('role');
-const role = (localStorage.getItem('role') || '').trim().toLowerCase();
+/* ✅ 核心修正：標準化 role */
+const role = (localStorage.getItem('role') || '')
+  .trim()
+  .toLowerCase();
+
 const menu = document.getElementById('menu');
 
-/* ===== 管理者選單 ===== */
+/* ===== 管理者 ===== */
 if (role === 'admin') {
   menu.innerHTML = `
-    <li><a href="gamestml⚾ 比賽管理</a></li>
-    <li><a href="judgestml👨‍⚖️ 裁判管理</a></li>
+    <li><a href="games_manage.html></li>
+    <li><a href="judges_manage.html理</a></li>
     <li><a href="html📅 月班表</a></li>
-    <li><a href="stats勤統計</a></li>
+    <li><a href="stats.htmla></li>
   `;
 }
 
-/* ===== 裁判選單 ===== */
+/* ===== 裁判 ===== */
 if (role === 'judge') {
   menu.innerHTML = `
     <li><a href="judgetml📋 報名盃賽／場次</a></li>
-    <li><a href="judge_avy.html🕒 可上班時段</a></li>
-    <li><a href="judge_dashboard.html計</a></li>
+    <li><a href="judgelity.html🕒 可上班時段</a></li>
+    <li><a href="judge_dashboard的班表／統計</a></li>
   `;
 }
 </script>
