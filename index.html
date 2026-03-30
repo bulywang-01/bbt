@@ -2,12 +2,15 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>裁判系統</title>
+<title>裁判系統首頁</title>
 </head>
 <body>
 
 <script>
-if (!localStorage.getItem('role')) location.href='login.html';
+/* ===== 未登入直接踢回登入頁 ===== */
+if (!localStorage.getItem('role')) {
+  location.href = 'login.html';
+}
 </script>
 
 <h2>🏠 裁判系統首頁</h2>
@@ -16,28 +19,35 @@ if (!localStorage.getItem('role')) location.href='login.html';
 
 <button onclick="logout()">登出</button>
 
-<script src="js/config.js"></script>
 <script>
 function logout(){
   localStorage.clear();
-  location.href='login.html';
+  location.href = 'login.html';
 }
 
 const role = localStorage.getItem('role');
 const menu = document.getElementById('menu');
 
-if (role === 'judge') {
-  menu.innerHTML = `
-    <li>judge_signup.html📋 報名盃賽 / 場次</a></li>
-    <li>judge_availability.html🕒 填寫可上班時段</a></li>
-    <li>judge_dashboard.html📊 我的班表 / 我的統計</a></li>
-  `;
-} else if (role === 'admin') {
+/* ===============================
+   裁判長（admin）看到的選單
+=============================== */
+if (role === 'admin') {
   menu.innerHTML = `
     <li>games_manage.html比賽管理</a></li>
     <li>judges_manage.html裁判管理</a></li>
     <li>schedule.html月班表</a></li>
     <li>stats.html出勤統計</a></li>
+  `;
+}
+
+/* ===============================
+   一般裁判（judge）看到的選單
+=============================== */
+if (role === 'judge') {
+  menu.innerHTML = `
+    <li>judge_signup.html📋 報名盃賽／場次</a></li>
+    <li>judge_availability.html🕒 填寫可上班時段</a></li>
+    <li>judge_dashboard.html📊 我的班表／我的統計</a></li>
   `;
 }
 </script>
