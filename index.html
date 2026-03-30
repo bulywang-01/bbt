@@ -2,11 +2,32 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>裁判系統首頁</title>
+  <title>裁判系統首頁 V1</title>
+
+  <!-- ✅ 明確指定樣式，避免文字被吃掉 -->
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    ul {
+      margin-left: 20px;
+    }
+    li {
+      margin: 6px 0;
+    }
+    a {
+      color: #0b5ed7;          /* 明確指定藍色 */
+      text-decoration: none;
+      font-size: 16px;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
 
-<!-- ✅ 未登入者一律導向登入頁 -->
+<!-- ✅ 未登入就轉登入頁 -->
 <script>
 if (!localStorage.getItem('role')) {
   location.href = 'login.html';
@@ -15,12 +36,11 @@ if (!localStorage.getItem('role')) {
 
 <h1>🏠 裁判系統首頁</h1>
 
-<!-- ✅ 狀態顯示（驗證用，之後可拿掉） -->
-<div id="status" style="margin-bottom:12px;"></div>
+<!-- 狀態顯示 -->
+<div id="status" style="margin-bottom: 12px;"></div>
 
 <hr>
 
-<!-- ✅ 選單（完全由 JS 產生） -->
 <ul id="menu"></ul>
 
 <hr>
@@ -33,40 +53,30 @@ function logout() {
   location.href = 'login.html';
 }
 
-/* ===== 讀取登入資訊 ===== */
 const username = localStorage.getItem('username') || '(unknown)';
 const role = (localStorage.getItem('role') || '').trim().toLowerCase();
 
-/* ✅ 顯示狀態（讓你用眼睛確認） */
 document.getElementById('status').innerHTML =
   '<b>目前登入帳號：</b>' + username + '<br>' +
   '<b>角色：</b>' + role;
 
 const menu = document.getElementById('menu');
 
-/* ===== 管理者選單 ===== */
 if (role === 'admin') {
   menu.innerHTML = `
     <li><a href="games_manage.html></li>
-    <li><a href="judges_manage.html理</a></li>
-    <li><a href="html📅 月班表</a></li>
-    <li><a href="stats勤統計</a></li>
+    <li><a href="jude.html👨‍⚖️ 裁判管理</a></li>
+    <li><a href="schedule.html></li>
+    <li><a href="stats.htmla></li>
   `;
 }
 
-/* ===== 裁判選單 ===== */
 if (role === 'judge') {
   menu.innerHTML = `
-    <li><a href="judge_signup.html次</a></li>
+    <li><a hrefignup.html📋 報名盃賽／場次</a></li>
     <li><a href="judge_availability.html/a></li>
     <li><a href="judge_dashboard.html計</a></li>
   `;
-}
-
-/* ===== 防呆 ===== */
-if (!menu.innerHTML.trim()) {
-  menu.innerHTML =
-    '<li style="color:red;">⚠ 選單未產生，角色值：' + role + '</li>';
 }
 </script>
 
