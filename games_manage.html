@@ -6,17 +6,21 @@
 <style>
   body {
     font-family: system-ui;
-    line-height: 1.6;
     margin: 20px;
+    line-height: 1.6;
   }
   h2 { margin-top: 0; }
-  a { text-decoration: none; color: #0066cc; }
+
+  a {
+    color: #0066cc;
+    text-decoration: none;
+  }
   a:hover { text-decoration: underline; }
 
   table {
     border-collapse: collapse;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
   }
   th, td {
     border: 1px solid #ccc;
@@ -26,6 +30,7 @@
   th {
     background: #f0f0f0;
   }
+
   input, select {
     width: 100%;
     box-sizing: border-box;
@@ -35,6 +40,13 @@
     background: #f9f9f9;
     padding: 12px;
     margin-top: 15px;
+  }
+
+  .toolbar {
+    margin: 10px 0;
+    padding: 10px;
+    background: #fffbe6;
+    border: 1px solid #e6d39f;
   }
 
   .actions button {
@@ -83,94 +95,34 @@ if (localStorage.getItem('role') !== 'admin') {
 </div>
 
 <!-- ===== Bulk 修改 ===== -->
-<div class="section">
-  <h3>🧰 大量修改（套用到勾選的比賽）</h3>
-  <table>
-    <tr>
-      <th>日期</th>
-      <th>球場</th>
-      <th>盃賽</th>
-      <th>裁判數</th>
-      <th></th>
-    </tr>
-    <tr>
-      <td><input type="date" id="b_date"></td>
-      <td><input type="text" id="b_field"></td>
-      <td><input type="text" id="b_tournament"></td>
-      <td>
-        <select id="b_count">
-          <option value="">(不變)</option>
-          <option>1</option><option>2</option>
-          <option>3</option><option>4</option>
-        </select>
-      </td>
-      <td><button onclick="applyBulk()">✅ 套用</button></td>
-    </tr>
-  </table>
-  <small>※ 留空代表該欄位不修改</small>
+<div class="toolbar">
+  <strong>🧰 大量修改（套用到勾選的比賽）</strong><br><br>
+  日期 <input type="date" id="b_date">
+  球場 <input type="text" id="b_field">
+  盃賽 <input type="text" id="b_tournament">
+  裁判數
+  <select id="b_count">
+    <option value="">不變</option>
+    <option>1</option><option>2</option>
+    <option>3</option><option>4</option>
+  </select>
+  <button onclick="applyBulk()">✅ 套用</button>
 </div>
 
-  
 <!-- ===== 比賽清單 ===== -->
 <div class="section">
   <h3>📋 目前比賽清單</h3>
   <div id="list">載入中…</div>
 </div>
 
+
 <!-- ✅ 一定要正確載入 -->
 <script src="js/config.js"></script>
+
 
 <script>
 const token = localStorage.getItem('token');
 const listBox = document.getElementById('list');
-
-function applyBulk() {
-  const selected = [...document.querySelectorAll('.sel:checked')]
-    .map(c => c.value);
-
-  if (selected.length === 0) {
-    alert('請先勾選比賽');
-    return;
-  }
-
-  // 組 payload：只送有填的欄位
-  const payload = {
-    ids: selected,
-    data: {}
-  };
-
-  if (b_date.value) payload.data.date = fromInputDate(b_date.value);
-  if (b_field.value) payload.data.field = b_field.value;
-  if (b_tournament.value) payload.data.tournament = b_tournament.value;
-  if (b_count.value) payload.data.umpire_count = b_count.value;
-
-  if (Object.keys(payload.data).length === 0) {
-    alert('沒有填任何修改欄位');
-    return;
-  }
-
-  if (!confirm(`確定套用到 ${selected.length} 筆比賽？`)) return;
-
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (res && res.result === 'ok') {
-      alert(`✅ 已修改 ${res.updated} 筆比賽`);
-      loadGames();
-    } else {
-      alert('❌ 大量修改失敗');
-    }
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=bulkUpdateGames' +
-    '&token=' + encodeURIComponent(token) +
-    '&payload=' + encodeURIComponent(JSON.stringify(payload)) +
-    '&callback=' + cb;
-
-  document.body.appendChild(s);
-}
 
 function toInputDate(str) {
   return str ? str.replace(/\//g, '-') : '';
@@ -197,7 +149,8 @@ function loadGames() {
 
     let html = `<table>
       <tr>
-        <th>勾選</th><th>ID</th><th>日期</th><th>球場</th>
+        <th>選</th>
+        <th>ID</th><th>日期</th><th>球場</th>
         <th>盃賽</th><th>組別</th>
         <th>客隊</th><th>主隊</th>
         <th>裁判數</th><th>操作</th>
@@ -205,30 +158,28 @@ function loadGames() {
 
     res.games.forEach(g => {
       html += `
-<tr>
-  <td>
-    <input type="checkbox" class="sel" value="${g.game_id}">
-  </td>
-  <td>${g.game_id}</td>
-  <td><input type="date" id="d_${g.game_id}" value="${toInputDate(g.date)}"></td>
-  <td><input type="text" id="f_${g.game_id}" value="${g.field}"></td>
-  <td><input type="text" id="t_${g.game_id}" value="${g.tournament}"></td>
-  <td><input type="text" id="c_${g.game_id}" value="${g.category}"></td>
-  <td><input type="text" id="a_${g.game_id}" value="${g.away_team}"></td>
-  <td><input type="text" id="h_${g.game_id}" value="${g.home_team}"></td>
-  <td>
-    <select id="u_${g.game_id}">
-      <option ${g.umpire_count==1?'selected':''}>1</option>
-      <option ${g.umpire_count==2?'selected':''}>2</option>
-      <option ${g.umpire_count==3?'selected':''}>3</option>
-      <option ${g.umpire_count==4?'selected':''}>4</option>
-    </select>
-  </td>
-  <td class="actions">
-    <button onclick="updateGame('${g.game_id}')">儲存</button>
-    <button onclick="deleteGame('${g.game_id}')">刪除</button>
-  </td>
-</tr>;
+      <tr>
+        <td><input type="checkbox" class="sel" value="${g.game_id}"></td>
+        <td>${g.game_id}</td>
+        <td><input type="date" id="d_${g.game_id}" value="${toInputDate(g.date)}"></td>
+        <td><input type="text" id="f_${g.game_id}" value="${g.field}"></td>
+        <td><input type="text" id="t_${g.game_id}" value="${g.tournament}"></td>
+        <td><input type="text" id="c_${g.game_id}" value="${g.category}"></td>
+        <td><input type="text" id="a_${g.game_id}" value="${g.away_team}"></td>
+        <td><input type="text" id="h_${g.game_id}" value="${g.home_team}"></td>
+        <td>
+          <select id="u_${g.game_id}">
+            <option ${g.umpire_count==1?'selected':''}>1</option>
+            <option ${g.umpire_count==2?'selected':''}>2</option>
+            <option ${g.umpire_count==3?'selected':''}>3</option>
+            <option ${g.umpire_count==4?'selected':''}>4</option>
+          </select>
+        </td>
+        <td class="actions">
+          <button onclick="updateGame('${g.game_id}')">儲存</button>
+          <button onclick="deleteGame('${g.game_id}')">刪除</button>
+        </td>
+      </tr>`;
     });
 
     html += '</table>';
@@ -246,10 +197,7 @@ function loadGames() {
 
 /* ===== 新增 ===== */
 function addGame() {
-  if (!n_date.value) {
-    alert('請填寫日期');
-    return;
-  }
+  if (!n_date.value) return alert('請填日期');
 
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
@@ -277,17 +225,14 @@ function addGame() {
   document.body.appendChild(s);
 }
 
-/* ===== 修改 ===== */
+/* ===== 單筆修改 ===== */
 function updateGame(id) {
   const dateVal = document.getElementById('d_' + id).value;
-  if (!dateVal) {
-    alert('日期不可為空');
-    return;
-  }
+  if (!dateVal) return alert('日期不可為空');
 
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
-    if (res && res.result === 'ok') {
+    if (res.result === 'ok') {
       alert('✅ 修改完成');
       loadGames();
     } else {
@@ -336,7 +281,48 @@ function deleteGame(id) {
   document.body.appendChild(s);
 }
 
-/* 初始載入 */
+/* ===== Bulk 修改 ===== */
+function applyBulk() {
+  const selected = [...document.querySelectorAll('.sel:checked')]
+    .map(c => c.value);
+
+  if (!selected.length) return alert('請先勾選比賽');
+
+  const data = {};
+  if (b_date.value) data.date = fromInputDate(b_date.value);
+  if (b_field.value) data.field = b_field.value;
+  if (b_tournament.value) data.tournament = b_tournament.value;
+  if (b_count.value) data.umpire_count = b_count.value;
+
+  if (!Object.keys(data).length)
+    return alert('沒有填任何修改欄位');
+
+  if (!confirm(`確定套用到 ${selected.length} 筆？`)) return;
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (res.result === 'ok') {
+      alert(`✅ 已修改 ${res.updated} 筆`);
+      loadGames();
+    } else {
+      alert('❌ 大量修改失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=bulkUpdateGames' +
+    '&token=' + encodeURIComponent(token) +
+    '&payload=' + encodeURIComponent(JSON.stringify({
+      ids: selected,
+      data: data
+    })) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* 初始化 */
 loadGames();
 </script>
 
