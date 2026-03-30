@@ -2,53 +2,50 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>裁判系統首頁</title>
+<title>裁判系統登入</title>
 </head>
 <body>
 
-<script>
-/* ===== 未登入直接踢回登入頁 ===== */
-if (!localStorage.getItem('role')) {
-  location.href = 'login.html';
-}
-</script>
+<h2>🔒 裁判系統登入</h2>
 
-<h2>🏠 裁判系統首頁</h2>
+帳號：
+<input id="u" value="admin"><br><br>
+密碼：
+<input id="p" type="password" value="1234"><br><br>
+<button onclick="login()">登入</button>
 
-<ul id="menu"></ul>
-
-<button onclick="logout()">登出</button>
+<!-- ✅ 正確路徑（因為在 /bbt/ 底下） -->
+<script src="js/config.js"></script>
 
 <script>
-function logout(){
-  localStorage.clear();
-  location.href = 'login.html';
-}
+function login(){
+  const user = u.value.trim();
+  const pass = p.value.trim();
 
-const role = localStorage.getItem('role');
-const menu = document.getElementById('menu');
+  const cb = 'login_cb_' + Date.now();
+  window[cb] = function(res){
+    console.log('login response:', res);
 
-/* ===============================
-   裁判長（admin）看到的選單
-=============================== */
-if (role === 'admin') {
-  menu.innerHTML = `
-    <li>games_manage.html比賽管理</a></li>
-    <li>judges_manage.html裁判管理</a></li>
-    <li>schedule.html月班表</a></li>
-    <li>stats.html出勤統計</a></li>
-  `;
-}
+    if (res && res.result === 'ok') {
+      localStorage.setItem('role', res.role);
+      localStorage.setItem('judge_id', res.judge_id || '');
+      location.href = 'index.html';
+    } else {
+      alert('登入失敗');
+    }
+    delete window[cb];
+  };
 
-/* ===============================
-   一般裁判（judge）看到的選單
-=============================== */
-if (role === 'judge') {
-  menu.innerHTML = `
-    <li>judge_signup.html📋 報名盃賽／場次</a></li>
-    <li>judge_availability.html🕒 填寫可上班時段</a></li>
-    <li>judge_dashboard.html📊 我的班表／我的統計</a></li>
-  `;
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=login' +
+    '&username=' + encodeURIComponent(user) +
+    '&password=' + encodeURIComponent(pass) +
+    '&callback=' + cb +
+    '&_=' + Date.now();
+
+  document.body.appendChild(s);
 }
 </script>
 
