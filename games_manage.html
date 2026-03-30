@@ -197,7 +197,7 @@ function loadGames() {
 
     let html = `<table>
       <tr>
-        <th>ID</th><th>日期</th><th>球場</th>
+        <th>勾選</th><th>ID</th><th>日期</th><th>球場</th>
         <th>盃賽</th><th>組別</th>
         <th>客隊</th><th>主隊</th>
         <th>裁判數</th><th>操作</th>
@@ -205,27 +205,30 @@ function loadGames() {
 
     res.games.forEach(g => {
       html += `
-      <tr>
-        <td>${g.game_id}</td>
-        <td><input type="date" id="d_${g.game_id}" value="${toInputDate(g.date)}"></td>
-        <td><input type="text" id="f_${g.game_id}" value="${g.field}"></td>
-        <td><input type="text" id="t_${g.game_id}" value="${g.tournament}"></td>
-        <td><input type="text" id="c_${g.game_id}" value="${g.category}"></td>
-        <td><input type="text" id="a_${g.game_id}" value="${g.away_team}"></td>
-        <td><input type="text" id="h_${g.game_id}" value="${g.home_team}"></td>
-        <td>
-          <select id="u_${g.game_id}">
-            <option ${g.umpire_count==1?'selected':''}>1</option>
-            <option ${g.umpire_count==2?'selected':''}>2</option>
-            <option ${g.umpire_count==3?'selected':''}>3</option>
-            <option ${g.umpire_count==4?'selected':''}>4</option>
-          </select>
-        </td>
-        <td class="actions">
-          <button onclick="updateGame('${g.game_id}')">儲存</button>
-          <button onclick="deleteGame('${g.game_id}')">刪除</button>
-        </td>
-      </tr>`;
+<tr>
+  <td>
+    <input type="checkbox" class="sel" value="${g.game_id}">
+  </td>
+  <td>${g.game_id}</td>
+  <td><input type="date" id="d_${g.game_id}" value="${toInputDate(g.date)}"></td>
+  <td><input type="text" id="f_${g.game_id}" value="${g.field}"></td>
+  <td><input type="text" id="t_${g.game_id}" value="${g.tournament}"></td>
+  <td><input type="text" id="c_${g.game_id}" value="${g.category}"></td>
+  <td><input type="text" id="a_${g.game_id}" value="${g.away_team}"></td>
+  <td><input type="text" id="h_${g.game_id}" value="${g.home_team}"></td>
+  <td>
+    <select id="u_${g.game_id}">
+      <option ${g.umpire_count==1?'selected':''}>1</option>
+      <option ${g.umpire_count==2?'selected':''}>2</option>
+      <option ${g.umpire_count==3?'selected':''}>3</option>
+      <option ${g.umpire_count==4?'selected':''}>4</option>
+    </select>
+  </td>
+  <td class="actions">
+    <button onclick="updateGame('${g.game_id}')">儲存</button>
+    <button onclick="deleteGame('${g.game_id}')">刪除</button>
+  </td>
+</tr>;
     });
 
     html += '</table>';
