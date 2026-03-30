@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<!-- ✅ 未登入就去登入頁 -->
+<!-- 登入門禁 -->
 <script>
 if (!localStorage.getItem('role')) {
   location.href = 'login.html';
@@ -15,7 +15,15 @@ if (!localStorage.getItem('role')) {
 
 <h1>🏠 裁判系統首頁</h1>
 
+<!-- ✅ 狀態顯示（讓你用眼睛驗證） -->
+<div id="status" style="margin-bottom: 10px;"></div>
+
+<hr>
+
+<!-- ✅ 動態選單 -->
 <ul id="menu"></ul>
+
+<hr>
 
 <button onclick="logout()">登出</button>
 
@@ -25,33 +33,41 @@ function logout() {
   location.href = 'login.html';
 }
 
-/* ✅ 穩定版角色判斷 */
-const role = (localStorage.getItem('role') || '')
-  .trim()
-  .toLowerCase();
+/* ===== 讀取登入資訊 ===== */
+const username = localStorage.getItem('username') || '(unknown)';
+const role = (localStorage.getItem('role') || '').trim().toLowerCase();
+
+document.getElementById('status').innerHTML = `
+  <b>目前登入帳號：</b>${username}<br>
+  <b>角色：</b>${role}
+`;
 
 const menu = document.getElementById('menu');
 
-/* 管理員 */
+/* ===== 管理者選單 ===== */
 if (role === 'admin') {
   menu.innerHTML = `
-    <li><a href="games_manage.html></li>
+    <li><a href="gamestml⚾ 比賽管理</a></li>
     <li><a href="judges_manage.html理</a></li>
-    <li><a hrefe.html📅 月班表</a></li>
-    <li><a href="stats勤統計</a></li>
+    <li><a href="schedule班表</a></li>
+    <li><a href="stats.htmla></li>
   `;
 }
 
-/* 裁判 */
+/* ===== 裁判選單 ===== */
 if (role === 'judge') {
   menu.innerHTML = `
-    <li><a href="nup.html📋 報名盃賽／場次</a></li>
+    <li><a href="judge_signup名盃賽／場次</a></li>
     <li><a href="judge_availability上班時段</a></li>
-    <li><a href="judged.html📊 我的班表／統計</a></li>
+    <li><a href="judge_dashboard.html計</a></li>
   `;
+}
+
+/* ===== 防呆顯示 ===== */
+if (!menu.innerHTML.trim()) {
+  menu.innerHTML = '<li style="color:red;">⚠ 無法判斷角色，請重新登入</li>';
 }
 </script>
 
 </body>
 </html>
-``
