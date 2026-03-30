@@ -13,9 +13,23 @@
 </style>
 </head>
 <body>
-
-<!-- ===== 權限檢查 ===== -->
+  
 <script>
+// Sheet → input[type=date]
+function toInputDate(str) {
+  if (!str) return '';
+  return str.replace(/\//g, '-');
+}
+
+// input[type=date] → Sheet
+function fromInputDate(str) {
+  if (!str) return '';
+  return str.replace(/-/g, '/');
+}
+
+  
+<!-- ===== 權限檢查 ===== -->
+
 if (!localStorage.getItem('role')) location.href = 'login.html';
 if (localStorage.getItem('role') !== 'admin') {
   alert('僅限管理者');
