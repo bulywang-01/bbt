@@ -6,10 +6,8 @@
 </head>
 <body>
 
-<h1 style="color:red">LOGIN V1000</h1>
-
 <h2>🔒 裁判系統登入</h2>
- 
+
 <div>
   帳號：
   <input id="u" value="admin"><br><br>
@@ -20,52 +18,46 @@
   <button id="loginBtn">登入</button>
 </div>
 
-<!-- ✅ 正確載入設定檔（唯一責任：提供 API_URL） -->
+<!-- ✅ 正確載入設定檔 -->
 <script src="js/config.js"></script>
 
-<!-- ✅ 登入邏輯 -->
 <script>
-(function () {
-  console.log('login.html loaded');
+console.log('login.html loaded, API_URL =', API_URL);
 
-  var btn = document.getElementById('loginBtn');
-  btn.addEventListener('click', login);
+document.getElementById('loginBtn').addEventListener('click', login);
 
-  function login() {
-    console.log('login clicked');
+function login() {
+  console.log('login clicked');
 
-    var user = document.getElementById('u').value.trim();
-    var pass = document.getElementById('p').value.trim();
+  const user = document.getElementById('u').value.trim();
+  const pass = document.getElementById('p').value.trim();
 
-    var cb = 'login_cb_' + Date.now();
-    window[cb] = function (res) {
-      console.log('login response:', res);
+  const cb = 'login_cb_' + Date.now();
+  window[cb] = function(res) {
+    console.log('login response:', res);
 
-      if (res && res.result === 'ok') {
-        localStorage.setItem('role', res.role);
-        localStorage.setItem('judge_id', res.judge_id || '');
-        location.href = 'index.html';
-      } else {
-        alert('登入失敗');
-      }
+    if (res && res.result === 'ok') {
+      localStorage.setItem('role', res.role);
+      localStorage.setItem('judge_id', res.judge_id || '');
+      location.href = 'index.html';
+    } else {
+      alert('登入失敗');
+    }
+    delete window[cb];
+  };
 
-      delete window[cb];
-    };
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=login' +
+    '&username=' + encodeURIComponent(user) +
+    '&password=' + encodeURIComponent(pass) +
+    '&callback=' + cb +
+    '&_=' + Date.now();
 
-    var s = document.createElement('script');
-    s.src =
-      API_URL +
-      '?action=login' +
-      '&username=' + encodeURIComponent(user) +
-      '&password=' + encodeURIComponent(pass) +
-      '&callback=' + cb +
-      '&_=' + Date.now();
-
-    document.body.appendChild(s);
-  }
-})();
+  document.body.appendChild(s);
+}
 </script>
 
 </body>
 </html>
-``
