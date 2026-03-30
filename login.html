@@ -9,21 +9,25 @@
 <h2>🔒 裁判系統登入</h2>
 
 帳號：
-<input id="u"><br><br>
+<input id="u" value="admin"><br><br>
+
 密碼：
-<input id="p" type="password"><br><br>
+<input id="p" type="password" value="1234"><br><br>
+
 <button onclick="login()">登入</button>
 
-<!-- ✅ 正確載入 config.js -->
+<!-- ✅ 這一行「一定要長這樣」 -->
 <script src="js/config.js"></script>
 
 <script>
-function login(){
-  const user = u.value.trim();
-  const pass = p.value.trim();
+function login() {
+  const user = document.getElementById('u').value.trim();
+  const pass = document.getElementById('p').value.trim();
+
+  console.log('login clicked', user, pass, API_URL);
 
   const cb = 'login_cb_' + Date.now();
-  window[cb] = function(res){
+  window[cb] = function(res) {
     console.log('login response:', res);
 
     if (res && res.result === 'ok') {
