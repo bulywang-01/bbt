@@ -120,10 +120,11 @@ function renderTemplates() {
       <td>${t.away_team}</td>
       <td>${t.home_team}</td>
       <td>${t.umpire_count}</td>
-      <td class="actions">
-        <button onclick="useTemplate('${t.template_id}')">▶️ 使用</button>
-        <button onclick="deleteTemplate('${t.template_id}')">🗑 刪除</button>
-      </td>
+<td class="actions">
+  <button onclick="editTemplate('${t.template_id}')">✏️ 修改</button>
+  <button onclick="useTemplate('${t.template_id}')">▶️ 使用</button>
+  <button onclick="deleteTemplate('${t.template_id}')">🗑 刪除</button>
+</td>
     </tr>`;
   });
 
@@ -196,6 +197,69 @@ function deleteTemplate(templateId) {
     '&token=' + encodeURIComponent(token) +
     '&template_id=' + encodeURIComponent(templateId) +
     '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* ===== 編輯模板 ===== */
+function editTemplate(templateId) {
+  const t = templates.find(x => x.template_id === templateId);
+  if (!t) return;
+
+  const row = [...document.querySelectorAll('tr')]
+    .find(r => r.textContent.includes(templateId));
+  if (!row) return;
+
+  row.innerHTML = `
+    <td><input type="text" id="n_${templateId}" value="${t.name}"></td>
+    <td><input type="text" id="f_${templateId}" value="${t.field}"></td>
+    <td><input type="text" id="t_${templateId}" value="${t.tournament}"></td>
+    <td><input type="text" id="c_${templateId}" value="${t.category}"></td>
+    <td><input type="text" id="a_${templateId}" value="${t.away_team}"></td>
+    <td><input type="text" id="h_${templateId}" value="${t.home_team}"></td>
+    <td>
+      <select id="u_${templateId}">
+        <option ${t.umpire_count==1?'selected':''}>1</option>
+        <option ${t.umpire_count==2?'selected':''}>2</option>
+        <option ${t.umpire_count==3?'selected':''}>3</option>
+        <option ${t.umpire_count==4?'selected':''}>4</option>
+      </select>
+    </td>
+    <td class="actions">
+      <button onclick="saveTemplate('${templateId}')">✅ 儲存</button>
+      <button onclick="loadTemplates()">❌ 取消</button>
+    </td>
+  `;
+}
+
+/* ===== 儲存／更新模板 ===== */
+function saveTemplate(templateId) {
+  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('✅ 模板已更新');
+      loadTemplates();
+    } else {
+      alert('❌ 更新模板失敗');
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=updateTemplate' +
+    '&token=' + encodeURIComponent(token) +
+    '&template_id=' + encodeURIComponent(templateId) +
+    '&name=' + encodeURIComponent(document.getElementById('n_'+templateId).value) +
+    '&field=' + encodeURIComponent(document.getElementById('f_'+templateId).value) +
+    '&tournament=' + encodeURIComponent(document.getElementById('t_'+templateId).value) +
+    '&category=' + encodeURIComponent(document.getElementById('c_'+templateId).value) +
+    '&away_team=' + encodeURIComponent(document.getElementById('a_'+templateId).value) +
+    '&home_team=' + encodeURIComponent(document.getElementById('h_'+templateId).value) +
+    '&umpire_count=' + encodeURIComponent(document.getElementById('u_'+templateId).value) +
+    '&callback=' + cb;
+
   document.body.appendChild(s);
 }
 
