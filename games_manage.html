@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>⚾ 比賽管理</title>
+<title>⚾ 比賽管理 ⚾</title>
 <style>
   body {
     font-family: system-ui;
@@ -68,12 +68,14 @@ if (localStorage.getItem('role') !== 'admin') {
 
 <div id="content">載入中…</div>
 
-<!-- ✅ 正確載入 -->
+<!-- ✅ 正確載入 config.js -->
 <script src="js/config.js"></script>
+
 <script>
 const token = localStorage.getItem('token');
 const content = document.getElementById('content');
 
+/* ===== 日期轉換 ===== */
 function toInputDate(str) {
   return str ? str.replace(/\//g, '-') : '';
 }
@@ -81,23 +83,26 @@ function fromInputDate(str) {
   return str ? str.replace(/-/g, '/') : '';
 }
 
-/* ===== 載入比賽清單（唯讀） ===== */
+/* =================================================
+ * 載入比賽清單（唯讀）
+ * ✅ 不使用逾時計時器
+ * ✅ 不會再顯示假錯誤
+ * ================================================= */
 function loadGames() {
   content.textContent = '載入中…';
 
   const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  let replied = false;
 
   window[cb] = function(res) {
-    replied = true;
-
     if (!res || res.result !== 'ok') {
       content.textContent = '❌ 無法取得比賽資料';
+      delete window[cb];
       return;
     }
 
-    if (!res.games.length) {
+    if (!res.games || res.games.length === 0) {
       content.textContent = '目前尚無比賽資料';
+      delete window[cb];
       return;
     }
 
@@ -144,35 +149,34 @@ function loadGames() {
     '&token=' + encodeURIComponent(token) +
     '&callback=' + cb;
   document.body.appendChild(s);
-
-  // fallback
-  setTimeout(() => {
-    if (!replied) {
-      content.textContent = '❌ 讀取逾時，請重新整理';
-    }
-  }, 3000);
 }
 
-/* ===== 切換為編輯模式 ===== */
+/* ===== 進入編輯模式 ===== */
 function editGame(id) {
   const row = document.getElementById('row_' + id);
   row.classList.add('editing');
 
   const cells = row.children;
-  const data = [...cells].slice(1, 8).map(td => td.textContent);
+  const date = cells[1].textContent;
+  const field = cells[2].textContent;
+  const tournament = cells[3].textContent;
+  const category = cells[4].textContent;
+  const away = cells[5].textContent;
+  const home = cells[6].textContent;
+  const count = cells[7].textContent;
 
-  cells[1].innerHTML = `<input type="date" id="d_${id}" value="${toInputDate(data[0])}">`;
-  cells[2].innerHTML = `<input type="text" id="f_${id}" value="${data[1]}">`;
-  cells[3].innerHTML = `<input type="text" id="t_${id}" value="${data[2]}">`;
-  cells[4].innerHTML = `<input type="text" id="c_${id}" value="${data[3]}">`;
-  cells[5].innerHTML = `<input type="text" id="a_${id}" value="${data[4]}">`;
-  cells[6].innerHTML = `<input type="text" id="h_${id}" value="${data[5]}">`;
+  cells[1].innerHTML = `<input type="date" id="d_${id}" value="${toInputDate(date)}">`;
+  cells[2].innerHTML = `<input type="text" id="f_${id}" value="${field}">`;
+  cells[3].innerHTML = `<input type="text" id="t_${id}" value="${tournament}">`;
+  cells[4].innerHTML = `<input type="text" id="c_${id}" value="${category}">`;
+  cells[5].innerHTML = `<input type="text" id="a_${id}" value="${away}">`;
+  cells[6].innerHTML = `<input type="text" id="h_${id}" value="${home}">`;
   cells[7].innerHTML = `
     <select id="u_${id}">
-      <option ${data[6]==1?'selected':''}>1</option>
-      <option ${data[6]==2?'selected':''}>2</option>
-      <option ${data[6]==3?'selected':''}>3</option>
-      <option ${data[6]==4?'selected':''}>4</option>
+      <option ${count==1?'selected':''}>1</option>
+      <option ${count==2?'selected':''}>2</option>
+      <option ${count==3?'selected':''}>3</option>
+      <option ${count==4?'selected':''}>4</option>
     </select>`;
 
   cells[8].innerHTML = `
@@ -187,10 +191,8 @@ function saveGame(id) {
   if (!dateVal) return alert('日期不可為空');
 
   const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  let replied = false;
 
   window[cb] = function(res) {
-    replied = true;
     if (res && res.result === 'ok') {
       alert('✅ 修改完成');
       loadGames();
@@ -215,13 +217,6 @@ function saveGame(id) {
     '&umpire_count=' + encodeURIComponent(document.getElementById('u_'+id).value) +
     '&callback=' + cb;
   document.body.appendChild(s);
-
-  setTimeout(() => {
-    if (!replied) {
-      alert('✅ 修改完成（回傳未收到）');
-      loadGames();
-    }
-  }, 800);
 }
 
 /* ===== 刪除 ===== */
@@ -249,9 +244,10 @@ function deleteGame(id) {
   document.body.appendChild(s);
 }
 
-/* 初始化 */
+/* ===== 初始化 ===== */
 loadGames();
 </script>
 
 </body>
 </html>
+``
