@@ -1,49 +1,29 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>📦 模板管理</title>
-<style>
-body { font-family: system-ui; margin: 20px; }
-table { border-collapse: collapse; width: 100%; }
-th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
-th { background: #f0f0f0; }
-</style>
+<meta charset="utf-8">
+<title>模板管理</title>
 </head>
 <body>
 
-<h2>📦 模板管理</h2>
-<a href="index.html">🏠 回首頁</a>
-
+<h2>模板管理</h2>
 <div>
-  <h3>➕ 新增模板</h3>
   名稱 <input id="n_name">
-  球場 <input id="n_field">
-  盃賽 <input id="n_tournament">
-  組別 <input id="n_category">
-  客隊 <input id="n_away">
-  主隊 <input id="n_home">
-  裁判數 <input id="n_count" value="1">
-  <button onclick="addTemplate()">新增</button>
+  <button onclick="add()">新增</button>
 </div>
 
 <hr>
-<div id="content">載入中…</div>
+<div id="list">載入中…</div>
 
 <script src="js/config.js"></script>
 <script>
 const token = localStorage.getItem('token');
-const content = document.getElementById('content');
+const list = document.getElementById('list');
 
-function loadTemplates() {
+function load() {
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
-    if (!res || res.result !== 'ok') {
-      content.textContent = '❌ 讀取失敗';
-      return;
-    }
-
-    let html = '<table><tr><th>ID</th><th>名稱</th><th>版本</th><th>操作</th></tr>';
+    let html = '<table border="1"><tr><th>ID</th><th>名稱</th><th>版本</th><th>操作</th></tr>';
     res.templates.forEach(t => {
       html += `
         <tr>
@@ -54,57 +34,34 @@ function loadTemplates() {
         </tr>`;
     });
     html += '</table>';
-    content.innerHTML = html;
+    list.innerHTML = html;
   };
-
   const s = document.createElement('script');
-  s.src = API_URL +
-    '?action=getTemplates' +
-    '&token=' + token +
-    '&callback=' + cb;
+  s.src = API_URL + '?action=getTemplates&token=' + token + '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-function addTemplate() {
+function add() {
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
-    if (res && res.result === 'ok') {
-      alert('✅ 新增成功');
-      loadTemplates();
-    } else {
-      alert('❌ 新增失敗');
-    }
+    alert('新增成功 ID=' + res.template_id);
+    load();
   };
-
   const s = document.createElement('script');
   s.src = API_URL +
     '?action=saveTemplate' +
     '&token=' + token +
-    '&name=' + n_name.value +
-    '&version=1' +
-    '&field=' + n_field.value +
-    '&tournament=' + n_tournament.value +
-    '&category=' + n_category.value +
-    '&away_team=' + n_away.value +
-    '&home_team=' + n_home.value +
-    '&umpire_count=' + n_count.value +
+    '&name=' + encodeURIComponent(n_name.value) +
     '&callback=' + cb;
   document.body.appendChild(s);
 }
 
 function del(id) {
-  if (!confirm('確定刪除？')) return;
-
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
-    if (res && res.result === 'ok') {
-      alert('✅ 已刪除');
-      loadTemplates();
-    } else {
-      alert('❌ 刪除失敗');
-    }
+    alert(res.result);
+    load();
   };
-
   const s = document.createElement('script');
   s.src = API_URL +
     '?action=deleteTemplate' +
@@ -114,8 +71,7 @@ function del(id) {
   document.body.appendChild(s);
 }
 
-loadTemplates();
+load();
 </script>
-
 </body>
 </html>
