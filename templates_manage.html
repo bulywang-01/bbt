@@ -223,19 +223,24 @@ function editTemplate(templateId) {
   const t = templates.find(x => x.template_id === templateId);
   if (!t) return;
 
-  content.innerHTML = `
-    <h3>✏️ 編輯模板（另存新版本）</h3>
-    <table>
-      <tr><td>名稱</td><td><input id="e_name" value="${t.name}"></td></tr>
-      <tr><td>球場</td><td><input id="e_field" value="${t.field}"></td></tr>
-      <tr><td>盃賽</td><td><input id="e_tournament" value="${t.tournament}"></td></tr>
-      <tr><td>組別</td><td><input id="e_category" value="${t.category}"></td></tr>
-      <tr><td>客隊</td><td><input id="e_away" value="${t.away_team}"></td></tr>
-      <tr><td>主隊</td><td><input id="e_home" value="${t.home_team}"></td></tr>
-      <tr><td>裁判數</td><td><input id="e_count" type="number" value="${t.umpire_count}"></td></tr>
-    </table>
-    <button onclick="saveTemplateNewVersion('${t.name}', ${t.version})">✅ 儲存新版</button>
-    <button onclick="loadTemplates()">❌ 取消</button>
+  const row = document.getElementById('row_' + templateId);
+  if (!row) return;
+
+  row.classList.add('editing');
+
+  row.innerHTML = `
+    <td><input id="e_name" value="${t.name}"></td>
+    <td>v${t.version + 1}</td>
+    <td><input id="e_field" value="${t.field}"></td>
+    <td><input id="e_tournament" value="${t.tournament}"></td>
+    <td><input id="e_category" value="${t.category}"></td>
+    <td><input id="e_away" value="${t.away_team}"></td>
+    <td><input id="e_home" value="${t.home_team}"></td>
+    <td><input id="e_count" type="number" value="${t.umpire_count}"></td>
+    <td>
+      <button onclick="saveTemplateNewVersion('${t.name}', ${t.version})">✅ 儲存新版</button>
+      <button onclick="loadTemplates()">❌ 取消</button>
+    </td>
   `;
 }
 
