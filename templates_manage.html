@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>📦 模板管理（最新版本＋搜尋）</title>
+<title>📦 模板管理（最新版本＋完整搜尋）</title>
 <style>
   body { font-family: system-ui; margin: 20px; }
   h2 { margin-top: 0; }
@@ -64,10 +64,16 @@ if (localStorage.getItem('role') !== 'admin') {
   <input id="q_name" placeholder="模板名稱" oninput="renderTemplates()">
 
   盃賽
-  <input id="q_tournament" placeholder="盃賽名稱" oninput="renderTemplates()">
+  <input id="q_tournament" placeholder="盃賽" oninput="renderTemplates()">
 
   組別
   <input id="q_category" placeholder="組別" oninput="renderTemplates()">
+
+  場地
+  <input id="q_field" placeholder="場地" oninput="renderTemplates()">
+
+  裁判數
+  <input id="q_umpire" type="number" min="1" style="width:70px" oninput="renderTemplates()">
 </div>
 
 <hr>
@@ -125,7 +131,7 @@ function buildLatestTemplates() {
 }
 
 /* ===============================
- * 顯示模板（含搜尋條件）
+ * 顯示模板（含完整搜尋條件）
  * =============================== */
 function renderTemplates() {
   let list = latestTemplates.slice();
@@ -133,6 +139,8 @@ function renderTemplates() {
   const qName = q_name.value.trim();
   const qTournament = q_tournament.value.trim();
   const qCategory = q_category.value.trim();
+  const qField = q_field.value.trim();
+  const qUmpire = q_umpire.value.trim();
 
   if (qName) {
     list = list.filter(t => t.name && t.name.includes(qName));
@@ -142,6 +150,12 @@ function renderTemplates() {
   }
   if (qCategory) {
     list = list.filter(t => t.category && t.category.includes(qCategory));
+  }
+  if (qField) {
+    list = list.filter(t => t.field && t.field.includes(qField));
+  }
+  if (qUmpire) {
+    list = list.filter(t => String(t.umpire_count) === qUmpire);
   }
 
   if (!list.length) {
@@ -157,6 +171,8 @@ function renderTemplates() {
         <th>版本</th>
         <th>盃賽</th>
         <th>組別</th>
+        <th>場地</th>
+        <th>裁判數</th>
         <th>操作</th>
       </tr>
   `;
@@ -169,6 +185,8 @@ function renderTemplates() {
         <td>v${t.version}</td>
         <td>${t.tournament || ''}</td>
         <td>${t.category || ''}</td>
+        <td>${t.field || ''}</td>
+        <td>${t.umpire_count || ''}</td>
         <td class="actions">
           <button onclick="newVersion('${t.template_id}')">新版</button>
           <button onclick="useTemplate('${t.template_id}')">使用</button>
@@ -306,3 +324,4 @@ loadTemplates();
 
 </body>
 </html>
+``
