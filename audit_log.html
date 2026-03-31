@@ -10,10 +10,11 @@ body{font-family:system-ui;margin:20px;background:#fafafa}
 table{border-collapse:collapse;width:100%}
 th,td{border:1px solid #ddd;padding:6px 8px;text-align:center}
 th{background:#f0f0f0}
+select,input{padding:4px}
 .badge{padding:2px 6px;border-radius:4px;font-size:12px}
 .C{background:#e6f4ea;color:#137333}
-.D{background:#fdecea;color:#a50e0e}
 .U{background:#e8f0fe;color:#1a73e8}
+.D{background:#fdecea;color:#a50e0e}
 </style>
 </head>
 <body>
@@ -24,7 +25,6 @@ if(!localStorage.getItem('role'))location.href='login.html';
 
 <div class="header">
   <a href="index.html">🏠 回首頁</a>
-  <a href="templates_manage.html">📦 模板管理</a>
   <a href="games_manage.html">⚾ 比賽管理</a>
 </div>
 
@@ -33,35 +33,71 @@ if(!localStorage.getItem('role'))location.href='login.html';
 <div class="panel">
   從 <input id="q_from" type="date">
   到 <input id="q_to" type="date">
-  <button onclick="load()">查詢</button>
+
+  帳號
+  <select id="q_user"></select>
+
+  動作
+  <select id="q_action"></select>
+
+  目標
+  <select id="q_target"></select>
+
+  <button onclick="apply()">查詢</button>
 </div>
 
 <div id="log">載入中…</div>
 
 <script src="js/config.js"></script>
-  
 <script>
-const token=localStorage.getItem('token');
+const token = localStorage.getItem('token');
+let logsAll=[];
 
+/* ===== 載入 ===== */
 function load(){
   const cb='cb_'+Date.now();
   window[cb]=res=>{
     if(!res||res.result!=='ok'){log.textContent='❌ 失敗';return;}
-    let list=res.logs||[];
-
-    if(q_from.value)list=list.filter(l=>l.timestamp>=q_from.value);
-    if(q_to.value)list=list.filter(l=>l.timestamp<=q_to.value+'T23:59');
-
-    render(list);
+    logsAll=res.logs||[];
+    buildSelects(logsAll);
+    render(logsAll);
   };
   const s=document.createElement('script');
   s.src=API_URL+'?action=getAuditLog&token='+token+'&callback='+cb;
   document.body.appendChild(s);
 }
 
+/* ===== 下拉 ===== */
+function buildSelects(list){
+  fill(q_user,list.map(l=>l.username));
+  fill(q_action,list.map(l=>l.action));
+  fill(q_target,list.map(l=>l.target));
+}
+function fill(sel,arr){
+  sel.innerHTML='<option value="">（全部）</option>';
+  [...new Set(arr.filter(v=>v))].sort().forEach(v=>{
+    const o=document.createElement('option');
+    o.value=o.textContent=v;
+    sel.appendChild(o);
+  });
+}
+
+/* ===== 查詢 ===== */
+function apply(){
+  let list=[...logsAll];
+  if(q_from.value)list=list.filter(l=>l.timestamp>=q_from.value);
+  if(q_to.value)list=list.filter(l=>l.timestamp<=q_to.value+'T23:59');
+  if(q_user.value)list=list.filter(l=>l.username===q_user.value);
+  if(q_action.value)list=list.filter(l=>l.action===q_action.value);
+  if(q_target.value)list=list.filter(l=>l.target===q_target.value);
+  render(list);
+}
+
+/* ===== 顯示 ===== */
 function render(list){
   if(!list.length){log.textContent='無紀錄';return;}
-  let html='<div class="panel"><table><tr><th>時間</th><th>帳號</th><th>動作</th><th>目標</th><th>ID</th><th>說明</th></tr>';
+  let html='<div class="panel"><table><tr>'+
+    '<th>時間</th><th>帳號</th><th>動作</th><th>目標</th><th>ID</th><th>說明</th></tr>';
   list.forEach(l=>{
     const cls=l.action.startsWith('C')?'C':l.action.startsWith('D')?'D':'U';
     html+=`<tr>
@@ -76,6 +112,7 @@ function render(list){
   html+='</table></div>';
   log.innerHTML=html;
 }
+
 load();
 </script>
 </body>
