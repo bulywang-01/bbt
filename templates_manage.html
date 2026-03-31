@@ -43,7 +43,16 @@
   .modal .box {
     background: #fff;
     padding: 20px;
-    width: 360px;
+    width: 420px;
+  }
+
+  .preview {
+    background: #f5f5f5;
+    padding: 10px;
+    margin-top: 10px;
+    max-height: 150px;
+    overflow-y: auto;
+    font-size: 14px;
   }
 </style>
 </head>
@@ -94,10 +103,10 @@ if (localStorage.getItem('role') !== 'admin') {
     <h3>📅 一鍵產生賽程（每週）</h3>
 
     起始日期<br>
-    <input type="date" id="w_start" style="width:100%"><br><br>
+    <input type="date" id="w_start" style="width:100%" onchange="updatePreview()"><br><br>
 
     星期<br>
-    <select id="w_weekday" style="width:100%">
+    <select id="w_weekday" style="width:100%" onchange="updatePreview()">
       <option value="1">星期一</option>
       <option value="2">星期二</option>
       <option value="3">星期三</option>
@@ -108,11 +117,15 @@ if (localStorage.getItem('role') !== 'admin') {
     </select><br><br>
 
     產生幾週<br>
-    <input type="number" id="w_weeks" value="4" min="1" style="width:100%"><br><br>
+    <input type="number" id="w_weeks" value="4" min="1" style="width:100%" onchange="updatePreview()"><br><br>
 
-    <div style="text-align:right">
+    <div class="preview" id="previewBox">
+      尚未產生預覽
+    </div>
+
+    <div style="text-align:right; margin-top:10px">
       <button onclick="closeWeekly()">取消</button>
-      <button onclick="confirmWeekly()">✅ 產生</button>
+      <button onclick="confirmWeekly()">✅ 確認產生</button>
     </div>
   </div>
 </div>
@@ -282,6 +295,7 @@ function newVersion(templateId) {
  * =============================== */
 function openWeekly(templateId) {
   currentTemplateId = templateId;
+  document.getElementById('previewBox').textContent = '尚未產生預覽';
   document.getElementById('weeklyModal').style.display = 'flex';
 }
 
@@ -290,6 +304,34 @@ function closeWeekly() {
   document.getElementById('weeklyModal').style.display = 'none';
 }
 
+/* ===============================
+ * 預覽日期清單
+ * =============================== */
+function updatePreview() {
+  const start = w_start.value;
+  const weekday = Number(w_weekday.value);
+  const weeks = Number(w_weeks.value);
+
+  if (!start || !weekday || !weeks) return;
+
+  let date = new Date(start);
+  while ((date.getDay() === 0 ? 7 : date.getDay()) !== weekday) {
+    date.setDate(date.getDate() + 1);
+  }
+
+  let html = '將建立以下賽程：<br>';
+  for (let i = 0; i < weeks; i++) {
+    const d = new Date(date);
+    d.setDate(date.getDate() + i * 7);
+    html += '• ' + d.toLocaleDateString('zh-TW') + '<br>';
+  }
+
+  document.getElementById('previewBox').innerHTML = html;
+}
+
+/* ===============================
+ * 確認產生
+ * =============================== */
 function confirmWeekly() {
   const startDate = w_start.value;
   const weekday = w_weekday.value;
@@ -350,3 +392,4 @@ loadTemplates();
 
 </body>
 </html>
+``
