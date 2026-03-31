@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>📦 比賽模板管理 📦</title>
+<title>📦 比賽模板管理</title>
 <style>
   body {
     font-family: system-ui;
@@ -26,13 +26,9 @@
     border: 1px solid #ccc;
     padding: 6px 8px;
     text-align: center;
+    white-space: nowrap;
   }
   th { background: #f0f0f0; }
-
-  input, select {
-    width: 100%;
-    box-sizing: border-box;
-  }
 
   .actions button {
     margin: 0 2px;
@@ -42,15 +38,13 @@
     background: #fff8dc;
   }
 
-  .toolbar {
-    background: #f9f9f9;
-    padding: 10px;
-    margin: 10px 0;
-  }
-
   .msg {
     margin: 8px 0;
     color: #555;
+  }
+
+  .hidden {
+    display: none;
   }
 </style>
 </head>
@@ -65,26 +59,15 @@ if (localStorage.getItem('role') !== 'admin') {
 }
 </script>
 
-<h2>📦 比賽模板管理 📦</h2>
+<h2>📦 比賽模板管理</h2>
 <p class="msg">
   <a href="index.html">🏠 回首頁</a> |
   <a href="games_manage.html">⚾ 回比賽管理</a>
 </p>
 
-<!-- ===== 工具列 ===== -->
-<div class="toolbar">
-  🔍 搜尋：
-  名稱 <input id="q_name" style="width:120px">
-  盃賽 <input id="q_tournament" style="width:120px">
-  組別 <input id="q_category" style="width:80px">
-  <button onclick="renderTemplates()">查詢</button>
-  |
-  <button onclick="showNewTemplate()">➕ 新增模板</button>
-</div>
-
 <div id="content">載入中…</div>
 
-<!-- ✅ 正確載入 -->
+<!-- ✅ 這行一定要完整 -->
 <script src="js/config.js"></script>
 
 <script>
@@ -96,12 +79,14 @@ let templates = [];
 function loadTemplates() {
   content.textContent = '載入中…';
 
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
+  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  window[cb] = function(res) {
     if (!res || res.result !== 'ok') {
       content.textContent = '❌ 無法取得模板資料';
+      delete window[cb];
       return;
     }
+
     templates = res.templates || [];
     renderTemplates();
     delete window[cb];
@@ -118,23 +103,14 @@ function loadTemplates() {
 
 /* ===== 顯示模板 ===== */
 function renderTemplates() {
-  let list = templates;
-
-  const qName = q_name.value.trim();
-  const qT = q_tournament.value.trim();
-  const qC = q_category.value.trim();
-
-  if (qName) list = list.filter(t => t.name.includes(qName));
-  if (qT) list = list.filter(t => t.tournament.includes(qT));
-  if (qC) list = list.filter(t => t.category.includes(qC));
-
-  if (!list.length) {
-    content.textContent = '目前尚無符合條件的模板';
+  if (!templates.length) {
+    content.textContent = '目前尚無模板';
     return;
   }
 
   let html = `<table>
     <tr>
+      <th class="hidden">ID</th>
       <th>名稱</th>
       <th>版本</th>
       <th>球場</th>
@@ -146,76 +122,28 @@ function renderTemplates() {
       <th>操作</th>
     </tr>`;
 
-  list.forEach(t => {
-html += `
-<tr id="row_${t.template_id}">
-  <td>${t.name}</td>
-  <td>v${t.version}</td>
-  <td>${t.field}</td>
-  <td>${t.tournament}</td>
-  <td>${t.category}</td>
-  <td>${t.away_team}</td>
-  <td>${t.home_team}</td>
-  <td>${t.umpire_count}</td>
-  <td class="actions">
-    <button onclick="editTemplate('${t.template_id}')">✏️ 新版</button>
-    <button onclick="useTemplate('${t.template_id}')">▶️ 使用</button>
-    <button onclick="deleteTemplate('${t.template_id}')">🗑</button>
-  </td>
-</tr>`;
-
+  templates.forEach(t => {
+    html += `
+    <tr id="row_${t.template_id}">
+      <td class="hidden">${t.template_id}</td>
+      <td>${t.name}</td>
+      <td>v${t.version}</td>
+      <td>${t.field || ''}</td>
+      <td>${t.tournament || ''}</td>
+      <td>${t.category || ''}</td>
+      <td>${t.away_team || ''}</td>
+      <td>${t.home_team || ''}</td>
+      <td>${t.umpire_count || ''}</td>
+      <td class="actions">
+        <button onclick="editTemplate('${t.template_id}')">✏️ 新版</button>
+        <button onclick="useTemplate('${t.template_id}')">▶️ 使用</button>
+        <button onclick="deleteTemplate('${t.template_id}')">🗑</button>
+      </td>
+    </tr>`;
   });
 
   html += '</table>';
   content.innerHTML = html;
-}
-
-/* ===== 新增模板 ===== */
-function showNewTemplate() {
-  content.innerHTML = `
-    <h3>➕ 新增模板（v1）</h3>
-    <table>
-      <tr><td>名稱</td><td><input id="n_name"></td></tr>
-      <tr><td>球場</td><td><input id="n_field"></td></tr>
-      <tr><td>盃賽</td><td><input id="n_tournament"></td></tr>
-      <tr><td>組別</td><td><input id="n_category"></td></tr>
-      <tr><td>客隊</td><td><input id="n_away"></td></tr>
-      <tr><td>主隊</td><td><input id="n_home"></td></tr>
-      <tr><td>裁判數</td><td><input id="n_count" type="number" value="1"></td></tr>
-    </table>
-    <button onclick="createTemplate()">✅ 建立</button>
-    <button onclick="loadTemplates()">❌ 取消</button>
-  `;
-}
-
-function createTemplate() {
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (res && res.result === 'ok') {
-      alert('✅ 模板已建立');
-      loadTemplates();
-    } else {
-      alert('❌ 建立失敗');
-    }
-    delete window[cb];
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=saveGameAsTemplate' +
-    '&token=' + encodeURIComponent(token) +
-    '&name=' + encodeURIComponent(n_name.value) +
-    '&version=1' +
-    '&field=' + encodeURIComponent(n_field.value) +
-    '&tournament=' + encodeURIComponent(n_tournament.value) +
-    '&category=' + encodeURIComponent(n_category.value) +
-    '&away_team=' + encodeURIComponent(n_away.value) +
-    '&home_team=' + encodeURIComponent(n_home.value) +
-    '&umpire_count=' + encodeURIComponent(n_count.value) +
-    '&callback=' + cb;
-
-  document.body.appendChild(s);
 }
 
 /* ===== 編輯模板（另存新版本） ===== */
@@ -229,29 +157,32 @@ function editTemplate(templateId) {
   row.classList.add('editing');
 
   row.innerHTML = `
-    <td><input id="e_name" value="${t.name}"></td>
+    <td class="hidden">${t.template_id}</td>
+    <td><input id="e_name_${templateId}" value="${t.name}"></td>
     <td>v${t.version + 1}</td>
-    <td><input id="e_field" value="${t.field}"></td>
-    <td><input id="e_tournament" value="${t.tournament}"></td>
-    <td><input id="e_category" value="${t.category}"></td>
-    <td><input id="e_away" value="${t.away_team}"></td>
-    <td><input id="e_home" value="${t.home_team}"></td>
-    <td><input id="e_count" type="number" value="${t.umpire_count}"></td>
+    <td><input id="e_field_${templateId}" value="${t.field || ''}"></td>
+    <td><input id="e_tournament_${templateId}" value="${t.tournament || ''}"></td>
+    <td><input id="e_category_${templateId}" value="${t.category || ''}"></td>
+    <td><input id="e_away_${templateId}" value="${t.away_team || ''}"></td>
+    <td><input id="e_home_${templateId}" value="${t.home_team || ''}"></td>
+    <td><input id="e_count_${templateId}" type="number" value="${t.umpire_count || 1}"></td>
     <td>
-      <button onclick="saveTemplateNewVersion('${t.name}', ${t.version})">✅ 儲存新版</button>
+      <button onclick="saveTemplateNewVersion('${templateId}', ${t.version + 1})">✅ 儲存新版</button>
       <button onclick="loadTemplates()">❌ 取消</button>
     </td>
   `;
 }
 
-function saveTemplateNewVersion(name, oldVersion) {
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
+/* ===== 儲存新版本 ===== */
+function saveTemplateNewVersion(templateId, newVersion) {
+  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+
+  window[cb] = function(res) {
     if (res && res.result === 'ok') {
       alert('✅ 已建立新版本');
       loadTemplates();
     } else {
-      alert('❌ 建立失敗');
+      alert('❌ 建立新版本失敗');
     }
     delete window[cb];
   };
@@ -261,14 +192,77 @@ function saveTemplateNewVersion(name, oldVersion) {
     API_URL +
     '?action=saveGameAsTemplate' +
     '&token=' + encodeURIComponent(token) +
-    '&name=' + encodeURIComponent(name) +
-    '&version=' + encodeURIComponent(oldVersion + 1) +
-    '&field=' + encodeURIComponent(e_field.value) +
-    '&tournament=' + encodeURIComponent(e_tournament.value) +
-    '&category=' + encodeURIComponent(e_category.value) +
-    '&away_team=' + encodeURIComponent(e_away.value) +
-    '&home_team=' + encodeURIComponent(e_home.value) +
-    '&umpire_count=' + encodeURIComponent(e_count.value) +
+    '&name=' + encodeURIComponent(document.getElementById('e_name_'+templateId).value) +
+    '&version=' + encodeURIComponent(newVersion) +
+    '&field=' + encodeURIComponent(document.getElementById('e_field_'+templateId).value) +
+    '&tournament=' + encodeURIComponent(document.getElementById('e_tournament_'+templateId).value) +
+    '&category=' + encodeURIComponent(document.getElementById('e_category_'+templateId).value) +
+    '&away_team=' + encodeURIComponent(document.getElementById('e_away_'+templateId).value) +
+    '&home_team=' + encodeURIComponent(document.getElementById('e_home_'+templateId).value) +
+    '&umpire_count=' + encodeURIComponent(document.getElementById('e_count_'+templateId).value) +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
+
+/* ===== 使用模板 ===== */
+function useTemplate(templateId) {
+  const t = templates.find(x => x.template_id === templateId);
+  if (!t) return;
+
+  const startDate = prompt('請輸入起始日期（yyyy/MM/dd）');
+  if (!startDate) return;
+
+  const days = prompt('請輸入連續天數', '1');
+  if (!days || Number(days) <= 0) {
+    alert('天數不正確');
+    return;
+  }
+
+  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('✅ 已建立比賽：\n' + res.created_ids.join(', '));
+    } else {
+      alert('❌ 建立失敗');
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=copyTemplateSeries' +
+    '&token=' + encodeURIComponent(token) +
+    '&template_id=' + encodeURIComponent(templateId) +
+    '&start_date=' + encodeURIComponent(startDate) +
+    '&days=' + encodeURIComponent(days) +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
+
+/* ===== 刪除模板 ===== */
+function deleteTemplate(templateId) {
+  if (!confirm('確定刪除此模板？')) return;
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('✅ 模板已刪除');
+      loadTemplates();
+    } else {
+      alert('❌ 刪除失敗');
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=deleteTemplate' +
+    '&token=' + encodeURIComponent(token) +
+    '&template_id=' + encodeURIComponent(templateId) +
     '&callback=' + cb;
 
   document.body.appendChild(s);
