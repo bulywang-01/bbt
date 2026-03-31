@@ -1,196 +1,128 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>裁判管理</title>
+<meta charset="UTF-8">
+<title>🧑‍⚖️ 裁判人員管理</title>
+<style>
+body{font-family:system-ui;margin:20px;background:#fafafa}
+.header a{margin-right:12px;color:#0066cc;text-decoration:none}
+.panel{background:#fff;padding:14px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid #ddd;padding:6px 8px;text-align:center}
+th{background:#f0f0f0}
+.actions button{margin:0 2px}
+input,select{padding:4px}
+.inactive{color:#aaa;background:#f5f5f5}
+</style>
 </head>
 <body>
 
-<!-- ===== 登入與權限檢查（一定要最前面） ===== -->
 <script>
-if (!localStorage.getItem('role')) {
-  location.href = 'login.html';
-}
-if (localStorage.getItem('role') !== 'admin') {
-  alert('無管理權限');
-  location.href = 'index.html';
+if(!localStorage.getItem('role'))location.href='login.html';
+if(localStorage.getItem('role')!=='admin'){
+  alert('僅限管理者');
+  location.href='index.html';
 }
 </script>
 
-<h2>📋 裁判清單（可修改姓名）</h2>
-
-<div style="margin-bottom:10px;">
-  <a href="index.html">🏠 回首頁</a> |
-  <a href="login.html" onclick="logout()">登出</a>
+<div class="header">
+  index.html🏠 回首頁</a>
+  games_manage.html⚾ 比賽管理</a>
+  templates_manage.html📦 模板管理</a>
+  audit_log.html📋 操作紀錄</a>
 </div>
 
-<hr>
+<h2>🧑‍⚖️ 裁判人員管理</h2>
 
-<h3>➕ 新增裁判（系統自動編號）</h3>
+<div class="panel">
+  <b>➕ 新增裁判</b><br>
+  姓名 <input id="n_name">
+  電話 <input id="n_phone">
+  Email <input id="n_email">
+  等級 <input id="n_level" style="width:60px">
+  備註 <input id="n_note">
+  <button onclick="addJudge()">新增</button>
+</div>
 
-裁判姓名：
-<input id="new_name" placeholder="例如 王小明">
-<button onclick="addJudge()">新增</button>
+<div id="content">載入中…</div>
 
-<p style="color:#666;">
-  ※ 裁判編號由系統自動產生（U001、U002…）
-</p>
-
-<hr>
-
-<div id="judges">載入中…</div>
-
-<!-- ==================================================
-     ✅ 關鍵：一定要正確載入 config.js
-     ================================================== -->
 <script src="js/config.js"></script>
-
 <script>
-/* ===== 登出 ===== */
-function logout() {
-  localStorage.clear();
-}
+const token = localStorage.getItem('token');
+let judges=[];
 
-/* ==================================================
-   載入裁判清單
-================================================== */
-function loadJudges() {
-  const cb = 'handleJudges_' + Date.now();
-  window[cb] = function(list) {
-    renderJudges(list || []);
-    delete window[cb];
+/* 載入 */
+function load(){
+  const cb='cb_'+Date.now();
+  window[cb]=res=>{
+    judges=res.judges||[];
+    render();
   };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=judges' +
-    '&callback=' + cb +
-    '&_=' + Date.now();
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=getJudges&token='+token+'&callback='+cb;
   document.body.appendChild(s);
 }
 
-/* ==================================================
-   顯示裁判清單
-================================================== */
-function renderJudges(list) {
-  const box = document.getElementById('judges');
-  box.innerHTML = '';
-
-  if (list.length === 0) {
-    box.textContent = '目前沒有裁判資料';
-    return;
-  }
-
-  list.forEach(j => {
-    box.innerHTML += `
-      <div style="margin-bottom:6px;">
-        <b>${j.judge_id}</b>
-        <input id="name_${j.judge_id}" value="${j.name}">
-        <button onclick="updateJudge('${j.judge_id}')">💾 修改</button>
-        <button onclick="deleteJudge('${j.judge_id}')">🗑 刪除</button>
-      </div>
-    `;
+/* 顯示 */
+function render(){
+  if(!judges.length){content.textContent='尚無裁判';return;}
+  let html='<div class="panel"><table><tr>'+
+    '<th>ID</th><th>姓名</th><th>電話</th><th>Email</th><th>等級</th><th>狀態</th><th>備註</th><th>操作</th></tr>';
+  judges.forEach(j=>{
+    html+=`<tr class="${j.active!=='Y'?'inactive':''}">
+      <td>${j.judge_id}</td>
+      <td><input id="n_${j.judge_id}" value="${j.name||''}"></td>
+      <td><input id="p_${j.judge_id}" value="${j.phone||''}"></td>
+      <td><input id="e_${j.judge_id}" value="${j.email||''}"></td>
+      <td><input id="l_${j.judge_id}" value="${j.level||''}" style="width:50px"></td>
+      <td>${j.active}</td>
+      <td><input id="m_${j.judge_id}" value="${j.note||''}"></td>
+      <td class="actions">
+        <button onclick="updateJudge('${j.judge_id}')">💾</button>
+        <button onclick="toggleJudge('${j.judge_id}')">${j.active==='Y'?'停用':'啟用'}</button>
+      </td>
+    </tr>`;
   });
+  html+='</table></div>';
+  content.innerHTML=html;
 }
 
-/* ==================================================
-   新增裁判（後端自動編號）
-================================================== */
-function addJudge() {
-  const name = new_name.value.trim();
-  if (!name) {
-    alert('請輸入裁判姓名');
-    return;
-  }
-
-  const cb = 'afterAddJudge_' + Date.now();
-  window[cb] = function(res) {
-    if (res && res.result === 'ok') {
-      alert('新增成功，裁判編號：' + res.judge_id);
-      new_name.value = '';
-      loadJudges();
-    } else {
-      alert('新增失敗：' + JSON.stringify(res));
-    }
-    delete window[cb];
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=add_judge' +
-    '&name=' + encodeURIComponent(name) +
-    '&callback=' + cb +
-    '&_=' + Date.now();
+/* CRUD */
+function addJudge(){
+  const cb='cb_'+Date.now();
+  window[cb]=()=>load();
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=addJudge&token='+token+
+    '&name='+n_name.value+'&phone='+n_phone.value+
+    '&email='+n_email.value+'&level='+n_level.value+
+    '&note='+n_note.value+'&callback='+cb;
+  document.body.appendChild(s);
+}
+function updateJudge(id){
+  const cb='cb_'+Date.now();
+  window[cb]=()=>load();
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=updateJudge&token='+token+
+    '&judge_id='+id+
+    '&name='+document.getElementById('n_'+id).value+
+    '&phone='+document.getElementById('p_'+id).value+
+    '&email='+document.getElementById('e_'+id).value+
+    '&level='+document.getElementById('l_'+id).value+
+    '&note='+document.getElementById('m_'+id).value+
+    '&callback='+cb;
+  document.body.appendChild(s);
+}
+function toggleJudge(id){
+  const cb='cb_'+Date.now();
+  window[cb]=()=>load();
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=toggleJudge&token='+token+
+    '&judge_id='+id+'&callback='+cb;
   document.body.appendChild(s);
 }
 
-/* ==================================================
-   修改裁判姓名
-================================================== */
-function updateJudge(id) {
-  const name = document.getElementById('name_' + id).value.trim();
-  if (!name) {
-    alert('姓名不可空白');
-    return;
-  }
-
-  const cb = 'afterUpdateJudge_' + Date.now();
-  window[cb] = function(res) {
-    if (res && res.result === 'ok') {
-      alert('修改成功');
-      loadJudges();
-    } else {
-      alert('修改失敗：' + JSON.stringify(res));
-    }
-    delete window[cb];
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=update_judge' +
-    '&judge_id=' + encodeURIComponent(id) +
-    '&name=' + encodeURIComponent(name) +
-    '&callback=' + cb +
-    '&_=' + Date.now();
-  document.body.appendChild(s);
-}
-
-/* ==================================================
-   刪除裁判
-================================================== */
-function deleteJudge(id) {
-  if (!confirm('確定要刪除此裁判？')) return;
-
-  const cb = 'afterDeleteJudge_' + Date.now();
-  window[cb] = function(res) {
-    if (res && res.result === 'ok') {
-      alert('已刪除');
-      loadJudges();
-    } else {
-      alert('刪除失敗：' + JSON.stringify(res));
-    }
-    delete window[cb];
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=delete_judge' +
-    '&judge_id=' + encodeURIComponent(id) +
-    '&callback=' + cb +
-    '&_=' + Date.now();
-  document.body.appendChild(s);
-}
-
-/* ==================================================
-   初始載入
-================================================== */
-loadJudges();
+load();
 </script>
-
 </body>
 </html>
 ``
