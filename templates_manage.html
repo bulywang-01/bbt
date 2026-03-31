@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>📦 模板管理（最新版本）</title>
+<title>📦 模板管理（最新版本＋搜尋）</title>
 <style>
   body { font-family: system-ui; margin: 20px; }
   h2 { margin-top: 0; }
@@ -24,6 +24,12 @@
   th { background: #f0f0f0; }
 
   .actions button { margin: 0 2px; }
+
+  .toolbar {
+    background: #f9f9f9;
+    padding: 10px;
+    margin: 10px 0;
+  }
 </style>
 </head>
 <body>
@@ -37,12 +43,11 @@ if (localStorage.getItem('role') !== 'admin') {
 }
 </script>
 
-<h2>📦 模板管理（只顯示最新版本）</h2>
+<h2>📦 模板管理（最新版本）</h2>
 <p>
   <a href="index.html">🏠 回首頁</a> |
   <a href="games_manage.html">⚾ 回比賽管理</a>
 </p>
-
 
 <!-- ===== 新增模板 ===== -->
 <div>
@@ -52,18 +57,29 @@ if (localStorage.getItem('role') !== 'admin') {
   <button onclick="addTemplate()">新增</button>
 </div>
 
+<!-- ===== 搜尋工具列 ===== -->
+<div class="toolbar">
+  🔍 搜尋：
+  名稱 <input id="q_name" placeholder="模板名稱" oninput="renderTemplates()">
+  版本
+  <select id="q_version" onchange="renderTemplates()">
+    <option value="">全部</option>
+  </select>
+</div>
+
 <hr>
 
 <div id="list">載入中…</div>
 
-<!-- ✅ API 設定（這行不能錯） -->
+<!-- ✅ API 設定 -->
 <script src="js/config.js"></script>
 
 <script>
 const token = localStorage.getItem('token');
 const listBox = document.getElementById('list');
+
 let templates = [];        // 全部模板
-let latestTemplates = []; // 只保留最新版本
+let latestTemplates = []; // 只顯示最新版本
 
 /* ===============================
  * 載入模板
@@ -80,6 +96,7 @@ function loadTemplates() {
 
     templates = res.templates || [];
     buildLatestTemplates();
+    buildVersionFilter();
     renderTemplates();
   };
 
@@ -96,23 +113,49 @@ function loadTemplates() {
  * 只保留每個 name 的最高版本
  * =============================== */
 function buildLatestTemplates() {
-  const map = {}; // name -> template
-
+  const map = {};
   templates.forEach(t => {
     if (!map[t.name] || Number(t.version) > Number(map[t.name].version)) {
       map[t.name] = t;
     }
   });
-
   latestTemplates = Object.values(map);
 }
 
 /* ===============================
- * 顯示清單（最新版本）
+ * 建立版本下拉選單
+ * =============================== */
+function buildVersionFilter() {
+  const sel = document.getElementById('q_version');
+  const versions = [...new Set(latestTemplates.map(t => t.version))].sort((a,b)=>a-b);
+
+  sel.innerHTML = '<option value="">全部</option>';
+  versions.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = 'v' + v;
+    sel.appendChild(opt);
+  });
+}
+
+/* ===============================
+ * 顯示模板（含搜尋）
  * =============================== */
 function renderTemplates() {
-  if (!latestTemplates.length) {
-    listBox.textContent = '目前尚無模板';
+  let list = latestTemplates.slice();
+
+  const qName = q_name.value.trim();
+  const qVer = q_version.value;
+
+  if (qName) {
+    list = list.filter(t => t.name.includes(qName));
+  }
+  if (qVer) {
+    list = list.filter(t => String(t.version) === qVer);
+  }
+
+  if (!list.length) {
+    listBox.textContent = '查無符合條件的模板';
     return;
   }
 
@@ -126,7 +169,7 @@ function renderTemplates() {
       </tr>
   `;
 
-  latestTemplates.forEach(t => {
+  list.forEach(t => {
     html += `
       <tr>
         <td>${t.template_id}</td>
@@ -146,7 +189,7 @@ function renderTemplates() {
 }
 
 /* ===============================
- * 新增模板（v1）
+ * 新增模板
  * =============================== */
 function addTemplate() {
   const name = n_name.value.trim();
@@ -178,7 +221,7 @@ function addTemplate() {
 }
 
 /* ===============================
- * 建立新版（v+1）
+ * 新版
  * =============================== */
 function newVersion(templateId) {
   if (!confirm('確定建立新版本？')) return;
@@ -204,7 +247,7 @@ function newVersion(templateId) {
 }
 
 /* ===============================
- * 使用模板建立比賽
+ * 使用模板
  * =============================== */
 function useTemplate(templateId) {
   const startDate = prompt('請輸入起始日期（yyyy/MM/dd）');
@@ -238,10 +281,10 @@ function useTemplate(templateId) {
 }
 
 /* ===============================
- * 刪除模板（只刪最新版本）
+ * 刪除模板
  * =============================== */
 function deleteTemplate(templateId) {
-  if (!confirm('確定刪除此模板（僅最新版本）？')) return;
+  if (!confirm('確定刪除此模板（最新版本）？')) return;
 
   const cb = 'cb_' + Date.now();
   window[cb] = function(res) {
