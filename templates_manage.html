@@ -147,22 +147,23 @@ function renderTemplates() {
     </tr>`;
 
   list.forEach(t => {
-    html += `
-    <tr id="row_${t.template_id}">
-      <td>${t.name}</td>
-      <td>v${t.version}</td>
-      <td>${t.field}</td>
-      <td>${t.tournament}</td>
-      <td>${t.category}</td>
-      <td>${t.away_team}</td>
-      <td>${t.home_team}</td>
-      <td>${t.umpire_count}</td>
-      <td class="actions">
-        <button onclick="editTemplate('${t.template_id}')">✏️ 新版</button>
-        <button onclick="useTemplate('${t.template_id}')">▶️ 使用</button>
-        <button onclick="deleteTemplate('${t.template_id}')">🗑</button>
-      </td>
-    </tr>`;
+html += `
+<tr id="row_${t.template_id}">
+  <td>${t.name}</td>
+  <td>v${t.version}</td>
+  <td>${t.field}</td>
+  <td>${t.tournament}</td>
+  <td>${t.category}</td>
+  <td>${t.away_team}</td>
+  <td>${t.home_team}</td>
+  <td>${t.umpire_count}</td>
+  <td class="actions">
+    <button onclick="editTemplate('${t.template_id}')">✏️ 新版</button>
+    <button onclick="useTemplate('${t.template_id}')">▶️ 使用</button>
+    <button onclick="deleteTemplate('${t.template_id}')">🗑</button>
+  </td>
+</tr>`;
+
   });
 
   html += '</table>';
