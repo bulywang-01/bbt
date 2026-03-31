@@ -5,143 +5,172 @@
 <title>🏠 系統首頁</title>
 
 <style>
-  :root {
-    --bg: #fafafa;
-    --panel: #ffffff;
-    --text: #222;
-    --muted: #666;
-    --border: #ddd;
-    --link: #0066cc;
-  }
-
-  body.dark {
-    --bg: #1e1e1e;
-    --panel: #2a2a2a;
-    --text: #eaeaea;
-    --muted: #aaa;
-    --border: #444;
-    --link: #4ea1ff;
-  }
-
-  body {
-    margin: 20px;
-    font-family: system-ui;
-    background: var(--bg);
-    color: var(--text);
-    transition: background .2s, color .2s;
-  }
-
-  a {
-    color: var(--link);
-    text-decoration: none;
-    margin-right: 14px;
-  }
-  a:hover { text-decoration: underline; }
-
-  .header {
-    margin-bottom: 18px;
-  }
-
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 16px;
-    margin-bottom: 20px;
-  }
-
-  h2 { margin-top: 0; }
-
-  .nav {
-    margin-bottom: 10px;
-  }
-
-  .nav a {
-    font-weight: bold;
-  }
-
-  .muted {
-    color: var(--muted);
-  }
-
-  .toggle {
-    float: right;
-    cursor: pointer;
-    font-size: 14px;
-  }
+body{
+  font-family:system-ui;
+  margin:20px;
+  background:#fafafa;
+}
+.header a{
+  margin-right:14px;
+  color:#0066cc;
+  text-decoration:none;
+}
+.panel{
+  background:#fff;
+  padding:16px;
+  border-radius:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+  margin-bottom:18px;
+}
+h2{margin-top:0}
+.metrics{
+  display:flex;
+  gap:16px;
+}
+.metric{
+  flex:1;
+  background:#f7f7f7;
+  padding:12px;
+  border-radius:6px;
+  text-align:center;
+}
+.metric b{
+  font-size:22px;
+  display:block;
+}
+table{
+  border-collapse:collapse;
+  width:100%;
+}
+th,td{
+  border:1px solid #ddd;
+  padding:6px 8px;
+  text-align:center;
+}
+th{background:#f0f0f0}
+.badge{
+  padding:2px 6px;
+  border-radius:4px;
+  font-size:12px;
+}
+.C{background:#e6f4ea;color:#137333}
+.U{background:#e8f0fe;color:#1a73e8}
+.D{background:#fdecea;color:#a50e0e}
 </style>
 </head>
 <body>
 
 <script>
 const role = localStorage.getItem('role');
-if (!role) location.href = 'login.html';
-
-/* Dark mode init */
-if (localStorage.getItem('dark') === '1') {
-  document.body.classList.add('dark');
-}
+if(!role) location.href='login.html';
 </script>
 
-<!-- ===== Header / Navigation ===== -->
+<!-- ===== Header ===== -->
+
 <div class="header">
-  <div class="nav">
-    <a href="index.html">🏠 首頁</a>
+  <a href="index.html">🏠 首頁</a>
 
-    <a href="games_manage.html">⚾ 比賽管理</a>
+  <a href="games_manage.html">⚾ 比賽管理</a>
 
-    <!-- admin only -->
-    <span id="adminNav" style="display:none">
-      <a href="templates_manage.html">📦 模板管理</a>
-      <a href="audit_log.html">📋 操作紀錄</a>
-    </span>
-
-    <span class="toggle" onclick="toggleDark()">🌙 Dark</span>
-  </div>
+  <span id="adminNav" style="display:none">
+    <a href="templates_manage.html">📦 模板管理</a>
+    <a href="judges_manage.html">🧑‍⚖️ 裁判人員</a>
+    <a href="audit_log.html">📋 操作紀錄</a>
+  </span>
 </div>
 
-<h2>系統儀表板</h2>
+<h2>系統首頁（儀表板）</h2>
 
 <!-- ===== 系統摘要 ===== -->
 <div class="panel">
-  <h3>📊 系統狀態</h3>
-  <div>目前登入角色：<b id="roleText"></b></div>
-  <div class="muted">所有異動均已記錄於 Audit Log</div>
+  目前登入角色： <b id="roleText"></b>
 </div>
 
-<!-- ===== 快速導覽 ===== -->
+<!-- ===== 數量統計 ===== -->
+<div class="panel metrics">
+  <div class="metric">
+    裁判總數
+    <b id="judgeCount">-</b>
+  </div>
+  <div class="metric">
+    在役裁判
+    <b id="judgeActive">-</b>
+  </div>
+  <div class="metric">
+    比賽場次
+    <b id="gameCount">-</b>
+  </div>
+</div>
+
+<!-- ===== 最近操作 ===== -->
 <div class="panel">
-  <h3>🚀 快速功能</h3>
-
-  <ul>
-    <li><a href="games_manage.html">⚾ 管理 / 檢視比賽</a></li>
-
-    <li class="adminOnly">
-      <a href="templates_manage.html">📦 管理比賽模板</a>
-    </li>
-
-    <li class="adminOnly">
-      <a href="audit_log.html">📋 查看操作紀錄</a>
-    </li>
-  </ul>
+  <h3>📋 最近操作紀錄</h3>
+  <div id="recentLog">載入中…</div>
 </div>
 
 <!-- ✅ JS 設定 -->
-<script src="js/config.js"></script>
+js/config.jsscript>
 <script>
-document.getElementById('roleText').textContent = role;
+const token = localStorage.getItem('token');
+roleText.textContent = role;
 
-if (role === 'admin') {
-  document.getElementById('adminNav').style.display = 'inline';
-  document.querySelectorAll('.adminOnly').forEach(e => e.style.display = 'list-item');
-} else {
-  document.querySelectorAll('.adminOnly').forEach(e => e.style.display = 'none');
+if(role === 'admin'){
+  adminNav.style.display='inline';
 }
 
-function toggleDark() {
-  const isDark = document.body.classList.toggle('dark');
-  localStorage.setItem('dark', isDark ? '1' : '0');
+/* ===== 載入裁判 ===== */
+function loadJudges(){
+  const cb='cb_j_'+Date.now();
+  window[cb]=res=>{
+    const list=res.judges||[];
+    judgeCount.textContent=list.length;
+    judgeActive.textContent=list.filter(j=>j.active==='Y').length;
+  };
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=getJudges&token='+token+'&callback='+cb;
+  document.body.appendChild(s);
 }
+
+/* ===== 載入比賽 ===== */
+function loadGames(){
+  const cb='cb_g_'+Date.now();
+  window[cb]=res=>{
+    gameCount.textContent=(res.games||[]).length;
+  };
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=getAllSchedule&token='+token+'&callback='+cb;
+  document.body.appendChild(s);
+}
+
+/* ===== 載入最近操作 ===== */
+function loadRecentLog(){
+  const cb='cb_l_'+Date.now();
+  window[cb]=res=>{
+    const list=(res.logs||[]).slice(0,5);
+    if(!list.length){recentLog.textContent='無紀錄';return;}
+
+    let html='<table><tr><th>時間</th><th>動作</th><th>目標</th><th>說明</th></tr>';
+    list.forEach(l=>{
+      const cls=l.action.startsWith('C')?'C':l.action.startsWith('D')?'D':'U';
+      html+=`<tr>
+        <td>${l.timestamp}</td>
+        <td><span class="badge ${cls}">${l.action}</span></td>
+        <td>${l.target}</td>
+        <td>${l.detail}</td>
+      </tr>`;
+    });
+    html+='</table>';
+    recentLog.innerHTML=html;
+  };
+
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=getAuditLog&token='+token+'&callback='+cb;
+  document.body.appendChild(s);
+}
+
+loadJudges();
+loadGames();
+loadRecentLog();
 </script>
 
 </body>
