@@ -15,6 +15,9 @@ body{
   color: #0066cc;
   text-decoration: none;
 }
+.header a:hover{
+  text-decoration: underline;
+}
 .panel{
   background: #fff;
   padding: 16px;
@@ -35,6 +38,7 @@ body{
 }
 .metric b{
   font-size: 22px;
+  display: block;
 }
 table{
   border-collapse: collapse;
@@ -45,7 +49,9 @@ th, td{
   padding: 6px 8px;
   text-align: center;
 }
-th{ background: #f0f0f0; }
+th{
+  background: #f0f0f0;
+}
 .badge{
   padding: 2px 6px;
   border-radius: 4px;
@@ -63,7 +69,7 @@ const role = localStorage.getItem('role');
 if (!role) location.href = 'login.html';
 </script>
 
-<!-- ✅ Header（全部是正確超連結） -->
+<!-- ===== Header（全部超連結正確） ===== -->
 <div class="header">
   <a href="index.html">🏠 首頁</a>
   <a href="games_manage.html">⚾ 比賽管理</a>
@@ -78,6 +84,7 @@ if (!role) location.href = 'login.html';
 
 <h2>系統首頁（儀表板）</h2>
 
+<!-- ===== 登入資訊 ===== -->
 <div class="panel">
   <h3>👤 登入資訊</h3>
   帳號：<b id="loginUser">-</b><br>
@@ -85,6 +92,7 @@ if (!role) location.href = 'login.html';
   權限：<b id="loginRole">-</b>
 </div>
 
+<!-- ===== 系統指標 ===== -->
 <div class="panel metrics">
   <div class="metric">
     裁判總數
@@ -100,27 +108,60 @@ if (!role) location.href = 'login.html';
   </div>
 </div>
 
+<!-- ===== 最近 Audit Log ===== -->
 <div class="panel">
   <h3>📋 最近操作紀錄</h3>
   <div id="recentLog">載入中…</div>
 </div>
 
-<!-- ✅ 正確載入 config.js（關鍵） -->
+<!-- ===== 正確載入 config.js（關鍵） ===== -->
 <script src="js/config.js"></script>
 
 <script>
-/* ===== 顯示登入資訊 ===== */
-loginRole.textContent = role;
+/* ===== 共用資料 ===== */
+const token = localStorage.getItem('token');
 
-/*
- * admin：從 Users 找目前帳號
- * judge：從 Judges 找對應裁判
- *
- * 註：login 流程中，token 對應的 username
- * 已存在於後端 Cache，可由 getUsers / getJudges 比對
- */
+/* ===== 防呆設定 DOM ===== */
+function safeSet(id, value){
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
 
-function loadLoginInfo() {
+/* ===== 顯示角色 ===== */
+safeSet('loginRole', role);
+
+/* ===== admin navigation ===== */
+if (role === 'admin') {
+  const nav = document.getElementById('adminNav');
+  if (nav) nav.style.display = 'inline';
+}
+
+/* ===== 登入資訊 ===== */
+function loadAdminInfo(){
+  safeSet('loginUser', 'admin');
+  safeSet('loginName', '系統管理者');
+}
+
+function loadJudgeInfo(){
+  const cb = 'cb_jinfo_' + Date.now();
+  window[cb] = res => {
+    const list = res.judges || [];
+    if (list.length) {
+      safeSet('loginUser', 'judge');
+      safeSet('loginName', list[0].name || '裁判');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=getJudges' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+function loadLoginInfo(){
   if (role === 'admin') {
     loadAdminInfo();
   } else if (role === 'judge') {
@@ -128,89 +169,51 @@ function loadLoginInfo() {
   }
 }
 
-/* ===== admin 使用者 ===== */
-function loadAdminInfo() {
-  const cb = 'cb_user_' + Date.now();
-  window[cb] = res => {
-    if (!res || res.result !== 'ok') return;
-
-    /* 這裡先簡化：顯示 admin */
-    loginUser.textContent = 'admin';
-    loginName.textContent = '系統管理者';
-  };
-
-  const s = document.createElement('script');
-  s.src = API_URL + '?action=getUsers&token=' + token + '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-/* ===== 裁判使用者 ===== */
-function loadJudgeInfo() {
-  const cb = 'cb_judge_' + Date.now();
-  window[cb] = res => {
-    if (!res || res.result !== 'ok') return;
-
-    /* 裁判帳號只會有一位對應裁判 */
-    const list = res.judges || [];
-    if (list.length) {
-      loginUser.textContent = 'judge';
-      loginName.textContent = list[0].name || '裁判';
-    }
-  };
-
-  const s = document.createElement('script');
-  s.src = API_URL + '?action=getJudges&token=' + token + '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-loadLoginInfo();
-</script>
-  
-<script>
-const token = localStorage.getItem('token');
-roleText.textContent = role;
-
-if (role === 'admin') {
-  adminNav.style.display = 'inline';
-}
-
-/* ===== 裁判 ===== */
+/* ===== 指標資料 ===== */
 function loadJudges(){
   const cb = 'cb_j_' + Date.now();
   window[cb] = res => {
     const list = res.judges || [];
-    judgeCount.textContent = list.length;
-    judgeActive.textContent = list.filter(j => j.active === 'Y').length;
+    safeSet('judgeCount', list.length);
+    safeSet('judgeActive', list.filter(j => j.active === 'Y').length);
   };
   const s = document.createElement('script');
-  s.src = API_URL + '?action=getJudges&token=' + token + '&callback=' + cb;
+  s.src =
+    API_URL +
+    '?action=getJudges' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-/* ===== 比賽 ===== */
 function loadGames(){
   const cb = 'cb_g_' + Date.now();
   window[cb] = res => {
-    gameCount.textContent = (res.games || []).length;
+    safeSet('gameCount', (res.games || []).length);
   };
   const s = document.createElement('script');
-  s.src = API_URL + '?action=getAllSchedule&token=' + token + '&callback=' + cb;
+  s.src =
+    API_URL +
+    '?action=getAllSchedule' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-/* ===== 最近 Audit Log ===== */
 function loadRecentLog(){
   const cb = 'cb_l_' + Date.now();
   window[cb] = res => {
     const list = (res.logs || []).slice(0,5);
     if (!list.length) {
-      recentLog.textContent = '無紀錄';
+      safeSet('recentLog', '無紀錄');
       return;
     }
-    let html = '<table><tr><th>時間</th><th>動作</th><th>目標</th><th>說明</th></tr>';
+    let html =
+      '<table><tr><th>時間</th><th>動作</th><th>目標</th><th>說明</th></tr>';
     list.forEach(l => {
-      const cls = l.action.startsWith('C') ? 'C'
-                : l.action.startsWith('D') ? 'D' : 'U';
+      const cls =
+        l.action.startsWith('C') ? 'C' :
+        l.action.startsWith('D') ? 'D' : 'U';
       html += `<tr>
         <td>${l.timestamp}</td>
         <td><span class="badge ${cls}">${l.action}</span></td>
@@ -219,13 +222,20 @@ function loadRecentLog(){
       </tr>`;
     });
     html += '</table>';
-    recentLog.innerHTML = html;
+    document.getElementById('recentLog').innerHTML = html;
   };
+
   const s = document.createElement('script');
-  s.src = API_URL + '?action=getAuditLog&token=' + token + '&callback=' + cb;
+  s.src =
+    API_URL +
+    '?action=getAuditLog' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
   document.body.appendChild(s);
 }
 
+/* ===== 啟動 ===== */
+loadLoginInfo();
 loadJudges();
 loadGames();
 loadRecentLog();
@@ -233,4 +243,3 @@ loadRecentLog();
 
 </body>
 </html>
-``
