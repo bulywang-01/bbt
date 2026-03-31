@@ -1,29 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-<meta charset="utf-8">
-<title>模板管理 V2</title>
+<meta charset="UTF-8">
+<title>📦 模板管理</title>
+<style>
+  body {
+    font-family: system-ui;
+    margin: 20px;
+  }
+  h2 { margin-top: 0; }
+
+  a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: center;
+  }
+  th {
+    background: #f0f0f0;
+  }
+  button {
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
 
-<h2>模板管理</h2>
+<!-- ===== 權限檢查 ===== -->
+<script>
+if (!localStorage.getItem('role')) location.href = 'login.html';
+if (localStorage.getItem('role') !== 'admin') {
+  alert('僅限管理者使用');
+  location.href = 'index.html';
+}
+</script>
+
+<h2>📦 模板管理</h2>
+<p>
+  <a href="index.html">🏠 回首頁</a> |
+  <a href="games_manage.html">⚾ 回比賽管理</a>
+</p>
+
+<!-- ===== 新增模板 ===== -->
 <div>
-  名稱 <input id="n_name">
-  <button onclick="add()">新增</button>
+  <h3>➕ 新增模板</h3>
+  名稱：
+  <input id="n_name">
+  <button onclick="addTemplate()">新增</button>
 </div>
 
 <hr>
+
 <div id="list">載入中…</div>
 
+<!-- ✅ 一定要這樣寫，不能少字 -->
 <script src="js/config.js"></script>
+
 <script>
 const token = localStorage.getItem('token');
-const list = document.getElementById('list');
+const listBox = document.getElementById('list');
 
-function load() {
+/* ===== 載入模板 ===== */
+function loadTemplates() {
+  listBox.textContent = '載入中…';
+
   const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    let html = '<table border="1"><tr><th>ID</th><th>名稱</th><th>版本</th><th>操作</th></tr>';
+  window[cb] = function(res) {
+    if (!res || res.result !== 'ok') {
+      listBox.textContent = '❌ 讀取模板失敗';
+      return;
+    }
+
+    if (!res.templates || res.templates.length === 0) {
+      listBox.textContent = '目前尚無模板';
+      return;
+    }
+
+    let html = `
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>名稱</th>
+          <th>版本</th>
+          <th>操作</th>
+        </tr>
+    `;
+
     res.templates.forEach(t => {
       html += `
         <tr>
@@ -31,110 +103,86 @@ function load() {
           <td>${t.name}</td>
           <td>v${t.version}</td>
           <td>
-          <button onclick="newVersion('${t.template_id}')">新版</button>
-          <button onclick="del('${t.template_id}')">刪除</button>
+            <button onclick="deleteTemplate('${t.template_id}')">刪除</button>
           </td>
-        </tr>`;
+        </tr>
+      `;
     });
+
     html += '</table>';
-    list.innerHTML = html;
-  };
-  const s = document.createElement('script');
-  s.src = API_URL + '?action=getTemplates&token=' + token + '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-function newVersion(templateId) {
-  if (!confirm('確定建立新版本？')) return;
-
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (res && res.result === 'ok') {
-      alert(`✅ 已建立 v${res.version}`);
-      loadTemplates();   // ✅ 關鍵：立刻重新載入清單
-    } else {
-      alert('❌ 建立新版失敗');
-    }
-    delete window[cb];
+    listBox.innerHTML = html;
   };
 
   const s = document.createElement('script');
   s.src =
     API_URL +
-    '?action=cloneTemplateNewVersion' +
-    '&token=' + token +
-    '&template_id=' + templateId +
-    '&callback=' + cb;
-
-  document.body.appendChild(s);
-}
-
-  
-function add() {
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    alert('新增成功 ID=' + res.template_id);
-    load();
-  };
-  const s = document.createElement('script');
-  s.src = API_URL +
-    '?action=saveTemplate' +
-    '&token=' + token +
-    '&name=' + encodeURIComponent(n_name.value) +
+    '?action=getTemplates' +
+    '&token=' + encodeURIComponent(token) +
     '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-function del(id) {
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    alert(res.result);
-    load();
-  };
-  const s = document.createElement('script');
-  s.src = API_URL +
-    '?action=deleteTemplate' +
-    '&token=' + token +
-    '&template_id=' + id +
-    '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-function useTemplate(templateId) {
-  const startDate = prompt('請輸入起始日期（yyyy/MM/dd）');
-  if (!startDate) return;
-
-  const days = prompt('請輸入連續天數', '1');
-  if (!days || Number(days) <= 0) {
-    alert('天數不正確');
+/* ===== 新增模板 ===== */
+function addTemplate() {
+  const name = n_name.value.trim();
+  if (!name) {
+    alert('請輸入模板名稱');
     return;
   }
 
   const cb = 'cb_' + Date.now();
-  window[cb] = res => {
+  window[cb] = function(res) {
     if (res && res.result === 'ok') {
-      alert('✅ 已建立比賽：\n' + res.created_ids.join(', '));
+      alert('✅ 新增成功，ID=' + res.template_id);
+      n_name.value = '';
+      loadTemplates();
     } else {
-      alert('❌ 建立比賽失敗');
+      alert('❌ 新增失敗');
     }
-    delete window[cb];
   };
 
   const s = document.createElement('script');
   s.src =
     API_URL +
-    '?action=useTemplateCreateGames' +
-    '&token=' + token +
-    '&template_id=' + templateId +
-    '&start_date=' + startDate +
-    '&days=' + days +
+    '?action=saveTemplate' +
+    '&token=' + encodeURIComponent(token) +
+    '&name=' + encodeURIComponent(name) +
+    '&version=1' +
     '&callback=' + cb;
-
   document.body.appendChild(s);
 }
 
+/* ===== 刪除模板 ===== */
+function deleteTemplate(templateId) {
+  if (!templateId) {
+    alert('template_id 為空');
+    return;
+  }
+  if (!confirm('確定刪除此模板？')) return;
 
-load();
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('✅ 已刪除');
+      loadTemplates();
+    } else {
+      alert('❌ 刪除失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=deleteTemplate' +
+    '&token=' + encodeURIComponent(token) +
+    '&template_id=' + encodeURIComponent(templateId) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* 初始化 */
+loadTemplates();
 </script>
+
 </body>
 </html>
