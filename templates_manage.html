@@ -42,10 +42,6 @@
     margin: 8px 0;
     color: #555;
   }
-
-  .hidden {
-    display: none;
-  }
 </style>
 </head>
 <body>
@@ -67,7 +63,7 @@ if (localStorage.getItem('role') !== 'admin') {
 
 <div id="content">載入中…</div>
 
-<!-- ✅ 這行一定要完整 -->
+<!-- ✅ 這行一定要長這樣，不能再錯 -->
 <script src="js/config.js"></script>
 
 <script>
@@ -110,7 +106,6 @@ function renderTemplates() {
 
   let html = `<table>
     <tr>
-      <th class="hidden">ID</th>
       <th>名稱</th>
       <th>版本</th>
       <th>球場</th>
@@ -124,8 +119,7 @@ function renderTemplates() {
 
   templates.forEach(t => {
     html += `
-    <tr id="row_${t.template_id}">
-      <td class="hidden">${t.template_id}</td>
+    <tr id="row_${t.template_id}" data-template-id="${t.template_id}">
       <td>${t.name}</td>
       <td>v${t.version}</td>
       <td>${t.field || ''}</td>
@@ -149,15 +143,20 @@ function renderTemplates() {
 /* ===== 編輯模板（另存新版本） ===== */
 function editTemplate(templateId) {
   const t = templates.find(x => x.template_id === templateId);
-  if (!t) return;
+  if (!t) {
+    alert('找不到模板資料');
+    return;
+  }
 
   const row = document.getElementById('row_' + templateId);
-  if (!row) return;
+  if (!row) {
+    alert('找不到畫面列');
+    return;
+  }
 
   row.classList.add('editing');
 
   row.innerHTML = `
-    <td class="hidden">${t.template_id}</td>
     <td><input id="e_name_${templateId}" value="${t.name}"></td>
     <td>v${t.version + 1}</td>
     <td><input id="e_field_${templateId}" value="${t.field || ''}"></td>
@@ -208,7 +207,10 @@ function saveTemplateNewVersion(templateId, newVersion) {
 /* ===== 使用模板 ===== */
 function useTemplate(templateId) {
   const t = templates.find(x => x.template_id === templateId);
-  if (!t) return;
+  if (!t) {
+    alert('找不到模板資料');
+    return;
+  }
 
   const startDate = prompt('請輸入起始日期（yyyy/MM/dd）');
   if (!startDate) return;
