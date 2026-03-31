@@ -4,37 +4,60 @@
 <meta charset="UTF-8">
 <title>⚾ 比賽管理</title>
 <style>
-  body { font-family: system-ui; margin: 20px; }
-  h2 { margin-top: 0; }
+  body {
+    font-family: system-ui;
+    margin: 20px;
+  }
+
+  h2 {
+    margin-top: 0;
+  }
 
   a {
     color: #0066cc;
     text-decoration: none;
-    margin-right: 12px;
+    margin-right: 14px;
   }
-  a:hover { text-decoration: underline; }
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .header {
+    margin-bottom: 16px;
+  }
+
+  .date-block {
+    margin-bottom: 28px;
+  }
+
+  .date-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 16px 0 6px;
+  }
 
   table {
     border-collapse: collapse;
     width: 100%;
-    margin-top: 6px;
   }
+
   th, td {
     border: 1px solid #ccc;
     padding: 6px 8px;
     text-align: center;
     white-space: nowrap;
   }
-  th { background: #f0f0f0; }
 
-  .date-block {
-    margin-bottom: 24px;
+  th {
+    background: #f0f0f0;
   }
 
-  .date-title {
-    margin: 14px 0 6px;
-    font-size: 18px;
+  .tournament {
     font-weight: bold;
+  }
+
+  .same-tournament {
+    background: #fff6e0; /* 同盃賽視覺提示 */
   }
 </style>
 </head>
@@ -42,24 +65,26 @@
 
 <!-- ===== 權限檢查 ===== -->
 <script>
-if (!localStorage.getItem('role')) location.href = 'login.html';
+if (!localStorage.getItem('role')) {
+  location.href = 'login.html';
+}
 if (localStorage.getItem('role') !== 'admin') {
   alert('僅限管理者使用');
   location.href = 'index.html';
 }
 </script>
 
-<!-- ===== Header（超連結固定）===== -->
-<div>
+<!-- ===== Header（固定超連結）===== -->
+<h2>⚾ 比賽清單管理</h2>
+  
+<div class="header">
   <a href="index.html">🏠 回首頁</a>
   <a href="templates_manage.html">📦 模板管理</a>
 </div>
-
-<h2>⚾ 比賽清單管理</h2>
-
+  
 <div id="content">載入中…</div>
 
-<!-- ✅ JS 設定檔（這行一定要正確） -->
+<!-- ✅ JS 設定檔（這一行一定要長這樣） -->
 <script src="js/config.js"></script>
 
 <script>
@@ -73,7 +98,7 @@ function loadGames() {
   content.textContent = '載入中…';
 
   const cb = 'cb_' + Date.now();
-  window[cb] = res => {
+  window[cb] = function (res) {
     if (!res || res.result !== 'ok') {
       content.textContent = '❌ 無法取得比賽資料';
       return;
@@ -88,6 +113,7 @@ function loadGames() {
     '?action=getAllSchedule' +
     '&token=' + encodeURIComponent(token) +
     '&callback=' + cb;
+
   document.body.appendChild(s);
 }
 
@@ -113,26 +139,38 @@ function renderGames(games) {
   let html = '';
 
   Object.keys(map).forEach(date => {
+    const dayGames = map[date];
+
+    // 同日依盃賽排序（方便看衝突）
+    dayGames.sort((a, b) =>
+      (a.tournament || '').localeCompare(b.tournament || '')
+    );
+
+    html += `<div class="date-block">`;
+    html += `<div class="date-title">📅 ${date}</div>`;
     html += `
-      <div class="date-block">
-        <div class="date-title">📅 ${date}</div>
-        <table>
-          <tr>
-            <th>Game ID</th>
-            <th>盃賽</th>
-            <th>組別</th>
-            <th>場地</th>
-            <th>主隊</th>
-            <th>客隊</th>
-            <th>裁判數</th>
-          </tr>
+      <table>
+        <tr>
+          <th>Game ID</th>
+          <th>盃賽</th>
+          <th>組別</th>
+          <th>場地</th>
+          <th>主隊</th>
+          <th>客隊</th>
+          <th>裁判數</th>
+        </tr>
     `;
 
-    map[date].forEach(g => {
+    let lastTournament = null;
+
+    dayGames.forEach(g => {
+      const sameTournament =
+        lastTournament && g.tournament === lastTournament;
+
       html += `
-        <tr>
+        <tr class="${sameTournament ? 'same-tournament' : ''}">
           <td>${g.game_id}</td>
-          <td>${g.tournament || ''}</td>
+          <td class="tournament">${g.tournament || ''}</td>
           <td>${g.category || ''}</td>
           <td>${g.field || ''}</td>
           <td>${g.home_team || ''}</td>
@@ -140,11 +178,13 @@ function renderGames(games) {
           <td>${g.umpire_count || ''}</td>
         </tr>
       `;
+
+      lastTournament = g.tournament;
     });
 
     html += `
-        </table>
-      </div>
+      </table>
+    </div>
     `;
   });
 
