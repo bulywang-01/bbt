@@ -10,8 +10,8 @@ body{font-family:system-ui;margin:20px;background:#fafafa}
 table{border-collapse:collapse;width:100%}
 th,td{border:1px solid #ddd;padding:6px 8px;text-align:center}
 th{background:#f0f0f0}
-input,select{padding:4px}
 .actions button{margin:0 2px}
+select,input{padding:4px}
 </style>
 </head>
 <body>
@@ -28,15 +28,27 @@ if(!localStorage.getItem('role'))location.href='login.html';
 
 <h2>⚾ 比賽管理</h2>
 
-<!-- 搜尋 -->
+<!-- 🔍 搜尋（下拉、不重複） -->
 <div class="panel">
-  日期 <input id="q_date" placeholder="yyyy/MM/dd">
-  盃賽 <input id="q_tournament">
-  場地 <input id="q_field">
-  <button onclick="loadGames()">查詢</button>
+  日期
+  <select id="q_date">
+    <option value="">（全部）</option>
+  </select>
+
+  盃賽
+  <select id="q_tournament">
+    <option value="">（全部）</option>
+  </select>
+
+  場地
+  <select id="q_field">
+    <option value="">（全部）</option>
+  </select>
+
+  <button onclick="applyFilter()">查詢</button>
 </div>
 
-<!-- 新增 -->
+<!-- ➕ 新增 -->
 <div class="panel">
   <b>➕ 新增比賽</b><br>
   日期 <input id="n_date">
@@ -53,31 +65,76 @@ if(!localStorage.getItem('role'))location.href='login.html';
 
 <script src="js/config.js"></script>
 <script>
-const token=localStorage.getItem('token');
+const token = localStorage.getItem('token');
+let allGames = [];
 
-function loadGames(){
-  const cb='cb_'+Date.now();
-  window[cb]=res=>{
-    if(!res||res.result!=='ok'){content.textContent='❌ 讀取失敗';return;}
-    let list=res.games||[];
-
-    if(q_date.value) list=list.filter(g=>g.date===q_date.value);
-    if(q_tournament.value) list=list.filter(g=>(g.tournament||'').includes(q_tournament.value));
-    if(q_field.value) list=list.filter(g=>(g.field||'').includes(q_field.value));
-
-    render(list);
+/* =========================
+ * 載入資料 + 建立下拉
+ * ========================= */
+function loadGames() {
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (!res || res.result !== 'ok') {
+      content.textContent = '❌ 讀取失敗';
+      return;
+    }
+    allGames = res.games || [];
+    buildSelects(allGames);
+    render(allGames);
   };
-  const s=document.createElement('script');
-  s.src=API_URL+'?action=getAllSchedule&token='+token+'&callback='+cb;
+
+  const s = document.createElement('script');
+  s.src = API_URL + '?action=getAllSchedule&token=' + token + '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-function render(list){
-  if(!list.length){content.textContent='無資料';return;}
+/* =========================
+ * 建立不重複下拉選單
+ * ========================= */
+function buildSelects(games) {
+  fillSelect(q_date, games.map(g=>g.date));
+  fillSelect(q_tournament, games.map(g=>g.tournament));
+  fillSelect(q_field, games.map(g=>g.field));
+}
+
+function fillSelect(sel, values) {
+  sel.innerHTML = '<option value="">（全部）</option>';
+  [...new Set(values.filter(v=>v))].sort().forEach(v => {
+    const o = document.createElement('option');
+    o.value = v;
+    o.textContent = v;
+    sel.appendChild(o);
+  });
+}
+
+/* =========================
+ * 套用搜尋
+ * ========================= */
+function applyFilter() {
+  let list = [...allGames];
+  if (q_date.value) list = list.filter(g => g.date === q_date.value);
+  if (q_tournament.value) list = list.filter(g => g.tournament === q_tournament.value);
+  if (q_field.value) list = list.filter(g => g.field === q_field.value);
+  render(list);
+}
+
+/* =========================
+ * 顯示清單
+ * ========================= */
+function render(list) {
+  if (!list.length) {
+    content.textContent = '無資料';
+    return;
+  }
+
   list.sort((a,b)=>a.date.localeCompare(b.date));
-  let html='<div class="panel"><table><tr><th>ID</th><th>日期</th><th>盃賽</th><th>組別</th><th>場地</th><th>主隊</th><th>客隊</th><th>裁判</th><th>操作</th></tr>';
-  list.forEach(g=>{
-    html+=`<tr>
+
+  let html = '<div class="panel"><table><tr>' +
+    '<th>ID</th><th>日期</th><th>盃賽</th><th>組別</th><th>場地</th>' +
+    '<th>主隊</th><th>客隊</th><th>裁判</th><th>操作</th></tr>';
+
+  list.forEach(g => {
+    html += `<tr>
       <td>${g.game_id}</td>
       <td>${g.date}</td>
       <td><input id="t_${g.game_id}" value="${g.tournament||''}"></td>
@@ -89,12 +146,17 @@ function render(list){
       <td class="actions">
         <button onclick="updateGame('${g.game_id}','${g.date}')">💾</button>
         <button onclick="delGame('${g.game_id}')">🗑</button>
-      </td></tr>`;
+      </td>
+    </tr>`;
   });
-  html+='</table></div>';
-  content.innerHTML=html;
+
+  html += '</table></div>';
+  content.innerHTML = html;
 }
 
+/* =========================
+ * CRUD（沿用你既有）
+ * ========================= */
 function addGame(){
   const cb='cb_'+Date.now();
   window[cb]=()=>loadGames();
@@ -113,12 +175,12 @@ function updateGame(id,date){
   const s=document.createElement('script');
   s.src=API_URL+'?action=updateGame&token='+token+
     '&game_id='+id+'&date='+date+
-    '&tournament='+document.getElementById('t_'+id).value+
-    '&category='+document.getElementById('c_'+id).value+
-    '&field='+document.getElementById('f_'+id).value+
-    '&home_team='+document.getElementById('h_'+id).value+
-    '&away_team='+document.getElementById('a_'+id).value+
-    '&umpire_count='+document.getElementById('u_'+id).value+
+    '&tournament='+t_(id).value+
+    '&category='+c_(id).value+
+    '&field='+f_(id).value+
+    '&home_team='+h_(id).value+
+    '&away_team='+a_(id).value+
+    '&umpire_count='+u_(id).value+
     '&callback='+cb;
   document.body.appendChild(s);
 }
@@ -132,8 +194,14 @@ function delGame(id){
   document.body.appendChild(s);
 }
 
+const t_ = id => document.getElementById('t_'+id);
+const c_ = id => document.getElementById('c_'+id);
+const f_ = id => document.getElementById('f_'+id);
+const h_ = id => document.getElementById('h_'+id);
+const a_ = id => document.getElementById('a_'+id);
+const u_ = id => document.getElementById('u_'+id);
+
 loadGames();
 </script>
 </body>
 </html>
-``
