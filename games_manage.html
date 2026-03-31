@@ -273,13 +273,35 @@ function copyGame(id) {
   const g = allGames.find(x => x.game_id === id);
   if (!g) return;
 
-  const newDate = addOneDay(g.date);
-  if (!confirm(`複製此比賽，日期改為 ${newDate}？`)) return;
+  const startDate = prompt(
+    '請輸入起始日期（yyyy/MM/dd）',
+    g.date
+  );
+  if (!startDate) return;
+
+  const days = prompt('請輸入要複製的天數', '1');
+  if (!days || isNaN(days) || Number(days) <= 0) {
+    alert('天數不正確');
+    return;
+  }
+
+  const newField = prompt(
+    '場地（留空代表沿用原場地）',
+    g.field
+  );
+
+  if (!confirm(
+    `確認複製 ${days} 天？\n起始日期：${startDate}\n場地：${newField || g.field}`
+  )) return;
 
   const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+
   window[cb] = function(res) {
     if (res && res.result === 'ok') {
-      alert('✅ 比賽已複製');
+      alert(
+        '✅ 複製完成，新比賽編號：\n' +
+        res.created_ids.join(', ')
+      );
       loadGames();
     } else {
       alert('❌ 複製失敗');
@@ -290,16 +312,14 @@ function copyGame(id) {
   const s = document.createElement('script');
   s.src =
     API_URL +
-    '?action=addGame' +
+    '?action=copyGameSeries' +
     '&token=' + encodeURIComponent(token) +
-    '&date=' + encodeURIComponent(newDate) +
-    '&field=' + encodeURIComponent(g.field) +
-    '&tournament=' + encodeURIComponent(g.tournament) +
-    '&category=' + encodeURIComponent(g.category) +
-    '&away_team=' + encodeURIComponent(g.away_team) +
-    '&home_team=' + encodeURIComponent(g.home_team) +
-    '&umpire_count=' + encodeURIComponent(g.umpire_count) +
+    '&base_id=' + encodeURIComponent(id) +
+    '&start_date=' + encodeURIComponent(startDate) +
+    '&days=' + encodeURIComponent(days) +
+    '&field=' + encodeURIComponent(newField || '') +
     '&callback=' + cb;
+
   document.body.appendChild(s);
 }
 
