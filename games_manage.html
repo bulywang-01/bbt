@@ -57,6 +57,36 @@
 </head>
 <body>
 
+<!-- ===== 複製比賽 Modal ===== -->
+<div id="copyModal" style="display:none;
+  position:fixed; inset:0; background:rgba(0,0,0,.4);
+  align-items:center; justify-content:center;">
+
+  <div style="background:#fff; padding:20px; width:360px;">
+    <h3>📄 複製比賽</h3>
+
+    <div>
+      起始日期<br>
+      <input type="date" id="copy_start_date" style="width:100%">
+    </div>
+
+    <div>
+      連續天數<br>
+      <input type="number" id="copy_days" value="1" min="1" style="width:100%">
+    </div>
+
+    <div>
+      場地（可改）<br>
+      <input type="text" id="copy_field" style="width:100%">
+    </div>
+
+    <div style="margin-top:10px; text-align:right">
+      <button onclick="closeCopyModal()">取消</button>
+      <button onclick="confirmCopy()">✅ 複製</button>
+    </div>
+  </div>
+</div>
+  
 <!-- ===== 權限檢查 ===== -->
 <script>
 if (!localStorage.getItem('role')) location.href = 'login.html';
