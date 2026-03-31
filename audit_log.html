@@ -1,43 +1,25 @@
 <!DOCTYPE html>
-<html><html lang="zh-TW">
+<html lang="zh-TW">
+<head>
 <meta charset="UTF-8">
 <title>📋 操作紀錄</title>
-
 <style>
-  body { font-family:system-ui; margin:20px; background:#fafafa; }
-  h2 { margin-top:0; }
-
-  a { color:#0066cc; text-decoration:none; margin-right:12px; }
-  a:hover { text-decoration:underline; }
-
-  .panel {
-    background:#fff;
-    padding:14px;
-    border-radius:6px;
-    box-shadow:0 1px 4px rgba(0,0,0,.08);
-    margin-bottom:20px;
-  }
-
-  table {
-    border-collapse:collapse;
-    width:100%;
-  }
-
-  th, td {
-    border:1px solid #ddd;
-    padding:6px 8px;
-    text-align:center;
-    white-space:nowrap;
-  }
-
-  th { background:#f0f0f0; }
+body{font-family:system-ui;margin:20px;background:#fafafa}
+.header a{margin-right:12px;color:#0066cc;text-decoration:none}
+.panel{background:#fff;padding:14px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid #ddd;padding:6px 8px;text-align:center}
+th{background:#f0f0f0}
+.badge{padding:2px 6px;border-radius:4px;font-size:12px}
+.C{background:#e6f4ea;color:#137333}
+.D{background:#fdecea;color:#a50e0e}
+.U{background:#e8f0fe;color:#1a73e8}
 </style>
 </head>
 <body>
 
 <script>
-const role = localStorage.getItem('role');
-if (!role) location.href = 'login.html';
+if(!localStorage.getItem('role'))location.href='login.html';
 </script>
 
 <div class="header">
@@ -49,89 +31,52 @@ if (!role) location.href = 'login.html';
 <h2>📋 操作紀錄</h2>
 
 <div class="panel">
-  <input id="q_user" placeholder="帳號">
-  <input id="q_action" placeholder="動作">
-  <input id="q_target" placeholder="目標">
-  <button onclick="loadLog()">搜尋</button>
+  從 <input id="q_from" type="date">
+  到 <input id="q_to" type="date">
+  <button onclick="load()">查詢</button>
 </div>
 
 <div id="log">載入中…</div>
 
 <script src="js/config.js"></script>
+  
 <script>
-const token = localStorage.getItem('token');
-const logBox = document.getElementById('log');
+const token=localStorage.getItem('token');
 
-function loadLog() {
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (!res || res.result !== 'ok') {
-      logBox.textContent = '❌ 無法載入';
-      return;
-    }
+function load(){
+  const cb='cb_'+Date.now();
+  window[cb]=res=>{
+    if(!res||res.result!=='ok'){log.textContent='❌ 失敗';return;}
+    let list=res.logs||[];
 
-    let logs = res.logs || [];
+    if(q_from.value)list=list.filter(l=>l.timestamp>=q_from.value);
+    if(q_to.value)list=list.filter(l=>l.timestamp<=q_to.value+'T23:59');
 
-    if (role !== 'admin') {
-      logs = logs.filter(l => l.username === localStorage.getItem('username'));
-    }
-
-    const u = q_user.value;
-    const a = q_action.value;
-    const t = q_target.value;
-
-    if (u) logs = logs.filter(l => l.username.includes(u));
-    if (a) logs = logs.filter(l => l.action.includes(a));
-    if (t) logs = logs.filter(l => l.target.includes(t));
-
-    renderLog(logs);
+    render(list);
   };
-
-  const s = document.createElement('script');
-  s.src = API_URL + '?action=getAuditLog&token=' + token + '&callback=' + cb;
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=getAuditLog&token='+token+'&callback='+cb;
   document.body.appendChild(s);
 }
 
-function renderLog(logs) {
-  if (!logs.length) {
-    logBox.textContent = '無紀錄';
-    return;
-  }
-
-  let html = `
-    <div class="panel">
-    <table>
-      <tr>
-        <th>時間</th>
-        <th>帳號</th>
-        <th>角色</th>
-        <th>動作</th>
-        <th>目標</th>
-        <th>ID</th>
-        <th>說明</th>
-      </tr>
-  `;
-
-  logs.forEach(l => {
-    html += `
-      <tr>
-        <td>${l.timestamp}</td>
-        <td>${l.username}</td>
-        <td>${l.role}</td>
-        <td>${l.action}</td>
-        <td>${l.target}</td>
-        <td>${l.target_id}</td>
-        <td>${l.detail}</td>
-      </tr>
-    `;
+function render(list){
+  if(!list.length){log.textContent='無紀錄';return;}
+  let html='<div class="panel"><table><tr><th>時間</th><th>帳號</th><th>動作</th><th>目標</th><th>ID</th><th>說明</th></tr>';
+  list.forEach(l=>{
+    const cls=l.action.startsWith('C')?'C':l.action.startsWith('D')?'D':'U';
+    html+=`<tr>
+      <td>${l.timestamp}</td>
+      <td>${l.username}</td>
+      <td><span class="badge ${cls}">${l.action}</span></td>
+      <td>${l.target}</td>
+      <td>${l.target_id}</td>
+      <td>${l.detail}</td>
+    </tr>`;
   });
-
-  html += '</table></div>';
-  logBox.innerHTML = html;
+  html+='</table></div>';
+  log.innerHTML=html;
 }
-
-loadLog();
+load();
 </script>
 </body>
 </html>
-
