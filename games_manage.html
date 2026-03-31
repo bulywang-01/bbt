@@ -153,6 +153,57 @@ function buildMonthFilter() {
   });
 }
 
+<div id="games"></div>
+
+<script>
+function renderGames(games) {
+  // 依日期排序
+  games.sort((a, b) => a.date.localeCompare(b.date));
+
+  // 依日期分組
+  const map = {};
+  games.forEach(g => {
+    if (!map[g.date]) map[g.date] = [];
+    map[g.date].push(g);
+  });
+
+  let html = '';
+
+  Object.keys(map).forEach(date => {
+    html += `<h3>📅 ${date}</h3>`;
+    html += `
+      <table border="1" width="100%">
+        <tr>
+          <th>Game ID</th>
+          <th>盃賽</th>
+          <th>組別</th>
+          <th>場地</th>
+          <th>主隊</th>
+          <th>客隊</th>
+        </tr>
+    `;
+
+    map[date].forEach(g => {
+      html += `
+        <tr>
+          <td>${g.game_id}</td>
+          <td>${g.tournament}</td>
+          <td>${g.category}</td>
+          <td>${g.field}</td>
+          <td>${g.home_team}</td>
+          <td>${g.away_team}</td>
+        </tr>
+      `;
+    });
+
+    html += '</table><br>';
+  });
+
+  document.getElementById('games').innerHTML = html;
+}
+</script>
+
+  
 /* ===== 畫表格（唯讀） ===== */
 function renderTable() {
   const month = document.getElementById('monthFilter').value;
