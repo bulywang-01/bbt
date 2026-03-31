@@ -51,10 +51,11 @@ function newVersion(templateId) {
   window[cb] = res => {
     if (res && res.result === 'ok') {
       alert(`✅ 已建立 v${res.version}`);
-      loadTemplates();
+      loadTemplates();   // ✅ 關鍵：立刻重新載入清單
     } else {
       alert('❌ 建立新版失敗');
     }
+    delete window[cb];
   };
 
   const s = document.createElement('script');
