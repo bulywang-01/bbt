@@ -40,8 +40,10 @@ if (localStorage.getItem('role') !== 'admin') {
 
 <h2>📦 模板管理</h2>
 <p>
-  index.html🏠 回首頁</a> |
-  games_manage.html⚾ 回比賽管理</a>
+
+  <a href="index.html">🏠 回首頁</a> |
+  <a href="games_manage.html">⚾ 回比賽管理</a>
+
 </p>
 
 <!-- ===== 新增模板 ===== -->
@@ -56,8 +58,10 @@ if (localStorage.getItem('role') !== 'admin') {
 
 <div id="list">載入中…</div>
 
-<!-- ✅ 一定要這樣寫 -->
-js/config.js
+
+<!-- ✅ 一定要這樣寫，不能少字 -->
+<script src="js/config.js"></script>
+
 
 <script>
 const token = localStorage.getItem('token');
