@@ -100,6 +100,40 @@ function del(id) {
   document.body.appendChild(s);
 }
 
+function useTemplate(templateId) {
+  const startDate = prompt('請輸入起始日期（yyyy/MM/dd）');
+  if (!startDate) return;
+
+  const days = prompt('請輸入連續天數', '1');
+  if (!days || Number(days) <= 0) {
+    alert('天數不正確');
+    return;
+  }
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (res && res.result === 'ok') {
+      alert('✅ 已建立比賽：\n' + res.created_ids.join(', '));
+    } else {
+      alert('❌ 建立比賽失敗');
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=useTemplateCreateGames' +
+    '&token=' + token +
+    '&template_id=' + templateId +
+    '&start_date=' + startDate +
+    '&days=' + days +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
+
+
 load();
 </script>
 </body>
