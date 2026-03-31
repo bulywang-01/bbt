@@ -1,83 +1,146 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>裁判系統首頁</title>
-  <style>
-    body { font-family: system-ui; }
-    li { margin: 8px 0; }
-    a {
-      color: #0b5ed7;
-      text-decoration: none;
-      font-size: 18px;
-    }
-    a:hover { text-decoration: underline; }
-    .box {
-      background: #f7f7f7;
-      padding: 10px;
-      margin-bottom: 14px;
-      border: 1px solid #ccc;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>🏠 系統首頁</title>
+
+<style>
+  :root {
+    --bg: #fafafa;
+    --panel: #ffffff;
+    --text: #222;
+    --muted: #666;
+    --border: #ddd;
+    --link: #0066cc;
+  }
+
+  body.dark {
+    --bg: #1e1e1e;
+    --panel: #2a2a2a;
+    --text: #eaeaea;
+    --muted: #aaa;
+    --border: #444;
+    --link: #4ea1ff;
+  }
+
+  body {
+    margin: 20px;
+    font-family: system-ui;
+    background: var(--bg);
+    color: var(--text);
+    transition: background .2s, color .2s;
+  }
+
+  a {
+    color: var(--link);
+    text-decoration: none;
+    margin-right: 14px;
+  }
+  a:hover { text-decoration: underline; }
+
+  .header {
+    margin-bottom: 18px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  h2 { margin-top: 0; }
+
+  .nav {
+    margin-bottom: 10px;
+  }
+
+  .nav a {
+    font-weight: bold;
+  }
+
+  .muted {
+    color: var(--muted);
+  }
+
+  .toggle {
+    float: right;
+    cursor: pointer;
+    font-size: 14px;
+  }
+</style>
 </head>
 <body>
 
-<!-- ✅ 登入門禁 -->
 <script>
-if (!localStorage.getItem('role')) {
-  location.href = 'login.html';
+const role = localStorage.getItem('role');
+if (!role) location.href = 'login.html';
+
+/* Dark mode init */
+if (localStorage.getItem('dark') === '1') {
+  document.body.classList.add('dark');
 }
 </script>
 
-<h1>🏠 裁判系統首頁</h1>
+<!-- ===== Header / Navigation ===== -->
+<div class="header">
+  <div class="nav">
+    <a href="index.html">🏠 首頁</a>
 
-<!-- ✅ 狀態顯示 -->
-<div class="box" id="status"></div>
+    <a href="games_manage.html">⚾ 比賽管理</a>
 
-<ul id="menu"></ul>
+    <!-- admin only -->
+    <span id="adminNav" style="display:none">
+      <a href="templates_manage.html">📦 模板管理</a>
+      <a href="audit_log.html">📋 操作紀錄</a>
+    </span>
 
-<button onclick="logout()">登出</button>
+    <span class="toggle" onclick="toggleDark()">🌙 Dark</span>
+  </div>
+</div>
 
+<h2>系統儀表板</h2>
+
+<!-- ===== 系統摘要 ===== -->
+<div class="panel">
+  <h3>📊 系統狀態</h3>
+  <div>目前登入角色：<b id="roleText"></b></div>
+  <div class="muted">所有異動均已記錄於 Audit Log</div>
+</div>
+
+<!-- ===== 快速導覽 ===== -->
+<div class="panel">
+  <h3>🚀 快速功能</h3>
+
+  <ul>
+    <li><a href="games_manage.html">⚾ 管理 / 檢視比賽</a></li>
+
+    <li class="adminOnly">
+      <a href="templates_manage.html">📦 管理比賽模板</a>
+    </li>
+
+    <li class="adminOnly">
+      <a href="audit_log.html">📋 查看操作紀錄</a>
+    </li>
+  </ul>
+</div>
+
+<!-- ✅ JS 設定 -->
+<script src="js/config.js"></script>
 <script>
-function logout() {
-  localStorage.clear();
-  location.href = 'login.html';
-}
+document.getElementById('roleText').textContent = role;
 
-const username = localStorage.getItem('username') || '(unknown)';
-const role = (localStorage.getItem('role') || '').trim().toLowerCase();
-
-document.getElementById('status').textContent =
-  '目前登入帳號：' + username + ' ｜ 角色：' + role;
-
-const menu = document.getElementById('menu');
-menu.innerHTML = '';
-
-function addMenu(text, href) {
-  const li = document.createElement('li');
-  const a = document.createElement('a');
-  a.textContent = text;
-  a.href = href;
-  li.appendChild(a);
-  menu.appendChild(li);
-}
-
-/* ===== admin 管理介面 ===== */
 if (role === 'admin') {
-  addMenu('⚾ 比賽管理（檢視）', 'games_manage.html');
-  addMenu('📅 月班表', 'schedule.html');
-  addMenu('📊 出勤統計', 'stats.html');
+  document.getElementById('adminNav').style.display = 'inline';
+  document.querySelectorAll('.adminOnly').forEach(e => e.style.display = 'list-item');
+} else {
+  document.querySelectorAll('.adminOnly').forEach(e => e.style.display = 'none');
 }
 
-/* ===== judge 操作介面 ===== */
-if (role === 'judge') {
-  addMenu('➕ 出勤回報', 'add_attendance.html');
-  addMenu('📊 我的班表 / 出勤', 'judge_dashboard.html');
-}
-
-/* 防呆 */
-if (!menu.children.length) {
-  addMenu('⚠ 無可用功能，請重新登入', '#');
+function toggleDark() {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('dark', isDark ? '1' : '0');
 }
 </script>
 
