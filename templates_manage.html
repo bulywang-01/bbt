@@ -43,10 +43,10 @@ if (localStorage.getItem('role') !== 'admin') {
 }
 </script>
 
-<h2>📦 模板管理（最新版本）</h2>
+<h2>📦 模板管理（只顯示最新版本）</h2>
 <p>
-  <a href="index.html">🏠 回首頁</a> |
-  <a href="games_manage.html">⚾ 回比賽管理</a>
+  index.html🏠 回首頁</a> |
+  games_manage.html⚾ 回比賽管理</a>
 </p>
 
 <!-- ===== 新增模板 ===== -->
@@ -60,18 +60,21 @@ if (localStorage.getItem('role') !== 'admin') {
 <!-- ===== 搜尋工具列 ===== -->
 <div class="toolbar">
   🔍 搜尋：
-  名稱 <input id="q_name" placeholder="模板名稱" oninput="renderTemplates()">
-  版本
-  <select id="q_version" onchange="renderTemplates()">
-    <option value="">全部</option>
-  </select>
+  名稱
+  <input id="q_name" placeholder="模板名稱" oninput="renderTemplates()">
+
+  盃賽
+  <input id="q_tournament" placeholder="盃賽名稱" oninput="renderTemplates()">
+
+  組別
+  <input id="q_category" placeholder="組別" oninput="renderTemplates()">
 </div>
 
 <hr>
 
 <div id="list">載入中…</div>
 
-<!-- ✅ API 設定 -->
+<!-- ✅ API 設定（不能打錯） -->
 <script src="js/config.js"></script>
 
 <script>
@@ -96,7 +99,6 @@ function loadTemplates() {
 
     templates = res.templates || [];
     buildLatestTemplates();
-    buildVersionFilter();
     renderTemplates();
   };
 
@@ -123,35 +125,23 @@ function buildLatestTemplates() {
 }
 
 /* ===============================
- * 建立版本下拉選單
- * =============================== */
-function buildVersionFilter() {
-  const sel = document.getElementById('q_version');
-  const versions = [...new Set(latestTemplates.map(t => t.version))].sort((a,b)=>a-b);
-
-  sel.innerHTML = '<option value="">全部</option>';
-  versions.forEach(v => {
-    const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = 'v' + v;
-    sel.appendChild(opt);
-  });
-}
-
-/* ===============================
- * 顯示模板（含搜尋）
+ * 顯示模板（含搜尋條件）
  * =============================== */
 function renderTemplates() {
   let list = latestTemplates.slice();
 
   const qName = q_name.value.trim();
-  const qVer = q_version.value;
+  const qTournament = q_tournament.value.trim();
+  const qCategory = q_category.value.trim();
 
   if (qName) {
-    list = list.filter(t => t.name.includes(qName));
+    list = list.filter(t => t.name && t.name.includes(qName));
   }
-  if (qVer) {
-    list = list.filter(t => String(t.version) === qVer);
+  if (qTournament) {
+    list = list.filter(t => t.tournament && t.tournament.includes(qTournament));
+  }
+  if (qCategory) {
+    list = list.filter(t => t.category && t.category.includes(qCategory));
   }
 
   if (!list.length) {
@@ -165,6 +155,8 @@ function renderTemplates() {
         <th>ID</th>
         <th>名稱</th>
         <th>版本</th>
+        <th>盃賽</th>
+        <th>組別</th>
         <th>操作</th>
       </tr>
   `;
@@ -175,6 +167,8 @@ function renderTemplates() {
         <td>${t.template_id}</td>
         <td>${t.name}</td>
         <td>v${t.version}</td>
+        <td>${t.tournament || ''}</td>
+        <td>${t.category || ''}</td>
         <td class="actions">
           <button onclick="newVersion('${t.template_id}')">新版</button>
           <button onclick="useTemplate('${t.template_id}')">使用</button>
@@ -221,7 +215,7 @@ function addTemplate() {
 }
 
 /* ===============================
- * 新版
+ * 建立新版
  * =============================== */
 function newVersion(templateId) {
   if (!confirm('確定建立新版本？')) return;
@@ -247,7 +241,7 @@ function newVersion(templateId) {
 }
 
 /* ===============================
- * 使用模板
+ * 使用模板建立比賽
  * =============================== */
 function useTemplate(templateId) {
   const startDate = prompt('請輸入起始日期（yyyy/MM/dd）');
