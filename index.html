@@ -79,7 +79,10 @@ if (!role) location.href = 'login.html';
 <h2>系統首頁（儀表板）</h2>
 
 <div class="panel">
-  目前登入角色： <b id="roleText"></b>
+  <h3>👤 登入資訊</h3>
+  帳號：<b id="loginUser">-</b><br>
+  姓名：<b id="loginName">-</b><br>
+  權限：<b id="loginRole">-</b>
 </div>
 
 <div class="panel metrics">
@@ -105,6 +108,64 @@ if (!role) location.href = 'login.html';
 <!-- ✅ 正確載入 config.js（關鍵） -->
 <script src="js/config.js"></script>
 
+<script>
+/* ===== 顯示登入資訊 ===== */
+loginRole.textContent = role;
+
+/*
+ * admin：從 Users 找目前帳號
+ * judge：從 Judges 找對應裁判
+ *
+ * 註：login 流程中，token 對應的 username
+ * 已存在於後端 Cache，可由 getUsers / getJudges 比對
+ */
+
+function loadLoginInfo() {
+  if (role === 'admin') {
+    loadAdminInfo();
+  } else if (role === 'judge') {
+    loadJudgeInfo();
+  }
+}
+
+/* ===== admin 使用者 ===== */
+function loadAdminInfo() {
+  const cb = 'cb_user_' + Date.now();
+  window[cb] = res => {
+    if (!res || res.result !== 'ok') return;
+
+    /* 這裡先簡化：顯示 admin */
+    loginUser.textContent = 'admin';
+    loginName.textContent = '系統管理者';
+  };
+
+  const s = document.createElement('script');
+  s.src = API_URL + '?action=getUsers&token=' + token + '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* ===== 裁判使用者 ===== */
+function loadJudgeInfo() {
+  const cb = 'cb_judge_' + Date.now();
+  window[cb] = res => {
+    if (!res || res.result !== 'ok') return;
+
+    /* 裁判帳號只會有一位對應裁判 */
+    const list = res.judges || [];
+    if (list.length) {
+      loginUser.textContent = 'judge';
+      loginName.textContent = list[0].name || '裁判';
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src = API_URL + '?action=getJudges&token=' + token + '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+loadLoginInfo();
+</script>
+  
 <script>
 const token = localStorage.getItem('token');
 roleText.textContent = role;
