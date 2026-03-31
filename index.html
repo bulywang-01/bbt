@@ -245,6 +245,13 @@ loadLoginInfo();
 loadJudges();
 loadGames();
 loadRecentLog();
+
+function logout() {
+  if (!confirm('確定要登出系統？')) return;
+  localStorage.clear();
+  location.href = 'login.html';
+}
+  
 </script>
 
 </body>
