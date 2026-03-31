@@ -4,57 +4,37 @@
 <meta charset="UTF-8">
 <title>⚾ 比賽管理</title>
 <style>
-  body {
-    font-family: system-ui;
-    margin: 20px;
-    line-height: 1.6;
-  }
+  body { font-family: system-ui; margin: 20px; }
   h2 { margin-top: 0; }
 
   a {
     color: #0066cc;
     text-decoration: none;
+    margin-right: 12px;
   }
   a:hover { text-decoration: underline; }
 
   table {
     border-collapse: collapse;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 6px;
   }
   th, td {
     border: 1px solid #ccc;
     padding: 6px 8px;
     text-align: center;
+    white-space: nowrap;
   }
   th { background: #f0f0f0; }
 
-  input, select {
-    box-sizing: border-box;
+  .date-block {
+    margin-bottom: 24px;
   }
 
-  .actions button { margin: 0 2px; }
-  tr.editing { background: #fff8dc; }
-
-  .toolbar {
-    margin: 10px 0;
-    padding: 10px;
-    background: #f9f9f9;
-  }
-
-  /* ===== Modal ===== */
-  #copyModal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.4);
-    align-items: center;
-    justify-content: center;
-  }
-  #copyModal .box {
-    background: #fff;
-    padding: 20px;
-    width: 360px;
+  .date-title {
+    margin: 14px 0 6px;
+    font-size: 18px;
+    font-weight: bold;
   }
 </style>
 </head>
@@ -69,57 +49,36 @@ if (localStorage.getItem('role') !== 'admin') {
 }
 </script>
 
-<h2>⚾ 比賽管理</h2>
-<p>
+<!-- ===== Header（超連結固定）===== -->
+<div>
   <a href="index.html">🏠 回首頁</a>
-</p>
-
-<div class="toolbar">
-  📅 月份篩選：
-  <select id="monthFilter" onchange="renderTable()">
-    <option value="">全部</option>
-  </select>
+  <a href="templates_manage.html">📦 模板管理</a>
 </div>
+
+<h2>⚾ 比賽清單管理</h2>
 
 <div id="content">載入中…</div>
 
-<!-- ✅ 正確載入 API -->
+<!-- ✅ JS 設定檔（這行一定要正確） -->
 <script src="js/config.js"></script>
 
 <script>
 const token = localStorage.getItem('token');
 const content = document.getElementById('content');
-let allGames = [];
-let copyBaseGame = null;
 
-/* ===== 日期工具 ===== */
-function toInputDate(str) {
-  return str ? str.replace(/\//g, '-') : '';
-}
-function fromInputDate(str) {
-  return str ? str.replace(/-/g, '/') : '';
-}
-function addOneDay(dateStr) {
-  const [y,m,d] = dateStr.split('/').map(Number);
-  const dt = new Date(y, m-1, d);
-  dt.setDate(dt.getDate() + 1);
-  return `${dt.getFullYear()}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}`;
-}
-
-/* ===== 載入比賽 ===== */
+/* ===============================
+ * 載入所有比賽
+ * =============================== */
 function loadGames() {
   content.textContent = '載入中…';
 
-  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  window[cb] = function(res) {
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
     if (!res || res.result !== 'ok') {
       content.textContent = '❌ 無法取得比賽資料';
       return;
     }
-
-    allGames = res.games || [];
-    buildMonthFilter();
-    renderTable();
+    renderGames(res.games || []);
     delete window[cb];
   };
 
@@ -132,31 +91,15 @@ function loadGames() {
   document.body.appendChild(s);
 }
 
-/* ===== 月份篩選 ===== */
-function buildMonthFilter() {
-  const select = document.getElementById('monthFilter');
-  const months = new Set();
-  allGames.forEach(g => {
-    if (g.date && g.date.length >= 7) {
-      months.add(g.date.substring(0,7)); // yyyy/MM
-    }
-  });
-
-  const current = select.value;
-  select.innerHTML = '<option value="">全部</option>';
-  [...months].sort().forEach(m => {
-    const opt = document.createElement('option');
-    opt.value = m;
-    opt.textContent = m;
-    if (m === current) opt.selected = true;
-    select.appendChild(opt);
-  });
-}
-
-<div id="games"></div>
-
-<script>
+/* ===============================
+ * 依日期分組顯示比賽
+ * =============================== */
 function renderGames(games) {
+  if (!games.length) {
+    content.textContent = '目前尚無比賽資料';
+    return;
+  }
+
   // 依日期排序
   games.sort((a, b) => a.date.localeCompare(b.date));
 
@@ -170,292 +113,42 @@ function renderGames(games) {
   let html = '';
 
   Object.keys(map).forEach(date => {
-    html += `<h3>📅 ${date}</h3>`;
     html += `
-      <table border="1" width="100%">
-        <tr>
-          <th>Game ID</th>
-          <th>盃賽</th>
-          <th>組別</th>
-          <th>場地</th>
-          <th>主隊</th>
-          <th>客隊</th>
-        </tr>
+      <div class="date-block">
+        <div class="date-title">📅 ${date}</div>
+        <table>
+          <tr>
+            <th>Game ID</th>
+            <th>盃賽</th>
+            <th>組別</th>
+            <th>場地</th>
+            <th>主隊</th>
+            <th>客隊</th>
+            <th>裁判數</th>
+          </tr>
     `;
 
     map[date].forEach(g => {
       html += `
         <tr>
           <td>${g.game_id}</td>
-          <td>${g.tournament}</td>
-          <td>${g.category}</td>
-          <td>${g.field}</td>
-          <td>${g.home_team}</td>
-          <td>${g.away_team}</td>
+          <td>${g.tournament || ''}</td>
+          <td>${g.category || ''}</td>
+          <td>${g.field || ''}</td>
+          <td>${g.home_team || ''}</td>
+          <td>${g.away_team || ''}</td>
+          <td>${g.umpire_count || ''}</td>
         </tr>
       `;
     });
 
-    html += '</table><br>';
-  });
-
-  document.getElementById('games').innerHTML = html;
-}
-</script>
-
-  
-/* ===== 畫表格（唯讀） ===== */
-function renderTable() {
-  const month = document.getElementById('monthFilter').value;
-  let games = allGames;
-  if (month) games = games.filter(g => g.date.startsWith(month));
-
-  if (!games.length) {
-    content.textContent = '目前尚無比賽資料';
-    return;
-  }
-
-  let html = `<table>
-    <tr>
-      <th>ID</th>
-      <th>日期</th>
-      <th>球場</th>
-      <th>盃賽</th>
-      <th>組別</th>
-      <th>客隊</th>
-      <th>主隊</th>
-      <th>裁判數</th>
-      <th>操作</th>
-    </tr>`;
-
-  games.forEach(g => {
     html += `
-    <tr id="row_${g.game_id}">
-      <td>${g.game_id}</td>
-      <td>${g.date}</td>
-      <td>${g.field}</td>
-      <td>${g.tournament}</td>
-      <td>${g.category}</td>
-      <td>${g.away_team}</td>
-      <td>${g.home_team}</td>
-      <td>${g.umpire_count}</td>
-      <td class="actions">
-        <button onclick="editGame('${g.game_id}')">✏️ 修改</button>
-        <button onclick="openCopyModal('${g.game_id}')">📄 複製</button>
-        <button onclick="saveAsTemplate('${g.game_id}')">📦 模板</button>
-        <button onclick="deleteGame('${g.game_id}')">🗑 刪除</button>
-      </td>
-    </tr>`;
+        </table>
+      </div>
+    `;
   });
 
-  html += '</table>';
   content.innerHTML = html;
-}
-
-/* ===== 進入編輯 ===== */
-function editGame(id) {
-  const g = allGames.find(x => x.game_id === id);
-  if (!g) return;
-
-  const row = document.getElementById('row_' + id);
-  row.classList.add('editing');
-
-  row.innerHTML = `
-    <td>${g.game_id}</td>
-    <td><input type="date" id="d_${id}" value="${toInputDate(g.date)}"></td>
-    <td><input type="text" id="f_${id}" value="${g.field}"></td>
-    <td><input type="text" id="t_${id}" value="${g.tournament}"></td>
-    <td><input type="text" id="c_${id}" value="${g.category}"></td>
-    <td><input type="text" id="a_${id}" value="${g.away_team}"></td>
-    <td><input type="text" id="h_${id}" value="${g.home_team}"></td>
-    <td>
-      <select id="u_${id}">
-        <option ${g.umpire_count==1?'selected':''}>1</option>
-        <option ${g.umpire_count==2?'selected':''}>2</option>
-        <option ${g.umpire_count==3?'selected':''}>3</option>
-        <option ${g.umpire_count==4?'selected':''}>4</option>
-      </select>
-    </td>
-    <td>
-      <button onclick="saveGame('${id}')">✅ 儲存</button>
-      <button onclick="renderTable()">❌ 取消</button>
-    </td>
-  `;
-}
-
-/* ===== 儲存單筆 ===== */
-function saveGame(id) {
-  const dateVal = document.getElementById('d_' + id).value;
-  if (!dateVal) return alert('日期不可為空');
-
-  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  window[cb] = function(res) {
-    if (res && res.result === 'ok') {
-      alert('✅ 修改完成');
-      loadGames();
-    } else {
-      alert('❌ 修改失敗');
-    }
-    delete window[cb];
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=updateGame' +
-    '&token=' + encodeURIComponent(token) +
-    '&game_id=' + encodeURIComponent(id) +
-    '&date=' + encodeURIComponent(fromInputDate(dateVal)) +
-    '&field=' + encodeURIComponent(document.getElementById('f_'+id).value) +
-    '&tournament=' + encodeURIComponent(document.getElementById('t_'+id).value) +
-    '&category=' + encodeURIComponent(document.getElementById('c_'+id).value) +
-    '&away_team=' + encodeURIComponent(document.getElementById('a_'+id).value) +
-    '&home_team=' + encodeURIComponent(document.getElementById('h_'+id).value) +
-    '&umpire_count=' + encodeURIComponent(document.getElementById('u_'+id).value) +
-    '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-/* ===== 刪除 ===== */
-function deleteGame(id) {
-  if (!confirm('確定刪除？')) return;
-
-  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  window[cb] = function(res) {
-    if (res && res.result === 'ok') {
-      alert('✅ 已刪除');
-      loadGames();
-    } else {
-      alert('❌ 刪除失敗');
-    }
-    delete window[cb];
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=deleteGame' +
-    '&token=' + encodeURIComponent(token) +
-    '&game_id=' + encodeURIComponent(id) +
-    '&callback=' + cb;
-  document.body.appendChild(s);
-}
-</script>
-
-<!-- ===== 複製 Modal ===== -->
-<div id="copyModal">
-  <div class="box">
-    <h3>📄 複製比賽</h3>
-
-    <div>
-      起始日期<br>
-      <input type="date" id="copy_start_date" style="width:100%">
-    </div>
-
-    <div>
-      連續天數<br>
-      <input type="number" id="copy_days" value="1" min="1" style="width:100%">
-    </div>
-
-    <div>
-      場地（可改）<br>
-      <input type="text" id="copy_field" style="width:100%">
-    </div>
-
-    <div style="margin-top:10px; text-align:right">
-      <button onclick="closeCopyModal()">取消</button>
-      <button onclick="confirmCopy()">✅ 複製</button>
-    </div>
-  </div>
-</div>
-
-<script>
-function openCopyModal(id) {
-  copyBaseGame = allGames.find(x => x.game_id === id);
-  if (!copyBaseGame) return;
-
-  document.getElementById('copy_start_date').value =
-    toInputDate(copyBaseGame.date);
-  document.getElementById('copy_days').value = 1;
-  document.getElementById('copy_field').value = copyBaseGame.field;
-
-  document.getElementById('copyModal').style.display = 'flex';
-}
-
-function closeCopyModal() {
-  document.getElementById('copyModal').style.display = 'none';
-  copyBaseGame = null;
-}
-
-function confirmCopy() {
-  if (!copyBaseGame) return;
-
-  const startDate =
-    fromInputDate(document.getElementById('copy_start_date').value);
-  const days = document.getElementById('copy_days').value;
-  const field = document.getElementById('copy_field').value;
-
-  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-  window[cb] = function(res) {
-    if (res && res.result === 'ok') {
-      alert(
-        '✅ 複製完成，新比賽編號：\n' +
-        res.created_ids.join(', ')
-      );
-      loadGames();
-    } else {
-      alert('❌ 複製失敗');
-    }
-    closeCopyModal();
-    delete window[cb];
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=copyGameSeries' +
-    '&token=' + encodeURIComponent(token) +
-    '&base_id=' + encodeURIComponent(copyBaseGame.game_id) +
-    '&start_date=' + encodeURIComponent(startDate) +
-    '&days=' + encodeURIComponent(days) +
-    '&field=' + encodeURIComponent(field) +
-    '&callback=' + cb;
-
-  document.body.appendChild(s);
-}
-
-/* ===== 存成模板 ===== */
-function saveAsTemplate(id) {
-  const g = allGames.find(x => x.game_id === id);
-  if (!g) return;
-
-  const name = prompt('請輸入模板名稱');
-  if (!name) return;
-
-  const cb = 'cb_' + Date.now();
-  window[cb] = function(res) {
-    if (res && res.result === 'ok') {
-      alert('✅ 已存成模板');
-    } else {
-      alert('❌ 存模板失敗');
-    }
-    delete window[cb];
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=saveGameAsTemplate' +
-    '&token=' + encodeURIComponent(token) +
-    '&name=' + encodeURIComponent(name) +
-    '&field=' + encodeURIComponent(g.field) +
-    '&tournament=' + encodeURIComponent(g.tournament) +
-    '&category=' + encodeURIComponent(g.category) +
-    '&away_team=' + encodeURIComponent(g.away_team) +
-    '&home_team=' + encodeURIComponent(g.home_team) +
-    '&umpire_count=' + encodeURIComponent(g.umpire_count) +
-    '&callback=' + cb;
-  document.body.appendChild(s);
 }
 
 /* 初始化 */
