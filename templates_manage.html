@@ -360,25 +360,58 @@ function confirmWeekly() {
 
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
-    if (res && res.result === 'ok') {
-      alert('✅ 已建立賽程：\n' + res.created_ids.join(', '));
-    } else {
-      alert('❌ 建立失敗');
+    if (!res || res.result !== 'ok') {
+      alert('❌ 衝突檢查失敗');
+      return;
     }
-    closeWeekly();
+
+    if (res.conflicts && res.conflicts.length) {
+      alert(
+        '⚠️ 發現以下日期已有比賽（同場地）：\n' +
+        res.conflicts.join('\n')
+      );
+      return; // 先不建立，避免誤排
+    }
+
+    // ✅ 沒衝突，才真的建立賽程
+    const cb2 = 'cb_' + Date.now() + '_create';
+    window[cb2] = r2 => {
+      if (r2 && r2.result === 'ok') {
+        alert('✅ 已建立賽程：\n' + r2.created_ids.join(', '));
+      } else {
+        alert('❌ 建立失敗');
+      }
+      closeWeekly();
+    };
+
+    const s2 = document.createElement('script');
+    s2.src =
+      API_URL +
+      '?action=useTemplateWeeklyMulti' +
+      '&token=' + encodeURIComponent(token) +
+      '&template_id=' + encodeURIComponent(currentTemplateId) +
+      '&start_date=' + encodeURIComponent(startDate) +
+      '&weekdays=' + encodeURIComponent(weekdays.join(',')) +
+      '&weeks=' + encodeURIComponent(weeks) +
+      '&callback=' + cb2;
+
+    document.body.appendChild(s2);
   };
 
   const s = document.createElement('script');
-  s.src = API_URL +
-    '?action=useTemplateWeeklyMulti' +
+  s.src =
+    API_URL +
+    '?action=checkTemplateWeeklyMultiConflict' +
     '&token=' + encodeURIComponent(token) +
     '&template_id=' + encodeURIComponent(currentTemplateId) +
     '&start_date=' + encodeURIComponent(startDate) +
     '&weekdays=' + encodeURIComponent(weekdays.join(',')) +
     '&weeks=' + encodeURIComponent(weeks) +
     '&callback=' + cb;
+
   document.body.appendChild(s);
 }
+
 
 /* ===============================
  * 刪除模板
