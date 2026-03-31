@@ -24,6 +24,42 @@ const role=localStorage.getItem('role');
 if(!role||role!=='judge'){location.href='index.html';}
 </script>
 
+<script>
+function loadTournaments() {
+  const cb = 'cb_t_' + Date.now();
+  window[cb] = res => {
+    if (!res || res.result !== 'ok') return;
+
+    const tSel = document.getElementById('s_tournament');
+    const cSel = document.getElementById('s_category');
+    tSel.innerHTML = '';
+    cSel.innerHTML = '';
+
+    res.tournaments.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.tournament;
+      opt.textContent = r.tournament;
+      tSel.appendChild(opt);
+
+      const opt2 = document.createElement('option');
+      opt2.value = r.category;
+      opt2.textContent = r.category || '（未分組）';
+      cSel.appendChild(opt2);
+    });
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=getSignableTournaments' +
+    '&token=' + token +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+loadTournaments();
+</script>
+  
 <div class="header">
   <a href="index.html">🏠 首頁</a>
 </div>
@@ -32,8 +68,9 @@ if(!role||role!=='judge'){location.href='index.html';}
 
 <div class="panel">
   <b>盃賽報名</b><br>
-  盃賽 <input id="s_tournament">
-  組別 <input id="s_category"><br><br>
+盃賽<select id="s_tournament"></select>
+組別<select id="s_category"></select>
+
   可出勤日期（yyyy/MM/dd，用逗號分隔）<br>
   <input id="s_dates" style="width:100%"><br><br>
   偏好
