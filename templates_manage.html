@@ -31,8 +31,19 @@
     margin: 10px 0;
   }
 
-  .header {
-    margin-bottom: 10px;
+  /* ===== Modal ===== */
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    align-items: center;
+    justify-content: center;
+  }
+  .modal .box {
+    background: #fff;
+    padding: 20px;
+    width: 360px;
   }
 </style>
 </head>
@@ -47,8 +58,8 @@ if (localStorage.getItem('role') !== 'admin') {
 }
 </script>
 
-<!-- ===== Header（超連結固定區）===== -->
-<div class="header">
+<!-- ===== Header（超連結固定）===== -->
+<div>
   <a href="index.html">🏠 回首頁</a>
   <a href="games_manage.html">⚾ 比賽管理</a>
 </div>
@@ -77,6 +88,35 @@ if (localStorage.getItem('role') !== 'admin') {
 
 <div id="list">載入中…</div>
 
+<!-- ===== Weekly Modal ===== -->
+<div id="weeklyModal" class="modal">
+  <div class="box">
+    <h3>📅 一鍵產生賽程（每週）</h3>
+
+    起始日期<br>
+    <input type="date" id="w_start" style="width:100%"><br><br>
+
+    星期<br>
+    <select id="w_weekday" style="width:100%">
+      <option value="1">星期一</option>
+      <option value="2">星期二</option>
+      <option value="3">星期三</option>
+      <option value="4">星期四</option>
+      <option value="5">星期五</option>
+      <option value="6">星期六</option>
+      <option value="7">星期日</option>
+    </select><br><br>
+
+    產生幾週<br>
+    <input type="number" id="w_weeks" value="4" min="1" style="width:100%"><br><br>
+
+    <div style="text-align:right">
+      <button onclick="closeWeekly()">取消</button>
+      <button onclick="confirmWeekly()">✅ 產生</button>
+    </div>
+  </div>
+</div>
+
 <!-- ✅ API 設定 -->
 <script src="js/config.js"></script>
 
@@ -86,6 +126,7 @@ const listBox = document.getElementById('list');
 
 let templates = [];
 let latestTemplates = [];
+let currentTemplateId = null;
 
 /* ===============================
  * 載入模板
@@ -172,7 +213,7 @@ function renderTemplates() {
         <td>${t.umpire_count || ''}</td>
         <td class="actions">
           <button onclick="newVersion('${t.template_id}')">新版</button>
-          <button onclick="useTemplateWeekly('${t.template_id}')">一鍵產生賽程</button>
+          <button onclick="openWeekly('${t.template_id}')">一鍵產生賽程</button>
           <button onclick="deleteTemplate('${t.template_id}')">刪除</button>
         </td>
       </tr>
@@ -237,40 +278,43 @@ function newVersion(templateId) {
 }
 
 /* ===============================
- * 一鍵產生賽程（每週）
+ * Weekly modal
  * =============================== */
-function useTemplateWeekly(templateId) {
-  const startDate = prompt('請輸入起始日期（yyyy/MM/dd）');
-  if (!startDate) return;
+function openWeekly(templateId) {
+  currentTemplateId = templateId;
+  document.getElementById('weeklyModal').style.display = 'flex';
+}
 
-  const weekday = prompt('請輸入星期（1=一…7=日）');
-  if (!weekday || weekday < 1 || weekday > 7) {
-    alert('星期輸入錯誤');
-    return;
-  }
+function closeWeekly() {
+  currentTemplateId = null;
+  document.getElementById('weeklyModal').style.display = 'none';
+}
 
-  const weeks = prompt('請輸入要產生幾週', '4');
-  if (!weeks || weeks <= 0) return;
+function confirmWeekly() {
+  const startDate = w_start.value;
+  const weekday = w_weekday.value;
+  const weeks = w_weeks.value;
 
-  // 計算實際產生天數（7 * 週數）
-  const days = weeks * 7;
+  if (!startDate || !weeks) return alert('資料不完整');
 
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
     if (res && res.result === 'ok') {
-      alert('✅ 已建立比賽：\n' + res.created_ids.join(', '));
+      alert('✅ 已建立賽程：\n' + res.created_ids.join(', '));
     } else {
-      alert('❌ 建立比賽失敗');
+      alert('❌ 建立賽程失敗');
     }
+    closeWeekly();
   };
 
   const s = document.createElement('script');
   s.src = API_URL +
-    '?action=useTemplateCreateGames' +
+    '?action=useTemplateWeekly' +
     '&token=' + encodeURIComponent(token) +
-    '&template_id=' + encodeURIComponent(templateId) +
+    '&template_id=' + encodeURIComponent(currentTemplateId) +
     '&start_date=' + encodeURIComponent(startDate) +
-    '&days=' + encodeURIComponent(days) +
+    '&weekday=' + encodeURIComponent(weekday) +
+    '&weeks=' + encodeURIComponent(weeks) +
     '&callback=' + cb;
   document.body.appendChild(s);
 }
