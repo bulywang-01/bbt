@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>⚾ 比賽管理</title>
+
 <style>
   body {
     font-family: system-ui;
     margin: 20px;
+    background: #fafafa;
   }
 
   h2 {
@@ -16,33 +18,34 @@
   a {
     color: #0066cc;
     text-decoration: none;
-    margin-right: 14px;
+    margin-right: 12px;
   }
-  a:hover {
-    text-decoration: underline;
-  }
+  a:hover { text-decoration: underline; }
 
   .header {
     margin-bottom: 16px;
   }
 
-  .date-block {
-    margin-bottom: 28px;
+  .panel {
+    background: #fff;
+    padding: 14px;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    margin-bottom: 20px;
   }
 
-  .date-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 16px 0 6px;
+  .panel h3 {
+    margin-top: 0;
   }
 
   table {
     border-collapse: collapse;
     width: 100%;
+    margin-top: 6px;
   }
 
   th, td {
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     padding: 6px 8px;
     text-align: center;
     white-space: nowrap;
@@ -52,12 +55,18 @@
     background: #f0f0f0;
   }
 
-  .tournament {
+  .date-title {
+    font-size: 18px;
     font-weight: bold;
+    margin: 18px 0 6px;
   }
 
-  .same-tournament {
-    background: #fff6e0; /* 同盃賽視覺提示 */
+  .actions button {
+    margin: 0 2px;
+  }
+
+  input, select {
+    padding: 4px;
   }
 </style>
 </head>
@@ -65,26 +74,39 @@
 
 <!-- ===== 權限檢查 ===== -->
 <script>
-if (!localStorage.getItem('role')) {
-  location.href = 'login.html';
-}
+if (!localStorage.getItem('role')) location.href = 'login.html';
 if (localStorage.getItem('role') !== 'admin') {
   alert('僅限管理者使用');
   location.href = 'index.html';
 }
 </script>
 
-<!-- ===== Header（固定超連結）===== -->
-<h2>⚾ 比賽清單管理</h2>
-  
+<h2>⚾ 比賽管理</h2>
+
+<!-- ===== Header ===== -->
 <div class="header">
   <a href="index.html">🏠 回首頁</a>
   <a href="templates_manage.html">📦 模板管理</a>
+  <a href="audit_log.html">📋 操作紀錄</a>
 </div>
-  
+
+<!-- ===== 新增比賽 ===== -->
+<div class="panel">
+  <h3>➕ 新增比賽</h3>
+  日期 <input id="n_date" placeholder="yyyy/MM/dd">
+  場地 <input id="n_field">
+  盃賽 <input id="n_tournament">
+  組別 <input id="n_category">
+  客隊 <input id="n_away">
+  主隊 <input id="n_home">
+  裁判數 <input id="n_count" type="number" value="4" style="width:60px">
+  <button onclick="addGame()">新增</button>
+</div>
+
+<!-- ===== 比賽清單 ===== -->
 <div id="content">載入中…</div>
 
-<!-- ✅ JS 設定檔（這一行一定要長這樣） -->
+<!-- ✅ JS 設定檔（一定要這樣寫） -->
 <script src="js/config.js"></script>
 
 <script>
@@ -92,44 +114,36 @@ const token = localStorage.getItem('token');
 const content = document.getElementById('content');
 
 /* ===============================
- * 載入所有比賽
+ * 載入比賽
  * =============================== */
 function loadGames() {
-  content.textContent = '載入中…';
-
   const cb = 'cb_' + Date.now();
-  window[cb] = function (res) {
+  window[cb] = res => {
     if (!res || res.result !== 'ok') {
       content.textContent = '❌ 無法取得比賽資料';
       return;
     }
     renderGames(res.games || []);
-    delete window[cb];
   };
 
   const s = document.createElement('script');
-  s.src =
-    API_URL +
+  s.src = API_URL +
     '?action=getAllSchedule' +
     '&token=' + encodeURIComponent(token) +
     '&callback=' + cb;
-
   document.body.appendChild(s);
 }
 
 /* ===============================
- * 依日期分組顯示比賽
+ * 顯示比賽（依日期）
  * =============================== */
 function renderGames(games) {
   if (!games.length) {
-    content.textContent = '目前尚無比賽資料';
+    content.textContent = '目前尚無比賽';
     return;
   }
 
-  // 依日期排序
-  games.sort((a, b) => a.date.localeCompare(b.date));
-
-  // 依日期分組
+  games.sort((a,b)=>a.date.localeCompare(b.date));
   const map = {};
   games.forEach(g => {
     if (!map[g.date]) map[g.date] = [];
@@ -137,58 +151,132 @@ function renderGames(games) {
   });
 
   let html = '';
-
   Object.keys(map).forEach(date => {
-    const dayGames = map[date];
-
-    // 同日依盃賽排序（方便看衝突）
-    dayGames.sort((a, b) =>
-      (a.tournament || '').localeCompare(b.tournament || '')
-    );
-
-    html += `<div class="date-block">`;
+    html += `<div class="panel">`;
     html += `<div class="date-title">📅 ${date}</div>`;
     html += `
       <table>
         <tr>
-          <th>Game ID</th>
+          <th>ID</th>
           <th>盃賽</th>
           <th>組別</th>
           <th>場地</th>
           <th>主隊</th>
           <th>客隊</th>
-          <th>裁判數</th>
+          <th>裁判</th>
+          <th>操作</th>
         </tr>
     `;
 
-    let lastTournament = null;
-
-    dayGames.forEach(g => {
-      const sameTournament =
-        lastTournament && g.tournament === lastTournament;
-
+    map[date].forEach(g => {
       html += `
-        <tr class="${sameTournament ? 'same-tournament' : ''}">
+        <tr>
           <td>${g.game_id}</td>
-          <td class="tournament">${g.tournament || ''}</td>
-          <td>${g.category || ''}</td>
-          <td>${g.field || ''}</td>
-          <td>${g.home_team || ''}</td>
-          <td>${g.away_team || ''}</td>
-          <td>${g.umpire_count || ''}</td>
+          <td><input id="t_${g.game_id}" value="${g.tournament || ''}"></td>
+          <td><input id="c_${g.game_id}" value="${g.category || ''}"></td>
+          <td><input id="f_${g.game_id}" value="${g.field || ''}"></td>
+          <td><input id="h_${g.game_id}" value="${g.home_team || ''}"></td>
+          <td><input id="a_${g.game_id}" value="${g.away_team || ''}"></td>
+          <td><input id="u_${g.game_id}" type="number" value="${g.umpire_count || 1}" style="width:50px"></td>
+          <td class="actions">
+            <button onclick="updateGame('${g.game_id}', '${date}')">💾</button>
+            <button onclick="deleteGame('${g.game_id}')">🗑</button>
+          </td>
         </tr>
       `;
-
-      lastTournament = g.tournament;
     });
 
-    html += `
-      </table>
-    </div>
-    `;
+    html += `</table></div>`;
   });
 
   content.innerHTML = html;
+}
+
+/* ===============================
+ * 新增比賽
+ * =============================== */
+function addGame() {
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (res && res.result === 'ok') {
+      alert('✅ 新增成功');
+      loadGames();
+    } else {
+      alert('❌ 新增失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src = API_URL +
+    '?action=addGame' +
+    '&token=' + encodeURIComponent(token) +
+    '&date=' + encodeURIComponent(n_date.value) +
+    '&field=' + encodeURIComponent(n_field.value) +
+    '&tournament=' + encodeURIComponent(n_tournament.value) +
+    '&category=' + encodeURIComponent(n_category.value) +
+    '&away_team=' + encodeURIComponent(n_away.value) +
+    '&home_team=' + encodeURIComponent(n_home.value) +
+    '&umpire_count=' + encodeURIComponent(n_count.value) +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
+
+/* ===============================
+ * 更新比賽
+ * =============================== */
+function updateGame(id, date) {
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (res && res.result === 'ok') {
+      alert('✅ 已更新');
+      loadGames();
+    } else {
+      alert('❌ 更新失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src = API_URL +
+    '?action=updateGame' +
+    '&token=' + encodeURIComponent(token) +
+    '&game_id=' + id +
+    '&date=' + encodeURIComponent(date) +
+    '&field=' + encodeURIComponent(document.getElementById('f_'+id).value) +
+    '&tournament=' + encodeURIComponent(document.getElementById('t_'+id).value) +
+    '&category=' + encodeURIComponent(document.getElementById('c_'+id).value) +
+    '&away_team=' + encodeURIComponent(document.getElementById('a_'+id).value) +
+    '&home_team=' + encodeURIComponent(document.getElementById('h_'+id).value) +
+    '&umpire_count=' + encodeURIComponent(document.getElementById('u_'+id).value) +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
+
+/* ===============================
+ * 刪除比賽
+ * =============================== */
+function deleteGame(id) {
+  if (!confirm('確定刪除比賽 ' + id + '？')) return;
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (res && res.result === 'ok') {
+      alert('✅ 已刪除');
+      loadGames();
+    } else {
+      alert('❌ 刪除失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src = API_URL +
+    '?action=deleteGame' +
+    '&token=' + encodeURIComponent(token) +
+    '&game_id=' + id +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
 }
 
 /* 初始化 */
