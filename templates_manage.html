@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>模板管理</title>
+<title>模板管理 V2</title>
 </head>
 <body>
 
@@ -30,7 +30,10 @@ function load() {
           <td>${t.template_id}</td>
           <td>${t.name}</td>
           <td>v${t.version}</td>
-          <td><button onclick="del('${t.template_id}')">刪除</button></td>
+          <td>
+          <button onclick="newVersion('${t.template_id}')">新版</button>
+          <button onclick="del('${t.template_id}')">刪除</button>
+          </td>
         </tr>`;
     });
     html += '</table>';
@@ -41,6 +44,31 @@ function load() {
   document.body.appendChild(s);
 }
 
+function newVersion(templateId) {
+  if (!confirm('確定建立新版本？')) return;
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (res && res.result === 'ok') {
+      alert(`✅ 已建立 v${res.version}`);
+      loadTemplates();
+    } else {
+      alert('❌ 建立新版失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=cloneTemplateNewVersion' +
+    '&token=' + token +
+    '&template_id=' + templateId +
+    '&callback=' + cb;
+
+  document.body.appendChild(s);
+}
+
+  
 function add() {
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
