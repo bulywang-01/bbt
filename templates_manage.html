@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>📦 比賽模板管理</title>
+<title>📦 比賽模板管理 📦</title>
 <style>
   body { font-family: system-ui; margin: 20px; }
   table { border-collapse: collapse; width: 100%; margin-top: 10px; }
@@ -14,7 +14,7 @@
 </head>
 <body>
 
-<h2>📦 比賽模板管理 📦</h2>
+<h2>📦 比賽模板管理</h2>
 <p>
   <a href="index.html">🏠 回首頁</a> |
   <a href="games_manage.html">⚾ 回比賽管理</a>
@@ -22,7 +22,9 @@
 
 <div id="content">載入中…</div>
 
+<!-- ✅ 正確載入 API -->
 <script src="js/config.js"></script>
+
 <script>
 const token = localStorage.getItem('token');
 const content = document.getElementById('content');
@@ -30,7 +32,9 @@ let templates = [];
 
 /* ===== 載入模板 ===== */
 function loadTemplates() {
-  const cb = 'cb_' + Date.now();
+  content.textContent = '載入中…';
+
+  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
   window[cb] = function(res) {
     if (!res || res.result !== 'ok') {
       content.textContent = '❌ 無法取得模板資料';
@@ -38,10 +42,12 @@ function loadTemplates() {
     }
     templates = res.templates || [];
     renderTemplates();
+    delete window[cb];
   };
 
   const s = document.createElement('script');
-  s.src = API_URL +
+  s.src =
+    API_URL +
     '?action=getTemplates' +
     '&token=' + encodeURIComponent(token) +
     '&callback=' + cb;
@@ -69,22 +75,20 @@ function renderTemplates() {
     </tr>`;
 
   templates.forEach(t => {
-    const id = t.template_id; // ✅ 關鍵
-
     html += `
-    <tr data-template-id="${id}">
-      <td>${t['名稱'] || t.name || ''}</td>
-      <td>v${t.version || ''}</td>
-      <td>${t['球場'] || ''}</td>
-      <td>${t['盃賽'] || ''}</td>
-      <td>${t['組別'] || ''}</td>
-      <td>${t['客隊'] || ''}</td>
-      <td>${t['主隊'] || ''}</td>
-      <td>${t['裁判數'] || ''}</td>
+    <tr id="row_${t.template_id}">
+      <td>${t.name}</td>
+      <td>v${t.version}</td>
+      <td>${t.field}</td>
+      <td>${t.tournament}</td>
+      <td>${t.category}</td>
+      <td>${t.away_team}</td>
+      <td>${t.home_team}</td>
+      <td>${t.umpire_count}</td>
       <td class="actions">
-        <button onclick="editTemplate('${id}')">✏️ 新版</button>
-        <button onclick="useTemplate('${id}')">▶️ 使用</button>
-        <button onclick="deleteTemplate('${id}')">🗑</button>
+        <button onclick="editTemplate('${t.template_id}')">✏️ 新版</button>
+        <button onclick="useTemplate('${t.template_id}')">▶️ 使用</button>
+        <button onclick="deleteTemplate('${t.template_id}')">🗑</button>
       </td>
     </tr>`;
   });
@@ -93,12 +97,76 @@ function renderTemplates() {
   content.innerHTML = html;
 }
 
-/* ===== 刪除模板 ===== */
-function deleteTemplate(templateId) {
-  if (!templateId) {
-    alert('❌ template_id 為空');
+/* ===== 新版模板（另存） ===== */
+function editTemplate(templateId) {
+  const t = templates.find(x => x.template_id === templateId);
+  if (!t) {
+    alert('❌ 找不到模板資料');
     return;
   }
+
+  const row = document.getElementById('row_' + templateId);
+  if (!row) return;
+
+  row.classList.add('editing');
+  row.innerHTML = `
+    <td><input id="e_name" value="${t.name}"></td>
+    <td>v${t.version + 1}</td>
+    <td><input id="e_field" value="${t.field}"></td>
+    <td><input id="e_tournament" value="${t.tournament}"></td>
+    <td><input id="e_category" value="${t.category}"></td>
+    <td><input id="e_away" value="${t.away_team}"></td>
+    <td><input id="e_home" value="${t.home_team}"></td>
+    <td><input id="e_count" type="number" value="${t.umpire_count}"></td>
+    <td>
+      <button onclick="saveTemplateNewVersion('${t.name}', ${t.version + 1})">✅ 儲存新版</button>
+      <button onclick="loadTemplates()">❌ 取消</button>
+    </td>
+  `;
+}
+
+/* ===== 儲存新版本 ===== */
+function saveTemplateNewVersion(name, newVersion) {
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('✅ 已建立新版本');
+      loadTemplates();
+    } else {
+      alert('❌ 建立新版本失敗');
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=saveGameAsTemplate' +
+    '&token=' + encodeURIComponent(token) +
+    '&name=' + encodeURIComponent(name) +
+    '&version=' + encodeURIComponent(newVersion) +
+    '&field=' + encodeURIComponent(document.getElementById('e_field').value) +
+    '&tournament=' + encodeURIComponent(document.getElementById('e_tournament').value) +
+    '&category=' + encodeURIComponent(document.getElementById('e_category').value) +
+    '&away_team=' + encodeURIComponent(document.getElementById('e_away').value) +
+    '&home_team=' + encodeURIComponent(document.getElementById('e_home').value) +
+    '&umpire_count=' + encodeURIComponent(document.getElementById('e_count').value) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* ===== 使用模板 ===== */
+function useTemplate(templateId) {
+  const t = templates.find(x => x.template_id === templateId);
+  if (!t) {
+    alert('❌ 找不到模板資料');
+    return;
+  }
+  alert('✅ 使用模板：' + t.name + ' (v' + t.version + ')');
+}
+
+/* ===== 刪除模板 ===== */
+function deleteTemplate(templateId) {
   if (!confirm('確定刪除此模板？')) return;
 
   const cb = 'cb_' + Date.now();
@@ -109,33 +177,17 @@ function deleteTemplate(templateId) {
     } else {
       alert('❌ 刪除失敗');
     }
+    delete window[cb];
   };
 
   const s = document.createElement('script');
-  s.src = API_URL +
+  s.src =
+    API_URL +
     '?action=deleteTemplate' +
     '&token=' + encodeURIComponent(token) +
     '&template_id=' + encodeURIComponent(templateId) +
     '&callback=' + cb;
   document.body.appendChild(s);
-}
-
-/* ===== 使用模板 ===== */
-function useTemplate(templateId) {
-  if (!templateId) {
-    alert('❌ template_id 為空');
-    return;
-  }
-  alert('✅ 使用模板：' + templateId);
-}
-
-/* ===== 新版模板 ===== */
-function editTemplate(templateId) {
-  if (!templateId) {
-    alert('❌ template_id 為空');
-    return;
-  }
-  alert('✅ 新版模板：' + templateId);
 }
 
 /* 初始化 */
