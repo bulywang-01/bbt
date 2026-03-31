@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>📋 操作紀錄</title>
+<style>
+  body { font-family: system-ui; margin: 20px; }
+  h2 { margin-top: 0; }
+
+  a {
+    color: #0066cc;
+    text-decoration: none;
+    margin-right: 12px;
+  }
+  a:hover { text-decoration: underline; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  th { background: #f0f0f0; }
+</style>
+</head>
+<body>
+
+<script>
+if (!localStorage.getItem('role')) location.href = 'login.html';
+if (localStorage.getItem('role') !== 'admin') {
+  alert('僅限管理者');
+  location.href = 'index.html';
+}
+</script>
+
+<div>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="templates_manage.html">📦 模板管理</a>
+  <a href="games_manage.html">⚾ 比賽管理</a>
+</div>
+
+<h2>📋 操作紀錄（Audit Log）</h2>
+
+<div id="log">載入中…</div>
+
+
+<!-- ✅ JS 設定檔（這一行一定要長這樣） -->
+<script src="js/config.js"></script>
+
+<script>
+const token = localStorage.getItem('token');
+const logBox = document.getElementById('log');
+
+function loadLog() {
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (!res || res.result !== 'ok') {
+      logBox.textContent = '❌ 無法讀取紀錄';
+      return;
+    }
+
+    let html = `
+      <table>
+        <tr>
+          <th>時間</th>
+          <th>帳號</th>
+          <th>角色</th>
+          <th>動作</th>
+          <th>目標</th>
+          <th>ID</th>
+          <th>說明</th>
+        </tr>
+    `;
+
+    res.logs.forEach(r => {
+      html += `
+        <tr>
+          <td>${r.timestamp}</td>
+          <td>${r.username}</td>
+          <td>${r.role}</td>
+          <td>${r.action}</td>
+          <td>${r.target}</td>
+          <td>${r.target_id}</td>
+          <td>${r.detail}</td>
+        </tr>
+      `;
+    });
+
+    html += '</table>';
+    logBox.innerHTML = html;
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=getAuditLog' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+loadLog();
+</script>
+
+</body>
+</html>
