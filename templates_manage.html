@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>📦 比賽模板管理</title>
+<style>
+  body {
+    font-family: system-ui;
+    margin: 20px;
+    line-height: 1.6;
+  }
+  h2 { margin-top: 0; }
+
+  a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: center;
+  }
+  th { background: #f0f0f0; }
+
+  .actions button {
+    margin: 0 2px;
+  }
+
+  .msg {
+    margin: 8px 0;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 權限檢查 ===== -->
+<script>
+if (!localStorage.getItem('role')) location.href = 'login.html';
+if (localStorage.getItem('role') !== 'admin') {
+  alert('僅限管理者使用');
+  location.href = 'index.html';
+}
+</script>
+
+<h2>📦 比賽模板管理</h2>
+<p class="msg">
+  index.html🏠 回首頁</a> |
+  games_manage.html⚾ 回比賽管理</a>
+</p>
+
+<div id="content">載入中…</div>
+
+<!-- ✅ API 設定 -->
+js/config.jsscript>
+
+<script>
+const token = localStorage.getItem('token');
+const content = document.getElementById('content');
+let templates = [];
+
+/* ===== 載入模板 ===== */
+function loadTemplates() {
+  content.textContent = '載入中…';
+
+  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  window[cb] = function(res) {
+    if (!res || res.result !== 'ok') {
+      content.textContent = '❌ 無法取得模板資料';
+      return;
+    }
+
+    templates = res.templates || [];
+    renderTemplates();
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=getTemplates' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* ===== 畫模板表格 ===== */
+function renderTemplates() {
+  if (!templates.length) {
+    content.textContent = '目前尚無模板';
+    return;
+  }
+
+  let html = `<table>
+    <tr>
+      <th>模板名稱</th>
+      <th>球場</th>
+      <th>盃賽</th>
+      <th>組別</th>
+      <th>客隊</th>
+      <th>主隊</th>
+      <th>裁判數</th>
+      <th>操作</th>
+    </tr>`;
+
+  templates.forEach(t => {
+    html += `
+    <tr>
+      <td>${t.name}</td>
+      <td>${t.field}</td>
+      <td>${t.tournament}</td>
+      <td>${t.category}</td>
+      <td>${t.away_team}</td>
+      <td>${t.home_team}</td>
+      <td>${t.umpire_count}</td>
+      <td class="actions">
+        <button onclick="useTemplate('${t.template_id}')">▶️ 使用</button>
+        <button onclick="deleteTemplate('${t.template_id}')">🗑 刪除</button>
+      </td>
+    </tr>`;
+  });
+
+  html += '</table>';
+  content.innerHTML = html;
+}
+
+/* ===== 使用模板 ===== */
+function useTemplate(templateId) {
+  const t = templates.find(x => x.template_id === templateId);
+  if (!t) return;
+
+  const startDate = prompt('請輸入起始日期（yyyy/MM/dd）');
+  if (!startDate) return;
+
+  const days = prompt('請輸入連續天數', '1');
+  if (!days || isNaN(days) || Number(days) <= 0) {
+    alert('天數不正確');
+    return;
+  }
+
+  if (!confirm(
+    `確認使用模板「${t.name}」\n起始日：${startDate}\n天數：${days}`
+  )) return;
+
+  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert(
+        '✅ 已建立比賽，新編號：\n' +
+        res.created_ids.join(', ')
+      );
+    } else {
+      alert('❌ 建立失敗');
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=copyTemplateSeries' +
+    '&token=' + encodeURIComponent(token) +
+    '&template_id=' + encodeURIComponent(templateId) +
+    '&start_date=' + encodeURIComponent(startDate) +
+    '&days=' + encodeURIComponent(days) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* ===== 刪除模板 ===== */
+function deleteTemplate(templateId) {
+  if (!confirm('確定刪除此模板？')) return;
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('✅ 已刪除模板');
+      loadTemplates();
+    } else {
+      alert('❌ 刪除失敗');
+    }
+    delete window[cb];
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=deleteTemplate' +
+    '&token=' + encodeURIComponent(token) +
+    '&template_id=' + encodeURIComponent(templateId) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* 初始化 */
+loadTemplates();
+</script>
+
+</body>
+</html>
