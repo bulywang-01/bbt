@@ -2,130 +2,112 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>我的班表 / 出勤</title>
+<title>🧑‍⚖️ 裁判首頁</title>
 <style>
-  body { font-family: system-ui; }
-  li { margin: 6px 0; }
-  button { margin-left: 6px; }
+body{font-family:system-ui;margin:20px;background:#fafafa}
+.header a{margin-right:12px;color:#0066cc;text-decoration:none}
+.panel{background:#fff;padding:14px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid #ddd;padding:6px 8px;text-align:center}
+th{background:#f0f0f0}
+select,input{padding:4px}
+.badge{padding:2px 6px;border-radius:4px;font-size:12px}
+.pending{background:#fff4cc;color:#946200}
+.approved{background:#e6f4ea;color:#137333}
+.rejected{background:#fdecea;color:#a50e0e}
 </style>
 </head>
 <body>
 
-<!-- ✅ 登入 / 角色檢查 -->
 <script>
-if (!localStorage.getItem('role')) location.href='login.html';
-if (localStorage.getItem('role') !== 'judge') {
-  alert('此頁僅限裁判');
-  location.href='index.html';
-}
+const role=localStorage.getItem('role');
+if(!role||role!=='judge'){location.href='index.html';}
 </script>
 
-<h2>📊 我的班表 / 出勤紀錄</h2>
+<div class="header">
+  <a href="index.html">🏠 首頁</a>
+</div>
 
-<div id="info"></div>
-<hr>
-<div id="list">載入中…</div>
+<h2>🧑‍⚖️ 裁判報名盃賽</h2>
 
-index.html← 回首頁</a>
+<div class="panel">
+  <b>盃賽報名</b><br>
+  盃賽 <input id="s_tournament">
+  組別 <input id="s_category"><br><br>
+  可出勤日期（yyyy/MM/dd，用逗號分隔）<br>
+  <input id="s_dates" style="width:100%"><br><br>
+  偏好
+  <select id="s_pref">
+    <option>不限</option>
+    <option>主審</option>
+    <option>壘審</option>
+  </select>
+  <button onclick="signup()">送出報名</button>
+</div>
 
-<script src="js/config.js"></script>
+<div class="panel">
+  <b>我已報名的盃賽</b>
+  <div id="list">載入中…</div>
+</div>
+
+js/config.jsscript>
 <script>
-const token = localStorage.getItem('token');
-const judgeId = localStorage.getItem('judge_id');
-const cb = 'cb_' + Date.now();
+const token=localStorage.getItem('token');
 
-/* 顯示基本資訊 */
-document.getElementById('info').textContent =
-  '裁判編號：' + judgeId;
-
-/* 取得自己的出勤 */
-window[cb] = function(res){
-  if (res.result !== 'ok') {
-    document.getElementById('list').textContent='無法讀取資料';
-    return;
-  }
-
-  const { games, attendance } = res;
-  if (!attendance.length) {
-    document.getElementById('list').textContent='目前尚無出勤紀錄';
-    return;
-  }
-
-  let html='<ul>';
-  attendance.forEach(a=>{
-    const g = games.find(x=>x.game_id===a.game_id);
-    if(!g) return;
-
-    html+=`
-      <li>
-        ${g.date}｜
-        ${g.tournament} ${g.category}｜
-        ${g.away_team} vs ${g.home_team}｜
-        ${a.role}（${a.attend||'未確認'}）
-        <button onclick="delAttend('${a.game_id}')">取消</button>
-      </li>
-    `;
-  });
-  html+='</ul>';
-
-  document.getElementById('list').innerHTML=html;
-};
-
-const s=document.createElement('script');
-s.src=
-  API_URL+
-  '?action=getMySchedule'+
-  '&token='+encodeURIComponent(token)+
-  '&callback='+cb;
-
-document.body.appendChild(s);
-
-/* 刪除自己的出勤 */
-function delAttend(game_id){
-  if(!confirm('確定取消出勤？')) return;
-
-  const cb2='cb_'+Date.now();
-  window[cb2]=res=>{
-    if(res.result==='ok'){
-      alert('已取消');
-      location.reload();
-    }else{
-      alert('失敗');
-    }
-  };
-
-  const s2=document.createElement('script');
-  s2.src=
-    API_URL+
-    '?action=deleteAttendance'+
-    '&token='+encodeURIComponent(token)+
-    '&game_id='+encodeURIComponent(game_id)+
-    '&callback='+cb2;
-  document.body.appendChild(s2);
-}
-</script>
-<button onclick="exportMy()">📥 匯出我的出勤紀錄</button>
-
-<script>
-function exportMy(){
-  const token=localStorage.getItem('token');
+/* 報名 */
+function signup(){
   const cb='cb_'+Date.now();
-
   window[cb]=res=>{
-    if(res.result==='ok'){
-      window.open(res.url,'_blank');
-    }
+    if(res&&res.result==='ok'){
+      alert('✅ 報名成功');
+      load();
+    }else alert('❌ 失敗');
   };
-
   const s=document.createElement('script');
-  s.src=
-    API_URL+
-    '?action=exportMyAttendance'+
-    '&token='+encodeURIComponent(token)+
+  s.src=API_URL+'?action=judgeSignup&token='+token+
+    '&tournament='+s_tournament.value+
+    '&category='+s_category.value+
+    '&available_dates='+s_dates.value+
+    '&preference='+s_pref.value+
     '&callback='+cb;
   document.body.appendChild(s);
 }
-</script>
 
+/* 我的報名 */
+function load(){
+  const cb='cb2_'+Date.now();
+  window[cb]=res=>{
+    if(!res||res.result!=='ok'){
+      list.textContent='讀取失敗';return;
+    }
+    render(res.signups||[]);
+  };
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=getMySignups&token='+token+'&callback='+cb;
+  document.body.appendChild(s);
+}
+
+function render(arr){
+  if(!arr.length){
+    list.textContent='尚無報名紀錄';
+    return;
+  }
+  let html='<table><tr><th>盃賽</th><th>組別</th><th>日期</th><th>偏好</th><th>狀態</th><th>備註</th></tr>';
+  arr.forEach(r=>{
+    html+=`<tr>
+      <td>${r.tournament}</td>
+      <td>${r.category}</td>
+      <td>${r.dates}</td>
+      <td>${r.preference}</td>
+      <td><span class="badge ${r.status}">${r.status}</span></td>
+      <td>${r.note||''}</td>
+    </tr>`;
+  });
+  html+='</table>';
+  list.innerHTML=html;
+}
+
+load();
+</script>
 </body>
 </html>
