@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html><html lang="zh-TW">
+<meta charset="UTF-8">
+<title>📋 操作紀錄</title>
+
+<style>
+  body { font-family:system-ui; margin:20px; background:#fafafa; }
+  h2 { margin-top:0; }
+
+  a { color:#0066cc; text-decoration:none; margin-right:12px; }
+  a:hover { text-decoration:underline; }
+
+  .panel {
+    background:#fff;
+    padding:14px;
+    border-radius:6px;
+    box-shadow:0 1px 4px rgba(0,0,0,.08);
+    margin-bottom:20px;
+  }
+
+  table {
+    border-collapse:collapse;
+    width:100%;
+  }
+
+  th, td {
+    border:1px solid #ddd;
+    padding:6px 8px;
+    text-align:center;
+    white-space:nowrap;
+  }
+
+  th { background:#f0f0f0; }
+</style>
+</head>
+<body>
+
+<script>
+const role = localStorage.getItem('role');
+if (!role) location.href = 'login.html';
+</script>
+
+<div class="header">
+  <a href="index.html">🏠 回首頁</a>
+  <a href="templates_manage.html">📦 模板管理</a>
+  <a href="games_manage.html">⚾ 比賽管理</a>
+</div>
+
+<h2>📋 操作紀錄</h2>
+
+<div class="panel">
+  <input id="q_user" placeholder="帳號">
+  <input id="q_action" placeholder="動作">
+  <input id="q_target" placeholder="目標">
+  <button onclick="loadLog()">搜尋</button>
+</div>
+
+<div id="log">載入中…</div>
+
+<script src="js/config.js"></script>
+<script>
+const token = localStorage.getItem('token');
+const logBox = document.getElementById('log');
+
+function loadLog() {
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    if (!res || res.result !== 'ok') {
+      logBox.textContent = '❌ 無法載入';
+      return;
+    }
+
+    let logs = res.logs || [];
+
+    if (role !== 'admin') {
+      logs = logs.filter(l => l.username === localStorage.getItem('username'));
+    }
+
+    const u = q_user.value;
+    const a = q_action.value;
+    const t = q_target.value;
+
+    if (u) logs = logs.filter(l => l.username.includes(u));
+    if (a) logs = logs.filter(l => l.action.includes(a));
+    if (t) logs = logs.filter(l => l.target.includes(t));
+
+    renderLog(logs);
+  };
+
+  const s = document.createElement('script');
+  s.src = API_URL + '?action=getAuditLog&token=' + token + '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+function renderLog(logs) {
+  if (!logs.length) {
+    logBox.textContent = '無紀錄';
+    return;
+  }
+
+  let html = `
+    <div class="panel">
+    <table>
+      <tr>
+        <th>時間</th>
+        <th>帳號</th>
+        <th>角色</th>
+        <th>動作</th>
+        <th>目標</th>
+        <th>ID</th>
+        <th>說明</th>
+      </tr>
+  `;
+
+  logs.forEach(l => {
+    html += `
+      <tr>
+        <td>${l.timestamp}</td>
+        <td>${l.username}</td>
+        <td>${l.role}</td>
+        <td>${l.action}</td>
+        <td>${l.target}</td>
+        <td>${l.target_id}</td>
+        <td>${l.detail}</td>
+      </tr>
+    `;
+  });
+
+  html += '</table></div>';
+  logBox.innerHTML = html;
+}
+
+loadLog();
+</script>
+</body>
+</html>
+``
