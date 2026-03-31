@@ -7,7 +7,11 @@
   body { font-family: system-ui; margin: 20px; }
   h2 { margin-top: 0; }
 
-  a { color: #0066cc; text-decoration: none; margin-right: 10px; }
+  a {
+    color: #0066cc;
+    text-decoration: none;
+    margin-right: 12px;
+  }
   a:hover { text-decoration: underline; }
 
   table {
@@ -50,7 +54,7 @@
     background: #f5f5f5;
     padding: 10px;
     margin-top: 10px;
-    max-height: 150px;
+    max-height: 160px;
     overflow-y: auto;
     font-size: 14px;
   }
@@ -97,29 +101,28 @@ if (localStorage.getItem('role') !== 'admin') {
 
 <div id="list">載入中…</div>
 
-<!-- ===== Weekly Modal ===== -->
+<!-- ===== Weekly Modal（多星期）===== -->
 <div id="weeklyModal" class="modal">
   <div class="box">
-    <h3>📅 一鍵產生賽程（每週）</h3>
+    <h3>📅 一鍵產生賽程（多星期）</h3>
 
     起始日期<br>
     <input type="date" id="w_start" style="width:100%" onchange="updatePreview()"><br><br>
 
-    星期<br>
-    <select id="w_weekday" style="width:100%" onchange="updatePreview()">
-      <option value="1">星期一</option>
-      <option value="2">星期二</option>
-      <option value="3">星期三</option>
-      <option value="4">星期四</option>
-      <option value="5">星期五</option>
-      <option value="6">星期六</option>
-      <option value="7">星期日</option>
-    </select><br><br>
+    星期（可複選）<br>
+    <label><input type="checkbox" class="w_day" value="1"> 一</label>
+    <label><input type="checkbox" class="w_day" value="2"> 二</label>
+    <label><input type="checkbox" class="w_day" value="3"> 三</label>
+    <label><input type="checkbox" class="w_day" value="4"> 四</label>
+    <label><input type="checkbox" class="w_day" value="5"> 五</label>
+    <label><input type="checkbox" class="w_day" value="6"> 六</label>
+    <label><input type="checkbox" class="w_day" value="7"> 日</label>
+    <br><br>
 
     產生幾週<br>
     <input type="number" id="w_weeks" value="4" min="1" style="width:100%" onchange="updatePreview()"><br><br>
 
-    <div class="preview" id="previewBox">
+    <div id="previewBox" class="preview">
       尚未產生預覽
     </div>
 
@@ -130,7 +133,7 @@ if (localStorage.getItem('role') !== 'admin') {
   </div>
 </div>
 
-<!-- ✅ API 設定 -->
+<!-- ✅ JS 設定檔（這行不能再錯） -->
 <script src="js/config.js"></script>
 
 <script>
@@ -291,7 +294,7 @@ function newVersion(templateId) {
 }
 
 /* ===============================
- * Weekly modal
+ * Weekly Modal
  * =============================== */
 function openWeekly(templateId) {
   currentTemplateId = templateId;
@@ -305,28 +308,42 @@ function closeWeekly() {
 }
 
 /* ===============================
- * 預覽日期清單
+ * 取得勾選的星期
+ * =============================== */
+function getSelectedWeekdays() {
+  return Array.from(document.querySelectorAll('.w_day:checked'))
+    .map(cb => Number(cb.value))
+    .sort((a,b)=>a-b);
+}
+
+/* ===============================
+ * 更新預覽
  * =============================== */
 function updatePreview() {
   const start = w_start.value;
-  const weekday = Number(w_weekday.value);
   const weeks = Number(w_weeks.value);
+  const weekdays = getSelectedWeekdays();
 
-  if (!start || !weekday || !weeks) return;
-
-  let date = new Date(start);
-  while ((date.getDay() === 0 ? 7 : date.getDay()) !== weekday) {
-    date.setDate(date.getDate() + 1);
+  if (!start || !weeks || !weekdays.length) {
+    previewBox.textContent = '請選擇日期與星期';
+    return;
   }
 
   let html = '將建立以下賽程：<br>';
-  for (let i = 0; i < weeks; i++) {
-    const d = new Date(date);
-    d.setDate(date.getDate() + i * 7);
-    html += '• ' + d.toLocaleDateString('zh-TW') + '<br>';
+  const startDate = new Date(start);
+
+  for (let w = 0; w < weeks; w++) {
+    weekdays.forEach(day => {
+      let d = new Date(startDate);
+      d.setDate(d.getDate() + w * 7);
+      while ((d.getDay() === 0 ? 7 : d.getDay()) !== day) {
+        d.setDate(d.getDate() + 1);
+      }
+      html += '• ' + d.toLocaleDateString('zh-TW') + '<br>';
+    });
   }
 
-  document.getElementById('previewBox').innerHTML = html;
+  previewBox.innerHTML = html;
 }
 
 /* ===============================
@@ -334,28 +351,30 @@ function updatePreview() {
  * =============================== */
 function confirmWeekly() {
   const startDate = w_start.value;
-  const weekday = w_weekday.value;
   const weeks = w_weeks.value;
+  const weekdays = getSelectedWeekdays();
 
-  if (!startDate || !weeks) return alert('資料不完整');
+  if (!startDate || !weeks || !weekdays.length) {
+    return alert('資料不完整');
+  }
 
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
     if (res && res.result === 'ok') {
       alert('✅ 已建立賽程：\n' + res.created_ids.join(', '));
     } else {
-      alert('❌ 建立賽程失敗');
+      alert('❌ 建立失敗');
     }
     closeWeekly();
   };
 
   const s = document.createElement('script');
   s.src = API_URL +
-    '?action=useTemplateWeekly' +
+    '?action=useTemplateWeeklyMulti' +
     '&token=' + encodeURIComponent(token) +
     '&template_id=' + encodeURIComponent(currentTemplateId) +
     '&start_date=' + encodeURIComponent(startDate) +
-    '&weekday=' + encodeURIComponent(weekday) +
+    '&weekdays=' + encodeURIComponent(weekdays.join(',')) +
     '&weeks=' + encodeURIComponent(weeks) +
     '&callback=' + cb;
   document.body.appendChild(s);
@@ -392,4 +411,3 @@ loadTemplates();
 
 </body>
 </html>
-``
