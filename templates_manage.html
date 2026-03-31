@@ -3,445 +3,184 @@
 <head>
 <meta charset="UTF-8">
 <title>📦 模板管理</title>
-<style>
-  body { font-family: system-ui; margin: 20px; }
-  h2 { margin-top: 0; }
 
-  a {
-    color: #0066cc;
-    text-decoration: none;
-    margin-right: 12px;
+<style>
+  body { font-family: system-ui; margin: 20px; background:#fafafa; }
+  h2 { margin-top:0; }
+
+  a { color:#0066cc; text-decoration:none; margin-right:12px; }
+  a:hover { text-decoration:underline; }
+
+  .header { margin-bottom:16px; }
+
+  .panel {
+    background:#fff;
+    padding:14px;
+    border-radius:6px;
+    box-shadow:0 1px 4px rgba(0,0,0,.08);
+    margin-bottom:20px;
   }
-  a:hover { text-decoration: underline; }
 
   table {
-    border-collapse: collapse;
-    width: 100%;
-    margin-top: 10px;
+    border-collapse:collapse;
+    width:100%;
   }
+
   th, td {
-    border: 1px solid #ccc;
-    padding: 6px 8px;
-    text-align: center;
-    white-space: nowrap;
-  }
-  th { background: #f0f0f0; }
-
-  .actions button { margin: 0 2px; }
-
-  .toolbar {
-    background: #f9f9f9;
-    padding: 10px;
-    margin: 10px 0;
+    border:1px solid #ddd;
+    padding:6px 8px;
+    text-align:center;
+    white-space:nowrap;
   }
 
-  /* ===== Modal ===== */
-  .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.4);
-    align-items: center;
-    justify-content: center;
-  }
-  .modal .box {
-    background: #fff;
-    padding: 20px;
-    width: 420px;
-  }
+  th { background:#f0f0f0; }
 
-  .preview {
-    background: #f5f5f5;
-    padding: 10px;
-    margin-top: 10px;
-    max-height: 160px;
-    overflow-y: auto;
-    font-size: 14px;
+  .actions button { margin:0 2px; }
+
+  .readonly {
+    background:#f5f5f5;
+    color:#999;
   }
 </style>
 </head>
 <body>
 
-<!-- ===== 權限檢查 ===== -->
 <script>
-if (!localStorage.getItem('role')) location.href = 'login.html';
-if (localStorage.getItem('role') !== 'admin') {
-  alert('僅限管理者使用');
-  location.href = 'index.html';
-}
+const role = localStorage.getItem('role');
+if (!role) location.href = 'login.html';
 </script>
 
-<!-- ===== Header（超連結固定）===== -->
-<div>
+<div class="header">
   <a href="index.html">🏠 回首頁</a>
   <a href="games_manage.html">⚾ 比賽管理</a>
+  <a href="audit_log.html">📋 操作紀錄</a>
 </div>
 
-<h2>📦 模板管理（只顯示最新版本）</h2>
+<h2>📦 模板管理</h2>
 
-<!-- ===== 新增模板 ===== -->
-<div>
-  <h3>➕ 新增模板（v1）</h3>
-  名稱：
-  <input id="n_name">
+<!-- ===== 新增模板（僅 admin） ===== -->
+<div class="panel" id="addPanel" style="display:none">
+  <h3>➕ 新增模板</h3>
+  名稱 <input id="n_name">
+  盃賽 <input id="n_tournament">
+  組別 <input id="n_category">
+  場地 <input id="n_field">
+  裁判數 <input id="n_count" type="number" value="4" style="width:60px">
   <button onclick="addTemplate()">新增</button>
 </div>
 
-<!-- ===== 搜尋工具列 ===== -->
-<div class="toolbar">
-  🔍 搜尋：
-  名稱 <input id="q_name" oninput="renderTemplates()">
-  盃賽 <input id="q_tournament" oninput="renderTemplates()">
-  組別 <input id="q_category" oninput="renderTemplates()">
-  場地 <input id="q_field" oninput="renderTemplates()">
-  裁判數 <input id="q_umpire" type="number" min="1" style="width:70px" oninput="renderTemplates()">
-</div>
+<div id="content">載入中…</div>
 
-<hr>
-
-<div id="list">載入中…</div>
-
-<!-- ===== Weekly Modal（多星期）===== -->
-<div id="weeklyModal" class="modal">
-  <div class="box">
-    <h3>📅 一鍵產生賽程（多星期）</h3>
-
-    起始日期<br>
-    <input type="date" id="w_start" style="width:100%" onchange="updatePreview()"><br><br>
-
-    星期（可複選）<br>
-    <label><input type="checkbox" class="w_day" value="1"> 一</label>
-    <label><input type="checkbox" class="w_day" value="2"> 二</label>
-    <label><input type="checkbox" class="w_day" value="3"> 三</label>
-    <label><input type="checkbox" class="w_day" value="4"> 四</label>
-    <label><input type="checkbox" class="w_day" value="5"> 五</label>
-    <label><input type="checkbox" class="w_day" value="6"> 六</label>
-    <label><input type="checkbox" class="w_day" value="7"> 日</label>
-    <br><br>
-
-    產生幾週<br>
-    <input type="number" id="w_weeks" value="4" min="1" style="width:100%" onchange="updatePreview()"><br><br>
-
-    <div id="previewBox" class="preview">
-      尚未產生預覽
-    </div>
-
-    <div style="text-align:right; margin-top:10px">
-      <button onclick="closeWeekly()">取消</button>
-      <button onclick="confirmWeekly()">✅ 確認產生</button>
-    </div>
-  </div>
-</div>
-
-<!-- ✅ JS 設定檔（這行不能再錯） -->
 <script src="js/config.js"></script>
-
 <script>
 const token = localStorage.getItem('token');
-const listBox = document.getElementById('list');
+const content = document.getElementById('content');
 
-let templates = [];
-let latestTemplates = [];
-let currentTemplateId = null;
+if (role === 'admin') {
+  document.getElementById('addPanel').style.display = 'block';
+}
 
-/* ===============================
- * 載入模板
- * =============================== */
 function loadTemplates() {
-  listBox.textContent = '載入中…';
-
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
     if (!res || res.result !== 'ok') {
-      listBox.textContent = '❌ 讀取模板失敗';
+      content.textContent = '❌ 載入失敗';
       return;
     }
-    templates = res.templates || [];
-    buildLatestTemplates();
-    renderTemplates();
+    renderTemplates(res.templates || []);
   };
 
   const s = document.createElement('script');
-  s.src = API_URL +
-    '?action=getTemplates' +
-    '&token=' + encodeURIComponent(token) +
-    '&callback=' + cb;
+  s.src = API_URL + '?action=getTemplates&token=' + token + '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-/* ===============================
- * 只顯示最新版本
- * =============================== */
-function buildLatestTemplates() {
-  const map = {};
-  templates.forEach(t => {
-    if (!map[t.name] || Number(t.version) > Number(map[t.name].version)) {
-      map[t.name] = t;
-    }
-  });
-  latestTemplates = Object.values(map);
-}
-
-/* ===============================
- * 顯示模板（含搜尋）
- * =============================== */
-function renderTemplates() {
-  let list = latestTemplates.slice();
-
-  const qName = q_name.value.trim();
-  const qTournament = q_tournament.value.trim();
-  const qCategory = q_category.value.trim();
-  const qField = q_field.value.trim();
-  const qUmpire = q_umpire.value.trim();
-
-  if (qName) list = list.filter(t => t.name.includes(qName));
-  if (qTournament) list = list.filter(t => (t.tournament || '').includes(qTournament));
-  if (qCategory) list = list.filter(t => (t.category || '').includes(qCategory));
-  if (qField) list = list.filter(t => (t.field || '').includes(qField));
-  if (qUmpire) list = list.filter(t => String(t.umpire_count) === qUmpire);
-
-  if (!list.length) {
-    listBox.textContent = '查無符合條件的模板';
-    return;
-  }
-
+function renderTemplates(list) {
   let html = `
+    <div class="panel">
     <table>
       <tr>
         <th>名稱</th>
-        <th>版本</th>
         <th>盃賽</th>
         <th>組別</th>
         <th>場地</th>
-        <th>裁判數</th>
+        <th>裁判</th>
+        <th>版本</th>
         <th>操作</th>
       </tr>
   `;
 
   list.forEach(t => {
     html += `
-      <tr>
+      <tr class="${role !== 'admin' ? 'readonly' : ''}">
         <td>${t.name}</td>
-        <td>v${t.version}</td>
         <td>${t.tournament || ''}</td>
         <td>${t.category || ''}</td>
         <td>${t.field || ''}</td>
         <td>${t.umpire_count || ''}</td>
+        <td>v${t.version}</td>
         <td class="actions">
-          <button onclick="newVersion('${t.template_id}')">新版</button>
-          <button onclick="openWeekly('${t.template_id}')">一鍵產生賽程</button>
-          <button onclick="deleteTemplate('${t.template_id}')">刪除</button>
+          ${role === 'admin'
+            ? `
+              <button onclick="newVersion('${t.template_id}')">新版</button>
+              <button onclick="useTemplate('${t.template_id}')">使用</button>
+              <button onclick="deleteTemplate('${t.template_id}')">刪除</button>
+            `
+            : '唯讀'}
         </td>
       </tr>
     `;
   });
 
-  html += '</table>';
-  listBox.innerHTML = html;
+  html += '</table></div>';
+  content.innerHTML = html;
 }
 
-/* ===============================
- * 新增模板
- * =============================== */
 function addTemplate() {
-  const name = n_name.value.trim();
-  if (!name) return alert('請輸入模板名稱');
-
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
     if (res && res.result === 'ok') {
       alert('✅ 新增成功');
-      n_name.value = '';
       loadTemplates();
-    } else {
-      alert('❌ 新增失敗');
-    }
-  };
-
-  const s = document.createElement('script');
-  s.src = API_URL +
-    '?action=saveTemplate' +
-    '&token=' + encodeURIComponent(token) +
-    '&name=' + encodeURIComponent(name) +
-    '&version=1' +
-    '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-/* ===============================
- * 新版
- * =============================== */
-function newVersion(templateId) {
-  if (!confirm('確定建立新版本？')) return;
-
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (res && res.result === 'ok') {
-      alert('✅ 已建立 v' + res.version);
-      loadTemplates();
-    } else {
-      alert('❌ 建立新版失敗');
-    }
-  };
-
-  const s = document.createElement('script');
-  s.src = API_URL +
-    '?action=cloneTemplateNewVersion' +
-    '&token=' + encodeURIComponent(token) +
-    '&template_id=' + encodeURIComponent(templateId) +
-    '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-/* ===============================
- * Weekly Modal
- * =============================== */
-function openWeekly(templateId) {
-  currentTemplateId = templateId;
-  document.getElementById('previewBox').textContent = '尚未產生預覽';
-  document.getElementById('weeklyModal').style.display = 'flex';
-}
-
-function closeWeekly() {
-  currentTemplateId = null;
-  document.getElementById('weeklyModal').style.display = 'none';
-}
-
-/* ===============================
- * 取得勾選的星期
- * =============================== */
-function getSelectedWeekdays() {
-  return Array.from(document.querySelectorAll('.w_day:checked'))
-    .map(cb => Number(cb.value))
-    .sort((a,b)=>a-b);
-}
-
-/* ===============================
- * 更新預覽
- * =============================== */
-function updatePreview() {
-  const start = w_start.value;
-  const weeks = Number(w_weeks.value);
-  const weekdays = getSelectedWeekdays();
-
-  if (!start || !weeks || !weekdays.length) {
-    previewBox.textContent = '請選擇日期與星期';
-    return;
-  }
-
-  let html = '將建立以下賽程：<br>';
-  const startDate = new Date(start);
-
-  for (let w = 0; w < weeks; w++) {
-    weekdays.forEach(day => {
-      let d = new Date(startDate);
-      d.setDate(d.getDate() + w * 7);
-      while ((d.getDay() === 0 ? 7 : d.getDay()) !== day) {
-        d.setDate(d.getDate() + 1);
-      }
-      html += '• ' + d.toLocaleDateString('zh-TW') + '<br>';
-    });
-  }
-
-  previewBox.innerHTML = html;
-}
-
-/* ===============================
- * 確認產生
- * =============================== */
-function confirmWeekly() {
-  const startDate = w_start.value;
-  const weeks = w_weeks.value;
-  const weekdays = getSelectedWeekdays();
-
-  if (!startDate || !weeks || !weekdays.length) {
-    return alert('資料不完整');
-  }
-
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (!res || res.result !== 'ok') {
-      alert('❌ 衝突檢查失敗');
-      return;
-    }
-
-    if (res.conflicts && res.conflicts.length) {
-      alert(
-        '⚠️ 發現以下日期已有比賽（同場地）：\n' +
-        res.conflicts.join('\n')
-      );
-      return; // 先不建立，避免誤排
-    }
-
-    // ✅ 沒衝突，才真的建立賽程
-    const cb2 = 'cb_' + Date.now() + '_create';
-    window[cb2] = r2 => {
-      if (r2 && r2.result === 'ok') {
-        alert('✅ 已建立賽程：\n' + r2.created_ids.join(', '));
-      } else {
-        alert('❌ 建立失敗');
-      }
-      closeWeekly();
-    };
-
-    const s2 = document.createElement('script');
-    s2.src =
-      API_URL +
-      '?action=useTemplateWeeklyMulti' +
-      '&token=' + encodeURIComponent(token) +
-      '&template_id=' + encodeURIComponent(currentTemplateId) +
-      '&start_date=' + encodeURIComponent(startDate) +
-      '&weekdays=' + encodeURIComponent(weekdays.join(',')) +
-      '&weeks=' + encodeURIComponent(weeks) +
-      '&callback=' + cb2;
-
-    document.body.appendChild(s2);
+    } else alert('❌ 失敗');
   };
 
   const s = document.createElement('script');
   s.src =
     API_URL +
-    '?action=checkTemplateWeeklyMultiConflict' +
-    '&token=' + encodeURIComponent(token) +
-    '&template_id=' + encodeURIComponent(currentTemplateId) +
-    '&start_date=' + encodeURIComponent(startDate) +
-    '&weekdays=' + encodeURIComponent(weekdays.join(',')) +
-    '&weeks=' + encodeURIComponent(weeks) +
+    '?action=saveTemplate' +
+    '&token=' + token +
+    '&name=' + encodeURIComponent(n_name.value) +
+    '&tournament=' + encodeURIComponent(n_tournament.value) +
+    '&category=' + encodeURIComponent(n_category.value) +
+    '&field=' + encodeURIComponent(n_field.value) +
+    '&umpire_count=' + encodeURIComponent(n_count.value) +
     '&callback=' + cb;
-
   document.body.appendChild(s);
 }
 
-
-
-/* ===============================
- * 刪除模板
- * =============================== */
-function deleteTemplate(templateId) {
-  if (!confirm('確定刪除此模板（最新版本）？')) return;
-
+function deleteTemplate(id) {
+  if (!confirm('確定刪除模板？')) return;
   const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (res && res.result === 'ok') {
-      alert('✅ 已刪除');
-      loadTemplates();
-    } else {
-      alert('❌ 刪除失敗');
-    }
-  };
-
+  window[cb] = () => loadTemplates();
   const s = document.createElement('script');
-  s.src = API_URL +
-    '?action=deleteTemplate' +
-    '&token=' + encodeURIComponent(token) +
-    '&template_id=' + encodeURIComponent(templateId) +
-    '&callback=' + cb;
+  s.src = API_URL + '?action=deleteTemplate&token=' + token + '&template_id=' + id + '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-/* 初始化 */
+function newVersion(id) {
+  const cb = 'cb_' + Date.now();
+  window[cb] = () => loadTemplates();
+  const s = document.createElement('script');
+  s.src = API_URL + '?action=cloneTemplateNewVersion&token=' + token + '&template_id=' + id + '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+function useTemplate(id) {
+  alert('模板使用流程（你已完成 weekly / multi-weekly）');
+}
+
 loadTemplates();
 </script>
-
 </body>
 </html>
