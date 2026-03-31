@@ -10,12 +10,16 @@ body{font-family:system-ui;margin:20px;background:#fafafa}
 table{border-collapse:collapse;width:100%}
 th,td{border:1px solid #ddd;padding:6px 8px;text-align:center}
 th{background:#f0f0f0}
+select,input{padding:4px}
+.actions button{margin:0 2px}
+.readonly{color:#999}
 </style>
 </head>
 <body>
 
 <script>
-if(!localStorage.getItem('role'))location.href='login.html';
+const role = localStorage.getItem('role');
+if(!role) location.href='login.html';
 </script>
 
 <div class="header">
@@ -26,26 +30,57 @@ if(!localStorage.getItem('role'))location.href='login.html';
 
 <h2>📦 模板管理</h2>
 
+<!-- 🔍 搜尋（下拉） -->
 <div class="panel">
-  <label>
+  名稱
+  <select id="q_name"></select>
+  盃賽
+  <select id="q_tournament"></select>
+  組別
+  <select id="q_category"></select>
+  場地
+  <select id="q_field"></select>
+
+  <label style="margin-left:12px">
     <input type="checkbox" id="onlyLatest" checked onchange="render()">
     只顯示最新版本
   </label>
+
+  <button onclick="applyFilter()">查詢</button>
+</div>
+
+<!-- ➕ 新增（僅 admin） -->
+<div class="panel" id="addPanel" style="display:none">
+  <b>➕ 新增模板</b><br>
+  名稱 <input id="n_name">
+  盃賽 <input id="n_tournament">
+  組別 <input id="n_category">
+  場地 <input id="n_field">
+  裁判 <input id="n_count" type="number" value="4" style="width:60px">
+  <button onclick="addTemplate()">新增</button>
 </div>
 
 <div id="content">載入中…</div>
 
 <script src="js/config.js"></script>
-  
 <script>
-const token=localStorage.getItem('token');
-let templates=[];
+const token = localStorage.getItem('token');
+let allTemplates = [];
 
-function load(){
+if(role === 'admin'){
+  addPanel.style.display = 'block';
+}
+
+/* ===== 載入資料 ===== */
+function loadTemplates(){
   const cb='cb_'+Date.now();
   window[cb]=res=>{
-    if(!res||res.result!=='ok'){content.textContent='❌ 載入失敗';return;}
-    templates=res.templates||[];
+    if(!res||res.result!=='ok'){
+      content.textContent='❌ 載入失敗';
+      return;
+    }
+    allTemplates = res.templates || [];
+    buildSelects(allTemplates);
     render();
   };
   const s=document.createElement('script');
@@ -53,32 +88,103 @@ function load(){
   document.body.appendChild(s);
 }
 
+/* ===== 下拉（去重） ===== */
+function buildSelects(list){
+  fill(q_name, list.map(t=>t.name));
+  fill(q_tournament, list.map(t=>t.tournament));
+  fill(q_category, list.map(t=>t.category));
+  fill(q_field, list.map(t=>t.field));
+}
+function fill(sel, arr){
+  sel.innerHTML='<option value="">（全部）</option>';
+  [...new Set(arr.filter(v=>v))].sort().forEach(v=>{
+    const o=document.createElement('option');
+    o.value=o.textContent=v;
+    sel.appendChild(o);
+  });
+}
+
+/* ===== 篩選 ===== */
+function applyFilter(){
+  render();
+}
+
+/* ===== 顯示 ===== */
 function render(){
-  let list=[...templates];
+  let list=[...allTemplates];
+
+  if(q_name.value) list=list.filter(t=>t.name===q_name.value);
+  if(q_tournament.value) list=list.filter(t=>t.tournament===q_tournament.value);
+  if(q_category.value) list=list.filter(t=>t.category===q_category.value);
+  if(q_field.value) list=list.filter(t=>t.field===q_field.value);
+
   if(onlyLatest.checked){
     const map={};
     list.forEach(t=>{
-      if(!map[t.name]||t.version>map[t.name].version) map[t.name]=t;
+      if(!map[t.name] || t.version>map[t.name].version){
+        map[t.name]=t;
+      }
     });
     list=Object.values(map);
   }
 
-  let html='<div class="panel"><table><tr><th>名稱</th><th>盃賽</th><th>組別</th><th>場地</th><th>裁判</th><th>版本</th></tr>';
+  if(!list.length){
+    content.textContent='無符合資料';
+    return;
+  }
+
+  let html='<div class="panel"><table><tr>'+
+    '<th>名稱</th><th>盃賽</th><th>組別</th><th>場地</th><th>裁判</th><th>版本</th><th>操作</th></tr>';
+
   list.forEach(t=>{
-    html+=`<tr>
+    html+=`<tr class="${role!=='admin'?'readonly':''}">
       <td>${t.name}</td>
       <td>${t.tournament||''}</td>
       <td>${t.category||''}</td>
       <td>${t.field||''}</td>
       <td>${t.umpire_count||''}</td>
       <td>v${t.version}</td>
+      <td class="actions">
+        ${role==='admin'
+          ? `<button onclick="newVer('${t.template_id}')">新版</button>
+             <button onclick="delTpl('${t.template_id}')">刪除</button>`
+          : '唯讀'}
+      </td>
     </tr>`;
   });
+
   html+='</table></div>';
   content.innerHTML=html;
 }
 
-load();
+/* ===== CRUD ===== */
+function addTemplate(){
+  const cb='cb_'+Date.now();
+  window[cb]=()=>loadTemplates();
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=saveTemplate&token='+token+
+    '&name='+n_name.value+'&tournament='+n_tournament.value+
+    '&category='+n_category.value+'&field='+n_field.value+
+    '&umpire_count='+n_count.value+'&callback='+cb;
+  document.body.appendChild(s);
+}
+function newVer(id){
+  const cb='cb_'+Date.now();
+  window[cb]=()=>loadTemplates();
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=cloneTemplateNewVersion&token='+token+'&template_id='+id+'&callback='+cb;
+  document.body.appendChild(s);
+}
+function delTpl(id){
+  if(!confirm('確定刪除模板？'))return;
+  const cb='cb_'+Date.now();
+  window[cb]=()=>loadTemplates();
+  const s=document.createElement('script');
+  s.src=API_URL+'?action=deleteTemplate&token='+token+'&template_id='+id+'&callback='+cb;
+  document.body.appendChild(s);
+}
+
+loadTemplates();
 </script>
 </body>
 </html>
