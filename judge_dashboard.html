@@ -2,149 +2,195 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>🧑‍⚖️ 裁判首頁</title>
+<title>🧑‍⚖️ 裁判報名比賽</title>
+
 <style>
-body{font-family:system-ui;margin:20px;background:#fafafa}
-.header a{margin-right:12px;color:#0066cc;text-decoration:none}
-.panel{background:#fff;padding:14px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px}
-table{border-collapse:collapse;width:100%}
-th,td{border:1px solid #ddd;padding:6px 8px;text-align:center}
-th{background:#f0f0f0}
-select,input{padding:4px}
-.badge{padding:2px 6px;border-radius:4px;font-size:12px}
-.pending{background:#fff4cc;color:#946200}
-.approved{background:#e6f4ea;color:#137333}
-.rejected{background:#fdecea;color:#a50e0e}
+body{
+  font-family: system-ui;
+  margin: 20px;
+  background: #fafafa;
+}
+.header a{
+  margin-right: 14px;
+  color: #0066cc;
+  text-decoration: none;
+}
+.header a:hover{
+  text-decoration: underline;
+}
+.panel{
+  background: #fff;
+  padding: 14px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  margin-bottom: 16px;
+}
+.group{
+  margin-bottom: 14px;
+}
 </style>
 </head>
 <body>
 
 <script>
-const role=localStorage.getItem('role');
-if(!role||role!=='judge'){location.href='index.html';}
+/* ✅ 權限檢查 */
+if (localStorage.getItem('role') !== 'judge') {
+  location.href = 'index.html';
+}
 </script>
 
+<!-- ✅ Header（100% 正確寫法） -->
+<div class="header">
+  <a href="index.html">🏠 首頁</a>
+  <a href="javascript:void(0)" onclick="logout()">🚪 登出</a>
+</div>
+
+<h2>🧑‍⚖️ 可報名比賽</h2>
+
+<div class="panel" id="gamesBox">載入中…</div>
+
+<div class="panel">
+  <button onclick="submitSignup()">送出報名</button>
+</div>
+
+<div class="panel">
+  <b>我已報名</b>
+  <div id="myList">載入中…</div>
+</div>
+
+<!-- ✅ 正確載入 config.js（關鍵） -->
+<script src="js/config.js"></script>
+
 <script>
-function loadTournaments() {
-  const cb = 'cb_t_' + Date.now();
+/* ===== 共用資料 ===== */
+const token = localStorage.getItem('token');
+let selected = new Set();
+
+/* ===== 登出 ===== */
+function logout() {
+  if (!confirm('確定要登出？')) return;
+  localStorage.clear();
+  location.href = 'login.html';
+}
+
+/* ===== 載入可報名比賽 ===== */
+function loadGames() {
+  const cb = 'cb_games_' + Date.now();
   window[cb] = res => {
-    if (!res || res.result !== 'ok') return;
-
-    const tSel = document.getElementById('s_tournament');
-    const cSel = document.getElementById('s_category');
-    tSel.innerHTML = '';
-    cSel.innerHTML = '';
-
-    res.tournaments.forEach(r => {
-      const opt = document.createElement('option');
-      opt.value = r.tournament;
-      opt.textContent = r.tournament;
-      tSel.appendChild(opt);
-
-      const opt2 = document.createElement('option');
-      opt2.value = r.category;
-      opt2.textContent = r.category || '（未分組）';
-      cSel.appendChild(opt2);
-    });
+    if (!res || res.result !== 'ok') {
+      document.getElementById('gamesBox').textContent = '讀取失敗';
+      return;
+    }
+    renderGames(res.games || []);
   };
 
   const s = document.createElement('script');
   s.src =
     API_URL +
-    '?action=getSignableTournaments' +
-    '&token=' + token +
+    '?action=getSignableGames' +
+    '&token=' + encodeURIComponent(token) +
     '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-loadTournaments();
-</script>
-  
-<div class="header">
-  <a href="index.html">🏠 首頁</a>
-</div>
-
-<h2>🧑‍⚖️ 裁判報名盃賽</h2>
-
-<div class="panel">
-  <b>盃賽報名</b><br>
-盃賽<select id="s_tournament"></select>
-組別<select id="s_category"></select>
-
-  可出勤日期（yyyy/MM/dd，用逗號分隔）<br>
-  <input id="s_dates" style="width:100%"><br><br>
-  偏好
-  <select id="s_pref">
-    <option>不限</option>
-    <option>主審</option>
-    <option>壘審</option>
-  </select>
-  <button onclick="signup()">送出報名</button>
-</div>
-
-<div class="panel">
-  <b>我已報名的盃賽</b>
-  <div id="list">載入中…</div>
-</div>
-
-<script src="js/config.js"></script>
-<script>
-const token=localStorage.getItem('token');
-
-/* 報名 */
-function signup(){
-  const cb='cb_'+Date.now();
-  window[cb]=res=>{
-    if(res&&res.result==='ok'){
-      alert('✅ 報名成功');
-      load();
-    }else alert('❌ 失敗');
-  };
-  const s=document.createElement('script');
-  s.src=API_URL+'?action=judgeSignup&token='+token+
-    '&tournament='+s_tournament.value+
-    '&category='+s_category.value+
-    '&available_dates='+s_dates.value+
-    '&preference='+s_pref.value+
-    '&callback='+cb;
-  document.body.appendChild(s);
-}
-
-/* 我的報名 */
-function load(){
-  const cb='cb2_'+Date.now();
-  window[cb]=res=>{
-    if(!res||res.result!=='ok'){
-      list.textContent='讀取失敗';return;
-    }
-    render(res.signups||[]);
-  };
-  const s=document.createElement('script');
-  s.src=API_URL+'?action=getMySignups&token='+token+'&callback='+cb;
-  document.body.appendChild(s);
-}
-
-function render(arr){
-  if(!arr.length){
-    list.textContent='尚無報名紀錄';
+/* ===== 顯示比賽（依盃賽分組） ===== */
+function renderGames(games) {
+  if (!games.length) {
+    document.getElementById('gamesBox').textContent = '目前沒有可報名的比賽';
     return;
   }
-  let html='<table><tr><th>盃賽</th><th>組別</th><th>日期</th><th>偏好</th><th>狀態</th><th>備註</th></tr>';
-  arr.forEach(r=>{
-    html+=`<tr>
-      <td>${r.tournament}</td>
-      <td>${r.category}</td>
-      <td>${r.dates}</td>
-      <td>${r.preference}</td>
-      <td><span class="badge ${r.status}">${r.status}</span></td>
-      <td>${r.note||''}</td>
-    </tr>`;
+
+  const map = {};
+  games.forEach(g => {
+    if (!map[g.tournament]) map[g.tournament] = [];
+    map[g.tournament].push(g);
   });
-  html+='</table>';
-  list.innerHTML=html;
+
+  let html = '';
+  Object.keys(map).forEach(t => {
+    html += `<div class="group"><b>${t}</b><br>`;
+    map[t].forEach(g => {
+      html += `
+        <label>
+          <input type="checkbox"
+                 value="${g.game_id}"
+                 onchange="toggleGame(this)">
+          ${g.date}｜${g.category}｜${g.field}
+        </label><br>`;
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('gamesBox').innerHTML = html;
 }
 
-load();
+function toggleGame(cb) {
+  cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
+}
+
+/* ===== 送出報名 ===== */
+function submitSignup() {
+  if (!selected.size) {
+    alert('請至少選擇一場比賽');
+    return;
+  }
+
+  const cb = 'cb_signup_' + Date.now();
+  window[cb] = res => {
+    if (res && res.result === 'ok') {
+      alert('✅ 報名完成');
+      selected.clear();
+      loadMySignups();
+    } else {
+      alert('❌ 報名失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=judgeSignupByGames' +
+    '&token=' + encodeURIComponent(token) +
+    '&game_ids=' + encodeURIComponent([...selected].join(',')) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* ===== 我的報名 ===== */
+function loadMySignups() {
+  const cb = 'cb_my_' + Date.now();
+  window[cb] = res => {
+    const box = document.getElementById('myList');
+    if (!res || res.result !== 'ok') {
+      box.textContent = '讀取失敗';
+      return;
+    }
+    if (!res.signups.length) {
+      box.textContent = '尚無報名紀錄';
+      return;
+    }
+
+    let html = '<ul>';
+    res.signups.forEach(s => {
+      html += `<li>${s.games.length} 場比賽（${s.status}）</li>`;
+    });
+    html += '</ul>';
+    box.innerHTML = html;
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=getMyGameSignups' +
+    '&token=' + encodeURIComponent(token) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* ===== init ===== */
+loadGames();
+loadMySignups();
 </script>
+
 </body>
 </html>
