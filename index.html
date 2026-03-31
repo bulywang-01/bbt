@@ -6,66 +6,64 @@
 
 <style>
 body{
-  font-family:system-ui;
-  margin:20px;
-  background:#fafafa;
+  font-family: system-ui;
+  margin: 20px;
+  background: #fafafa;
 }
 .header a{
-  margin-right:14px;
-  color:#0066cc;
-  text-decoration:none;
+  margin-right: 14px;
+  color: #0066cc;
+  text-decoration: none;
 }
 .panel{
-  background:#fff;
-  padding:16px;
-  border-radius:6px;
-  box-shadow:0 1px 4px rgba(0,0,0,.08);
-  margin-bottom:18px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  margin-bottom: 18px;
 }
-h2{margin-top:0}
 .metrics{
-  display:flex;
-  gap:16px;
+  display: flex;
+  gap: 16px;
 }
 .metric{
-  flex:1;
-  background:#f7f7f7;
-  padding:12px;
-  border-radius:6px;
-  text-align:center;
+  flex: 1;
+  background: #f7f7f7;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
 }
 .metric b{
-  font-size:22px;
-  display:block;
+  font-size: 22px;
 }
 table{
-  border-collapse:collapse;
-  width:100%;
+  border-collapse: collapse;
+  width: 100%;
 }
-th,td{
-  border:1px solid #ddd;
-  padding:6px 8px;
-  text-align:center;
+th, td{
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+  text-align: center;
 }
-th{background:#f0f0f0}
+th{ background: #f0f0f0; }
 .badge{
-  padding:2px 6px;
-  border-radius:4px;
-  font-size:12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
 }
-.C{background:#e6f4ea;color:#137333}
-.U{background:#e8f0fe;color:#1a73e8}
-.D{background:#fdecea;color:#a50e0e}
+.C{ background:#e6f4ea; color:#137333; }
+.U{ background:#e8f0fe; color:#1a73e8; }
+.D{ background:#fdecea; color:#a50e0e; }
 </style>
 </head>
 <body>
 
 <script>
 const role = localStorage.getItem('role');
-if(!role) location.href='login.html';
+if (!role) location.href = 'login.html';
 </script>
 
-<!-- ===== Header ===== -->
+<!-- ✅ Header（全部是正確超連結） -->
 <div class="header">
   <a href="index.html">🏠 首頁</a>
   <a href="games_manage.html">⚾ 比賽管理</a>
@@ -78,26 +76,12 @@ if(!role) location.href='login.html';
   </span>
 </div>
 
-
 <h2>系統首頁（儀表板）</h2>
 
-<!-- ===== 系統摘要 ===== -->
 <div class="panel">
-  登入帳號：<b id="u_name"></b><br>
-  身分角色：<b id="u_role"></b><br>
-  關聯裁判：<b id="u_judge"></b>
+  目前登入角色： <b id="roleText"></b>
 </div>
 
-<script>
-const u=JSON.parse(atob(localStorage.getItem('user_info')));
-u_name.textContent=u.username;
-u_role.textContent=u.role;
-u_judge.textContent=u.judge_name||'—';
-
-if(u.role==='admin') adminNav.style.display='inline';
-</script>
-
-<!-- ===== 數量統計 ===== -->
 <div class="panel metrics">
   <div class="metric">
     裁判總數
@@ -113,69 +97,71 @@ if(u.role==='admin') adminNav.style.display='inline';
   </div>
 </div>
 
-<!-- ===== 最近操作 ===== -->
 <div class="panel">
   <h3>📋 最近操作紀錄</h3>
   <div id="recentLog">載入中…</div>
 </div>
 
-<!-- ✅ JS 設定 -->
+<!-- ✅ 正確載入 config.js（關鍵） -->
 <script src="js/config.js"></script>
+
 <script>
 const token = localStorage.getItem('token');
 roleText.textContent = role;
 
-if(role === 'admin'){
-  adminNav.style.display='inline';
+if (role === 'admin') {
+  adminNav.style.display = 'inline';
 }
 
-/* ===== 載入裁判 ===== */
+/* ===== 裁判 ===== */
 function loadJudges(){
-  const cb='cb_j_'+Date.now();
-  window[cb]=res=>{
-    const list=res.judges||[];
-    judgeCount.textContent=list.length;
-    judgeActive.textContent=list.filter(j=>j.active==='Y').length;
+  const cb = 'cb_j_' + Date.now();
+  window[cb] = res => {
+    const list = res.judges || [];
+    judgeCount.textContent = list.length;
+    judgeActive.textContent = list.filter(j => j.active === 'Y').length;
   };
-  const s=document.createElement('script');
-  s.src=API_URL+'?action=getJudges&token='+token+'&callback='+cb;
+  const s = document.createElement('script');
+  s.src = API_URL + '?action=getJudges&token=' + token + '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-/* ===== 載入比賽 ===== */
+/* ===== 比賽 ===== */
 function loadGames(){
-  const cb='cb_g_'+Date.now();
-  window[cb]=res=>{
-    gameCount.textContent=(res.games||[]).length;
+  const cb = 'cb_g_' + Date.now();
+  window[cb] = res => {
+    gameCount.textContent = (res.games || []).length;
   };
-  const s=document.createElement('script');
-  s.src=API_URL+'?action=getAllSchedule&token='+token+'&callback='+cb;
+  const s = document.createElement('script');
+  s.src = API_URL + '?action=getAllSchedule&token=' + token + '&callback=' + cb;
   document.body.appendChild(s);
 }
 
-/* ===== 載入最近操作 ===== */
+/* ===== 最近 Audit Log ===== */
 function loadRecentLog(){
-  const cb='cb_l_'+Date.now();
-  window[cb]=res=>{
-    const list=(res.logs||[]).slice(0,5);
-    if(!list.length){recentLog.textContent='無紀錄';return;}
-
-    let html='<table><tr><th>時間</th><th>動作</th><th>目標</th><th>說明</th></tr>';
-    list.forEach(l=>{
-      const cls=l.action.startsWith('C')?'C':l.action.startsWith('D')?'D':'U';
-      html+=`<tr>
+  const cb = 'cb_l_' + Date.now();
+  window[cb] = res => {
+    const list = (res.logs || []).slice(0,5);
+    if (!list.length) {
+      recentLog.textContent = '無紀錄';
+      return;
+    }
+    let html = '<table><tr><th>時間</th><th>動作</th><th>目標</th><th>說明</th></tr>';
+    list.forEach(l => {
+      const cls = l.action.startsWith('C') ? 'C'
+                : l.action.startsWith('D') ? 'D' : 'U';
+      html += `<tr>
         <td>${l.timestamp}</td>
         <td><span class="badge ${cls}">${l.action}</span></td>
         <td>${l.target}</td>
         <td>${l.detail}</td>
       </tr>`;
     });
-    html+='</table>';
-    recentLog.innerHTML=html;
+    html += '</table>';
+    recentLog.innerHTML = html;
   };
-
-  const s=document.createElement('script');
-  s.src=API_URL+'?action=getAuditLog&token='+token+'&callback='+cb;
+  const s = document.createElement('script');
+  s.src = API_URL + '?action=getAuditLog&token=' + token + '&callback=' + cb;
   document.body.appendChild(s);
 }
 
@@ -186,3 +172,4 @@ loadRecentLog();
 
 </body>
 </html>
+``
