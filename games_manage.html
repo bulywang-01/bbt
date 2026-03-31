@@ -299,59 +299,27 @@ function saveGame(id) {
 }
 
 /* ===== 複製比賽（日期 +1） ===== */
+let copyBaseGame = null;
+
 function copyGame(id) {
   const g = allGames.find(x => x.game_id === id);
   if (!g) return;
 
-  const startDate = prompt(
-    '請輸入起始日期（yyyy/MM/dd）',
-    g.date
-  );
-  if (!startDate) return;
+  copyBaseGame = g;
 
-  const days = prompt('請輸入要複製的天數', '1');
-  if (!days || isNaN(days) || Number(days) <= 0) {
-    alert('天數不正確');
-    return;
-  }
+  document.getElementById('copy_start_date').value =
+    toInputDate(g.date);
+  document.getElementById('copy_days').value = 1;
+  document.getElementById('copy_field').value = g.field;
 
-  const newField = prompt(
-    '場地（留空代表沿用原場地）',
-    g.field
-  );
-
-  if (!confirm(
-    `確認複製 ${days} 天？\n起始日期：${startDate}\n場地：${newField || g.field}`
-  )) return;
-
-  const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-
-  window[cb] = function(res) {
-    if (res && res.result === 'ok') {
-      alert(
-        '✅ 複製完成，新比賽編號：\n' +
-        res.created_ids.join(', ')
-      );
-      loadGames();
-    } else {
-      alert('❌ 複製失敗');
-    }
-    delete window[cb];
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=copyGameSeries' +
-    '&token=' + encodeURIComponent(token) +
-    '&base_id=' + encodeURIComponent(id) +
-    '&start_date=' + encodeURIComponent(startDate) +
-    '&days=' + encodeURIComponent(days) +
-    '&field=' + encodeURIComponent(newField || '') +
-    '&callback=' + cb;
-
-  document.body.appendChild(s);
+  document.getElementById('copyModal').style.display = 'flex';
 }
+
+function closeCopyModal() {
+  document.getElementById('copyModal').style.display = 'none';
+  copyBaseGame = null;
+}
+
 
 /* ===== 刪除 ===== */
 function deleteGame(id) {
