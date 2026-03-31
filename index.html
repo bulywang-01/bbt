@@ -66,25 +66,36 @@ if(!role) location.href='login.html';
 </script>
 
 <!-- ===== Header ===== -->
-
 <div class="header">
   <a href="index.html">🏠 首頁</a>
-
   <a href="games_manage.html">⚾ 比賽管理</a>
 
   <span id="adminNav" style="display:none">
     <a href="templates_manage.html">📦 模板管理</a>
     <a href="judges_manage.html">🧑‍⚖️ 裁判人員</a>
+    <a href="users_manage.html">👤 系統人員</a>
     <a href="audit_log.html">📋 操作紀錄</a>
   </span>
 </div>
+
 
 <h2>系統首頁（儀表板）</h2>
 
 <!-- ===== 系統摘要 ===== -->
 <div class="panel">
-  目前登入角色： <b id="roleText"></b>
+  登入帳號：<b id="u_name"></b><br>
+  身分角色：<b id="u_role"></b><br>
+  關聯裁判：<b id="u_judge"></b>
 </div>
+
+<script>
+const u=JSON.parse(atob(localStorage.getItem('user_info')));
+u_name.textContent=u.username;
+u_role.textContent=u.role;
+u_judge.textContent=u.judge_name||'—';
+
+if(u.role==='admin') adminNav.style.display='inline';
+</script>
 
 <!-- ===== 數量統計 ===== -->
 <div class="panel metrics">
