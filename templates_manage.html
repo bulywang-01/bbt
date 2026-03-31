@@ -2,12 +2,12 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>📦 模板管理（最新版本＋完整搜尋）</title>
+<title>📦 模板管理</title>
 <style>
   body { font-family: system-ui; margin: 20px; }
   h2 { margin-top: 0; }
 
-  a { color: #0066cc; text-decoration: none; }
+  a { color: #0066cc; text-decoration: none; margin-right: 10px; }
   a:hover { text-decoration: underline; }
 
   table {
@@ -30,6 +30,10 @@
     padding: 10px;
     margin: 10px 0;
   }
+
+  .header {
+    margin-bottom: 10px;
+  }
 </style>
 </head>
 <body>
@@ -43,11 +47,13 @@ if (localStorage.getItem('role') !== 'admin') {
 }
 </script>
 
+<!-- ===== Header（超連結固定區）===== -->
+<div class="header">
+  <a href="index.html">🏠 回首頁</a>
+  <a href="games_manage.html">⚾ 比賽管理</a>
+</div>
+
 <h2>📦 模板管理（只顯示最新版本）</h2>
-<p>
-  index.html🏠 回首頁</a> |
-  games_manage.html⚾ 回比賽管理</a>
-</p>
 
 <!-- ===== 新增模板 ===== -->
 <div>
@@ -60,35 +66,26 @@ if (localStorage.getItem('role') !== 'admin') {
 <!-- ===== 搜尋工具列 ===== -->
 <div class="toolbar">
   🔍 搜尋：
-  名稱
-  <input id="q_name" placeholder="模板名稱" oninput="renderTemplates()">
-
-  盃賽
-  <input id="q_tournament" placeholder="盃賽" oninput="renderTemplates()">
-
-  組別
-  <input id="q_category" placeholder="組別" oninput="renderTemplates()">
-
-  場地
-  <input id="q_field" placeholder="場地" oninput="renderTemplates()">
-
-  裁判數
-  <input id="q_umpire" type="number" min="1" style="width:70px" oninput="renderTemplates()">
+  名稱 <input id="q_name" oninput="renderTemplates()">
+  盃賽 <input id="q_tournament" oninput="renderTemplates()">
+  組別 <input id="q_category" oninput="renderTemplates()">
+  場地 <input id="q_field" oninput="renderTemplates()">
+  裁判數 <input id="q_umpire" type="number" min="1" style="width:70px" oninput="renderTemplates()">
 </div>
 
 <hr>
 
 <div id="list">載入中…</div>
 
-<!-- ✅ API 設定（不能打錯） -->
+<!-- ✅ API 設定 -->
 <script src="js/config.js"></script>
 
 <script>
 const token = localStorage.getItem('token');
 const listBox = document.getElementById('list');
 
-let templates = [];        // 全部模板
-let latestTemplates = []; // 只顯示最新版本
+let templates = [];
+let latestTemplates = [];
 
 /* ===============================
  * 載入模板
@@ -97,20 +94,18 @@ function loadTemplates() {
   listBox.textContent = '載入中…';
 
   const cb = 'cb_' + Date.now();
-  window[cb] = function(res) {
+  window[cb] = res => {
     if (!res || res.result !== 'ok') {
       listBox.textContent = '❌ 讀取模板失敗';
       return;
     }
-
     templates = res.templates || [];
     buildLatestTemplates();
     renderTemplates();
   };
 
   const s = document.createElement('script');
-  s.src =
-    API_URL +
+  s.src = API_URL +
     '?action=getTemplates' +
     '&token=' + encodeURIComponent(token) +
     '&callback=' + cb;
@@ -118,7 +113,7 @@ function loadTemplates() {
 }
 
 /* ===============================
- * 只保留每個 name 的最高版本
+ * 只顯示最新版本
  * =============================== */
 function buildLatestTemplates() {
   const map = {};
@@ -131,7 +126,7 @@ function buildLatestTemplates() {
 }
 
 /* ===============================
- * 顯示模板（含完整搜尋條件）
+ * 顯示模板（含搜尋）
  * =============================== */
 function renderTemplates() {
   let list = latestTemplates.slice();
@@ -142,21 +137,11 @@ function renderTemplates() {
   const qField = q_field.value.trim();
   const qUmpire = q_umpire.value.trim();
 
-  if (qName) {
-    list = list.filter(t => t.name && t.name.includes(qName));
-  }
-  if (qTournament) {
-    list = list.filter(t => t.tournament && t.tournament.includes(qTournament));
-  }
-  if (qCategory) {
-    list = list.filter(t => t.category && t.category.includes(qCategory));
-  }
-  if (qField) {
-    list = list.filter(t => t.field && t.field.includes(qField));
-  }
-  if (qUmpire) {
-    list = list.filter(t => String(t.umpire_count) === qUmpire);
-  }
+  if (qName) list = list.filter(t => t.name.includes(qName));
+  if (qTournament) list = list.filter(t => (t.tournament || '').includes(qTournament));
+  if (qCategory) list = list.filter(t => (t.category || '').includes(qCategory));
+  if (qField) list = list.filter(t => (t.field || '').includes(qField));
+  if (qUmpire) list = list.filter(t => String(t.umpire_count) === qUmpire);
 
   if (!list.length) {
     listBox.textContent = '查無符合條件的模板';
@@ -166,7 +151,6 @@ function renderTemplates() {
   let html = `
     <table>
       <tr>
-        <th>ID</th>
         <th>名稱</th>
         <th>版本</th>
         <th>盃賽</th>
@@ -180,7 +164,6 @@ function renderTemplates() {
   list.forEach(t => {
     html += `
       <tr>
-        <td>${t.template_id}</td>
         <td>${t.name}</td>
         <td>v${t.version}</td>
         <td>${t.tournament || ''}</td>
@@ -189,7 +172,7 @@ function renderTemplates() {
         <td>${t.umpire_count || ''}</td>
         <td class="actions">
           <button onclick="newVersion('${t.template_id}')">新版</button>
-          <button onclick="useTemplate('${t.template_id}')">使用</button>
+          <button onclick="useTemplateWeekly('${t.template_id}')">一鍵產生賽程</button>
           <button onclick="deleteTemplate('${t.template_id}')">刪除</button>
         </td>
       </tr>
@@ -205,15 +188,12 @@ function renderTemplates() {
  * =============================== */
 function addTemplate() {
   const name = n_name.value.trim();
-  if (!name) {
-    alert('請輸入模板名稱');
-    return;
-  }
+  if (!name) return alert('請輸入模板名稱');
 
   const cb = 'cb_' + Date.now();
-  window[cb] = function(res) {
+  window[cb] = res => {
     if (res && res.result === 'ok') {
-      alert('✅ 新增成功，ID=' + res.template_id);
+      alert('✅ 新增成功');
       n_name.value = '';
       loadTemplates();
     } else {
@@ -222,8 +202,7 @@ function addTemplate() {
   };
 
   const s = document.createElement('script');
-  s.src =
-    API_URL +
+  s.src = API_URL +
     '?action=saveTemplate' +
     '&token=' + encodeURIComponent(token) +
     '&name=' + encodeURIComponent(name) +
@@ -233,13 +212,13 @@ function addTemplate() {
 }
 
 /* ===============================
- * 建立新版
+ * 新版
  * =============================== */
 function newVersion(templateId) {
   if (!confirm('確定建立新版本？')) return;
 
   const cb = 'cb_' + Date.now();
-  window[cb] = function(res) {
+  window[cb] = res => {
     if (res && res.result === 'ok') {
       alert('✅ 已建立 v' + res.version);
       loadTemplates();
@@ -249,8 +228,7 @@ function newVersion(templateId) {
   };
 
   const s = document.createElement('script');
-  s.src =
-    API_URL +
+  s.src = API_URL +
     '?action=cloneTemplateNewVersion' +
     '&token=' + encodeURIComponent(token) +
     '&template_id=' + encodeURIComponent(templateId) +
@@ -259,20 +237,26 @@ function newVersion(templateId) {
 }
 
 /* ===============================
- * 使用模板建立比賽
+ * 一鍵產生賽程（每週）
  * =============================== */
-function useTemplate(templateId) {
+function useTemplateWeekly(templateId) {
   const startDate = prompt('請輸入起始日期（yyyy/MM/dd）');
   if (!startDate) return;
 
-  const days = prompt('請輸入連續天數', '1');
-  if (!days || Number(days) <= 0) {
-    alert('天數不正確');
+  const weekday = prompt('請輸入星期（1=一…7=日）');
+  if (!weekday || weekday < 1 || weekday > 7) {
+    alert('星期輸入錯誤');
     return;
   }
 
+  const weeks = prompt('請輸入要產生幾週', '4');
+  if (!weeks || weeks <= 0) return;
+
+  // 計算實際產生天數（7 * 週數）
+  const days = weeks * 7;
+
   const cb = 'cb_' + Date.now();
-  window[cb] = function(res) {
+  window[cb] = res => {
     if (res && res.result === 'ok') {
       alert('✅ 已建立比賽：\n' + res.created_ids.join(', '));
     } else {
@@ -281,8 +265,7 @@ function useTemplate(templateId) {
   };
 
   const s = document.createElement('script');
-  s.src =
-    API_URL +
+  s.src = API_URL +
     '?action=useTemplateCreateGames' +
     '&token=' + encodeURIComponent(token) +
     '&template_id=' + encodeURIComponent(templateId) +
@@ -299,7 +282,7 @@ function deleteTemplate(templateId) {
   if (!confirm('確定刪除此模板（最新版本）？')) return;
 
   const cb = 'cb_' + Date.now();
-  window[cb] = function(res) {
+  window[cb] = res => {
     if (res && res.result === 'ok') {
       alert('✅ 已刪除');
       loadTemplates();
@@ -309,8 +292,7 @@ function deleteTemplate(templateId) {
   };
 
   const s = document.createElement('script');
-  s.src =
-    API_URL +
+  s.src = API_URL +
     '?action=deleteTemplate' +
     '&token=' + encodeURIComponent(token) +
     '&template_id=' + encodeURIComponent(templateId) +
@@ -324,4 +306,3 @@ loadTemplates();
 
 </body>
 </html>
-``
