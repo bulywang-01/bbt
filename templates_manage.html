@@ -4,16 +4,10 @@
 <meta charset="UTF-8">
 <title>📦 模板管理</title>
 <style>
-  body {
-    font-family: system-ui;
-    margin: 20px;
-  }
+  body { font-family: system-ui; margin: 20px; }
   h2 { margin-top: 0; }
 
-  a {
-    color: #0066cc;
-    text-decoration: none;
-  }
+  a { color: #0066cc; text-decoration: none; }
   a:hover { text-decoration: underline; }
 
   table {
@@ -25,13 +19,12 @@
     border: 1px solid #ccc;
     padding: 6px 8px;
     text-align: center;
+    white-space: nowrap;
   }
-  th {
-    background: #f0f0f0;
-  }
-  button {
-    cursor: pointer;
-  }
+  th { background: #f0f0f0; }
+
+  .actions button { margin: 0 2px; }
+  tr.editing { background: #fff8dc; }
 </style>
 </head>
 <body>
@@ -47,8 +40,8 @@ if (localStorage.getItem('role') !== 'admin') {
 
 <h2>📦 模板管理</h2>
 <p>
-  <a href="index.html">🏠 回首頁</a> |
-  <a href="games_manage.html">⚾ 回比賽管理</a>
+  index.html🏠 回首頁</a> |
+  games_manage.html⚾ 回比賽管理</a>
 </p>
 
 <!-- ===== 新增模板 ===== -->
@@ -63,14 +56,17 @@ if (localStorage.getItem('role') !== 'admin') {
 
 <div id="list">載入中…</div>
 
-<!-- ✅ 一定要這樣寫，不能少字 -->
-<script src="js/config.js"></script>
+<!-- ✅ 一定要這樣寫 -->
+js/config.js
 
 <script>
 const token = localStorage.getItem('token');
 const listBox = document.getElementById('list');
+let templates = [];
 
-/* ===== 載入模板 ===== */
+/* ===============================
+ * 載入模板清單
+ * =============================== */
 function loadTemplates() {
   listBox.textContent = '載入中…';
 
@@ -81,36 +77,14 @@ function loadTemplates() {
       return;
     }
 
-    if (!res.templates || res.templates.length === 0) {
+    templates = res.templates || [];
+
+    if (templates.length === 0) {
       listBox.textContent = '目前尚無模板';
       return;
     }
 
-    let html = `
-      <table>
-        <tr>
-          <th>ID</th>
-          <th>名稱</th>
-          <th>版本</th>
-          <th>操作</th>
-        </tr>
-    `;
-
-    res.templates.forEach(t => {
-      html += `
-        <tr>
-          <td>${t.template_id}</td>
-          <td>${t.name}</td>
-          <td>v${t.version}</td>
-          <td>
-            <button onclick="deleteTemplate('${t.template_id}')">刪除</button>
-          </td>
-        </tr>
-      `;
-    });
-
-    html += '</table>';
-    listBox.innerHTML = html;
+    renderTemplates();
   };
 
   const s = document.createElement('script');
@@ -122,7 +96,42 @@ function loadTemplates() {
   document.body.appendChild(s);
 }
 
-/* ===== 新增模板 ===== */
+/* ===============================
+ * 顯示模板表格
+ * =============================== */
+function renderTemplates() {
+  let html = `
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>名稱</th>
+        <th>版本</th>
+        <th>操作</th>
+      </tr>
+  `;
+
+  templates.forEach(t => {
+    html += `
+      <tr id="row_${t.template_id}">
+        <td>${t.template_id}</td>
+        <td>${t.name}</td>
+        <td>v${t.version}</td>
+        <td class="actions">
+          <button onclick="newVersion('${t.template_id}')">新版</button>
+          <button onclick="useTemplate('${t.template_id}')">使用</button>
+          <button onclick="deleteTemplate('${t.template_id}')">刪除</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += '</table>';
+  listBox.innerHTML = html;
+}
+
+/* ===============================
+ * 新增模板（v1）
+ * =============================== */
 function addTemplate() {
   const name = n_name.value.trim();
   if (!name) {
@@ -135,7 +144,7 @@ function addTemplate() {
     if (res && res.result === 'ok') {
       alert('✅ 新增成功，ID=' + res.template_id);
       n_name.value = '';
-      loadTemplates();
+      loadTemplates();   // ✅ 立即刷新
     } else {
       alert('❌ 新增失敗');
     }
@@ -152,12 +161,70 @@ function addTemplate() {
   document.body.appendChild(s);
 }
 
-/* ===== 刪除模板 ===== */
-function deleteTemplate(templateId) {
-  if (!templateId) {
-    alert('template_id 為空');
+/* ===============================
+ * 建立新版（v+1）
+ * =============================== */
+function newVersion(templateId) {
+  if (!confirm('確定建立新版本？')) return;
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('✅ 已建立 v' + res.version);
+      loadTemplates();   // ✅ 關鍵：立刻更新清單
+    } else {
+      alert('❌ 建立新版失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=cloneTemplateNewVersion' +
+    '&token=' + encodeURIComponent(token) +
+    '&template_id=' + encodeURIComponent(templateId) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* ===============================
+ * 使用模板建立比賽
+ * =============================== */
+function useTemplate(templateId) {
+  const startDate = prompt('請輸入起始日期（yyyy/MM/dd）');
+  if (!startDate) return;
+
+  const days = prompt('請輸入連續天數', '1');
+  if (!days || Number(days) <= 0) {
+    alert('天數不正確');
     return;
   }
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(res) {
+    if (res && res.result === 'ok') {
+      alert('✅ 已建立比賽：\n' + res.created_ids.join(', '));
+    } else {
+      alert('❌ 建立比賽失敗');
+    }
+  };
+
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=useTemplateCreateGames' +
+    '&token=' + encodeURIComponent(token) +
+    '&template_id=' + encodeURIComponent(templateId) +
+    '&start_date=' + encodeURIComponent(startDate) +
+    '&days=' + encodeURIComponent(days) +
+    '&callback=' + cb;
+  document.body.appendChild(s);
+}
+
+/* ===============================
+ * 刪除模板
+ * =============================== */
+function deleteTemplate(templateId) {
   if (!confirm('確定刪除此模板？')) return;
 
   const cb = 'cb_' + Date.now();
