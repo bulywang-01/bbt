@@ -165,6 +165,19 @@ button{
 
 <script>
 
+const token = localStorage.getItem('token');
+const session = JSON.parse(localStorage.getItem('session_user')||'{}');
+if(!token||!session.user_id) location.href='login.html';
+
+u_name.textContent = session.name;
+if(session.role==='admin') adminMenu.style.display='inline';
+
+function logout(){
+  localStorage.clear();
+  location.href='login.html';
+}
+
+/* 修改日期格式 */
 function formatDate(v){
   if(!v) return '';
 
@@ -184,18 +197,6 @@ function formatDate(v){
   return `${y}/${m}/${day}`;
 }
   
-const token = localStorage.getItem('token');
-const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-if(!token||!session.user_id) location.href='login.html';
-
-u_name.textContent = session.name;
-if(session.role==='admin') adminMenu.style.display='inline';
-
-function logout(){
-  localStorage.clear();
-  location.href='login.html';
-}
-
 /* ===== JSONP ===== */
 function callApi(q,cb){
   const f='cb_'+Date.now();
