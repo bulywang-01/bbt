@@ -64,14 +64,15 @@ h4{margin-top:0}
 <!-- ===== Header ===== -->
 <div class="header">
   <div class="nav">
-    <a href="index.html
-    <a href="judge_dashboard️ 裁判報名</a>
+    <a href="index.html">🏠 首頁</a>
+    <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
   </div>
-  <div class="user-info">
+  <div>
     <b id="u_name"></b>
-    <a onclick="logout()">🚪 登出</a>
+    <a onclick="logout()" style="margin-left:12px;cursor:pointer">🚪 登出</a>
   </div>
 </div>
+
 
 <div class="main">
 
@@ -175,6 +176,10 @@ function callApi(q,cb){
   document.body.appendChild(s);
 }
 
+// ✅ DOM 參照一定要先抓
+const gamesBody  = document.getElementById('gamesBody');
+const myActive   = document.getElementById('myActive');
+const myRejected = document.getElementById('myRejected');
 const selected=new Set();
 
 /* ===== 我的報名 ===== */
