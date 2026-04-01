@@ -162,7 +162,28 @@ button{
 
 <!-- ================= Scripts ================= -->
 <script src="js/config.js"></script>
+
 <script>
+
+function formatDate(v){
+  if(!v) return '';
+
+  // 已經是 yyyy/MM/dd
+  if(typeof v === 'string' && v.includes('/')){
+    return v;
+  }
+
+  // ISO 字串 or Date
+  const d = new Date(v);
+  if(isNaN(d)) return v;
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+
+  return `${y}/${m}/${day}`;
+}
+  
 const token = localStorage.getItem('token');
 const session = JSON.parse(localStorage.getItem('session_user')||'{}');
 if(!token||!session.user_id) location.href='login.html';
