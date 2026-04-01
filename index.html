@@ -2,13 +2,16 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>🏠 系統首頁</title>
+<title>系統首頁</title>
 
 <style>
 body{
   font-family: system-ui;
   margin: 20px;
   background: #fafafa;
+}
+.header{
+  margin-bottom: 16px;
 }
 .header a{
   margin-right: 14px;
@@ -20,246 +23,102 @@ body{
 }
 .panel{
   background: #fff;
-  padding: 16px;
+  padding: 14px;
   border-radius: 6px;
   box-shadow: 0 1px 4px rgba(0,0,0,.08);
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
-.metrics{
-  display: flex;
-  gap: 16px;
+.admin-only{
+  display: none;
 }
-.metric{
-  flex: 1;
-  background: #f7f7f7;
-  padding: 12px;
-  border-radius: 6px;
-  text-align: center;
-}
-.metric b{
-  font-size: 22px;
-  display: block;
-}
-table{
-  border-collapse: collapse;
-  width: 100%;
-}
-th, td{
-  border: 1px solid #ddd;
-  padding: 6px 8px;
-  text-align: center;
-}
-th{
-  background: #f0f0f0;
-}
-.badge{
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-.C{ background:#e6f4ea; color:#137333; }
-.U{ background:#e8f0fe; color:#1a73e8; }
-.D{ background:#fdecea; color:#a50e0e; }
 </style>
 </head>
 <body>
 
+<!-- ✅ 正確載入 config（順序很重要） -->
+<script src="js/config.js"></script>
+
 <script>
-const role = localStorage.getItem('role');
-if (!role) location.href = 'login.html';
+/* ===============================
+ * ✅ 全站唯一登入檢查
+ * =============================== */
+const sessionRaw = localStorage.getItem('session_user');
+console.log('INDEX session_user =', sessionRaw);
+
+if (!sessionRaw) {
+  location.href = 'login.html';
+}
+
+let session;
+try {
+  session = JSON.parse(sessionRaw);
+} catch (e) {
+  location.href = 'login.html';
+}
+
+if (!session.user_id) {
+  location.href = 'login.html';
+}
 </script>
 
-<!-- ===== Header（全部超連結正確） ===== -->
+<!-- ===============================
+     Header（導覽列）
+     =============================== -->
 <div class="header">
   <a href="index.html">🏠 首頁</a>
-  <a href="games_manage.html">⚾ 比賽管理</a>
-<a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
-  <span id="adminNav" style="display:none">
-    <a href="templates_manage.html">📦 模板管理</a>
-    <a href="judges_manage.html">🧑‍⚖️ 裁判人員</a>
-    <a href="users_manage.html">👤 系統人員</a>
-    <a href="audit_log.html">📋 操作紀錄</a>
+  <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
+
+  <!-- ✅ 管理功能（admin 才顯示） -->
+  <span class="admin-only">
+    <a href="judge_signup_review.html">✅ 報名審核</a>
+    <a href="games_manage.html">⚾ 比賽管理</a>
+    <a href="users_manage.html">👤 使用者管理</a>
   </span>
-  
-  <!-- 右側登出 -->
+
   <span style="float:right">
     <a href="javascript:void(0)" onclick="logout()">🚪 登出</a>
   </span>
-
 </div>
 
-<h2>系統首頁（儀表板）</h2>
-
-<!-- ===== 登入資訊 ===== -->
+<!-- ===============================
+     登入者資訊
+     =============================== -->
 <div class="panel">
   👤 帳號：<b id="u_username"></b><br>
   🧑 姓名：<b id="u_name"></b><br>
   🛡 權限：<b id="u_role"></b>
 </div>
 
-<script>
-const u = JSON.parse(localStorage.getItem('session_user')||'{}');
-['username','name','role'].forEach(k=>{
-  const el=document.getElementById('u_'+k);
-  if(el) el.textContent=u[k]||'';
-});
-</script>
+<h2>系統首頁</h2>
 
-
-<!-- ===== 系統指標 ===== -->
-<div class="panel metrics">
-  <div class="metric">
-    裁判總數
-    <b id="judgeCount">-</b>
-  </div>
-  <div class="metric">
-    在役裁判
-    <b id="judgeActive">-</b>
-  </div>
-  <div class="metric">
-    比賽場次
-    <b id="gameCount">-</b>
-  </div>
-</div>
-
-<!-- ===== 最近 Audit Log ===== -->
 <div class="panel">
-  <h3>📋 最近操作紀錄</h3>
-  <div id="recentLog">載入中…</div>
+  歡迎使用裁判管理系統。  
+  請由上方選單選擇要進行的功能。
 </div>
 
-<!-- ===== 正確載入 config.js（關鍵） ===== -->
-<script src="js/config.js"></script>
-
 <script>
-/* ===== 共用資料 ===== */
-const token = localStorage.getItem('token');
+/* ===============================
+ * ✅ 顯示登入者資訊
+ * =============================== */
+document.getElementById('u_username').textContent = session.username || '';
+document.getElementById('u_name').textContent = session.name || '';
+document.getElementById('u_role').textContent = session.role || '';
 
-/* ===== 防呆設定 DOM ===== */
-function safeSet(id, value){
-  const el = document.getElementById(id);
-  if (el) el.textContent = value;
+/* admin 額外顯示管理選單 */
+if (session.role === 'admin') {
+  document.querySelectorAll('.admin-only').forEach(el=>{
+    el.style.display = 'inline';
+  });
 }
 
-/* ===== 顯示角色 ===== */
-safeSet('loginRole', role);
-
-/* ===== admin navigation ===== */
-if (role === 'admin') {
-  const nav = document.getElementById('adminNav');
-  if (nav) nav.style.display = 'inline';
-}
-
-/* ===== 登入資訊 ===== */
-function loadAdminInfo(){
-  safeSet('loginUser', 'admin');
-  safeSet('loginName', '系統管理者');
-}
-
-function loadJudgeInfo(){
-  const cb = 'cb_jinfo_' + Date.now();
-  window[cb] = res => {
-    const list = res.judges || [];
-    if (list.length) {
-      safeSet('loginUser', 'judge');
-      safeSet('loginName', list[0].name || '裁判');
-    }
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=getJudges' +
-    '&token=' + encodeURIComponent(token) +
-    '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-function loadLoginInfo(){
-  if (role === 'admin') {
-    loadAdminInfo();
-  } else if (role === 'judge') {
-    loadJudgeInfo();
-  }
-}
-
-/* ===== 指標資料 ===== */
-function loadJudges(){
-  const cb = 'cb_j_' + Date.now();
-  window[cb] = res => {
-    const list = res.judges || [];
-    safeSet('judgeCount', list.length);
-    safeSet('judgeActive', list.filter(j => j.active === 'Y').length);
-  };
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=getJudges' +
-    '&token=' + encodeURIComponent(token) +
-    '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-function loadGames(){
-  const cb = 'cb_g_' + Date.now();
-  window[cb] = res => {
-    safeSet('gameCount', (res.games || []).length);
-  };
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=getAllSchedule' +
-    '&token=' + encodeURIComponent(token) +
-    '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-function loadRecentLog(){
-  const cb = 'cb_l_' + Date.now();
-  window[cb] = res => {
-    const list = (res.logs || []).slice(0,5);
-    if (!list.length) {
-      safeSet('recentLog', '無紀錄');
-      return;
-    }
-    let html =
-      '<table><tr><th>時間</th><th>動作</th><th>目標</th><th>說明</th></tr>';
-    list.forEach(l => {
-      const cls =
-        l.action.startsWith('C') ? 'C' :
-        l.action.startsWith('D') ? 'D' : 'U';
-      html += `<tr>
-        <td>${l.timestamp}</td>
-        <td><span class="badge ${cls}">${l.action}</span></td>
-        <td>${l.target}</td>
-        <td>${l.detail}</td>
-      </tr>`;
-    });
-    html += '</table>';
-    document.getElementById('recentLog').innerHTML = html;
-  };
-
-  const s = document.createElement('script');
-  s.src =
-    API_URL +
-    '?action=getAuditLog' +
-    '&token=' + encodeURIComponent(token) +
-    '&callback=' + cb;
-  document.body.appendChild(s);
-}
-
-/* ===== 啟動 ===== */
-loadLoginInfo();
-loadJudges();
-loadGames();
-loadRecentLog();
-
+/* ===============================
+ * ✅ 登出（全站一致）
+ * =============================== */
 function logout() {
   if (!confirm('確定要登出系統？')) return;
   localStorage.clear();
   location.href = 'login.html';
 }
-  
 </script>
 
 </body>
