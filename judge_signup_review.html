@@ -121,6 +121,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   const body = document.getElementById('reviewBody');
   const chkAll = document.getElementById('chkAll');
 
+  /* ✅ 統一日期格式（老問題，這次在這裡解掉） */
+  function formatDate(v){
+    if(!v) return '';
+    if(typeof v === 'string' && v.includes('/')) return v;
+    const d = new Date(v);
+    if(isNaN(d)) return v;
+    return d.getFullYear() + '/' +
+           String(d.getMonth()+1).padStart(2,'0') + '/' +
+           String(d.getDate()).padStart(2,'0');
+  }
+
   function callApi(q,cb){
     const f='cb_'+Date.now();
     window[f]=r=>{delete window[f];cb(r);};
@@ -129,7 +140,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.body.appendChild(s);
   }
 
-  // ===== 載入待審核資料 =====
+  // ===== 載入待審核資料（✅ 套用 formatDate） =====
   function loadList(){
     body.innerHTML='<tr><td colspan="7">載入中…</td></tr>';
 
@@ -149,7 +160,7 @@ document.addEventListener('DOMContentLoaded',()=>{
                 data-game="${item.game_id}">
             </td>
             <td>${item.judge_name}</td>
-            <td>${item.date}</td>
+            <td>${formatDate(item.date)}</td>
             <td>${item.tournament}</td>
             <td>${item.category}</td>
             <td>${item.field}</td>
