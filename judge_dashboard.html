@@ -5,65 +5,36 @@
 <title>🧑‍⚖️ 裁判報名比賽</title>
 
 <style>
-body{
-  font-family: system-ui;
-  margin: 20px;
-  background: #fafafa;
-}
-.header a{
-  margin-right: 14px;
-  color: #0066cc;
-  text-decoration: none;
-}
-.header a:hover{
-  text-decoration: underline;
-}
-.panel{
-  background: #fff;
-  padding: 14px;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.08);
-  margin-bottom: 16px;
-}
-.group{
-  margin-bottom: 18px;
-}
-.game-row{
-  padding: 4px 0;
-}
-.game-row.signed{
-  background: #e8f0fe;
-  border-radius: 4px;
-}
-.game-row.signed b{
-  color: #1a73e8;
-}
-.full{
-  color: red;
-  font-weight: bold;
-}
-.status{
-  margin-left: 6px;
-  font-size: 12px;
-}
-.status.pending{ color: #946200; }
-.status.approved{ color: #137333; }
-.status.rejected{ color: #a50e0e; }
+body{font-family:system-ui;margin:20px;background:#fafafa}
+.header a{margin-right:14px;color:#0066cc;text-decoration:none}
+.header a:hover{text-decoration:underline}
+.panel{background:#fff;padding:14px;border-radius:6px;
+       box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px}
+.group{margin-bottom:18px}
+.game-row{padding:4px}
+.game-row.signed{background:#e8f0fe;border-radius:4px}
+.full{color:red;font-weight:bold}
+.status{font-size:12px;margin-left:6px}
 </style>
 </head>
 <body>
 
 <script>
-/* ✅ 僅裁判可進 */
-if (localStorage.getItem('role') !== 'judge') {
-  location.href = 'index.html';
+/* ✅ 只要有登入就能進（admin 也可以當裁判） */
+if (!localStorage.getItem('token')) {
+  location.href = 'login.html';
 }
 </script>
 
-<!-- ✅ Header -->
 <div class="header">
   <a href="index.html">🏠 首頁</a>
   <a href="javascript:void(0)" onclick="logout()">🚪 登出</a>
+</div>
+
+<div class="panel">
+  👤 帳號：<b id="u_username"></b><br>
+  🧑 姓名：<b id="u_name"></b><br>
+  🛡 權限：<b id="u_role"></b>
 </div>
 
 <h2>🧑‍⚖️ 可報名比賽</h2>
@@ -71,7 +42,7 @@ if (localStorage.getItem('role') !== 'judge') {
 <div class="panel" id="gamesBox">載入中…</div>
 
 <div class="panel">
-  <button onclick="submitSignup()">✅ 送出報名（新增）</button>
+  <button onclick="submitSignup()">✅ 送出報名</button>
 </div>
 
 <div class="panel">
@@ -79,84 +50,66 @@ if (localStorage.getItem('role') !== 'judge') {
   <div id="myList">載入中…</div>
 </div>
 
-<!-- ✅ 正確載入 config.js -->
 <script src="js/config.js"></script>
-
 <script>
-/* ===== 共用資料 ===== */
+/* ================= 初始資料 ================= */
 const token = localStorage.getItem('token');
+const session = JSON.parse(localStorage.getItem('session_user') || '{}');
 let selected = new Set();
-
-/* 已報名的 game_id → status */
 const mySignedGames = {};
 
-/* ===== 工具：台灣日期格式 ===== */
-function formatDateTW(v){
-  if(!v) return '';
-  const d = new Date(v);
-  return d.getFullYear() + '/' +
-         String(d.getMonth()+1).padStart(2,'0') + '/' +
-         String(d.getDate()).padStart(2,'0');
-}
+/* ================= 使用者資訊顯示 ================= */
+['username','name','role'].forEach(k=>{
+  const el=document.getElementById('u_'+k);
+  if(el) el.textContent=session[k]||'';
+});
 
-/* ===== 登出 ===== */
+/* ================= 共用工具 ================= */
 function logout(){
-  if(!confirm('確定要登出？')) return;
   localStorage.clear();
   location.href='login.html';
 }
+function formatDateTW(v){
+  const d=new Date(v);
+  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
+}
 
-/* ===== 載入我的報名（先做，才能反白） ===== */
-function loadMySignups(cbAfter){
-  const cb='cb_my_'+Date.now();
-  window[cb]=res=>{
-    mySignedGamesClear();
+/* ================= 載入我的報名 ================= */
+function loadMySignups(cb){
+  const cbk='cb_my_'+Date.now();
+  window[cbk]=res=>{
+    for(const k in mySignedGames) delete mySignedGames[k];
     if(res && res.result==='ok'){
       res.signups.forEach(s=>{
         s.games.forEach(g=>{
-          mySignedGames[g.game_id] = s.status;
+          mySignedGames[g.game_id]=s.status;
         });
       });
+      renderMyList(res.signups);
     }
-    if(cbAfter) cbAfter();
-    renderMyList(res && res.signups ? res.signups : []);
+    if(cb) cb();
   };
   const s=document.createElement('script');
-  s.src=API_URL+
-    '?action=getMyGameSignups&token='+encodeURIComponent(token)+
-    '&callback='+cb;
+  s.src=API_URL+'?action=getMyGameSignups&token='+encodeURIComponent(token)+'&callback='+cbk;
   document.body.appendChild(s);
 }
 
-function mySignedGamesClear(){
-  for(const k in mySignedGames) delete mySignedGames[k];
-}
-
-/* ===== 載入可報名比賽 ===== */
+/* ================= 載入可報名比賽 ================= */
 function loadGames(){
-  const cb='cb_games_'+Date.now();
-  window[cb]=res=>{
-    if(!res || res.result!=='ok'){
-      gamesBox.textContent='讀取失敗';
-      return;
-    }
-    renderGames(res.games || []);
+  const cbg='cb_games_'+Date.now();
+  window[cbg]=res=>{
+    if(!res||res.result!=='ok'){gamesBox.textContent='讀取失敗';return;}
+    renderGames(res.games||[]);
   };
   const s=document.createElement('script');
-  s.src=API_URL+
-    '?action=getSignableGames&token='+encodeURIComponent(token)+
-    '&callback='+cb;
+  s.src=API_URL+'?action=getSignableGames&token='+encodeURIComponent(token)+'&callback='+cbg;
   document.body.appendChild(s);
 }
 
-/* ===== 顯示比賽 ===== */
+/* ================= 顯示比賽 ================= */
 function renderGames(games){
-  if(!games.length){
-    gamesBox.textContent='目前沒有可報名的比賽';
-    return;
-  }
-
-  const map = {};
+  if(!games.length){gamesBox.textContent='目前沒有可報名的比賽';return;}
+  const map={};
   games.forEach(g=>{
     if(!map[g.tournament]) map[g.tournament]=[];
     map[g.tournament].push(g);
@@ -165,99 +118,66 @@ function renderGames(games){
   let html='';
   Object.keys(map).forEach(t=>{
     html+=`<div class="group"><b>${t}</b><br>`;
-
     map[t].forEach(g=>{
-      const signedStatus = mySignedGames[g.game_id];
-      const isSigned = !!signedStatus;
-      const isFull = g.full;
-
-      const disabled = isFull && !isSigned ? 'disabled' : '';
-      const checked = isSigned ? 'checked' : '';
-      const rowClass = isSigned ? 'game-row signed' : 'game-row';
-
-      const statusText = isSigned
-        ? `<span class="status ${signedStatus}">（${signedStatus}）</span>`
-        : '';
-
-      const fullText = isFull && !isSigned
-        ? `<span class="full">（已額滿）</span>`
-        : '';
+      const signed=mySignedGames[g.game_id];
+      const isSigned=!!signed;
+      const disabled=g.full&&!isSigned?'disabled':'';
+      const checked=isSigned?'checked':'';
+      const row=isSigned?'game-row signed':'game-row';
 
       if(isSigned) selected.add(g.game_id);
 
       html+=`
-        <div class="${rowClass}">
+        <div class="${row}">
           <label>
-            <input type="checkbox"
-                   value="${g.game_id}"
-                   ${checked}
-                   ${disabled}
-                   onchange="toggleGame(this)">
-            
+            <input type="checkbox" value="${g.game_id}"
+                   ${checked} ${disabled}
+                   onchange="toggle(this)">
             <b>${formatDateTW(g.date)}</b>
             ｜ ${g.category}
             ｜ ${g.home_team} vs ${g.away_team}
             ｜ ${g.field}
-            ｜ 裁判 ${g.signed_count} / ${g.need_count}
-            ${fullText}
-            ${statusText}
+            ｜ 裁判 ${g.signed_count}/${g.need_count}
+            ${g.full&&!isSigned?'<span class="full">（已額滿）</span>':''}
+            ${isSigned?`<span class="status">（${signed}）</span>`:''}
           </label>
         </div>
       `;
     });
-
     html+='</div>';
   });
-
   gamesBox.innerHTML=html;
 }
+function toggle(cb){cb.checked?selected.add(cb.value):selected.delete(cb.value);}
 
-function toggleGame(cb){
-  cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
-}
-
-/* ===== 送出報名（僅新增部分） ===== */
+/* ================= 送出報名 ================= */
 function submitSignup(){
-  if(!selected.size){
-    alert('請至少選擇一場比賽');
-    return;
-  }
-
-  const cb='cb_signup_'+Date.now();
-  window[cb]=res=>{
-    if(res && res.result==='ok'){
-      alert('✅ 報名送出完成');
+  if(!selected.size){alert('請至少選擇一場比賽');return;}
+  const cbs='cb_signup_'+Date.now();
+  window[cbs]=res=>{
+    if(res&&res.result==='ok'){
+      alert('✅ 已送出');
       selected.clear();
       loadMySignups(loadGames);
-    }else{
-      alert('❌ 送出失敗');
     }
   };
-
   const s=document.createElement('script');
-  s.src=API_URL+
-    '?action=judgeSignupByGames&token='+encodeURIComponent(token)+
-    '&game_ids='+encodeURIComponent([...selected].join(','))+
-    '&callback='+cb;
+  s.src=API_URL+'?action=judgeSignupByGames&token='+encodeURIComponent(token)+
+        '&game_ids='+encodeURIComponent([...selected].join(','))+
+        '&callback='+cbs;
   document.body.appendChild(s);
 }
 
-/* ===== 顯示我的報名摘要 ===== */
-function renderMyList(signups){
-  const box=document.getElementById('myList');
-  if(!signups.length){
-    box.textContent='尚無報名紀錄';
-    return;
-  }
+/* ================= 我的報名摘要 ================= */
+function renderMyList(list){
+  if(!list.length){myList.textContent='尚無紀錄';return;}
   let html='<ul>';
-  signups.forEach(s=>{
-    html+=`<li>${s.games.length} 場比賽（${s.status}）</li>`;
-  });
+  list.forEach(s=>{html+=`<li>${s.games.length} 場（${s.status}）</li>`;});
   html+='</ul>';
-  box.innerHTML=html;
+  myList.innerHTML=html;
 }
 
-/* ===== init ===== */
+/* ================= init ================= */
 loadMySignups(loadGames);
 </script>
 
