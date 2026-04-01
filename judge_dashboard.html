@@ -13,18 +13,25 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
   padding:12px 20px;background:#fff;border-bottom:1px solid #ddd
 }
 .nav a{
-  margin-right:16px;color:#0066cc;
-  text-decoration:none;font-weight:500
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500
 }
-.nav a.active{font-weight:bold;text-decoration:underline}
+.nav a.active{
+  font-weight:bold;
+  text-decoration:underline
+}
 .nav a:hover{text-decoration:underline}
 .user-info a{margin-left:12px;cursor:pointer}
 
 /* ===== Main ===== */
 .main{padding:20px}
 .panel{
-  background:#fff;padding:16px;
-  border-radius:6px;margin-bottom:24px
+  background:#fff;
+  padding:16px;
+  border-radius:6px;
+  margin-bottom:24px
 }
 
 /* ===== Tables ===== */
@@ -32,23 +39,28 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid #eee;text-align:center}
 th{background:#f0f2f5}
 
+/* ===== 賽事狀態 ===== */
 tr.full{background:#ffecec;color:#a8071a}
+tr.signed-by-me{background:#fffbe6} /* ✅ 我已報名但未滿額 */
+
 .status{font-weight:bold}
 .status.open{color:#389e0d}
 .status.full{color:#cf1322}
+
+/* ===== 個人狀態 ===== */
 .status.pending{color:#d48806}
 .status.approved{color:#389e0d}
 .status.rejected{color:#cf1322}
 
-/* ===== My signup layout ===== */
+/* ===== 我的報名版面 ===== */
 .my-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:20px
 }
 
-button{padding:6px 14px}
 .hidden{display:none}
+button{padding:6px 14px}
 </style>
 </head>
 
@@ -72,7 +84,6 @@ button{padding:6px 14px}
   <!-- ===== 報名賽事 ===== -->
   <div class="panel" id="panelGames">
     <h3>可報名比賽</h3>
-
     <table>
       <thead>
         <tr>
@@ -90,7 +101,6 @@ button{padding:6px 14px}
         <tr><td colspan="8">載入中…</td></tr>
       </tbody>
     </table>
-
     <br>
     <button id="btnSubmit">送出報名</button>
   </div>
@@ -98,7 +108,6 @@ button{padding:6px 14px}
   <!-- ===== 我的報名 ===== -->
   <div class="panel hidden" id="panelMy">
     <h3>我的報名</h3>
-
     <div class="my-grid">
 
       <div>
@@ -106,13 +115,10 @@ button{padding:6px 14px}
         <table>
           <thead>
             <tr>
-              <th>日期</th><th>組別</th>
-              <th>對戰</th><th>場地</th><th>狀態</th>
+              <th>日期</th><th>組別</th><th>對戰</th><th>場地</th><th>狀態</th>
             </tr>
           </thead>
-          <tbody id="myActive">
-            <tr><td colspan="5">載入中…</td></tr>
-          </tbody>
+          <tbody id="myActive"><tr><td colspan="5">載入中…</td></tr></tbody>
         </table>
       </div>
 
@@ -121,13 +127,10 @@ button{padding:6px 14px}
         <table>
           <thead>
             <tr>
-              <th>日期</th><th>組別</th>
-              <th>對戰</th><th>場地</th><th>狀態</th>
+              <th>日期</th><th>組別</th><th>對戰</th><th>場地</th><th>狀態</th>
             </tr>
           </thead>
-          <tbody id="myRejected">
-            <tr><td colspan="5">載入中…</td></tr>
-          </tbody>
+          <tbody id="myRejected"><tr><td colspan="5">載入中…</td></tr></tbody>
         </table>
       </div>
 
@@ -136,8 +139,8 @@ button{padding:6px 14px}
 
 </div>
 
-<!-- ===== Scripts ===== -->
 <script src="js/config.js"></script>
+  
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
 
@@ -145,12 +148,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   const session = JSON.parse(localStorage.getItem('session_user')||'{}');
   if(!token){location.href='login.html';return;}
 
-  document.getElementById('u_name').textContent=session.name;
-  document.getElementById('btnLogout').onclick=()=>{
-    localStorage.clear();location.href='login.html';
-  };
+  const uName=document.getElementById('u_name');
+  const btnLogout=document.getElementById('btnLogout');
+  uName.textContent=session.name;
+  btnLogout.onclick=()=>{localStorage.clear();location.href='login.html';};
 
-  /* ===== Tab switch ===== */
+  /* ===== Tab ===== */
   const tabGames=document.getElementById('tabGames');
   const tabMy=document.getElementById('tabMy');
   const panelGames=document.getElementById('panelGames');
@@ -175,14 +178,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   const myActive=document.getElementById('myActive');
   const myRejected=document.getElementById('myRejected');
   const btnSubmit=document.getElementById('btnSubmit');
+
   const selected=new Set();
   let myStatusMap={};
 
   function formatDate(v){
     const d=new Date(v);
     return isNaN(d)?v:
-      d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+
-      String(d.getDate()).padStart(2,'0');
+      d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
   }
   function personStatusText(s){
     if(s==='approved') return '已核准';
@@ -202,13 +205,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 
   function loadMy(next){
-    myActive.innerHTML='';myRejected.innerHTML='';myStatusMap={};
+    myActive.innerHTML='';
+    myRejected.innerHTML='';
+    myStatusMap={};
+
     callApi('action=getMyGameSignups',res=>{
       if(!res.signups.length){
         myActive.innerHTML='<tr><td colspan="5">尚無報名</td></tr>';
         myRejected.innerHTML='<tr><td colspan="5">—</td></tr>';
         if(next)next();return;
       }
+
       res.signups.forEach(s=>{
         s.games.forEach(g=>{
           myStatusMap[g.game_id]=s.status;
@@ -231,27 +238,33 @@ document.addEventListener('DOMContentLoaded',()=>{
   function loadGames(){
     gamesBody.innerHTML='';
     selected.clear();
+
     callApi('action=getSignableGames',res=>{
       res.games.forEach(g=>{
-        const st=myStatusMap[g.game_id];
+        const myStatus=myStatusMap[g.game_id];
+        const hasSigned=myStatus && myStatus!=='rejected';
         const full=g.signed_count>=g.need_count;
-        const locked=st==='approved';
-        const disabled=full||locked;
-        if(st&&st!=='rejected')selected.add(g.game_id);
+        const disabled=full || hasSigned;
+
+        if(hasSigned) selected.add(g.game_id);
+
+        const rowClass = full ? 'full' : hasSigned ? 'signed-by-me' : '';
+
         gamesBody.innerHTML+=`
-          <tr class="${full?'full':''}">
-            <td><input type="checkbox" value="${g.game_id}"
-              ${selected.has(g.game_id)?'checked':''}
-              ${disabled?'disabled':''}></td>
+          <tr class="${rowClass}">
+            <td>
+              <input type="checkbox"
+                value="${g.game_id}"
+                ${selected.has(g.game_id)?'checked':''}
+                ${disabled?'disabled':''}>
+            </td>
             <td>${formatDate(g.date)}</td>
             <td>${g.tournament}</td>
             <td>${g.category}</td>
             <td>${g.home_team} vs ${g.away_team}</td>
             <td>${g.field}</td>
             <td>${g.need_count} 人制</td>
-            <td class="status ${full?'full':'open'}">
-              ${matchStatusText(g)}${locked?'（已核准）':''}
-            </td>
+            <td class="status ${full?'full':'open'}">${matchStatusText(g)}</td>
           </tr>`;
       });
     });
@@ -268,7 +281,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   function refresh(){loadMy(loadGames);}
   refresh();
 
-  // ✅ polling：3 分鐘
+  /* ✅ refresh：3 分鐘 */
   setInterval(refresh,180000);
 
 });
