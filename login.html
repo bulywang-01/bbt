@@ -42,9 +42,9 @@ button{
   <div id="msg" class="err"></div>
 </div>
 
-<!-- ✅ 正確載入 config -->
+<!-- ✅ 一定要載入 config -->
 <script src="js/config.js"></script>
-  
+
 <script>
 function doLogin(){
   msg.textContent = '';
@@ -57,12 +57,13 @@ function doLogin(){
   }
 
   const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    if (res && res.result === 'ok') {
 
+  window[cb] = function(res){
+    delete window[cb];
+
+    if (res && res.result === 'ok') {
       localStorage.setItem('token', res.token);
       localStorage.setItem('session_user', JSON.stringify(res.auth));
-
       location.href = 'index.html';
     } else {
       msg.textContent = '登入失敗，請檢查帳號密碼';
