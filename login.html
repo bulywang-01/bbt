@@ -5,44 +5,27 @@
 <title>系統登入</title>
 
 <style>
-body{
-  font-family:system-ui;
-  background:#f4f6f8;
-}
+body{font-family:system-ui;background:#f4f6f8}
 .box{
-  max-width:360px;
-  margin:120px auto;
-  background:#fff;
-  padding:24px;
-  border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  width:360px;margin:120px auto;background:#fff;
+  padding:24px;border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15)
 }
-input{
-  width:100%;
-  padding:8px;
-  margin-bottom:12px;
-  font-size:14px;
-}
-button{
-  width:100%;
-  padding:10px;
-}
-.err{color:red;}
+input{width:100%;padding:8px;margin-bottom:12px}
+button{width:100%;padding:10px}
+.err{color:red}
 </style>
 </head>
 <body>
 
 <div class="box">
   <h2>系統登入</h2>
-
   <input id="username" placeholder="帳號">
   <input id="password" type="password" placeholder="密碼">
   <button onclick="doLogin()">登入</button>
-
   <div id="msg" class="err"></div>
 </div>
 
-<!-- ✅ 一定要載入 config -->
 <script src="js/config.js"></script>
 
 <script>
@@ -57,7 +40,6 @@ function doLogin(){
   }
 
   const cb = 'cb_' + Date.now();
-
   window[cb] = function(res){
     delete window[cb];
 
