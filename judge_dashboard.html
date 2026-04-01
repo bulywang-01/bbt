@@ -141,8 +141,9 @@ h4{margin-top:0}
 
 </div>
 
-<!-- ===== Scripts ===== -->
-<script src="js/config.jsript>
+<!-- ========= Script ========= -->
+<script src="js/config.js"></script>
+  
 const token = localStorage.getItem('token');
 const session = JSON.parse(localStorage.getItem('session_user')||'{}');
 if(!token) location.href='login.html';
