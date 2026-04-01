@@ -2,97 +2,53 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>✅ 裁判報名審核</title>
+<title>報名審核</title>
 <style>
-body{font-family:system-ui;margin:20px;background:#fafafa}
-.header a{margin-right:12px;color:#0066cc;text-decoration:none}
-.panel{background:#fff;padding:14px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px}
-table{border-collapse:collapse;width:100%}
-th,td{border:1px solid #ddd;padding:6px 8px;text-align:center}
-th{background:#f0f0f0}
-.badge{padding:2px 6px;border-radius:4px;font-size:12px}
-.pending{background:#fff4cc}
-.approved{background:#e6f4ea}
-.rejected{background:#fdecea}
+body{font-family:system-ui;background:#f5f6f8}
+.panel{margin:20px;background:#fff;padding:16px}
+button{margin-left:8px}
 </style>
 </head>
 <body>
 
-<script>
-if(localStorage.getItem('role')!=='admin'){
-  alert('僅限管理者');
-  location.href='index.html';
-}
-</script>
-
-<div class="header">
-  <a href="index.html">🏠 首頁</a>
-  <a href="audit_log.html">📋 操作紀錄</a>
-  <a href="javascript:void(0)" onclick="logout()">🚪 登出</a>
+<div class="panel">
+  <h3>所有裁判報名</h3>
+  <div id="list">載入中…</div>
 </div>
-
-<h2>裁判報名審核</h2>
-
-<div id="content">載入中…</div>
 
 <script src="js/config.js"></script>
 <script>
 const token=localStorage.getItem('token');
+const u=JSON.parse(localStorage.getItem('session_user')||'{}');
+if(!token||u.role!=='admin') location.replace('index.html');
 
-function logout(){
-  localStorage.clear();
-  location.href='login.html';
+function callApi(q,cb){
+  const fn='cb'+Date.now();
+  window[fn]=r=>{delete window[fn];cb(r);}
+  const s=document.createElement('script');
+  s.src=API_URL+'?'+q+'&token='+token+'&callback='+fn;
+  document.body.appendChild(s);
 }
 
 function load(){
-  const cb='cb_'+Date.now();
-  window[cb]=res=>{
-    if(!res||res.result!=='ok'){content.textContent='載入失敗';return;}
-    render(res.signups||[]);
-  };
-  const s=document.createElement('script');
-  s.src=API_URL+'?action=getAllJudgeSignups&token='+token+'&callback='+cb;
-  document.body.appendChild(s);
-}
-
-function render(list){
-  if(!list.length){content.textContent='尚無報名';return;}
-  let html='<div class="panel"><table><tr>'+
-    '<th>裁判</th><th>盃賽</th><th>組別</th><th>日期</th>'+
-    '<th>偏好</th><th>狀態</th><th>備註</th><th>操作</th></tr>';
-  list.forEach(r=>{
-    html+=`<tr>
-      <td>${r.judge_id}</td>
-      <td>${r.tournament}</td>
-      <td>${r.category}</td>
-      <td>${r.available_dates}</td>
-      <td>${r.preference}</td>
-      <td><span class="badge ${r.status}">${r.status}</span></td>
-      <td><input id="n_${r.signup_id}" value="${r.note||''}"></td>
-      <td>
-        <button onclick="setStatus('${r.signup_id}','approved')">核准</button>
-        <button onclick="setStatus('${r.signup_id}','rejected')">不核准</button>
-      </td>
-    </tr>`;
+  callApi('action=getAllGameSignups',r=>{
+    list.innerHTML='';
+    r.signups.forEach(s=>{
+      const d=document.createElement('div');
+      d.innerHTML=
+        `${s.name}：${s.games.length} 場（${s.status}）
+         <button onclick="set('${s.signup_id}','approved')">核准</button>
+         <button onclick="set('${s.signup_id}','rejected')">拒絕</button>`;
+      list.appendChild(d);
+    });
   });
-  html+='</table></div>';
-  content.innerHTML=html;
 }
 
-function setStatus(id,status){
-  const note=document.getElementById('n_'+id).value;
-  const cb='cb2_'+Date.now();
-  window[cb]=()=>load();
-  const s=document.createElement('script');
-  s.src=API_URL+'?action=updateJudgeSignupStatus&token='+token+
-    '&signup_id='+id+'&status='+status+
-    '&note='+encodeURIComponent(note)+
-    '&callback='+cb;
-  document.body.appendChild(s);
+function set(id,status){
+  callApi('action=updateJudgeSignupStatus&signup_id='+id+'&status='+status,()=>load());
 }
 
 load();
 </script>
-
 </body>
 </html>
