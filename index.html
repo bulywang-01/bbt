@@ -92,11 +92,19 @@ if (!role) location.href = 'login.html';
 
 <!-- ===== 登入資訊 ===== -->
 <div class="panel">
-  <h3>👤 登入資訊</h3>
-  帳號：<b id="loginUser">-</b><br>
-  姓名：<b id="loginName">-</b><br>
-  權限：<b id="loginRole">-</b>
+  👤 帳號：<b id="u_username"></b><br>
+  🧑 姓名：<b id="u_name"></b><br>
+  🛡 權限：<b id="u_role"></b>
 </div>
+
+<script>
+const u = JSON.parse(localStorage.getItem('session_user')||'{}');
+['username','name','role'].forEach(k=>{
+  const el=document.getElementById('u_'+k);
+  if(el) el.textContent=u[k]||'';
+});
+</script>
+
 
 <!-- ===== 系統指標 ===== -->
 <div class="panel metrics">
