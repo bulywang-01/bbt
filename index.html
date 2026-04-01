@@ -6,84 +6,90 @@
 
 <style>
 body{
-  font-family: system-ui;
-  margin: 0;
-  background: #f5f6f8;
+  margin:0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  background:#f5f6f8;
 }
 .header{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  background: #ffffff;
-  border-bottom: 1px solid #ddd;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#ffffff;
+  border-bottom:1px solid #ddd;
 }
 .nav a{
-  margin-right: 16px;
-  color: #0066cc;
-  text-decoration: none;
-  font-weight: 500;
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500;
 }
 .nav a:hover{
-  text-decoration: underline;
+  text-decoration:underline;
 }
 .user-info{
-  text-align: right;
-  font-size: 14px;
-  line-height: 1.6;
+  text-align:right;
+  font-size:14px;
+  line-height:1.5;
 }
 .main{
-  padding: 20px;
+  padding:20px;
 }
 .panel{
-  background: #ffffff;
-  padding: 16px;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  background:#ffffff;
+  padding:16px;
+  border-radius:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
 }
 .admin-only{
-  display: none;
+  display:none;
 }
 </style>
 </head>
 
 <body>
 
-<!-- ✅ Header -->
+<!-- ================= Header ================= -->
 <div class="header">
   <div class="nav">
-    <a href="index.html">首頁</a>
-    <a href="judge_dashboard.html">裁判報名</a>
+    <a href="index.html">🏠 首頁</a>
+    <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
 
+    <!-- 管理者專用 -->
     <span class="admin-only">
-      <a href="judge_signup_review.html">報名審核</a>
-      <a href="games_manage.html">比賽管理</a>
-      <a href="users_manage.html">使用者管理</a>
+      <a href="judge_signup_review.html">📋 報名審核</a>
     </span>
   </div>
 
   <div class="user-info">
-    👤 帳號：<b id="u_username"></b><br>
-    🧑 姓名：<b id="u_name"></b><br>
-    🛡 權限：<b id="u_role"></b><br>
+    👤 <b id="u_username"></b><br>
+    🧑 <b id="u_name"></b><br>
+    🛡 <b id="u_role"></b><br>
     <a href="#" onclick="logout()">🚪 登出</a>
   </div>
 </div>
 
+<!-- ================= Main ================= -->
 <div class="main">
   <h2>系統首頁</h2>
 
   <div class="panel">
-    歡迎使用裁判管理系統，請由上方選單選擇功能。
+    歡迎使用裁判出勤管理系統。  
+    請由上方選單選擇功能。
   </div>
 </div>
 
-<!-- ✅ config -->
+<!-- ================= Script ================= -->
 <script src="js/config.js"></script>
-
 <script>
-/* ✅ 登入檢查（這一段你的已經 OK，不動） */
+/**
+ * 系統首頁初始化
+ * - 檢查登入狀態
+ * - 顯示使用者資訊
+ * - 依角色顯示選單
+ */
 document.addEventListener('DOMContentLoaded', function () {
+
   const raw = localStorage.getItem('session_user');
   if (!raw) {
     location.replace('login.html');
@@ -108,16 +114,19 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('u_name').textContent = session.name || '';
   document.getElementById('u_role').textContent = session.role || '';
 
-  // admin 才顯示管理選單
+  // 管理者顯示管理選單
   if (session.role === 'admin') {
-    document.querySelectorAll('.admin-only').forEach(el => {
+    document.querySelectorAll('.admin-only').forEach(el=>{
       el.style.display = 'inline';
     });
   }
 });
 
+/**
+ * 登出
+ */
 function logout(){
-  if(!confirm('確定要登出？')) return;
+  if (!confirm('確定要登出系統？')) return;
   localStorage.clear();
   location.replace('login.html');
 }
