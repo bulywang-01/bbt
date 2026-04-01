@@ -281,19 +281,19 @@ document.addEventListener('DOMContentLoaded',()=>{
       ()=>{alert('報名完成');refresh();}
     );
 
-        const ids = Array.from(
-          document.querySelectorAll('#gamesBody input[type=checkbox]:checked')
-        ).map(cb => cb.value);
-      
-        console.log('📤 實際送出的 game_ids =', ids);
-      
-        callApi(
-          'action=judgeSignupByGames&game_ids=' + ids.join(','),
-          () => {
-            alert('已送出');
-            refresh();
-          }
-          )
+    const ids = Array.from(
+    document.querySelectorAll('#gamesBody input[type=checkbox]:checked')
+  ).map(cb => cb.value);
+
+  console.log('📤 實際送出的 game_ids =', ids);
+
+  callApi(
+    'action=judgeSignupByGames&game_ids=' + ids.join(','),
+    () => {
+      alert('已送出');
+      refresh();
+    }
+  );
 };
   };
 
