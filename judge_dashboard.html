@@ -5,113 +5,239 @@
 <title>裁判報名</title>
 
 <style>
-body{font-family:system-ui;background:#f5f6f8;margin:0}
-.header,.panel{background:#fff}
-.header{padding:10px;border-bottom:1px solid #ccc}
-.panel{margin:15px;padding:15px;border-radius:6px}
-.full{color:red}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  background:#f5f6f8;
+}
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#ffffff;
+  border-bottom:1px solid #ddd;
+}
+.nav a{
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500;
+}
+.nav a:hover{
+  text-decoration:underline;
+}
+.user-info{
+  text-align:right;
+  font-size:14px;
+  line-height:1.5;
+}
+.main{
+  padding:20px;
+}
+.panel{
+  background:#ffffff;
+  padding:16px;
+  border-radius:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+  margin-bottom:20px;
+}
+.game{
+  padding:8px;
+  border-bottom:1px solid #eee;
+}
+.game.full{
+  color:#999;
+}
+.status{
+  font-size:13px;
+  color:#555;
+}
+.button{
+  padding:10px 16px;
+  font-size:14px;
+  cursor:pointer;
+}
 </style>
 </head>
+
 <body>
 
+<!-- ===== Header ===== -->
 <div class="header">
-  <a href="index.html">首頁</a>
-  <a href="#" onclick="logout()">登出</a>
+  <div class="nav">
+    <a href="index.html">首頁</a>
+    <a href="judge_dashboard.html">裁判報名</a>
+  </div>
+
+  <div class="user-info">
+    👤 <b id="u_username"></b><br>
+    🧑 <b id="u_name"></b><br>
+    🛡 <b id="u_role"></b><br>
+    #
+  </div>
 </div>
 
-<div class="panel">
-  👤 <span id="u_name"></span>
+<!-- ===== Main ===== -->
+<div class="main">
+  <h2>裁判報名</h2>
+
+  <div class="panel">
+    <h3>可報名比賽</h3>
+    <div id="gamesBox">載入中…</div>
+    <br>
+    <button class="button" onclick="submitSignup()">送出報名</button>
+  </div>
+
+  <div class="panel">
+    <h3>我的報名紀錄</h3>
+    <div id="mySignups">載入中…</div>
+  </div>
 </div>
 
-<div class="panel">
-  <h3>可報名比賽</h3>
-  <div id="gamesBox">載入中…</div>
-  <button onclick="submitSignup()">送出報名</button>
-</div>
-
-<div class="panel">
-  <h3>我的報名紀錄</h3>
-  <div id="myList">載入中…</div>
-</div>
-
+<!-- ✅ 正確載入 JS -->
 <script src="js/config.js"></script>
 
 <script>
+/* ===== 初始化 ===== */
+
 const token = localStorage.getItem('token');
-const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+const rawUser = localStorage.getItem('session_user');
+
+if (!token || !rawUser) {
+  location.replace('login.html');
+}
+
+let session;
+try {
+  session = JSON.parse(rawUser);
+} catch (e) {
+  location.replace('login.html');
+}
+
+document.getElementById('u_username').textContent = session.username || '';
 document.getElementById('u_name').textContent = session.name || '';
+document.getElementById('u_role').textContent = session.role || '';
 
-const selected = new Set();
+/* ===== 共用 API 呼叫 ===== */
 
-function loadGames(){
-  const cb='cb_g_'+Date.now();
-  window[cb]=res=>{
-    const box=document.getElementById('gamesBox');
-    box.innerHTML='';
-    res.games.forEach(g=>{
-      const disabled = g.full ? 'disabled' : '';
-      box.innerHTML += `
-        <label>
-          <input type="checkbox" value="${g.game_id}" ${disabled}
-                 onchange="toggle(this)">
-          ${g.date} ${g.tournament} ${g.category}
-          ${g.home_team} vs ${g.away_team}
-          (${g.signed}/${g.need})
-          ${g.full?'<span class="full">已滿</span>':''}
-        </label><br>
-      `;
-    });
+function callApi(params, callback){
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(res){
+    delete window[cb];
+    callback(res);
   };
-  appendScript(`?action=getSignableGames&callback=${cb}`);
-}
-
-function toggle(cb){
-  cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
-}
-
-function submitSignup(){
-  if(!selected.size){
-    alert('請選擇比賽');
-    return;
-  }
-  const cb='cb_s_'+Date.now();
-  window[cb]=res=>{
-    if(res.result==='ok'){
-      alert('報名成功');
-      selected.clear();
-      loadGames();
-      loadMySignups();
-    }
-  };
-  appendScript(`?action=judgeSignupByGames&game_ids=${[...selected].join(',')}&callback=${cb}`);
-}
-
-function loadMySignups(){
-  const cb='cb_m_'+Date.now();
-  window[cb]=res=>{
-    const box=document.getElementById('myList');
-    if(res.signups.length===0){
-      box.textContent='尚無報名紀錄';
-      return;
-    }
-    box.innerHTML='<ul>'+res.signups
-      .map(s=>`<li>${s.games.length} 場（${s.status}）</li>`)
-      .join('')+'</ul>';
-  };
-  appendScript(`?action=getMyGameSignups&callback=${cb}`);
-}
-
-function appendScript(q){
-  const s=document.createElement('script');
-  s.src=API_URL+q+'&token='+token;
+  const s = document.createElement('script');
+  s.src = API_URL + '?' + params +
+          '&token=' + encodeURIComponent(token) +
+          '&callback=' + cb;
   document.body.appendChild(s);
 }
 
+/* ===== 登出 ===== */
 function logout(){
+  if (!confirm('確定要登出？')) return;
   localStorage.clear();
-  location.href='login.html';
+  location.replace('login.html');
 }
 
+/* ===== 比賽清單 ===== */
+
+const selectedGames = new Set();
+
+function loadGames(){
+  document.getElementById('gamesBox').textContent = '載入中…';
+
+  callApi('action=getSignableGames', function(res){
+    const box = document.getElementById('gamesBox');
+    if (!res || res.result !== 'ok') {
+      box.textContent = '讀取失敗';
+      return;
+    }
+
+    box.innerHTML = '';
+    res.games.forEach(g => {
+      const div = document.createElement('div');
+      div.className = 'game' + (g.full ? ' full' : '');
+
+      div.innerHTML = `
+        <label>
+          <input type="checkbox"
+                 value="${g.game_id}"
+                 ${g.full ? 'disabled' : ''}
+                 onchange="toggleGame(this)">
+          <b>${g.date}</b>｜
+          ${g.tournament} ${g.category}｜
+          ${g.home_team} vs ${g.away_team}｜
+          ${g.field}｜
+          裁判 ${g.signed_count}/${g.need_count}
+          ${g.full ? '（已額滿）' : ''}
+        </label>
+      `;
+      box.appendChild(div);
+    });
+  });
+}
+
+function toggleGame(cb){
+  cb.checked ? selectedGames.add(cb.value) : selectedGames.delete(cb.value);
+}
+
+/* ===== 送出報名 ===== */
+
+function submitSignup(){
+  if (selectedGames.size === 0) {
+    alert('請至少勾選一場比賽');
+    return;
+  }
+
+  const ids = Array.from(selectedGames).join(',');
+  callApi(
+    'action=judgeSignupByGames&game_ids=' + encodeURIComponent(ids),
+    function(res){
+      if (res && res.result === 'ok') {
+        alert('✅ 報名成功');
+        selectedGames.clear();
+        loadGames();
+        loadMySignups();
+      } else {
+        alert('❌ 報名失敗');
+      }
+    }
+  );
+}
+
+/* ===== 我的報名 ===== */
+
+function loadMySignups(){
+  document.getElementById('mySignups').textContent = '載入中…';
+
+  callApi('action=getMyGameSignups', function(res){
+    const box = document.getElementById('mySignups');
+    if (!res || res.result !== 'ok') {
+      box.textContent = '讀取失敗';
+      return;
+    }
+
+    if (res.signups.length === 0) {
+      box.textContent = '尚無報名紀錄';
+      return;
+    }
+
+    const ul = document.createElement('ul');
+    res.signups.forEach(s => {
+      const li = document.createElement('li');
+      li.className = 'status';
+      li.textContent = `${s.games.length} 場比賽（狀態：${s.status}）`;
+      ul.appendChild(li);
+    });
+
+    box.innerHTML = '';
+    box.appendChild(ul);
+  });
+}
+
+/* ===== 啟動 ===== */
 loadGames();
 loadMySignups();
 </script>
