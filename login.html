@@ -26,6 +26,7 @@ button{width:100%;padding:10px}
   <div id="msg" class="err"></div>
 </div>
 
+<!-- ✅ 正確載入 config -->
 <script src="js/config.js"></script>
 
 <script>
@@ -40,16 +41,28 @@ function doLogin(){
   }
 
   const cb = 'cb_' + Date.now();
+
   window[cb] = function(res){
     delete window[cb];
 
-    if (res && res.result === 'ok') {
+    if (!res || !res.result) {
+      msg.textContent = '系統錯誤，請稍後再試';
+      return;
+    }
+
+    if (res.result === 'ok') {
       localStorage.setItem('token', res.token);
       localStorage.setItem('session_user', JSON.stringify(res.auth));
       location.href = 'index.html';
-    } else {
-      msg.textContent = '登入失敗，請檢查帳號密碼';
+      return;
     }
+
+    if (res.result === 'inactive') {
+      msg.textContent = '此帳號尚未啟用，請聯絡管理員';
+      return;
+    }
+
+    msg.textContent = '登入失敗，請檢查帳號或密碼';
   };
 
   const s = document.createElement('script');
