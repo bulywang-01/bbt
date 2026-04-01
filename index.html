@@ -7,26 +7,39 @@
 <style>
 body{
   font-family: system-ui;
-  margin: 20px;
-  background: #fafafa;
+  margin: 0;
+  background: #f5f6f8;
 }
 .header{
-  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #ddd;
 }
-.header a{
-  margin-right: 14px;
+.nav a{
+  margin-right: 16px;
   color: #0066cc;
   text-decoration: none;
+  font-weight: 500;
 }
-.header a:hover{
+.nav a:hover{
   text-decoration: underline;
 }
+.user-info{
+  text-align: right;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.main{
+  padding: 20px;
+}
 .panel{
-  background: #fff;
-  padding: 14px;
+  background: #ffffff;
+  padding: 16px;
   border-radius: 6px;
   box-shadow: 0 1px 4px rgba(0,0,0,.08);
-  margin-bottom: 16px;
 }
 .admin-only{
   display: none;
@@ -36,41 +49,41 @@ body{
 
 <body>
 
-<!-- ✅ 導覽列 -->
+<!-- ✅ Header -->
 <div class="header">
-  <a href="index.html">首頁</a>
-  <a href="judge_dashboard.html">裁判報名</a>
+  <div class="nav">
+    <a href="index.html">首頁</a>
+    <a href="judge_dashboard.html">裁判報名</a>
 
-  <span class="admin-only">
-    <a href="judge_signup_review.html">✅ 報名審核</a>
-    <a href="games_manage.html">⚾ 比賽管理</a>
-    <a href="users_manage.html">users_manage</a>
-  </span>
+    <span class="admin-only">
+      <a href="judge_signup_review.html">報名審核</a>
+      <a href="games_manage.html">比賽管理</a>
+      <a href="users_manage.html">使用者管理</a>
+    </span>
+  </div>
 
-  <span style="float:right">
-    <a href="#" onclick="logout
-
-<!-- ✅ 使用者資訊 -->
-<div class="panel">
-  👤 帳號：<b id="u_username"></b><br>
-  🧑 姓名：<b id="u_name"></b><br>
-  🛡 權限：<b id="u_role"></b>
+  <div class="user-info">
+    👤 帳號：<b id="u_username"></b><br>
+    🧑 姓名：<b id="u_name"></b><br>
+    🛡 權限：<b id="u_role"></b><br>
+    <a href="#" onclick="logout()">🚪 登出</a>
+  </div>
 </div>
 
-<h2>系統首頁</h2>
+<div class="main">
+  <h2>系統首頁</h2>
 
-<div class="panel">
-  歡迎使用裁判管理系統。  
-  請由上方選單選擇功能。
+  <div class="panel">
+    歡迎使用裁判管理系統，請由上方選單選擇功能。
+  </div>
 </div>
 
-<!-- ✅ 正確載入 config -->
-<script src="js/config.jscript>
-/* =================================================
- * ✅ 唯一登入檢查：只做一次、只在 DOM Ready 後
- * ================================================= */
+<!-- ✅ config -->
+<script src="js/config.js"></script>
+
+<script>
+/* ✅ 登入檢查（這一段你的已經 OK，不動） */
 document.addEventListener('DOMContentLoaded', function () {
-
   const raw = localStorage.getItem('session_user');
   if (!raw) {
     location.replace('login.html');
@@ -90,12 +103,12 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  /* ✅ 顯示使用者資訊 */
+  // 顯示使用者資訊
   document.getElementById('u_username').textContent = session.username || '';
   document.getElementById('u_name').textContent = session.name || '';
   document.getElementById('u_role').textContent = session.role || '';
 
-  /* ✅ admin 才顯示管理選單 */
+  // admin 才顯示管理選單
   if (session.role === 'admin') {
     document.querySelectorAll('.admin-only').forEach(el => {
       el.style.display = 'inline';
@@ -103,9 +116,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
-/* ✅ 登出 */
-function logout() {
-  if (!confirm('確定要登出系統？')) return;
+function logout(){
+  if(!confirm('確定要登出？')) return;
   localStorage.clear();
   location.replace('login.html');
 }
