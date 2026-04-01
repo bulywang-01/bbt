@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>報名審核</title>
+<title>裁判報名審核</title>
 
 <style>
 body{
@@ -10,6 +10,8 @@ body{
   font-family: system-ui;
   background:#f5f6f8;
 }
+
+/* ===== Header ===== */
 .header{
   display:flex;
   justify-content:space-between;
@@ -31,9 +33,11 @@ body{
 }
 .user-info a{
   margin-left:12px;
-  color:#0066cc;
   cursor:pointer;
+  color:#0066cc;
 }
+
+/* ===== Main ===== */
 .main{
   padding:20px;
 }
@@ -42,6 +46,8 @@ body{
   padding:16px;
   border-radius:6px;
 }
+
+/* ===== Outer table ===== */
 table{
   width:100%;
   border-collapse:collapse;
@@ -56,13 +62,35 @@ th{
   background:#f0f2f5;
   text-align:center;
 }
+
+/* ===== Status ===== */
 .status.pending{color:#d48806;font-weight:bold;}
 .status.approved{color:#389e0d;font-weight:bold;}
 .status.rejected{color:#cf1322;font-weight:bold;}
+
 button{
   margin-right:6px;
   padding:4px 10px;
   cursor:pointer;
+}
+
+/* ===== Inner table (games) ===== */
+.inner-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+.inner-table th,
+.inner-table td{
+  padding:4px 6px;
+  border-bottom:1px dotted #ddd;
+  text-align:left;
+}
+.inner-table th{
+  background:#fafafa;
+  font-weight:normal;
+  color:#555;
+  white-space:nowrap;
 }
 </style>
 </head>
@@ -70,15 +98,13 @@ button{
 <body>
 
 <!-- ========= Header ========= -->
-
 <div class="header">
   <div class="nav">
     <a href="index.html">🏠 首頁</a>
     <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
-    <a href="judge_signup_review.html" id="adminMenu" style="display:none">
-      ✅ 報名審核
-    </a>
+    <a href="judge_signup_review.html">✅ 報名審核</a>
   </div>
+
   <div class="user-info">
     <b id="u_name"></b>
     <a onclick="logout()">🚪 登出</a>
@@ -86,79 +112,99 @@ button{
 </div>
 
 <div class="main">
-
   <div class="panel">
     <h3>裁判報名審核</h3>
 
     <table>
       <thead>
         <tr>
-          <th>裁判</th>
+          <th style="width:120px">裁判</th>
           <th>報名場次</th>
-          <th>狀態</th>
-          <th>操作</th>
+          <th style="width:90px">狀態</th>
+          <th style="width:140px">操作</th>
         </tr>
       </thead>
       <tbody id="listBody">
         <tr><td colspan="4">載入中…</td></tr>
       </tbody>
     </table>
-
   </div>
-
 </div>
 
 <!-- ========= Script ========= -->
 <script src="js/config.js"></script>
 <script>
 const token = localStorage.getItem('token');
-const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-if(!token || session.role!=='admin') location.href='index.html';
+const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+if (!token || session.role !== 'admin') location.href = 'index.html';
 
 u_name.textContent = session.name;
 
 /* 日期格式 */
 function formatDate(v){
   if(!v) return '';
-  if(typeof v==='string' && v.includes('/')) return v;
-  const d=new Date(v);
+  if(typeof v === 'string' && v.includes('/')) return v;
+  const d = new Date(v);
   if(isNaN(d)) return v;
-  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+
+  return d.getFullYear() + '/' +
+         String(d.getMonth()+1).padStart(2,'0') + '/' +
          String(d.getDate()).padStart(2,'0');
 }
 
-/* JSONP */
-function callApi(q,cb){
-  const f='cb_'+Date.now();
-  window[f]=r=>{delete window[f];cb(r);}
-  const s=document.createElement('script');
-  s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
+/* JSONP helper */
+function callApi(q, cb){
+  const f = 'cb_' + Date.now();
+  window[f] = r => { delete window[f]; cb(r); };
+  const s = document.createElement('script');
+  s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
   document.body.appendChild(s);
 }
 
 function logout(){
   localStorage.clear();
-  location.href='login.html';
+  location.href = 'login.html';
 }
 
-/* 讀取全部報名 */
+/* 載入全部報名 */
 function loadList(){
-  callApi('action=getAllGameSignups',res=>{
-    listBody.innerHTML='';
-    if(!res.signups.length){
-      listBody.innerHTML='<tr><td colspan="4">目前沒有報名資料</td></tr>';
+  callApi('action=getAllGameSignups', res => {
+    listBody.innerHTML = '';
+
+    if (!res.signups.length) {
+      listBody.innerHTML = '<tr><td colspan="4">尚無報名資料</td></tr>';
       return;
     }
 
-    res.signups.forEach(s=>{
-      const gameLines = s.games.map(g =>
-        `${formatDate(g.date)} ${g.category} ${g.home_team} vs ${g.away_team} （${g.field}）`
-      ).join('<br>');
+    res.signups.forEach(s => {
 
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
+      // 組內嵌表格
+      let gameTable = `
+        <table class="inner-table">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>組別</th>
+              <th>對戰</th>
+              <th>場地</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${s.games.map(g => `
+              <tr>
+                <td>${formatDate(g.date)}</td>
+                <td>${g.category}</td>
+                <td>${g.home_team} vs ${g.away_team}</td>
+                <td>${g.field}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
         <td>${s.name}</td>
-        <td>${gameLines}</td>
+        <td>${gameTable}</td>
         <td class="status ${s.status}">${s.status}</td>
         <td>
           <button onclick="updateStatus('${s.signup_id}','approved')">核准</button>
@@ -170,19 +216,14 @@ function loadList(){
   });
 }
 
-/* 更新狀態 */
-function updateStatus(id,status){
-  if(!confirm('確認要將狀態改為 '+status+' ?')) return;
-
+function updateStatus(id, status){
+  if (!confirm('確認將狀態改為 ' + status + ' ?')) return;
   callApi(
-    'action=updateJudgeSignupStatus&signup_id='+id+'&status='+status,
-    ()=>{
-      loadList();
-    }
+    'action=updateJudgeSignupStatus&signup_id=' + id + '&status=' + status,
+    () => loadList()
   );
 }
 
-/* init */
 loadList();
 </script>
 
