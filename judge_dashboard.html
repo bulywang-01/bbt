@@ -7,114 +7,67 @@
 <style>
 body{
   margin:0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  font-family: system-ui;
   background:#f5f6f8;
 }
-
-/* ===== Header ===== */
 .header{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   padding:12px 20px;
-  background:#ffffff;
+  background:#fff;
   border-bottom:1px solid #ddd;
 }
 .nav a{
   margin-right:16px;
   color:#0066cc;
   text-decoration:none;
-  font-weight:500;
 }
-.nav a:hover{
-  text-decoration:underline;
-}
-.user-info{
-  font-size:14px;
-}
-.user-info a{
-  margin-left:12px;
-  color:#0066cc;
-  cursor:pointer;
-}
-
-/* ===== Main ===== */
-.main{
-  padding:20px;
-}
+.user-info{font-size:14px;}
+.main{padding:20px;}
 .panel{
-  background:#ffffff;
+  background:#fff;
   padding:16px;
   border-radius:6px;
-  box-shadow:0 1px 4px rgba(0,0,0,.08);
   margin-bottom:24px;
 }
-
-/* ===== Table ===== */
 table{
   width:100%;
   border-collapse:collapse;
   font-size:14px;
 }
 th, td{
-  padding:8px 10px;
+  padding:8px;
   border-bottom:1px solid #eee;
   text-align:center;
 }
-th{
-  background:#f0f2f5;
-}
-tr.signed{
-  background:#eef5ff;
-}
-tr.full{
-  color:#999;
-}
-
-/* ===== Status ===== */
-.status{
-  font-weight:bold;
-}
-.status.pending{
-  color:#d48806;
-}
-.status.approved{
-  color:#389e0d;
-}
-
-/* ===== Button ===== */
-button{
-  padding:8px 14px;
-  font-size:14px;
-  cursor:pointer;
-}
+th{background:#f0f2f5;}
+tr.signed{background:#eef5ff;}
+tr.full{color:#999;}
+.status.pending{color:#d48806;font-weight:bold;}
+.status.approved{color:#389e0d;font-weight:bold;}
 </style>
 </head>
 
 <body>
 
-<!-- ===== Header ===== -->
 <div class="header">
   <div class="nav">
-    <a href="index.html">🏠 首頁</a>
-    <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
+    index.html
+    judge_dashboard.html
     <span id="adminMenu" style="display:none">
-      <a href="judge_signup_review.html">✅ 報名審核</a>
+      judge_signup_review.html
     </span>
   </div>
-
   <div class="user-info">
     <b id="u_name"></b>
-    <a onclick="logout()">🚪 登出</a>
+    #
   </div>
 </div>
 
 <div class="main">
 
-  <!-- ================= 可報名比賽 ================= -->
   <div class="panel">
     <h3>可報名比賽</h3>
-
     <table>
       <thead>
         <tr>
@@ -132,15 +85,12 @@ button{
         <tr><td colspan="8">載入中…</td></tr>
       </tbody>
     </table>
-
     <br>
     <button onclick="submitSignup()">送出報名</button>
   </div>
 
-  <!-- ================= 我的報名 ================= -->
   <div class="panel">
     <h3>我的報名</h3>
-
     <table>
       <thead>
         <tr>
@@ -160,44 +110,28 @@ button{
 
 </div>
 
-<!-- ================= Scripts ================= -->
 <script src="js/config.js"></script>
-
 <script>
-
 const token = localStorage.getItem('token');
 const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-if(!token||!session.user_id) location.href='login.html';
+if(!token) location.href='login.html';
 
 u_name.textContent = session.name;
 if(session.role==='admin') adminMenu.style.display='inline';
 
-function logout(){
-  localStorage.clear();
-  location.href='login.html';
-}
-
-/* 修改日期格式 */
+/* ✅ 統一日期格式處理（關鍵） */
 function formatDate(v){
   if(!v) return '';
-
-  // 已經是 yyyy/MM/dd
-  if(typeof v === 'string' && v.includes('/')){
-    return v;
-  }
-
-  // ISO 字串 or Date
+  if(typeof v === 'string' && v.includes('/')) return v;
   const d = new Date(v);
   if(isNaN(d)) return v;
-
   const y = d.getFullYear();
   const m = String(d.getMonth()+1).padStart(2,'0');
   const day = String(d.getDate()).padStart(2,'0');
-
   return `${y}/${m}/${day}`;
 }
-  
-/* ===== JSONP ===== */
+
+/* JSONP */
 function callApi(q,cb){
   const f='cb_'+Date.now();
   window[f]=r=>{delete window[f];cb(r);}
@@ -206,15 +140,14 @@ function callApi(q,cb){
   document.body.appendChild(s);
 }
 
-/* ===== State ===== */
 const selected = new Set();
-let myGameStatus = {}; // game_id → status
+let myGameStatus = {};
 
-/* ===== 我的報名 ===== */
+/* 我的報名 */
 function loadMy(){
   callApi('action=getMyGameSignups',res=>{
-    myGameStatus = {};
     myBody.innerHTML='';
+    myGameStatus={};
 
     if(!res.signups.length){
       myBody.innerHTML='<tr><td colspan="6">尚無報名紀錄</td></tr>';
@@ -224,71 +157,57 @@ function loadMy(){
     res.signups.forEach(s=>{
       s.games.forEach(g=>{
         myGameStatus[g.game_id]=s.status;
-
-        const tr=document.createElement('tr');
-        tr.innerHTML=`
-          <td>${g.date}</td>
-          <td>${g.tournament}</td>
-          <td>${g.category}</td>
-          <td>${g.home_team} vs ${g.away_team}</td>
-          <td>${g.field}</td>
-          <td class="status ${s.status}">${s.status}</td>
+        myBody.innerHTML+=`
+          <tr>
+            <td>${formatDate(g.date)}</td>
+            <td>${g.tournament}</td>
+            <td>${g.category}</td>
+            <td>${g.home_team} vs ${g.away_team}</td>
+            <td>${g.field}</td>
+            <td class="status ${s.status}">${s.status}</td>
+          </tr>
         `;
-        myBody.appendChild(tr);
       });
     });
   });
 }
 
-/* ===== 可報名比賽 ===== */
+/* 可報名比賽 */
 function loadGames(){
   callApi('action=getSignableGames',res=>{
     gamesBody.innerHTML='';
     res.games.forEach(g=>{
-      const signed = myGameStatus[g.game_id];
+      const signed=myGameStatus[g.game_id];
       if(signed) selected.add(g.game_id);
 
-      const tr=document.createElement('tr');
-      tr.className =
-        (signed?'signed ':'') +
-        (g.full && !signed?'full':'');
-
-      tr.innerHTML=`
-        <td>
-          <input type="checkbox"
-            value="${g.game_id}"
-            ${signed?'checked':''}
-            ${g.full && !signed?'disabled':''}
-            onchange="toggle(this)">
-        </td>
-        <td>${g.date}</td>
-        <td>${g.tournament}</td>
-        <td>${g.category}</td>
-        <td>${g.home_team} vs ${g.away_team}</td>
-        <td>${g.field}</td>
-        <td>${g.signed_count}/${g.need_count}</td>
-        <td class="status ${signed||''}">${signed|| (g.full?'full':'')}</td>
+      gamesBody.innerHTML+=`
+        <tr class="${signed?'signed':''} ${g.full&&!signed?'full':''}">
+          <td>
+            <input type="checkbox"
+              value="${g.game_id}"
+              ${signed?'checked':''}
+              ${g.full&&!signed?'disabled':''}
+              onchange="this.checked?selected.add(this.value):selected.delete(this.value)">
+          </td>
+          <td>${formatDate(g.date)}</td>
+          <td>${g.tournament}</td>
+          <td>${g.category}</td>
+          <td>${g.home_team} vs ${g.away_team}</td>
+          <td>${g.field}</td>
+          <td>${g.signed_count}/${g.need_count}</td>
+          <td class="status ${signed||''}">${signed||''}</td>
+        </tr>
       `;
-      gamesBody.appendChild(tr);
     });
   });
 }
 
-function toggle(cb){
-  cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
-}
-
-/* ===== 送出 ===== */
 function submitSignup(){
-  if(!selected.size){
-    alert('請選擇比賽');
-    return;
-  }
+  if(!selected.size){alert('請選擇比賽');return;}
   callApi(
-    'action=judgeSignupByGames&game_ids='+
-    Array.from(selected).join(','),
+    'action=judgeSignupByGames&game_ids='+Array.from(selected).join(','),
     ()=>{
-      alert('✅ 報名完成');
+      alert('報名完成');
       selected.clear();
       loadMy();
       loadGames();
@@ -296,7 +215,6 @@ function submitSignup(){
   );
 }
 
-/* ===== init ===== */
 loadMy();
 setTimeout(loadGames,300);
 </script>
