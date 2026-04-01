@@ -9,67 +9,47 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
 
 /* ===== Header ===== */
 .header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 20px;
-  background:#ffffff;
-  border-bottom:1px solid #ddd;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 20px;background:#fff;border-bottom:1px solid #ddd
 }
 .nav a{
-  margin-right:16px;
-  color:#0066cc;
-  text-decoration:none;
-  font-weight:500;
+  margin-right:16px;color:#0066cc;
+  text-decoration:none;font-weight:500
 }
 .nav a:hover{text-decoration:underline}
-.user-info a{
-  margin-left:12px;
-  cursor:pointer;
-}
+.user-info a{margin-left:12px;cursor:pointer}
 
 /* ===== Main ===== */
 .main{padding:20px}
 .panel{
-  background:#ffffff;
-  padding:16px;
-  border-radius:6px;
-  margin-bottom:24px;
+  background:#fff;padding:16px;
+  border-radius:6px;margin-bottom:24px
 }
 
 /* ===== Tables ===== */
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th,td{
-  padding:8px;
-  border-bottom:1px solid #eee;
-  text-align:center;
-}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px;border-bottom:1px solid #eee;text-align:center}
 th{background:#f0f2f5}
 
-/* ===== Status ===== */
+/* 上表狀態 */
+tr.full{background:#ffecec;color:#a8071a}
 .status{font-weight:bold}
-.status.pending{color:#d48806}
-.status.approved{color:#389e0d}
-.status.rejected{color:#cf1322}
 .status.open{color:#389e0d}
 .status.full{color:#cf1322}
 
-tr.full{
-  background:#ffecec;
-  color:#a8071a;
-}
+/* 個人狀態 */
+.status.pending{color:#d48806}
+.status.approved{color:#389e0d}
+.status.rejected{color:#cf1322}
 
-/* ===== My signup layout ===== */
+/* 我的報名版面 */
 .my-grid{
   display:grid;
   grid-template-columns:1fr 1fr; /* 左右等寬 */
-  gap:20px;
+  gap:20px
 }
-h4{margin-top:0}
+
+button{padding:6px 14px}
 </style>
 </head>
 
@@ -92,9 +72,11 @@ h4{margin-top:0}
   <!-- ===== 可報名比賽 ===== -->
   <div class="panel">
     <h3>可報名比賽</h3>
+
     <table>
       <thead>
         <tr>
+          <th>選取</th>
           <th>日期</th>
           <th>盃賽</th>
           <th>組別</th>
@@ -105,9 +87,12 @@ h4{margin-top:0}
         </tr>
       </thead>
       <tbody id="gamesBody">
-        <tr><td colspan="7">載入中…</td></tr>
+        <tr><td colspan="8">載入中…</td></tr>
       </tbody>
     </table>
+
+    <br>
+    <button id="btnSubmit">送出報名</button>
   </div>
 
   <!-- ===== 我的報名 ===== -->
@@ -122,16 +107,11 @@ h4{margin-top:0}
         <table>
           <thead>
             <tr>
-              <th>日期</th>
-              <th>組別</th>
-              <th>對戰</th>
-              <th>場地</th>
-              <th>狀態</th>
+              <th>日期</th><th>組別</th>
+              <th>對戰</th><th>場地</th><th>狀態</th>
             </tr>
           </thead>
-          <tbody id="myActive">
-            <tr><td colspan="5">載入中…</td></tr>
-          </tbody>
+          <tbody id="myActive"></tbody>
         </table>
       </div>
 
@@ -141,16 +121,11 @@ h4{margin-top:0}
         <table>
           <thead>
             <tr>
-              <th>日期</th>
-              <th>組別</th>
-              <th>對戰</th>
-              <th>場地</th>
-              <th>狀態</th>
+              <th>日期</th><th>組別</th>
+              <th>對戰</th><th>場地</th><th>狀態</th>
             </tr>
           </thead>
-          <tbody id="myRejected">
-            <tr><td colspan="5">載入中…</td></tr>
-          </tbody>
+          <tbody id="myRejected"></tbody>
         </table>
       </div>
 
@@ -162,28 +137,28 @@ h4{margin-top:0}
 <!-- ===== Scripts ===== -->
 <script src="js/config.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded',function(){
+document.addEventListener('DOMContentLoaded',()=>{
 
-  const token   = localStorage.getItem('token');
+  const token = localStorage.getItem('token');
   const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-  if(!token){
-    location.href='login.html';
-    return;
-  }
+  if(!token){location.href='login.html';return;}
 
-  document.getElementById('u_name').textContent = session.name;
-  document.getElementById('btnLogout').onclick = function(){
-    localStorage.clear();
-    location.href='login.html';
+  document.getElementById('u_name').textContent=session.name;
+  document.getElementById('btnLogout').onclick=()=>{
+    localStorage.clear();location.href='login.html';
   };
 
   const gamesBody  = document.getElementById('gamesBody');
   const myActive   = document.getElementById('myActive');
   const myRejected = document.getElementById('myRejected');
+  const btnSubmit  = document.getElementById('btnSubmit');
+
+  const selected = new Set();
+  let myStatusMap = {};
 
   function formatDate(v){
-    const d = new Date(v);
-    return isNaN(d) ? v :
+    const d=new Date(v);
+    return isNaN(d)?v:
       d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+
       String(d.getDate()).padStart(2,'0');
   }
@@ -196,8 +171,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
   function matchStatusText(g){
     const lack = g.need_count - g.signed_count;
-    if(lack <= 0) return '已滿額';
-    return '尚缺 ' + lack + ' 人';
+    return lack<=0 ? '已滿額' : `尚缺 ${lack} 人`;
   }
 
   function callApi(q,cb){
@@ -208,21 +182,23 @@ document.addEventListener('DOMContentLoaded',function(){
     document.body.appendChild(s);
   }
 
-  /* ===== render 我的報名 ===== */
-  function loadMy(){
+  /* ===== 我的報名 ===== */
+  function loadMy(next){
     myActive.innerHTML='';
     myRejected.innerHTML='';
+    myStatusMap={};
 
     callApi('action=getMyGameSignups',res=>{
       if(!res.signups.length){
         myActive.innerHTML='<tr><td colspan="5">尚無報名</td></tr>';
         myRejected.innerHTML='<tr><td colspan="5">—</td></tr>';
-        return;
+        if(next)next();return;
       }
 
       res.signups.forEach(s=>{
         s.games.forEach(g=>{
-          const row = `
+          myStatusMap[g.game_id]=s.status;
+          const row=`
             <tr>
               <td>${formatDate(g.date)}</td>
               <td>${g.category}</td>
@@ -230,41 +206,68 @@ document.addEventListener('DOMContentLoaded',function(){
               <td>${g.field}</td>
               <td class="status ${s.status}">${personStatusText(s.status)}</td>
             </tr>`;
-          if(s.status==='rejected'){
-            myRejected.innerHTML += row;
-          }else{
-            myActive.innerHTML += row;
-          }
+          if(s.status==='rejected') myRejected.innerHTML+=row;
+          else myActive.innerHTML+=row;
         });
       });
+
+      if(next)next();
     });
   }
 
-  /* ===== render 可報名比賽 ===== */
+  /* ===== 可報名比賽 ===== */
   function loadGames(){
     gamesBody.innerHTML='';
+    selected.clear();
 
     callApi('action=getSignableGames',res=>{
       res.games.forEach(g=>{
+        const myStatus = myStatusMap[g.game_id];
         const full = g.signed_count >= g.need_count;
-        const row = `
-          <tr class="${full?'full':''}">
-            <td>${formatDate(g.date)}</td>
-            <td>${g.tournament}</td>
-            <td>${g.category}</td>
-            <td>${g.home_team} vs ${g.away_team}</td>
-            <td>${g.field}</td>
-            <td>${g.signed_count}/${g.need_count}</td>
-            <td class="status ${full?'full':'open'}">${matchStatusText(g)}</td>
-          </tr>`;
-        gamesBody.innerHTML += row;
+        const locked = myStatus==='approved';
+        const disabled = full || locked;
+
+        if(myStatus && myStatus!=='rejected'){
+          selected.add(g.game_id);
+        }
+
+        gamesBody.innerHTML+=`
+        <tr class="${full?'full':''}">
+          <td>
+            <input type="checkbox"
+              value="${g.game_id}"
+              ${selected.has(g.game_id)?'checked':''}
+              ${disabled?'disabled':''}
+              onchange="this.checked?selected.add(this.value):selected.delete(this.value)">
+          </td>
+          <td>${formatDate(g.date)}</td>
+          <td>${g.tournament}</td>
+          <td>${g.category}</td>
+          <td>${g.home_team} vs ${g.away_team}</td>
+          <td>${g.field}</td>
+          <td>${g.need_count} 人制</td>
+          <td class="status ${full?'full':'open'}">
+            ${matchStatusText(g)}
+            ${locked?'（已核准）':''}
+          </td>
+        </tr>`;
       });
     });
   }
 
-  /* init */
-  loadMy();
-  loadGames();
+  /* ===== 送出報名 ===== */
+  btnSubmit.onclick=()=>{
+    if(!selected.size){alert('請選擇比賽');return;}
+    callApi(
+      'action=judgeSignupByGames&game_ids='+Array.from(selected).join(','),
+      ()=>{alert('報名完成');refresh();}
+    );
+  };
+
+  function refresh(){loadMy(loadGames);}
+
+  refresh();
+  setInterval(refresh,10000);
 
 });
 </script>
