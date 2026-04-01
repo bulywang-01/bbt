@@ -6,49 +6,89 @@
 
 <style>
 body{margin:0;font-family:system-ui;background:#f5f6f8}
-.header{display:flex;justify-content:space-between;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd}
-.nav a{margin-right:16px;color:#0066cc;text-decoration:none}
-.main{padding:20px}
-.panel{background:#fff;padding:16px;border-radius:6px;margin-bottom:24px}
 
+/* ===== Header ===== */
+.header{
+  display:flex;
+  justify-content:space-between;
+  padding:12px 20px;
+  background:#fff;
+  border-bottom:1px solid #ddd
+}
+.nav a{
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500
+}
+.nav a:hover{text-decoration:underline}
+.user-info a{margin-left:12px;cursor:pointer}
+
+/* ===== Main ===== */
+.main{padding:20px}
+.panel{
+  background:#fff;
+  padding:16px;
+  border-radius:6px;
+  margin-bottom:24px
+}
+
+/* ===== Tables ===== */
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid #eee;text-align:center}
 th{background:#f0f2f5}
 
-tr.signed{background:#eef5ff}
-tr.full{color:#999}
-
+tr.full{background:#ffecec;color:#a8071a}
 .status{font-weight:bold}
+.status.open{color:#389e0d}
+.status.full{color:#cf1322}
+
 .status.pending{color:#d48806}
 .status.approved{color:#389e0d}
 .status.rejected{color:#cf1322}
 
 button{padding:6px 14px}
+
+/* ===== My signup layout ===== */
+.my-grid{
+  display:grid;
+  grid-template-columns: 2fr 1fr;
+  gap:20px
+}
+h4{margin-top:0}
 </style>
 </head>
 
 <body>
 
+<!-- ===== Header ===== -->
 <div class="header">
   <div class="nav">
-    <a href="index.html">🏠 首頁</a>
-    <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
+    <a href="index.html
+    <a href="judge_dashboard️ 裁判報名</a>
   </div>
-  <div>
+  <div class="user-info">
     <b id="u_name"></b>
-    <a onclick="logout()" style="margin-left:12px;cursor:pointer">🚪 登出</a>
+    <a onclick="logout()">🚪 登出</a>
   </div>
 </div>
 
 <div class="main">
 
+  <!-- ================= 可報名比賽（比賽導向） ================= -->
   <div class="panel">
     <h3>可報名比賽</h3>
     <table>
       <thead>
         <tr>
-          <th>選取</th><th>日期</th><th>盃賽</th><th>組別</th>
-          <th>對戰</th><th>場地</th><th>裁判</th><th>狀態</th>
+          <th>選取</th>
+          <th>日期</th>
+          <th>盃賽</th>
+          <th>組別</th>
+          <th>對戰</th>
+          <th>場地</th>
+          <th>裁判數</th>
+          <th>狀態</th>
         </tr>
       </thead>
       <tbody id="gamesBody">
@@ -59,34 +99,53 @@ button{padding:6px 14px}
     <button onclick="submitSignup()">送出報名</button>
   </div>
 
+  <!-- ================= 我的報名（人導向） ================= -->
   <div class="panel">
     <h3>我的報名</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>日期</th><th>盃賽</th><th>組別</th>
-          <th>對戰</th><th>場地</th><th>狀態</th>
-        </tr>
-      </thead>
-      <tbody id="myBody">
-        <tr><td colspan="6">載入中…</td></tr>
-      </tbody>
-    </table>
-    <div style="font-size:13px;color:#888;margin-top:8px">
-      ※ 狀態每 10 秒自動更新
+
+    <div class="my-grid">
+
+      <!-- 左：進行中 / 已核准 -->
+      <div>
+        <h4>📌 進行中 / 已核准</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th><th>組別</th><th>對戰</th><th>場地</th><th>狀態</th>
+            </tr>
+          </thead>
+          <tbody id="myActive">
+            <tr><td colspan="5">載入中…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 右：退回 -->
+      <div>
+        <h4>❌ 退回</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th><th>組別</th><th>對戰</th><th>場地</th><th>狀態</th>
+            </tr>
+          </thead>
+          <tbody id="myRejected">
+            <tr><td colspan="5">載入中…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
   </div>
 
 </div>
 
-
-<!-- ========= Script ========= -->
-<script src="js/config.js"></script>
-
-<script>
+<!-- ===== Scripts ===== -->
+<script src="js/config.jsript>
 const token = localStorage.getItem('token');
 const session = JSON.parse(localStorage.getItem('session_user')||'{}');
 if(!token) location.href='login.html';
+
 u_name.textContent = session.name;
 
 function logout(){
@@ -94,15 +153,17 @@ function logout(){
   location.href='login.html';
 }
 
+/* ===== utils ===== */
 function formatDate(v){
-  if(!v) return '';
-  if(typeof v==='string' && v.includes('/')) return v;
-  const d=new Date(v); if(isNaN(d)) return v;
-  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
+  const d=new Date(v);
+  return isNaN(d)?v:
+    d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
 }
 
 function statusText(s){
-  return s==='approved'?'已核准':s==='rejected'?'退回':'審核中';
+  if(s==='approved') return '已核准';
+  if(s==='rejected') return '退回';
+  return '審核中';
 }
 
 /* JSONP */
@@ -115,54 +176,54 @@ function callApi(q,cb){
 }
 
 const selected=new Set();
-let myGameStatus={};
 
-/* 抓取我的報名狀態 */
+/* ===== 我的報名 ===== */
 function loadMy(cb){
   callApi('action=getMyGameSignups',res=>{
-    myGameStatus={};
-    myBody.innerHTML='';
+    myActive.innerHTML='';
+    myRejected.innerHTML='';
 
-    if(res.signups.length){
-      res.signups.forEach(s=>{
-        s.games.forEach(g=>{
-          myGameStatus[g.game_id]=s.status;
-          myBody.innerHTML+=`
-            <tr>
-              <td>${formatDate(g.date)}</td>
-              <td>${g.tournament}</td>
-              <td>${g.category}</td>
-              <td>${g.home_team} vs ${g.away_team}</td>
-              <td>${g.field}</td>
-              <td class="status ${s.status}">${statusText(s.status)}</td>
-            </tr>`;
-        });
-      });
-    }else{
-      myBody.innerHTML='<tr><td colspan="6">尚無報名紀錄</td></tr>';
+    if(!res.signups.length){
+      myActive.innerHTML='<tr><td colspan="5">尚無報名</td></tr>';
+      myRejected.innerHTML='<tr><td colspan="5">—</td></tr>';
+      return;
     }
+
+    res.signups.forEach(s=>{
+      s.games.forEach(g=>{
+        const row=`
+          <tr>
+            <td>${formatDate(g.date)}</td>
+            <td>${g.category}</td>
+            <td>${g.home_team} vs ${g.away_team}</td>
+            <td>${g.field}</td>
+            <td class="status ${s.status}">${statusText(s.status)}</td>
+          </tr>`;
+        if(s.status==='rejected'){
+          myRejected.innerHTML+=row;
+        }else{
+          myActive.innerHTML+=row;
+          selected.add(g.game_id);
+        }
+      });
+    });
 
     if(cb) cb();
   });
 }
 
-/* 抓取比賽 */
+/* ===== 可報名比賽 ===== */
 function loadGames(){
   callApi('action=getSignableGames',res=>{
     gamesBody.innerHTML='';
-    selected.clear();
-
     res.games.forEach(g=>{
-      const st=myGameStatus[g.game_id];
-      if(st) selected.add(g.game_id);
-
+      const isFull = g.signed_count >= g.need_count;
       gamesBody.innerHTML+=`
-        <tr class="${st?'signed':''} ${g.full&&!st?'full':''}">
+        <tr class="${isFull?'full':''}">
           <td>
             <input type="checkbox"
               value="${g.game_id}"
-              ${st?'checked':''}
-              ${g.full&&!st?'disabled':''}
+              ${isFull?'disabled':''}
               onchange="this.checked?selected.add(this.value):selected.delete(this.value)">
           </td>
           <td>${formatDate(g.date)}</td>
@@ -171,34 +232,34 @@ function loadGames(){
           <td>${g.home_team} vs ${g.away_team}</td>
           <td>${g.field}</td>
           <td>${g.signed_count}/${g.need_count}</td>
-          <td class="status ${st||''}">${st?statusText(st):''}</td>
+          <td class="status ${isFull?'full':'open'}">
+            ${isFull?'已滿額':'報名中'}
+          </td>
         </tr>`;
     });
   });
 }
 
-/* 送出報名 */
+/* ===== submit ===== */
 function submitSignup(){
   if(!selected.size){alert('請選擇比賽');return;}
   callApi(
     'action=judgeSignupByGames&game_ids='+Array.from(selected).join(','),
     ()=>{
       alert('報名完成');
-      refreshAll(); // ✅ 立即更新
+      refreshAll();
     }
   );
 }
 
-/* ✅ 核心：即時刷新 */
 function refreshAll(){
-  loadMy(()=>loadGames());
+  selected.clear();
+  loadMy(loadGames);
 }
 
-/* 初始化 */
+/* init + polling */
 refreshAll();
-
-/* ✅ Polling：每 10 秒刷新一次 */
-setInterval(refreshAll, 10000);
+setInterval(refreshAll,10000);
 </script>
 
 </body>
