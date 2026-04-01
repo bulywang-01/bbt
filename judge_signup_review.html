@@ -6,123 +6,205 @@
 
 <style>
 body{margin:0;font-family:system-ui;background:#f5f6f8}
-.header{display:flex;justify-content:space-between;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd}
-.nav a{margin-right:16px;color:#0066cc;text-decoration:none}
+
+/* ===== Header ===== */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#ffffff;
+  border-bottom:1px solid #ddd;
+}
+.nav a{
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500;
+}
+.nav a:hover{text-decoration:underline}
+.user-info a{margin-left:12px;cursor:pointer}
+
+/* ===== Main ===== */
 .main{padding:20px}
-.panel{background:#fff;padding:16px;border-radius:6px}
-table{width:100%;border-collapse:collapse}
-th,td{padding:8px;border-bottom:1px solid #eee;vertical-align:top}
-th{background:#f0f2f5;text-align:center}
+.panel{
+  background:#ffffff;
+  padding:16px;
+  border-radius:6px;
+}
 
-.status.pending{color:#d48806;font-weight:bold}
-.status.approved{color:#389e0d;font-weight:bold}
-.status.rejected{color:#cf1322;font-weight:bold}
+/* ===== Table ===== */
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+th,td{
+  padding:8px;
+  border-bottom:1px solid #eee;
+  text-align:center;
+}
+th{background:#f0f2f5}
 
-.inner{width:100%;border-collapse:collapse;font-size:13px}
-.inner th,.inner td{padding:4px 6px;border-bottom:1px dotted #ddd;text-align:left}
+.actions button{
+  margin:0 4px;
+}
 
-button{margin-right:6px;padding:4px 10px}
+button{padding:6px 12px}
+.footer-actions{
+  margin-top:12px;
+  text-align:right;
+}
 </style>
 </head>
 
 <body>
 
+<!-- ===== Header ===== -->
 <div class="header">
   <div class="nav">
-    <a href="index.html">🏠 首頁</a>
-    <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
-    <a href="judge_signup_review.html">✅ 報名審核</a>
+    <a href="index.html">首頁</a>
+    <a href="judge_signup_review.html">裁判審核</a>
   </div>
-  <div>
+  <div class="user-info">
     <b id="u_name"></b>
-    <a onclick="logout()" style="cursor:pointer">🚪 登出</a>
+    <a id="btnLogout">登出</a>
   </div>
 </div>
 
 <div class="main">
   <div class="panel">
-    <h3>裁判報名審核</h3>
+
+    <h3>待審核裁判場次</h3>
+
     <table>
       <thead>
         <tr>
-          <th>裁判</th><th>報名場次</th><th>狀態</th><th>操作</th>
+          <th><input type="checkbox" id="chkAll"></th>
+          <th>裁判</th>
+          <th>日期</th>
+          <th>盃賽</th>
+          <th>組別</th>
+          <th>場地</th>
+          <th>操作</th>
         </tr>
       </thead>
-      <tbody id="listBody">
-        <tr><td colspan="4">載入中…</td></tr>
+      <tbody id="reviewBody">
+        <tr><td colspan="7">載入中…</td></tr>
       </tbody>
     </table>
+
+    <div class="footer-actions">
+      <button onclick="batchReview('approved')">✅ 批次核准</button>
+      <button onclick="batchReview('rejected')">❌ 批次退回</button>
+    </div>
+
   </div>
 </div>
 
-
-<!-- ========= Script ========= -->
 <script src="js/config.js"></script>
-
 <script>
-const token=localStorage.getItem('token');
-const session=JSON.parse(localStorage.getItem('session_user')||'{}');
-if(!token||session.role!=='admin')location.href='index.html';
-u_name.textContent=session.name;
+document.addEventListener('DOMContentLoaded',()=>{
 
-function formatDate(v){
-  if(!v) return '';
-  if(typeof v==='string'&&v.includes('/')) return v;
-  const d=new Date(v); if(isNaN(d))return v;
-  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
-}
-function statusText(s){
-  return s==='approved'?'已核准':s==='rejected'?'已拒絕':'審核中';
-}
+  const token = localStorage.getItem('token');
+  const session = JSON.parse(localStorage.getItem('session_user')||'{}');
+  if(!token || session.role!=='admin'){
+    location.href='login.html';
+    return;
+  }
 
-function callApi(q,cb){
-  const f='cb_'+Date.now();
-  window[f]=r=>{delete window[f];cb(r);}
-  const s=document.createElement('script');
-  s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
-  document.body.appendChild(s);
-}
+  document.getElementById('u_name').textContent=session.name;
+  document.getElementById('btnLogout').onclick=()=>{
+    localStorage.clear();location.href='login.html';
+  };
 
-function logout(){localStorage.clear();location.href='login.html';}
+  const body = document.getElementById('reviewBody');
+  const chkAll = document.getElementById('chkAll');
 
-function loadList(){
-  callApi('action=getAllGameSignups',res=>{
-    listBody.innerHTML='';
-    res.signups.forEach(s=>{
-      const inner=`
-        <table class="inner">
-          <thead><tr><th>日期</th><th>組別</th><th>對戰</th><th>場地</th></tr></thead>
-          <tbody>
-            ${s.games.map(g=>`
-              <tr>
-                <td>${formatDate(g.date)}</td>
-                <td>${g.category}</td>
-                <td>${g.home_team} vs ${g.away_team}</td>
-                <td>${g.field}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>`;
+  function callApi(q,cb){
+    const f='cb_'+Date.now();
+    window[f]=r=>{delete window[f];cb(r);};
+    const s=document.createElement('script');
+    s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
+    document.body.appendChild(s);
+  }
 
-      listBody.innerHTML+=`
-        <tr>
-          <td>${s.name}</td>
-          <td>${inner}</td>
-          <td class="status ${s.status}">${statusText(s.status)}</td>
-          <td>
-            <button onclick="set('${s.signup_id}','approved')">核准</button>
-            <button onclick="set('${s.signup_id}','rejected')">退回</button>
-          </td>
-        </tr>`;
+  // ===== 載入待審核資料 =====
+  function loadList(){
+    body.innerHTML='<tr><td colspan="7">載入中…</td></tr>';
+
+    callApi('action=getAllGameSignups',res=>{
+      body.innerHTML='';
+      if(!res.items || !res.items.length){
+        body.innerHTML='<tr><td colspan="7">目前沒有待審核項目</td></tr>';
+        return;
+      }
+
+      res.items.forEach(item=>{
+        body.innerHTML+=`
+          <tr>
+            <td>
+              <input type="checkbox" class="chkItem"
+                data-signup="${item.signup_id}"
+                data-game="${item.game_id}">
+            </td>
+            <td>${item.judge_name}</td>
+            <td>${item.date}</td>
+            <td>${item.tournament}</td>
+            <td>${item.category}</td>
+            <td>${item.field}</td>
+            <td class="actions">
+              <button onclick="reviewSingle('${item.signup_id}','${item.game_id}','approved')">✅</button>
+              <button onclick="reviewSingle('${item.signup_id}','${item.game_id}','rejected')">❌</button>
+            </td>
+          </tr>
+        `;
+      });
     });
-  });
-}
+  }
 
-function set(id,status){
-  if(!confirm('確認變更狀態？')) return;
-  callApi('action=updateJudgeSignupStatus&signup_id='+id+'&status='+status,()=>loadList());
-}
+  // ===== 個別審核 =====
+  window.reviewSingle = (signupId, gameId, result)=>{
+    if(!confirm('確認要'+(result==='approved'?'核准':'退回')+'此場次？')) return;
+    callApi(
+      `action=reviewSingleGame&signup_id=${signupId}&game_id=${gameId}&result=${result}`,
+      ()=>loadList()
+    );
+  };
 
-loadList();
+  // ===== 批次審核 =====
+  window.batchReview = (result)=>{
+    const selected = Array.from(
+      document.querySelectorAll('.chkItem:checked')
+    ).map(cb=>({
+      signup_id: cb.dataset.signup,
+      game_id: cb.dataset.game
+    }));
+
+    if(!selected.length){
+      alert('請先勾選場次');
+      return;
+    }
+
+    if(!confirm('確認批次'+(result==='approved'?'核准':'退回')+'選取場次？')) return;
+
+    callApi(
+      'action=reviewBatchGames'
+      + '&result=' + result
+      + '&items=' + encodeURIComponent(JSON.stringify(selected)),
+      ()=>loadList()
+    );
+  };
+
+  // ===== 全選 =====
+  chkAll.onchange=()=>{
+    document.querySelectorAll('.chkItem').forEach(cb=>{
+      cb.checked = chkAll.checked;
+    });
+  };
+
+  loadList();
+});
 </script>
 
 </body>
