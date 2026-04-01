@@ -5,7 +5,11 @@
 <title>裁判報名審核</title>
 
 <style>
-body{margin:0;font-family:system-ui;background:#f5f6f8}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:#f5f6f8;
+}
 
 /* ===== Header ===== */
 .header{
@@ -22,11 +26,18 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
   text-decoration:none;
   font-weight:500;
 }
-.nav a:hover{text-decoration:underline}
-.user-info a{margin-left:12px;cursor:pointer}
+.nav a:hover{
+  text-decoration:underline;
+}
+.user-info a{
+  margin-left:12px;
+  cursor:pointer;
+}
 
 /* ===== Main ===== */
-.main{padding:20px}
+.main{
+  padding:20px;
+}
 .panel{
   background:#ffffff;
   padding:16px;
@@ -44,13 +55,15 @@ th,td{
   border-bottom:1px solid #eee;
   text-align:center;
 }
-th{background:#f0f2f5}
+th{
+  background:#f0f2f5;
+}
 
 .actions button{
   margin:0 4px;
+  padding:4px 10px;
 }
 
-button{padding:6px 12px}
 .footer-actions{
   margin-top:12px;
   text-align:right;
@@ -64,7 +77,7 @@ button{padding:6px 12px}
 <div class="header">
   <div class="nav">
     <a href="index.html">首頁</a>
-    <a href="judge_signup_review.html">裁判審核</a>
+    <a href="judge_signup_review.html">裁判報名審核</a>
   </div>
   <div class="user-info">
     <b id="u_name"></b>
@@ -80,8 +93,11 @@ button{padding:6px 12px}
     <table>
       <thead>
         <tr>
-          <th><input type="checkbox" id="chkAll"></th>
+          <th>
+            <input type="checkbox" id="chkAll">
+          </th>
           <th>裁判</th>
+          <th>報名時間</th>
           <th>日期</th>
           <th>盃賽</th>
           <th>組別</th>
@@ -90,76 +106,103 @@ button{padding:6px 12px}
         </tr>
       </thead>
       <tbody id="reviewBody">
-        <tr><td colspan="7">載入中…</td></tr>
+        <tr>
+          <td colspan="8">載入中…</td>
+        </tr>
       </tbody>
     </table>
 
     <div class="footer-actions">
-      <button onclick="batchReview('approved')">✅ 批次核准</button>
-      <button onclick="batchReview('rejected')">❌ 批次退回</button>
+      <button id="btnBatchApprove">✅ 批次核准</button>
+      <button id="btnBatchReject">❌ 批次退回</button>
     </div>
 
   </div>
 </div>
 
+<!-- ===== JS ===== -->
 <script src="js/config.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
 
   const token = localStorage.getItem('token');
-  const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-  if(!token || session.role!=='admin'){
-    location.href='login.html';
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  if (!token || session.role !== 'admin') {
+    location.href = 'login.html';
     return;
   }
 
-  document.getElementById('u_name').textContent=session.name;
-  document.getElementById('btnLogout').onclick=()=>{
-    localStorage.clear();location.href='login.html';
+  document.getElementById('u_name').textContent = session.name;
+  document.getElementById('btnLogout').onclick = () => {
+    localStorage.clear();
+    location.href = 'login.html';
   };
 
-  const body = document.getElementById('reviewBody');
+  const reviewBody = document.getElementById('reviewBody');
   const chkAll = document.getElementById('chkAll');
+  const btnBatchApprove = document.getElementById('btnBatchApprove');
+  const btnBatchReject = document.getElementById('btnBatchReject');
 
-  /* ✅ 統一日期格式（老問題，這次在這裡解掉） */
-  function formatDate(v){
-    if(!v) return '';
-    if(typeof v === 'string' && v.includes('/')) return v;
+  /* ===== 日期時間格式 ===== */
+  function formatDateTime(v){
     const d = new Date(v);
-    if(isNaN(d)) return v;
-    return d.getFullYear() + '/' +
-           String(d.getMonth()+1).padStart(2,'0') + '/' +
-           String(d.getDate()).padStart(2,'0');
+    if (isNaN(d)) return v;
+    return (
+      d.getFullYear() + '/' +
+      String(d.getMonth()+1).padStart(2,'0') + '/' +
+      String(d.getDate()).padStart(2,'0') + ' ' +
+      String(d.getHours()).padStart(2,'0') + ':' +
+      String(d.getMinutes()).padStart(2,'0')
+    );
   }
 
-  function callApi(q,cb){
-    const f='cb_'+Date.now();
-    window[f]=r=>{delete window[f];cb(r);};
-    const s=document.createElement('script');
-    s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
+  function formatDate(v){
+    const d = new Date(v);
+    if (isNaN(d)) return v;
+    return (
+      d.getFullYear() + '/' +
+      String(d.getMonth()+1).padStart(2,'0') + '/' +
+      String(d.getDate()).padStart(2,'0')
+    );
+  }
+
+  function callApi(q, cb){
+    const f = 'cb_' + Date.now();
+    window[f] = r => {
+      delete window[f];
+      cb(r);
+    };
+    const s = document.createElement('script');
+    s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
     document.body.appendChild(s);
   }
 
-  // ===== 載入待審核資料（✅ 套用 formatDate） =====
+  /* ===== 載入待審核（只顯示 pending、一場一筆） ===== */
   function loadList(){
-    body.innerHTML='<tr><td colspan="7">載入中…</td></tr>';
+    reviewBody.innerHTML =
+      '<tr><td colspan="8">載入中…</td></tr>';
 
-    callApi('action=getAllGameSignups',res=>{
-      body.innerHTML='';
-      if(!res.items || !res.items.length){
-        body.innerHTML='<tr><td colspan="7">目前沒有待審核項目</td></tr>';
+    callApi('action=getAllGameSignups', res => {
+      reviewBody.innerHTML = '';
+
+      if (!res.items || !res.items.length) {
+        reviewBody.innerHTML =
+          '<tr><td colspan="8">目前沒有待審核項目</td></tr>';
         return;
       }
 
-      res.items.forEach(item=>{
-        body.innerHTML+=`
+      res.items.forEach(item => {
+        reviewBody.innerHTML += `
           <tr>
             <td>
-              <input type="checkbox" class="chkItem"
+              <input type="checkbox"
+                class="chkItem"
                 data-signup="${item.signup_id}"
                 data-game="${item.game_id}">
             </td>
             <td>${item.judge_name}</td>
+            <td>${formatDateTime(item.created_at)}</td>
             <td>${formatDate(item.date)}</td>
             <td>${item.tournament}</td>
             <td>${item.category}</td>
@@ -174,42 +217,48 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   }
 
-  // ===== 個別審核 =====
-  window.reviewSingle = (signupId, gameId, result)=>{
-    if(!confirm('確認要'+(result==='approved'?'核准':'退回')+'此場次？')) return;
+  /* ===== 個別審核 ===== */
+  window.reviewSingle = (signupId, gameId, result) => {
+    if (!confirm('確認要' + (result === 'approved' ? '核准' : '退回') + '此場次？')) {
+      return;
+    }
     callApi(
       `action=reviewSingleGame&signup_id=${signupId}&game_id=${gameId}&result=${result}`,
-      ()=>loadList()
+      () => loadList()
     );
   };
 
-  // ===== 批次審核 =====
-  window.batchReview = (result)=>{
+  /* ===== 批次審核 ===== */
+  function batchReview(result){
     const selected = Array.from(
       document.querySelectorAll('.chkItem:checked')
-    ).map(cb=>({
+    ).map(cb => ({
       signup_id: cb.dataset.signup,
       game_id: cb.dataset.game
     }));
 
-    if(!selected.length){
+    if (!selected.length) {
       alert('請先勾選場次');
       return;
     }
 
-    if(!confirm('確認批次'+(result==='approved'?'核准':'退回')+'選取場次？')) return;
+    if (!confirm('確認批次' + (result === 'approved' ? '核准' : '退回') + '選取場次？')) {
+      return;
+    }
 
     callApi(
       'action=reviewBatchGames'
       + '&result=' + result
       + '&items=' + encodeURIComponent(JSON.stringify(selected)),
-      ()=>loadList()
+      () => loadList()
     );
-  };
+  }
 
-  // ===== 全選 =====
-  chkAll.onchange=()=>{
-    document.querySelectorAll('.chkItem').forEach(cb=>{
+  btnBatchApprove.onclick = () => batchReview('approved');
+  btnBatchReject.onclick = () => batchReview('rejected');
+
+  chkAll.onchange = () => {
+    document.querySelectorAll('.chkItem').forEach(cb => {
       cb.checked = chkAll.checked;
     });
   };
