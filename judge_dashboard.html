@@ -193,7 +193,11 @@ function renderGames(games){
                    ${checked}
                    ${disabled}
                    onchange="toggleGame(this)">
-            <b>${formatDateTW(g.date)}</b> ｜ ${g.category} ｜ ${g.field}
+            
+            <b>${formatDateTW(g.date)}</b>
+            ｜ ${g.category}
+            ｜ ${g.home_team} vs ${g.away_team}
+            ｜ ${g.field}
             ｜ 裁判 ${g.signed_count} / ${g.need_count}
             ${fullText}
             ${statusText}
