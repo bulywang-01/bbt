@@ -5,11 +5,7 @@
 <title>裁判報名</title>
 
 <style>
-body{
-  margin:0;
-  font-family:system-ui;
-  background:#f5f6f8;
-}
+body{margin:0;font-family:system-ui;background:#f5f6f8}
 
 /* ===== Header ===== */
 .header{
@@ -26,18 +22,14 @@ body{
   text-decoration:none;
   font-weight:500;
 }
-.nav a:hover{
-  text-decoration:underline;
-}
+.nav a:hover{text-decoration:underline}
 .user-info a{
   margin-left:12px;
   cursor:pointer;
 }
 
 /* ===== Main ===== */
-.main{
-  padding:20px;
-}
+.main{padding:20px}
 .panel{
   background:#ffffff;
   padding:16px;
@@ -56,26 +48,34 @@ th,td{
   border-bottom:1px solid #eee;
   text-align:center;
 }
-th{
-  background:#f0f2f5;
+th{background:#f0f2f5}
+
+/* ===== Status ===== */
+.status{font-weight:bold}
+.status.pending{color:#d48806}
+.status.approved{color:#389e0d}
+.status.rejected{color:#cf1322}
+.status.open{color:#389e0d}
+.status.full{color:#cf1322}
+
+tr.full{
+  background:#ffecec;
+  color:#a8071a;
 }
 
 /* ===== My signup layout ===== */
 .my-grid{
   display:grid;
-  grid-template-columns: 1fr 1fr;   /* ✅ 左右等寬 */
+  grid-template-columns:1fr 1fr; /* 左右等寬 */
   gap:20px;
 }
-
-button{
-  padding:6px 14px;
-}
+h4{margin-top:0}
 </style>
 </head>
 
 <body>
 
-<!-- ========= Header ========= -->
+<!-- ===== Header ===== -->
 <div class="header">
   <div class="nav">
     <a href="index.html">首頁</a>
@@ -92,11 +92,9 @@ button{
   <!-- ===== 可報名比賽 ===== -->
   <div class="panel">
     <h3>可報名比賽</h3>
-
     <table>
       <thead>
         <tr>
-          <th>選取</th>
           <th>日期</th>
           <th>盃賽</th>
           <th>組別</th>
@@ -107,12 +105,9 @@ button{
         </tr>
       </thead>
       <tbody id="gamesBody">
-        <tr><td colspan="8">載入中…</td></tr>
+        <tr><td colspan="7">載入中…</td></tr>
       </tbody>
     </table>
-
-    <br>
-    <button id="btnSubmit">送出報名</button>
   </div>
 
   <!-- ===== 我的報名 ===== -->
@@ -121,6 +116,7 @@ button{
 
     <div class="my-grid">
 
+      <!-- 左：進行中 / 已核准 -->
       <div>
         <h4>進行中 / 已核准</h4>
         <table>
@@ -139,6 +135,7 @@ button{
         </table>
       </div>
 
+      <!-- 右：退回 -->
       <div>
         <h4>退回</h4>
         <table>
@@ -162,31 +159,113 @@ button{
 
 </div>
 
-<!-- ✅ JS 區塊（順序嚴格） -->
+<!-- ===== Scripts ===== -->
 <script src="js/config.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
 
-  const token = localStorage.getItem('token');
+  const token   = localStorage.getItem('token');
   const session = JSON.parse(localStorage.getItem('session_user')||'{}');
   if(!token){
-    location.href = 'login.html';
+    location.href='login.html';
     return;
   }
 
   document.getElementById('u_name').textContent = session.name;
   document.getElementById('btnLogout').onclick = function(){
     localStorage.clear();
-    location.href = 'login.html';
+    location.href='login.html';
   };
 
-  // ✅ 目前版本只做結構驗證，不再展開複雜 JS
   const gamesBody  = document.getElementById('gamesBody');
   const myActive   = document.getElementById('myActive');
   const myRejected = document.getElementById('myRejected');
 
-  // 如果你看到這三個不是 null，代表結構已穩
-  console.log('DOM OK:', !!gamesBody, !!myActive, !!myRejected);
+  function formatDate(v){
+    const d = new Date(v);
+    return isNaN(d) ? v :
+      d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+
+      String(d.getDate()).padStart(2,'0');
+  }
+
+  function personStatusText(s){
+    if(s==='approved') return '已核准';
+    if(s==='rejected') return '退回';
+    return '審核中';
+  }
+
+  function matchStatusText(g){
+    const lack = g.need_count - g.signed_count;
+    if(lack <= 0) return '已滿額';
+    return '尚缺 ' + lack + ' 人';
+  }
+
+  function callApi(q,cb){
+    const f='cb_'+Date.now();
+    window[f]=r=>{delete window[f];cb(r);};
+    const s=document.createElement('script');
+    s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
+    document.body.appendChild(s);
+  }
+
+  /* ===== render 我的報名 ===== */
+  function loadMy(){
+    myActive.innerHTML='';
+    myRejected.innerHTML='';
+
+    callApi('action=getMyGameSignups',res=>{
+      if(!res.signups.length){
+        myActive.innerHTML='<tr><td colspan="5">尚無報名</td></tr>';
+        myRejected.innerHTML='<tr><td colspan="5">—</td></tr>';
+        return;
+      }
+
+      res.signups.forEach(s=>{
+        s.games.forEach(g=>{
+          const row = `
+            <tr>
+              <td>${formatDate(g.date)}</td>
+              <td>${g.category}</td>
+              <td>${g.home_team} vs ${g.away_team}</td>
+              <td>${g.field}</td>
+              <td class="status ${s.status}">${personStatusText(s.status)}</td>
+            </tr>`;
+          if(s.status==='rejected'){
+            myRejected.innerHTML += row;
+          }else{
+            myActive.innerHTML += row;
+          }
+        });
+      });
+    });
+  }
+
+  /* ===== render 可報名比賽 ===== */
+  function loadGames(){
+    gamesBody.innerHTML='';
+
+    callApi('action=getSignableGames',res=>{
+      res.games.forEach(g=>{
+        const full = g.signed_count >= g.need_count;
+        const row = `
+          <tr class="${full?'full':''}">
+            <td>${formatDate(g.date)}</td>
+            <td>${g.tournament}</td>
+            <td>${g.category}</td>
+            <td>${g.home_team} vs ${g.away_team}</td>
+            <td>${g.field}</td>
+            <td>${g.signed_count}/${g.need_count}</td>
+            <td class="status ${full?'full':'open'}">${matchStatusText(g)}</td>
+          </tr>`;
+        gamesBody.innerHTML += row;
+      });
+    });
+  }
+
+  /* init */
+  loadMy();
+  loadGames();
+
 });
 </script>
 
