@@ -5,122 +5,65 @@
 <title>裁判報名</title>
 
 <style>
-body{
-  margin:0;
-  font-family: system-ui;
-  background:#f5f6f8;
-}
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 20px;
-  background:#ffffff;
-  border-bottom:1px solid #ddd;
-}
-.nav a{
-  margin-right:16px;
-  color:#0066cc;
-  text-decoration:none;
-  font-weight:500;
-}
-.nav a:hover{
-  text-decoration:underline;
-}
-.user-info{
-  font-size:14px;
-}
-.user-info a{
-  margin-left:12px;
-  color:#0066cc;
-  cursor:pointer;
-}
-.main{
-  padding:20px;
-}
-.panel{
-  background:#ffffff;
-  padding:16px;
-  border-radius:6px;
-  margin-bottom:24px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th, td{
-  padding:8px;
-  border-bottom:1px solid #eee;
-  text-align:center;
-}
-th{background:#f0f2f5;}
-tr.signed{background:#eef5ff;}
-tr.full{color:#999;}
-.status.pending{color:#d48806;font-weight:bold;}
-.status.approved{color:#389e0d;font-weight:bold;}
+body{margin:0;font-family:system-ui;background:#f5f6f8}
+.header{display:flex;justify-content:space-between;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd}
+.nav a{margin-right:16px;color:#0066cc;text-decoration:none}
+.main{padding:20px}
+.panel{background:#fff;padding:16px;border-radius:6px;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px;border-bottom:1px solid #eee;text-align:center}
+th{background:#f0f2f5}
+tr.signed{background:#eef5ff}
+tr.full{color:#999}
+
+.status{font-weight:bold}
+.status.pending{color:#d48806}
+.status.approved{color:#389e0d}
+.status.rejected{color:#cf1322}
+
+button{padding:6px 14px}
 </style>
 </head>
 
 <body>
 
-<!-- ========= Header ========= -->
 <div class="header">
   <div class="nav">
     <a href="index.html">🏠 首頁</a>
     <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
-    <a href="judge_signup_review.html" id="adminMenu" style="display:none">
-      ✅ 報名審核
-    </a>
   </div>
-
-  <div class="user-info">
+  <div>
     <b id="u_name"></b>
-    <a onclick="logout()">🚪 登出</a>
+    <a onclick="logout()" style="margin-left:12px;cursor:pointer">🚪 登出</a>
   </div>
 </div>
 
 <div class="main">
 
-  <!-- ===== 可報名比賽 ===== -->
   <div class="panel">
     <h3>可報名比賽</h3>
-
     <table>
       <thead>
         <tr>
-          <th>選取</th>
-          <th>日期</th>
-          <th>盃賽</th>
-          <th>組別</th>
-          <th>對戰</th>
-          <th>場地</th>
-          <th>裁判</th>
-          <th>狀態</th>
+          <th>選取</th><th>日期</th><th>盃賽</th><th>組別</th>
+          <th>對戰</th><th>場地</th><th>裁判</th><th>狀態</th>
         </tr>
       </thead>
       <tbody id="gamesBody">
         <tr><td colspan="8">載入中…</td></tr>
       </tbody>
     </table>
-
     <br>
     <button onclick="submitSignup()">送出報名</button>
   </div>
 
-  <!-- ===== 我的報名 ===== -->
   <div class="panel">
     <h3>我的報名</h3>
-
     <table>
       <thead>
         <tr>
-          <th>日期</th>
-          <th>盃賽</th>
-          <th>組別</th>
-          <th>對戰</th>
-          <th>場地</th>
-          <th>狀態</th>
+          <th>日期</th><th>盃賽</th><th>組別</th>
+          <th>對戰</th><th>場地</th><th>狀態</th>
         </tr>
       </thead>
       <tbody id="myBody">
@@ -131,29 +74,30 @@ tr.full{color:#999;}
 
 </div>
 
-<!-- ========= Scripts ========= -->
+
+<!-- ========= Script ========= -->
 <script src="js/config.js"></script>
+
 <script>
 const token = localStorage.getItem('token');
 const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-if(!token || !session.user_id) location.href='login.html';
-
+if(!token) location.href='login.html';
 u_name.textContent = session.name;
-if(session.role === 'admin'){
-  adminMenu.style.display='inline';
-}
 
-/* ✅ 統一日期格式 */
+function logout(){localStorage.clear();location.href='login.html';}
+
 function formatDate(v){
   if(!v) return '';
-  if(typeof v === 'string' && v.includes('/')) return v;
-  const d = new Date(v);
-  if(isNaN(d)) return v;
-  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+
-         String(d.getDate()).padStart(2,'0');
+  if(typeof v==='string' && v.includes('/')) return v;
+  const d=new Date(v); if(isNaN(d)) return v;
+  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
 }
 
-/* JSONP helper */
+/* ✅ 狀態中文化（核心） */
+function statusText(s){
+  return s==='approved'?'已核准':s==='rejected'?'已拒絕':'審核中';
+}
+
 function callApi(q,cb){
   const f='cb_'+Date.now();
   window[f]=r=>{delete window[f];cb(r);}
@@ -162,8 +106,8 @@ function callApi(q,cb){
   document.body.appendChild(s);
 }
 
-const selected = new Set();
-let myGameStatus = {};
+const selected=new Set();
+let myGameStatus={};
 
 function loadMy(){
   callApi('action=getMyGameSignups',res=>{
@@ -171,8 +115,7 @@ function loadMy(){
     myGameStatus={};
 
     if(!res.signups.length){
-      myBody.innerHTML='<tr><td colspan="6">尚無報名紀錄</td></tr>';
-      return;
+      myBody.innerHTML='<tr><td colspan="6">尚無報名紀錄</td></tr>';return;
     }
 
     res.signups.forEach(s=>{
@@ -185,7 +128,7 @@ function loadMy(){
             <td>${g.category}</td>
             <td>${g.home_team} vs ${g.away_team}</td>
             <td>${g.field}</td>
-            <td class="status ${s.status}">${s.status}</td>
+            <td class="status ${s.status}">${statusText(s.status)}</td>
           </tr>`;
       });
     });
@@ -196,16 +139,16 @@ function loadGames(){
   callApi('action=getSignableGames',res=>{
     gamesBody.innerHTML='';
     res.games.forEach(g=>{
-      const signed=myGameStatus[g.game_id];
-      if(signed) selected.add(g.game_id);
+      const st=myGameStatus[g.game_id];
+      if(st) selected.add(g.game_id);
 
       gamesBody.innerHTML+=`
-        <tr class="${signed?'signed':''} ${g.full&&!signed?'full':''}">
+        <tr class="${st?'signed':''} ${g.full&&!st?'full':''}">
           <td>
             <input type="checkbox"
               value="${g.game_id}"
-              ${signed?'checked':''}
-              ${g.full&&!signed?'disabled':''}
+              ${st?'checked':''}
+              ${g.full&&!st?'disabled':''}
               onchange="this.checked?selected.add(this.value):selected.delete(this.value)">
           </td>
           <td>${formatDate(g.date)}</td>
@@ -214,7 +157,7 @@ function loadGames(){
           <td>${g.home_team} vs ${g.away_team}</td>
           <td>${g.field}</td>
           <td>${g.signed_count}/${g.need_count}</td>
-          <td class="status ${signed||''}">${signed||''}</td>
+          <td class="status ${st||''}">${st?statusText(st):''}</td>
         </tr>`;
     });
   });
@@ -224,21 +167,10 @@ function submitSignup(){
   if(!selected.size){alert('請選擇比賽');return;}
   callApi(
     'action=judgeSignupByGames&game_ids='+Array.from(selected).join(','),
-    ()=>{
-      alert('報名完成');
-      selected.clear();
-      loadMy();
-      loadGames();
-    }
+    ()=>{alert('報名完成');selected.clear();loadMy();loadGames();}
   );
 }
 
-function logout(){
-  localStorage.clear();
-  location.href='login.html';
-}
-
-/* init */
 loadMy();
 setTimeout(loadGames,300);
 </script>
