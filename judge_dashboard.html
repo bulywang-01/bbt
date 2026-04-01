@@ -13,19 +13,33 @@ body{
 .header{
   display:flex;
   justify-content:space-between;
+  align-items:center;
   padding:12px 20px;
-  background:#fff;
+  background:#ffffff;
   border-bottom:1px solid #ddd;
 }
 .nav a{
   margin-right:16px;
   color:#0066cc;
   text-decoration:none;
+  font-weight:500;
 }
-.user-info{font-size:14px;}
-.main{padding:20px;}
+.nav a:hover{
+  text-decoration:underline;
+}
+.user-info{
+  font-size:14px;
+}
+.user-info a{
+  margin-left:12px;
+  color:#0066cc;
+  cursor:pointer;
+}
+.main{
+  padding:20px;
+}
 .panel{
-  background:#fff;
+  background:#ffffff;
   padding:16px;
   border-radius:6px;
   margin-bottom:24px;
@@ -50,24 +64,28 @@ tr.full{color:#999;}
 
 <body>
 
+<!-- ========= Header ========= -->
 <div class="header">
   <div class="nav">
-    index.html
-    judge_dashboard.html
-    <span id="adminMenu" style="display:none">
-      judge_signup_review.html
-    </span>
+    <a href="index.html">🏠 首頁</a>
+    <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
+    <a href="judge_signup_review.html" id="adminMenu" style="display:none">
+      ✅ 報名審核
+    </a>
   </div>
+
   <div class="user-info">
     <b id="u_name"></b>
-    #
+    <a onclick="logout()">🚪 登出</a>
   </div>
 </div>
 
 <div class="main">
 
+  <!-- ===== 可報名比賽 ===== -->
   <div class="panel">
     <h3>可報名比賽</h3>
+
     <table>
       <thead>
         <tr>
@@ -85,12 +103,15 @@ tr.full{color:#999;}
         <tr><td colspan="8">載入中…</td></tr>
       </tbody>
     </table>
+
     <br>
     <button onclick="submitSignup()">送出報名</button>
   </div>
 
+  <!-- ===== 我的報名 ===== -->
   <div class="panel">
     <h3>我的報名</h3>
+
     <table>
       <thead>
         <tr>
@@ -110,28 +131,29 @@ tr.full{color:#999;}
 
 </div>
 
+<!-- ========= Scripts ========= -->
 <script src="js/config.js"></script>
 <script>
 const token = localStorage.getItem('token');
 const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-if(!token) location.href='login.html';
+if(!token || !session.user_id) location.href='login.html';
 
 u_name.textContent = session.name;
-if(session.role==='admin') adminMenu.style.display='inline';
+if(session.role === 'admin'){
+  adminMenu.style.display='inline';
+}
 
-/* ✅ 統一日期格式處理（關鍵） */
+/* ✅ 統一日期格式 */
 function formatDate(v){
   if(!v) return '';
   if(typeof v === 'string' && v.includes('/')) return v;
   const d = new Date(v);
   if(isNaN(d)) return v;
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  return `${y}/${m}/${day}`;
+  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+
+         String(d.getDate()).padStart(2,'0');
 }
 
-/* JSONP */
+/* JSONP helper */
 function callApi(q,cb){
   const f='cb_'+Date.now();
   window[f]=r=>{delete window[f];cb(r);}
@@ -143,7 +165,6 @@ function callApi(q,cb){
 const selected = new Set();
 let myGameStatus = {};
 
-/* 我的報名 */
 function loadMy(){
   callApi('action=getMyGameSignups',res=>{
     myBody.innerHTML='';
@@ -165,14 +186,12 @@ function loadMy(){
             <td>${g.home_team} vs ${g.away_team}</td>
             <td>${g.field}</td>
             <td class="status ${s.status}">${s.status}</td>
-          </tr>
-        `;
+          </tr>`;
       });
     });
   });
 }
 
-/* 可報名比賽 */
 function loadGames(){
   callApi('action=getSignableGames',res=>{
     gamesBody.innerHTML='';
@@ -196,8 +215,7 @@ function loadGames(){
           <td>${g.field}</td>
           <td>${g.signed_count}/${g.need_count}</td>
           <td class="status ${signed||''}">${signed||''}</td>
-        </tr>
-      `;
+        </tr>`;
     });
   });
 }
@@ -215,6 +233,12 @@ function submitSignup(){
   );
 }
 
+function logout(){
+  localStorage.clear();
+  location.href='login.html';
+}
+
+/* init */
 loadMy();
 setTimeout(loadGames,300);
 </script>
