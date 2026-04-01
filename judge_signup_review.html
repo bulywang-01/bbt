@@ -5,123 +5,47 @@
 <title>裁判報名審核</title>
 
 <style>
-body{
-  margin:0;
-  font-family: system-ui;
-  background:#f5f6f8;
-}
+body{margin:0;font-family:system-ui;background:#f5f6f8}
+.header{display:flex;justify-content:space-between;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd}
+.nav a{margin-right:16px;color:#0066cc;text-decoration:none}
+.main{padding:20px}
+.panel{background:#fff;padding:16px;border-radius:6px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid #eee;vertical-align:top}
+th{background:#f0f2f5;text-align:center}
 
-/* ===== Header ===== */
-.header{
-  display:flex;
-  justify-content:space-between;
-  padding:12px 20px;
-  background:#ffffff;
-  border-bottom:1px solid #ddd;
-}
-.nav a{
-  margin-right:16px;
-  color:#0066cc;
-  text-decoration:none;
-  font-weight:500;
-}
-.nav a:hover{
-  text-decoration:underline;
-}
-.user-info{
-  font-size:14px;
-}
-.user-info a{
-  margin-left:12px;
-  cursor:pointer;
-  color:#0066cc;
-}
+.status.pending{color:#d48806;font-weight:bold}
+.status.approved{color:#389e0d;font-weight:bold}
+.status.rejected{color:#cf1322;font-weight:bold}
 
-/* ===== Main ===== */
-.main{
-  padding:20px;
-}
-.panel{
-  background:#ffffff;
-  padding:16px;
-  border-radius:6px;
-}
+.inner{width:100%;border-collapse:collapse;font-size:13px}
+.inner th,.inner td{padding:4px 6px;border-bottom:1px dotted #ddd;text-align:left}
 
-/* ===== Outer table ===== */
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th, td{
-  padding:8px;
-  border-bottom:1px solid #eee;
-  vertical-align:top;
-}
-th{
-  background:#f0f2f5;
-  text-align:center;
-}
-
-/* ===== Status ===== */
-.status.pending{color:#d48806;font-weight:bold;}
-.status.approved{color:#389e0d;font-weight:bold;}
-.status.rejected{color:#cf1322;font-weight:bold;}
-
-button{
-  margin-right:6px;
-  padding:4px 10px;
-  cursor:pointer;
-}
-
-/* ===== Inner table (games) ===== */
-.inner-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:13px;
-}
-.inner-table th,
-.inner-table td{
-  padding:4px 6px;
-  border-bottom:1px dotted #ddd;
-  text-align:left;
-}
-.inner-table th{
-  background:#fafafa;
-  font-weight:normal;
-  color:#555;
-  white-space:nowrap;
-}
+button{margin-right:6px;padding:4px 10px}
 </style>
 </head>
 
 <body>
 
-<!-- ========= Header ========= -->
 <div class="header">
   <div class="nav">
     <a href="index.html">🏠 首頁</a>
     <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
     <a href="judge_signup_review.html">✅ 報名審核</a>
   </div>
-
-  <div class="user-info">
+  <div>
     <b id="u_name"></b>
-    <a onclick="logout()">🚪 登出</a>
+    <a onclick="logout()" style="cursor:pointer">🚪 登出</a>
   </div>
 </div>
 
 <div class="main">
   <div class="panel">
     <h3>裁判報名審核</h3>
-
     <table>
       <thead>
         <tr>
-          <th style="width:120px">裁判</th>
-          <th>報名場次</th>
-          <th style="width:90px">狀態</th>
-          <th style="width:140px">操作</th>
+          <th>裁判</th><th>報名場次</th><th>狀態</th><th>操作</th>
         </tr>
       </thead>
       <tbody id="listBody">
@@ -131,97 +55,71 @@ button{
   </div>
 </div>
 
+
 <!-- ========= Script ========= -->
 <script src="js/config.js"></script>
+
 <script>
-const token = localStorage.getItem('token');
-const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-if (!token || session.role !== 'admin') location.href = 'index.html';
+const token=localStorage.getItem('token');
+const session=JSON.parse(localStorage.getItem('session_user')||'{}');
+if(!token||session.role!=='admin')location.href='index.html';
+u_name.textContent=session.name;
 
-u_name.textContent = session.name;
-
-/* 日期格式 */
 function formatDate(v){
   if(!v) return '';
-  if(typeof v === 'string' && v.includes('/')) return v;
-  const d = new Date(v);
-  if(isNaN(d)) return v;
-  return d.getFullYear() + '/' +
-         String(d.getMonth()+1).padStart(2,'0') + '/' +
-         String(d.getDate()).padStart(2,'0');
+  if(typeof v==='string'&&v.includes('/')) return v;
+  const d=new Date(v); if(isNaN(d))return v;
+  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
+}
+function statusText(s){
+  return s==='approved'?'已核准':s==='rejected'?'已拒絕':'審核中';
 }
 
-/* JSONP helper */
-function callApi(q, cb){
-  const f = 'cb_' + Date.now();
-  window[f] = r => { delete window[f]; cb(r); };
-  const s = document.createElement('script');
-  s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
+function callApi(q,cb){
+  const f='cb_'+Date.now();
+  window[f]=r=>{delete window[f];cb(r);}
+  const s=document.createElement('script');
+  s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
   document.body.appendChild(s);
 }
 
-function logout(){
-  localStorage.clear();
-  location.href = 'login.html';
-}
+function logout(){localStorage.clear();location.href='login.html';}
 
-/* 載入全部報名 */
 function loadList(){
-  callApi('action=getAllGameSignups', res => {
-    listBody.innerHTML = '';
-
-    if (!res.signups.length) {
-      listBody.innerHTML = '<tr><td colspan="4">尚無報名資料</td></tr>';
-      return;
-    }
-
-    res.signups.forEach(s => {
-
-      // 組內嵌表格
-      let gameTable = `
-        <table class="inner-table">
-          <thead>
-            <tr>
-              <th>日期</th>
-              <th>組別</th>
-              <th>對戰</th>
-              <th>場地</th>
-            </tr>
-          </thead>
+  callApi('action=getAllGameSignups',res=>{
+    listBody.innerHTML='';
+    res.signups.forEach(s=>{
+      const inner=`
+        <table class="inner">
+          <thead><tr><th>日期</th><th>組別</th><th>對戰</th><th>場地</th></tr></thead>
           <tbody>
-            ${s.games.map(g => `
+            ${s.games.map(g=>`
               <tr>
                 <td>${formatDate(g.date)}</td>
                 <td>${g.category}</td>
                 <td>${g.home_team} vs ${g.away_team}</td>
                 <td>${g.field}</td>
-              </tr>
-            `).join('')}
+              </tr>`).join('')}
           </tbody>
-        </table>
-      `;
+        </table>`;
 
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${s.name}</td>
-        <td>${gameTable}</td>
-        <td class="status ${s.status}">${s.status}</td>
-        <td>
-          <button onclick="updateStatus('${s.signup_id}','approved')">核准</button>
-          <button onclick="updateStatus('${s.signup_id}','rejected')">退回</button>
-        </td>
-      `;
-      listBody.appendChild(tr);
+      listBody.innerHTML+=`
+        <tr>
+          <td>${s.name}</td>
+          <td>${inner}</td>
+          <td class="status ${s.status}">${statusText(s.status)}</td>
+          <td>
+            <button onclick="set('${s.signup_id}','approved')">核准</button>
+            <button onclick="set('${s.signup_id}','rejected')">退回</button>
+          </td>
+        </tr>`;
     });
   });
 }
 
-function updateStatus(id, status){
-  if (!confirm('確認將狀態改為 ' + status + ' ?')) return;
-  callApi(
-    'action=updateJudgeSignupStatus&signup_id=' + id + '&status=' + status,
-    () => loadList()
-  );
+function set(id,status){
+  if(!confirm('確認變更狀態？')) return;
+  callApi('action=updateJudgeSignupStatus&signup_id='+id+'&status='+status,()=>loadList());
 }
 
 loadList();
