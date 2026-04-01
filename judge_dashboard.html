@@ -10,9 +10,11 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
 .nav a{margin-right:16px;color:#0066cc;text-decoration:none}
 .main{padding:20px}
 .panel{background:#fff;padding:16px;border-radius:6px;margin-bottom:24px}
+
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid #eee;text-align:center}
 th{background:#f0f2f5}
+
 tr.signed{background:#eef5ff}
 tr.full{color:#999}
 
@@ -70,6 +72,9 @@ button{padding:6px 14px}
         <tr><td colspan="6">載入中…</td></tr>
       </tbody>
     </table>
+    <div style="font-size:13px;color:#888;margin-top:8px">
+      ※ 狀態每 10 秒自動更新
+    </div>
   </div>
 
 </div>
@@ -84,7 +89,10 @@ const session = JSON.parse(localStorage.getItem('session_user')||'{}');
 if(!token) location.href='login.html';
 u_name.textContent = session.name;
 
-function logout(){localStorage.clear();location.href='login.html';}
+function logout(){
+  localStorage.clear();
+  location.href='login.html';
+}
 
 function formatDate(v){
   if(!v) return '';
@@ -93,11 +101,11 @@ function formatDate(v){
   return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
 }
 
-/* ✅ 狀態中文化（核心） */
 function statusText(s){
-  return s==='approved'?'已核准':s==='rejected'?'已拒絕':'審核中';
+  return s==='approved'?'已核准':s==='rejected'?'退回':'審核中';
 }
 
+/* JSONP */
 function callApi(q,cb){
   const f='cb_'+Date.now();
   window[f]=r=>{delete window[f];cb(r);}
@@ -109,35 +117,41 @@ function callApi(q,cb){
 const selected=new Set();
 let myGameStatus={};
 
-function loadMy(){
+/* 抓取我的報名狀態 */
+function loadMy(cb){
   callApi('action=getMyGameSignups',res=>{
-    myBody.innerHTML='';
     myGameStatus={};
+    myBody.innerHTML='';
 
-    if(!res.signups.length){
-      myBody.innerHTML='<tr><td colspan="6">尚無報名紀錄</td></tr>';return;
+    if(res.signups.length){
+      res.signups.forEach(s=>{
+        s.games.forEach(g=>{
+          myGameStatus[g.game_id]=s.status;
+          myBody.innerHTML+=`
+            <tr>
+              <td>${formatDate(g.date)}</td>
+              <td>${g.tournament}</td>
+              <td>${g.category}</td>
+              <td>${g.home_team} vs ${g.away_team}</td>
+              <td>${g.field}</td>
+              <td class="status ${s.status}">${statusText(s.status)}</td>
+            </tr>`;
+        });
+      });
+    }else{
+      myBody.innerHTML='<tr><td colspan="6">尚無報名紀錄</td></tr>';
     }
 
-    res.signups.forEach(s=>{
-      s.games.forEach(g=>{
-        myGameStatus[g.game_id]=s.status;
-        myBody.innerHTML+=`
-          <tr>
-            <td>${formatDate(g.date)}</td>
-            <td>${g.tournament}</td>
-            <td>${g.category}</td>
-            <td>${g.home_team} vs ${g.away_team}</td>
-            <td>${g.field}</td>
-            <td class="status ${s.status}">${statusText(s.status)}</td>
-          </tr>`;
-      });
-    });
+    if(cb) cb();
   });
 }
 
+/* 抓取比賽 */
 function loadGames(){
   callApi('action=getSignableGames',res=>{
     gamesBody.innerHTML='';
+    selected.clear();
+
     res.games.forEach(g=>{
       const st=myGameStatus[g.game_id];
       if(st) selected.add(g.game_id);
@@ -163,16 +177,28 @@ function loadGames(){
   });
 }
 
+/* 送出報名 */
 function submitSignup(){
   if(!selected.size){alert('請選擇比賽');return;}
   callApi(
     'action=judgeSignupByGames&game_ids='+Array.from(selected).join(','),
-    ()=>{alert('報名完成');selected.clear();loadMy();loadGames();}
+    ()=>{
+      alert('報名完成');
+      refreshAll(); // ✅ 立即更新
+    }
   );
 }
 
-loadMy();
-setTimeout(loadGames,300);
+/* ✅ 核心：即時刷新 */
+function refreshAll(){
+  loadMy(()=>loadGames());
+}
+
+/* 初始化 */
+refreshAll();
+
+/* ✅ Polling：每 10 秒刷新一次 */
+setInterval(refreshAll, 10000);
 </script>
 
 </body>
