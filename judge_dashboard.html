@@ -9,8 +9,12 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
 
 /* ===== Header ===== */
 .header{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:12px 20px;background:#fff;border-bottom:1px solid #ddd
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#ffffff;
+  border-bottom:1px solid #ddd
 }
 .nav a{
   margin-right:16px;
@@ -28,7 +32,7 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
 /* ===== Main ===== */
 .main{padding:20px}
 .panel{
-  background:#fff;
+  background:#ffffff;
   padding:16px;
   border-radius:6px;
   margin-bottom:24px
@@ -39,15 +43,14 @@ table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid #eee;text-align:center}
 th{background:#f0f2f5}
 
-/* ===== 賽事狀態 ===== */
+/* ===== 比賽狀態 ===== */
 tr.full{background:#ffecec;color:#a8071a}
-tr.signed-by-me{background:#fffbe6} /* ✅ 我已報名但未滿額 */
+tr.signed-by-me{background:#fffbe6}
 
+/* ===== 狀態文字 ===== */
 .status{font-weight:bold}
 .status.open{color:#389e0d}
 .status.full{color:#cf1322}
-
-/* ===== 個人狀態 ===== */
 .status.pending{color:#d48806}
 .status.approved{color:#389e0d}
 .status.rejected{color:#cf1322}
@@ -75,7 +78,7 @@ button{padding:6px 14px}
   </div>
   <div class="user-info">
     <b id="u_name"></b>
-    <a id="btnLogout">登出</a>
+    <a href="#" id="btnLogout">登出</a>
   </div>
 </div>
 
@@ -84,6 +87,7 @@ button{padding:6px 14px}
   <!-- ===== 報名賽事 ===== -->
   <div class="panel" id="panelGames">
     <h3>可報名比賽</h3>
+
     <table>
       <thead>
         <tr>
@@ -101,17 +105,19 @@ button{padding:6px 14px}
         <tr><td colspan="8">載入中…</td></tr>
       </tbody>
     </table>
+
     <br>
     <button id="btnSubmit">送出報名</button>
-    <div style="margin-top:10px;font-size:16px;color:#666">
-  ※ 如需刪除報名，僅需將已勾選的場次取消勾選後，再點擊「送出報名」即可，裁判員已滿額之賽事無法取消。
-    </div>
 
+    <div style="margin-top:10px;font-size:14px;color:#666">
+      ※ 如需刪除報名，僅需將已勾選的場次取消勾選後，再點擊「送出報名」即可，裁判員已滿額之賽事無法取消。
+    </div>
   </div>
 
   <!-- ===== 我的報名 ===== -->
   <div class="panel hidden" id="panelMy">
     <h3>我的報名</h3>
+
     <div class="my-grid">
 
       <div>
@@ -119,10 +125,16 @@ button{padding:6px 14px}
         <table>
           <thead>
             <tr>
-              <th>日期</th><th>組別</th><th>對戰</th><th>場地</th><th>狀態</th>
+              <th>日期</th>
+              <th>組別</th>
+              <th>對戰</th>
+              <th>場地</th>
+              <th>狀態</th>
             </tr>
           </thead>
-          <tbody id="myActive"><tr><td colspan="5">載入中…</td></tr></tbody>
+          <tbody id="myActive">
+            <tr><td colspan="5">載入中…</td></tr>
+          </tbody>
         </table>
       </div>
 
@@ -131,10 +143,16 @@ button{padding:6px 14px}
         <table>
           <thead>
             <tr>
-              <th>日期</th><th>組別</th><th>對戰</th><th>場地</th><th>狀態</th>
+              <th>日期</th>
+              <th>組別</th>
+              <th>對戰</th>
+              <th>場地</th>
+              <th>狀態</th>
             </tr>
           </thead>
-          <tbody id="myRejected"><tr><td colspan="5">載入中…</td></tr></tbody>
+          <tbody id="myRejected">
+            <tr><td colspan="5">載入中…</td></tr>
+          </tbody>
         </table>
       </div>
 
@@ -143,34 +161,38 @@ button{padding:6px 14px}
 
 </div>
 
+<!-- ===== Scripts ===== -->
 <script src="js/config.js"></script>
-  
 <script>
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
 
   const token = localStorage.getItem('token');
-  const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-  if(!token){location.href='login.html';return;}
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!token) {
+    location.href = 'login.html';
+    return;
+  }
 
-  const uName=document.getElementById('u_name');
-  const btnLogout=document.getElementById('btnLogout');
-  uName.textContent=session.name;
-  btnLogout.onclick=()=>{localStorage.clear();location.href='login.html';};
+  document.getElementById('u_name').textContent = session.name;
+  document.getElementById('btnLogout').onclick = () => {
+    localStorage.clear();
+    location.href = 'login.html';
+  };
 
-  /* ===== Tab ===== */
-  const tabGames=document.getElementById('tabGames');
-  const tabMy=document.getElementById('tabMy');
-  const panelGames=document.getElementById('panelGames');
-  const panelMy=document.getElementById('panelMy');
+  /* ===== 分頁籤 ===== */
+  const tabGames = document.getElementById('tabGames');
+  const tabMy = document.getElementById('tabMy');
+  const panelGames = document.getElementById('panelGames');
+  const panelMy = document.getElementById('panelMy');
 
-  tabGames.onclick=e=>{
+  tabGames.onclick = e => {
     e.preventDefault();
     tabGames.classList.add('active');
     tabMy.classList.remove('active');
     panelGames.classList.remove('hidden');
     panelMy.classList.add('hidden');
   };
-  tabMy.onclick=e=>{
+  tabMy.onclick = e => {
     e.preventDefault();
     tabMy.classList.add('active');
     tabGames.classList.remove('active');
@@ -178,52 +200,58 @@ document.addEventListener('DOMContentLoaded',()=>{
     panelGames.classList.add('hidden');
   };
 
-  const gamesBody=document.getElementById('gamesBody');
-  const myActive=document.getElementById('myActive');
-  const myRejected=document.getElementById('myRejected');
-  const btnSubmit=document.getElementById('btnSubmit');
+  const gamesBody = document.getElementById('gamesBody');
+  const myActive = document.getElementById('myActive');
+  const myRejected = document.getElementById('myRejected');
+  const btnSubmit = document.getElementById('btnSubmit');
 
-  const selected=new Set();
-  let myStatusMap={};
+  let myStatusMap = {};
 
   function formatDate(v){
-    const d=new Date(v);
-    return isNaN(d)?v:
-      d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
+    const d = new Date(v);
+    return isNaN(d) ? v :
+      d.getFullYear() + '/' +
+      String(d.getMonth()+1).padStart(2,'0') + '/' +
+      String(d.getDate()).padStart(2,'0');
   }
+
   function personStatusText(s){
-    if(s==='approved') return '已核准';
-    if(s==='rejected') return '退回';
+    if (s === 'approved') return '已核准';
+    if (s === 'rejected') return '退回';
     return '審核中';
   }
+
   function matchStatusText(g){
-    const lack=g.need_count-g.signed_count;
-    return lack<=0?'已滿額':`尚缺 ${lack} 人`;
+    const lack = g.need_count - g.signed_count;
+    return lack <= 0 ? '已滿額' : `尚缺 ${lack} 人`;
   }
-  function callApi(q,cb){
-    const f='cb_'+Date.now();
-    window[f]=r=>{delete window[f];cb(r);};
-    const s=document.createElement('script');
-    s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
+
+  function callApi(q, cb){
+    const f = 'cb_' + Date.now();
+    window[f] = r => { delete window[f]; cb(r); };
+    const s = document.createElement('script');
+    s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
     document.body.appendChild(s);
   }
 
+  /* ===== 我的報名 ===== */
   function loadMy(next){
-    myActive.innerHTML='';
-    myRejected.innerHTML='';
-    myStatusMap={};
+    myActive.innerHTML = '';
+    myRejected.innerHTML = '';
+    myStatusMap = {};
 
-    callApi('action=getMyGameSignups',res=>{
-      if(!res.signups.length){
-        myActive.innerHTML='<tr><td colspan="5">尚無報名</td></tr>';
-        myRejected.innerHTML='<tr><td colspan="5">—</td></tr>';
-        if(next)next();return;
+    callApi('action=getMyGameSignups', res => {
+      if (!res.signups.length) {
+        myActive.innerHTML = '<tr><td colspan="5">尚無報名</td></tr>';
+        myRejected.innerHTML = '<tr><td colspan="5">—</td></tr>';
+        if (next) next();
+        return;
       }
 
-      res.signups.forEach(s=>{
-        s.games.forEach(g=>{
-          myStatusMap[g.game_id]=s.status;
-          const row=`
+      res.signups.forEach(s => {
+        s.games.forEach(g => {
+          myStatusMap[g.game_id] = s.status;
+          const row = `
             <tr>
               <td>${formatDate(g.date)}</td>
               <td>${g.category}</td>
@@ -231,36 +259,38 @@ document.addEventListener('DOMContentLoaded',()=>{
               <td>${g.field}</td>
               <td class="status ${s.status}">${personStatusText(s.status)}</td>
             </tr>`;
-          if(s.status==='rejected') myRejected.innerHTML+=row;
-          else myActive.innerHTML+=row;
+          if (s.status === 'rejected') {
+            myRejected.innerHTML += row;
+          } else {
+            myActive.innerHTML += row;
+          }
         });
       });
-      if(next)next();
+
+      if (next) next();
     });
   }
 
+  /* ===== 比賽列表 ===== */
   function loadGames(){
-    gamesBody.innerHTML='';
-    selected.clear();
+    gamesBody.innerHTML = '';
 
-    callApi('action=getSignableGames',res=>{
-      res.games.forEach(g=>{
-        const myStatus=myStatusMap[g.game_id];
-        const hasSigned=myStatus && myStatus!=='rejected';
-        const full=g.signed_count>=g.need_count;
-        const disabled=full || hasSigned;
-
-        if(hasSigned) selected.add(g.game_id);
+    callApi('action=getSignableGames', res => {
+      res.games.forEach(g => {
+        const myStatus = myStatusMap[g.game_id];
+        const hasSigned = myStatus && myStatus !== 'rejected';
+        const full = g.signed_count >= g.need_count;
+        const disabled = full || hasSigned;
 
         const rowClass = full ? 'full' : hasSigned ? 'signed-by-me' : '';
 
-        gamesBody.innerHTML+=`
+        gamesBody.innerHTML += `
           <tr class="${rowClass}">
             <td>
               <input type="checkbox"
                 value="${g.game_id}"
-                ${selected.has(g.game_id)?'checked':''}
-                ${disabled?'disabled':''}>
+                ${hasSigned ? 'checked' : ''}
+                ${disabled ? 'disabled' : ''}>
             </td>
             <td>${formatDate(g.date)}</td>
             <td>${g.tournament}</td>
@@ -268,41 +298,43 @@ document.addEventListener('DOMContentLoaded',()=>{
             <td>${g.home_team} vs ${g.away_team}</td>
             <td>${g.field}</td>
             <td>${g.need_count} 人制</td>
-            <td class="status ${full?'full':'open'}">${matchStatusText(g)}</td>
+            <td class="status ${full ? 'full' : 'open'}">${matchStatusText(g)}</td>
           </tr>`;
       });
     });
   }
 
-  btnSubmit.onclick=()=>{
-    if(!selected.size){alert('請選擇比賽');return;}
-    callApi(
-      'action=judgeSignupByGames&game_ids='+Array.from(selected).join(','),
-      ()=>{alert('報名完成');refresh();}
-    );
+  /* ===== 送出報名（✅ 核心） ===== */
+  btnSubmit.onclick = () => {
 
     const ids = Array.from(
-    document.querySelectorAll('#gamesBody input[type=checkbox]:checked')
-  ).map(cb => cb.value);
+      document.querySelectorAll('#gamesBody input[type=checkbox]:checked')
+    ).map(cb => cb.value);
 
-  console.log('📤 實際送出的 game_ids =', ids);
+    console.log('📤 實際送出的 game_ids =', ids);
 
-  callApi(
-    'action=judgeSignupByGames&game_ids=' + ids.join(','),
-    () => {
-      alert('已送出');
-      refresh();
+    if (!ids.length) {
+      alert('請選擇比賽');
+      return;
     }
-  );
-};
+
+    callApi(
+      'action=judgeSignupByGames&game_ids=' + ids.join(','),
+      () => {
+        alert('報名完成');
+        refresh();
+      }
+    );
   };
 
-  function refresh(){loadMy(loadGames);}
+  function refresh(){
+    loadMy(loadGames);
+  }
+
   refresh();
 
-  /* ✅ refresh：3 分鐘 */
-  setInterval(refresh,180000);
-
+  /* ✅ 3 分鐘同步一次 */
+  setInterval(refresh, 180000);
 });
 </script>
 
