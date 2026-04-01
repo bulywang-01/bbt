@@ -5,64 +5,116 @@
 <title>系統登入</title>
 
 <style>
-body{font-family:system-ui;background:#f4f6f8}
-.box{width:260px;margin:120px auto;background:#fff;padding:24px;border-radius:8px}
-.err{color:red}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  background:#f5f6f8;
+}
+.login-box{
+  width:360px;
+  margin:120px auto;
+  background:#fff;
+  padding:24px;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+h2{
+  margin-top:0;
+  text-align:center;
+}
+input{
+  width:100%;
+  padding:10px;
+  margin-bottom:12px;
+  font-size:14px;
+  box-sizing:border-box;
+}
+button{
+  width:100%;
+  padding:10px;
+  font-size:15px;
+  cursor:pointer;
+}
+.message{
+  margin-top:10px;
+  color:#c00;
+  font-size:14px;
+  text-align:center;
+}
 </style>
 </head>
+
 <body>
 
-<div class="box">
-  <h2>系統登入</h2>
+<div class="login-box">
+  <h2>裁判出勤系統</h2>
+
   <input id="username" placeholder="帳號">
   <input id="password" type="password" placeholder="密碼">
+
   <button onclick="doLogin()">登入</button>
-  <div id="msg" class="err"></div>
+
+  <div id="msg" class="message"></div>
 </div>
 
+<!-- ✅ 載入 API URL 設定 -->
 <script src="js/config.js"></script>
 
 <script>
+/**
+ * 執行登入
+ */
 function doLogin(){
-  msg.textContent = '';
-
   const u = username.value.trim();
   const p = password.value.trim();
+  msg.textContent = '';
+
   if(!u || !p){
-    msg.textContent='請輸入帳密';
+    msg.textContent = '請輸入帳號與密碼';
     return;
   }
 
-  const cb='cb_'+Date.now();
-  window[cb]=function(res){
-    console.log('LOGIN RESPONSE', res);  // ✅ 關鍵驗證
+  const cb = 'cb_login_' + Date.now();
+
+  window[cb] = function(res){
     delete window[cb];
 
-    if(res && res.result==='ok'){
+    if(!res || !res.result){
+      msg.textContent = '系統錯誤，請稍後再試';
+      return;
+    }
+
+    if(res.result === 'ok'){
+      // ✅ 儲存登入資訊
       localStorage.setItem('token', res.token);
       localStorage.setItem('session_user', JSON.stringify(res.auth));
-      console.log('SESSION_USER SAVED', localStorage.getItem('session_user'));
-      location.href='index.html';
+
+      // ✅ 前往首頁
+      location.replace('index.html');
       return;
     }
 
-    if(res && res.result==='inactive'){
-      msg.textContent='帳號尚未啟用，請聯絡管理員';
+    if(res.result === 'inactive'){
+      msg.textContent = '此帳號尚未啟用，請聯絡管理員';
       return;
     }
 
-    msg.textContent='登入失敗，請檢查帳號密碼';
+    msg.textContent = '登入失敗，帳號或密碼錯誤';
   };
 
-  const s=document.createElement('script');
-  s.src=API_URL+
-    '?action=login'+
-    '&username='+encodeURIComponent(u)+
-    '&password='+encodeURIComponent(p)+
-    '&callback='+cb;
+  // JSONP 呼叫
+  const s = document.createElement('script');
+  s.src =
+    API_URL +
+    '?action=login' +
+    '&username=' + encodeURIComponent(u) +
+    '&password=' + encodeURIComponent(p) +
+    '&callback=' + cb;
+
   document.body.appendChild(s);
 }
 </script>
 
 </body>
 </html>
+``
