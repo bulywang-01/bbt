@@ -33,56 +33,24 @@ body{
 }
 </style>
 </head>
+
 <body>
 
-<!-- ✅ 正確載入 config（順序很重要） -->
-<script src="js/config.js"></script>
-
-<script>
-/* ===============================
- * ✅ 全站唯一登入檢查
- * =============================== */
-const sessionRaw = localStorage.getItem('session_user');
-console.log('INDEX session_user =', sessionRaw);
-
-if (!sessionRaw) {
-  location.href = 'login.html';
-}
-
-let session;
-try {
-  session = JSON.parse(sessionRaw);
-} catch (e) {
-  location.href = 'login.html';
-}
-
-if (!session.user_id) {
-  location.href = 'login.html';
-}
-</script>
-
-<!-- ===============================
-     Header（導覽列）
-     =============================== -->
+<!-- ✅ 導覽列 -->
 <div class="header">
-  <a href="index.html">🏠 首頁</a>
-  <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
+  <a href="index.html">首頁</a>
+  <a href="judge_dashboard.html">裁判報名</a>
 
-  <!-- ✅ 管理功能（admin 才顯示） -->
   <span class="admin-only">
     <a href="judge_signup_review.html">✅ 報名審核</a>
     <a href="games_manage.html">⚾ 比賽管理</a>
-    <a href="users_manage.html">👤 使用者管理</a>
+    <a href="users_manage.html">users_manage</a>
   </span>
 
   <span style="float:right">
-    <a href="javascript:void(0)" onclick="logout()">🚪 登出</a>
-  </span>
-</div>
+    <a href="#" onclick="logout
 
-<!-- ===============================
-     登入者資訊
-     =============================== -->
+<!-- ✅ 使用者資訊 -->
 <div class="panel">
   👤 帳號：<b id="u_username"></b><br>
   🧑 姓名：<b id="u_name"></b><br>
@@ -93,31 +61,53 @@ if (!session.user_id) {
 
 <div class="panel">
   歡迎使用裁判管理系統。  
-  請由上方選單選擇要進行的功能。
+  請由上方選單選擇功能。
 </div>
 
-<script>
-/* ===============================
- * ✅ 顯示登入者資訊
- * =============================== */
-document.getElementById('u_username').textContent = session.username || '';
-document.getElementById('u_name').textContent = session.name || '';
-document.getElementById('u_role').textContent = session.role || '';
+<!-- ✅ 正確載入 config -->
+<script src="js/config.jscript>
+/* =================================================
+ * ✅ 唯一登入檢查：只做一次、只在 DOM Ready 後
+ * ================================================= */
+document.addEventListener('DOMContentLoaded', function () {
 
-/* admin 額外顯示管理選單 */
-if (session.role === 'admin') {
-  document.querySelectorAll('.admin-only').forEach(el=>{
-    el.style.display = 'inline';
-  });
-}
+  const raw = localStorage.getItem('session_user');
+  if (!raw) {
+    location.replace('login.html');
+    return;
+  }
 
-/* ===============================
- * ✅ 登出（全站一致）
- * =============================== */
+  let session;
+  try {
+    session = JSON.parse(raw);
+  } catch (e) {
+    location.replace('login.html');
+    return;
+  }
+
+  if (!session.user_id) {
+    location.replace('login.html');
+    return;
+  }
+
+  /* ✅ 顯示使用者資訊 */
+  document.getElementById('u_username').textContent = session.username || '';
+  document.getElementById('u_name').textContent = session.name || '';
+  document.getElementById('u_role').textContent = session.role || '';
+
+  /* ✅ admin 才顯示管理選單 */
+  if (session.role === 'admin') {
+    document.querySelectorAll('.admin-only').forEach(el => {
+      el.style.display = 'inline';
+    });
+  }
+});
+
+/* ✅ 登出 */
 function logout() {
   if (!confirm('確定要登出系統？')) return;
   localStorage.clear();
-  location.href = 'login.html';
+  location.replace('login.html');
 }
 </script>
 
