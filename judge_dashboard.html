@@ -22,10 +22,7 @@ body{
   margin-right:16px;
   color:#0066cc;
   text-decoration:none;
-  font-weight:500;
 }
-.nav a:hover{text-decoration:underline}
-
 .main{padding:20px}
 .panel{
   background:#ffffff;
@@ -33,24 +30,28 @@ body{
   border-radius:6px;
 }
 
-.game-row{
-  border-bottom:1px solid #eee;
-  padding:12px 0;
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
 }
-.game-row.full{
+th, td{
+  padding:8px;
+  border-bottom:1px solid #eee;
+  vertical-align:top;
+}
+th{
+  background:#f0f2f5;
+}
+tr.full{
   background:#f4f4f4;
   color:#777;
 }
-
-.game-title{font-weight:bold}
-.position-line{margin-top:6px;font-size:14px}
 .position-selected{
-  margin-left:8px;
-  font-weight:bold;
+  margin-left:6px;
   color:#0b5ed7;
-  display:none;
+  font-weight:bold;
 }
-
 button{
   margin-top:16px;
   padding:6px 14px;
@@ -60,11 +61,12 @@ button{
 
 <body>
 
-<!-- ===== Header ===== -->
 <div class="header">
   <div class="nav">
+
     <a href="index.html">首頁</a>
     <a href="judge_dashboard.html">裁判報名</a>
+
   </div>
   <div>
     <b id="u_name"></b>
@@ -75,13 +77,30 @@ button{
 <div class="main">
   <div class="panel">
     <h3>可報名比賽</h3>
-    <div id="gameList">載入中…</div>
+
+    <table id="gameTable">
+      <thead>
+        <tr>
+          <th>日期</th>
+          <th>組別</th>
+          <th>對戰</th>
+          <th>場地</th>
+          <th>站位偏好</th>
+        </tr>
+      </thead>
+      <tbody id="gameBody">
+        <tr><td colspan="5">載入中…</td></tr>
+      </tbody>
+    </table>
+
     <button id="btnSubmit">送出報名</button>
   </div>
 </div>
 
+
 <!-- ✅ 正確 script 引入 -->
 <script src="js/config.js"></script>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -93,32 +112,32 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  document.getElementById('u_name').textContent = session.name;
-  document.getElementById('btnLogout').onclick = ()=>{
+  document.getElementById('u_name').textContent=session.name;
+  document.getElementById('btnLogout').onclick=()=>{
     localStorage.clear();
     location.href='login.html';
   };
 
-  const gameList = document.getElementById('gameList');
-  const btnSubmit = document.getElementById('btnSubmit');
+  const gameBody=document.getElementById('gameBody');
+  const btnSubmit=document.getElementById('btnSubmit');
 
   function formatDate(v){
-    const d = new Date(v);
+    const d=new Date(v);
     if(isNaN(d)) return v;
-    return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
+    return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
   }
 
-  function positionText(p){
-    return {auto:'排班',PU:'主審',U1:'一壘',U3:'三壘'}[p] || p;
+  function posText(p){
+    return {auto:'排班',PU:'主審',U1:'一壘',U3:'三壘'}[p]||p;
   }
 
-  function getAllowedPositions(n){
+  function allowedPositions(n){
     if(n===2) return ['auto','PU','U1'];
     if(n===3) return ['auto','PU','U1','U3'];
     return ['auto'];
   }
 
-  function callApi(q, cb){
+  function callApi(q,cb){
     const f='cb_'+Date.now();
     window[f]=r=>{delete window[f];cb(r);};
     const s=document.createElement('script');
@@ -127,73 +146,61 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function loadGames(){
-    gameList.innerHTML='載入中…';
+    gameBody.innerHTML='<tr><td colspan="5">載入中…</td></tr>';
 
-    callApi('action=getSignableGames', res=>{
-      if(res.result!=='ok' || !res.games.length){
-        gameList.innerHTML='目前沒有可報名比賽';
+    callApi('action=getSignableGames',res=>{
+      if(res.result!=='ok'||!res.games.length){
+        gameBody.innerHTML='<tr><td colspan="5">目前沒有可報名比賽</td></tr>';
         return;
       }
 
-      gameList.innerHTML='';
+      gameBody.innerHTML='';
       res.games.forEach(g=>{
-        const row=document.createElement('div');
-        row.className='game-row'+(g.full?' full':'');
+        const tr=document.createElement('tr');
+        if(g.full) tr.classList.add('full');
 
-        let positionHtml='';
+        let posHTML='';
         if(g.position_mode!=='allow_select'){
-          positionHtml='<div class="position-line">站位偏好：排班</div>';
+          posHTML='排班';
         }else{
-          const radios=getAllowedPositions(g.need_count).map(p=>`
+          posHTML=allowedPositions(g.need_count).map(p=>`
             <label>
               <input type="radio" name="pos_${g.game_id}" value="${p}" ${p==='auto'?'checked':''}>
-              ${positionText(p)}
+              ${posText(p)}
             </label>
           `).join('');
-
-          positionHtml=`
-            <div class="position-line">
-              站位偏好：${radios}
-              <span class="position-selected"></span>
-            </div>`;
         }
 
-        row.innerHTML=`
-          <div class="game-title">
-            ${formatDate(g.date)} ｜ ${g.category} ${g.full?'（已額滿）':''}
-          </div>
-          <div>VS ｜ ${g.home_team||''} ｜ ${g.field}</div>
-          ${positionHtml}
+        tr.innerHTML=`
+          <td>${formatDate(g.date)}</td>
+          <td>${g.category}${g.full?'（已額滿）':''}</td>
+          <td>${g.away_team||''} vs ${g.home_team||''}</td>
+          <td>${g.field}</td>
+          <td>${posHTML}</td>
         `;
 
-        row.querySelectorAll('input[type=radio]').forEach(r=>{
-          r.addEventListener('change',()=>{
-            const span=row.querySelector('.position-selected');
-            span.textContent='※ 已選擇：'+positionText(r.value);
-            span.style.display='inline';
-          });
-        });
-
-        gameList.appendChild(row);
+        gameBody.appendChild(tr);
       });
     });
   }
 
   btnSubmit.onclick=()=>{
-    const selections=[];
-    document.querySelectorAll('.game-row').forEach(r=>{
-      const radio=r.querySelector('input[type=radio]:checked');
-      if(!radio) return;
-      selections.push(radio.name.replace('pos_','')+':'+radio.value);
+    const list=[];
+    document.querySelectorAll('tbody tr').forEach(tr=>{
+      const radio=tr.querySelector('input[type=radio]:checked');
+      const name=radio?radio.name:null;
+      if(name){
+        list.push(name.replace('pos_','')+':'+radio.value);
+      }
     });
 
-    if(!selections.length){
+    if(!list.length){
       alert('尚未選擇任何比賽');
       return;
     }
 
     callApi(
-      'action=judgeSignupByGames&games_with_position='+encodeURIComponent(selections.join(',')),
+      'action=judgeSignupByGames&games_with_position='+encodeURIComponent(list.join(',')),
       ()=>{
         alert('報名完成');
         loadGames();
