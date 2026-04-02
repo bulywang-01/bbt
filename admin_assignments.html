@@ -3,30 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <title>管理端｜裁判審核與排班</title>
-
 <style>
 body{margin:0;font-family:system-ui;background:#f5f6f8}
 .header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd}
 .nav a{margin-right:16px;color:#0066cc;text-decoration:none;font-weight:500}
-.nav a:hover{text-decoration:underline}
 .main{padding:20px}
 .panel{background:#fff;padding:16px;border-radius:6px}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:8px;border-bottom:1px solid #eee;vertical-align:top}
-th{background:#f0f2f5;text-align:left}
+th,td{padding:8px;border-bottom:1px solid #eee}
+th{background:#f0f2f5}
 button{padding:4px 10px;margin-right:4px}
-.badge-pending{color:#e6a700;font-weight:bold}
-.badge-approved{color:#2e7d32;font-weight:bold}
-.badge-rejected{color:#c62828;font-weight:bold}
 </style>
 </head>
 
 <body>
-
 <div class="header">
   <div class="nav">
-    <a href="index.html>首頁</a>
-    <a href="admin_assignments>裁判審核／排班</a>
+    <a href="index.html">首頁</a>
+    <a href="admin_assignments.html">裁判審核／排班</a>
   </div>
   <div>
     <b id="u_name"></b>
@@ -36,20 +30,11 @@ button{padding:4px 10px;margin-right:4px}
 
 <div class="main">
   <div class="panel">
-    <h3>裁判審核與排班</h3>
-
     <table>
       <thead>
         <tr>
-          <th>日期</th>
-          <th>組別</th>
-          <th>對戰</th>
-          <th>場地</th>
-          <th>裁判</th>
-          <th>偏好站位</th>
-          <th>指派站位</th>
-          <th>狀態</th>
-          <th>操作</th>
+          <th>日期</th><th>組別</th><th>對戰</th><th>場地</th>
+          <th>裁判</th><th>偏好</th><th>指派</th><th>狀態</th><th>操作</th>
         </tr>
       </thead>
       <tbody id="adminBody">
@@ -59,23 +44,14 @@ button{padding:4px 10px;margin-right:4px}
   </div>
 </div>
 
-
-<!-- ✅ 正確載入 -->
 <script src="js/config.js"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-
   const token=localStorage.getItem('token');
-  const session=JSON.parse(localStorage.getItem('session_user')||'{}');
   if(!token){location.href='login.html';return;}
-
-  document.getElementById('u_name').textContent=session.name||'';
   document.getElementById('btnLogout').onclick=()=>{localStorage.clear();location.href='login.html';};
 
   const adminBody=document.getElementById('adminBody');
-  const posText={auto:'排班',PU:'主審',U1:'一壘',U3:'三壘'};
-
   function callApi(q,cb){
     const f='cb_'+Date.now();
     window[f]=r=>{delete window[f];cb(r);};
@@ -84,73 +60,34 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.body.appendChild(s);
   }
 
-  function formatDate(v){
-    const d=new Date(v); if(isNaN(d))return v;
-    return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
-  }
-
-  function loadAdminList(){
-    adminBody.innerHTML='<tr><td colspan="9">載入中…</td></tr>';
-
-    callApi('action=getAdminSignupList',res=>{
-      if(!res||res.result!=='ok'){
-        adminBody.innerHTML='<tr><td colspan="9">讀取失敗</td></tr>'; return;
-      }
-      if(!res.items.length){
-        adminBody.innerHTML='<tr><td colspan="9">目前沒有待審資料</td></tr>'; return;
-      }
-
-      adminBody.innerHTML='';
-      res.items.forEach(item=>{
-        const tr=document.createElement('tr');
-        const badge=item.status==='pending'
-          ?'<span class="badge-pending">待審</span>'
-          :item.status==='approved'
-            ?'<span class="badge-approved">已核准</span>'
-            :'<span class="badge-rejected">已退回</span>';
-
-        tr.innerHTML=`
-          <td>${formatDate(item.date)}</td>
-          <td>${item.category}</td>
-          <td>${item.away_team} vs ${item.home_team}</td>
-          <td>${item.field}</td>
-          <td>${item.judge_name}</td>
-          <td>${posText[item.preferred_position]||'排班'}</td>
-          <td>
-            <select data-id="${item.signup_id}" ${item.status!=='pending'?'disabled':''}>
-              ${item.available_positions.map(p=>`<option value="${p}">${posText[p]||p}</option>`).join('')}
-            </select>
-          </td>
-          <td>${badge}</td>
-          <td>
-            ${item.status==='pending'
-              ?`<button data-a="approve" data-id="${item.signup_id}">核准</button>
-                 <button data-a="reject" data-id="${item.signup_id}">退回</button>`
-              :''
-            }
-          </td>`;
-        adminBody.appendChild(tr);
-      });
+  callApi('action=getAdminSignupList',res=>{
+    adminBody.innerHTML='';
+    res.items.forEach(i=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${i.date}</td><td>${i.category}</td>
+        <td>${i.away_team} vs ${i.home_team}</td><td>${i.field}</td>
+        <td>${i.judge_name}</td><td>${i.preferred_position}</td>
+        <td>
+          <select data-id="${i.signup_id}">
+            ${i.available_positions.map(p=>`<option>${p}</option>`).join('')}
+          </select>
+        </td>
+        <td>${i.status}</td>
+        <td>
+          <button onclick="approve('${i.signup_id}')">核准</button>
+          <button onclick="reject('${i.signup_id}')">退回</button>
+        </td>`;
+      adminBody.appendChild(tr);
     });
-  }
-
-  adminBody.addEventListener('click',e=>{
-    const b=e.target;
-    if(!b.dataset.a) return;
-    const id=b.dataset.id;
-    if(b.dataset.a==='reject'){
-      callApi(`action=assignUmpire&signup_id=${id}&mode=reject`,loadAdminList);
-    }
-    if(b.dataset.a==='approve'){
-      const sel=document.querySelector(`select[data-id="${id}"]`);
-      callApi(
-        `action=assignUmpire&signup_id=${id}&assigned_position=${sel.value}`,
-        loadAdminList
-      );
-    }
   });
 
-  loadAdminList();
+  window.approve=id=>{
+    const s=document.querySelector(`select[data-id="${id}"]`);
+    callApi(`action=assignUmpire&signup_id=${id}&assigned_position=${s.value}`,()=>location.reload());
+  };
+  window.reject=id=>{
+    callApi(`action=assignUmpire&signup_id=${id}&mode=reject`,()=>location.reload());
+  };
 });
 </script>
 </body>
