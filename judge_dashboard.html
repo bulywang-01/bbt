@@ -18,7 +18,31 @@ body{
   background:#fff;
   border-bottom:1px solid #ddd;
 }
-.nav a{
+.nav a{let cell = '';
+
+if (g.signed) {
+  cell = `已報名（站位：${posText[g.my_position] || '排班'}）`;
+}
+else if (g.position_mode !== 'allow_select') {
+  cell = '排班';
+}
+else {
+  cell = allowedPositions(g.need_count).map(p => {
+    const occupied = g.occupied_positions.includes(p);
+    const disabled = occupied || g.full || g.past;
+
+    return `
+      <label>
+        <input type="radio"
+          name="pos_${g.game_id}"
+          value="${p}"
+          ${disabled ? 'disabled' : ''}>
+        ${posText[p] || p}
+        ${occupied ? '（已有人）' : ''}
+      </label>
+    `;
+  }).join(' ');
+}
   margin-right:16px;
   color:#0066cc;
   text-decoration:none;
@@ -138,18 +162,29 @@ document.addEventListener('DOMContentLoaded',()=>{
 
         if(locked) tr.classList.add('locked');
 
-        let cell='';
-        if(g.signed){
-          cell=`已報名<span class="badge">站位：${posText[g.my_position]}</span>`;
-        }else if(g.position_mode!=='allow_select'){
-          cell='排班';
-        }else{
-          cell=g.positions.map(p=>{
-            const disabled=g.occupied_positions.includes(p)||locked;
-            return `<label>
-              <input type="radio" name="pos_${g.game_id}" value="${p}" ${disabled?'disabled':''}>
-              ${posText[p]}${disabled?'（已有人）':''}
-            </label>`;
+        let cell = '';
+        
+        if (g.signed) {
+          cell = `已報名（站位：${posText[g.my_position] || '排班'}）`;
+        }
+        else if (g.position_mode !== 'allow_select') {
+          cell = '排班';
+        }
+        else {
+          cell = allowedPositions(g.need_count).map(p => {
+            const occupied = g.occupied_positions.includes(p);
+            const disabled = occupied || g.full || g.past;
+        
+            return `
+              <label>
+                <input type="radio"
+                  name="pos_${g.game_id}"
+                  value="${p}"
+                  ${disabled ? 'disabled' : ''}>
+                ${posText[p] || p}
+                ${occupied ? '（已有人）' : ''}
+              </label>
+            `;
           }).join(' ');
         }
 
