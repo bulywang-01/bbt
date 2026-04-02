@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
               <td class="${s.c}">${s.t}</td>
               <td>${g.date}</td>
-              <td>${g.time || ''}</td>
+              <td>${g.time_range}</td>
               <td>${formatDuration(g.duration)}</td>
               <td>${g.category}</td>
               <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
