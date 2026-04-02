@@ -75,6 +75,13 @@ button{margin-top:8px;padding:4px 10px;font-size:12px}
 <script src="js/config.js"></script>
   
 <script>
+/* ====== 🔒 防呆：徹底封殺 Fetch / XHR，避免 CORS ====== */
+(function hardBlockNetworkAPIs(){
+  const msg = 'Blocked: use JSONP only (no fetch/XHR)';
+  window.fetch = function(){ throw new Error(msg); };
+  window.XMLHttpRequest = function(){ throw new Error(msg); };
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
 
   const token = localStorage.getItem('token');
@@ -87,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     location.href = 'login.html';
   };
 
-  /* admin-only 顯示 */
+  // admin-only 關閉/顯示（不影響你現有版型）
   document.querySelectorAll('.admin-only').forEach(el => {
     el.style.display = (session.role === 'admin') ? '' : 'none';
   });
@@ -95,17 +102,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const gameBody = document.getElementById('gameBody');
   const posText  = { auto:'排班', PU:'主審', U1:'一壘', U3:'三壘' };
 
-  let allGames = [];
-
-  function callApi(q, cb) {
-    const f = 'cb_' + Date.now();
-    window[f] = r => { delete window[f]; cb(r); };
+  /* ====== ✅ 唯一允許的 API 呼叫方式：JSONP ====== */
+  function callApi(q, cb){
+    const cbName = 'cb_' + Date.now();
+    window[cbName] = r => { delete window[cbName]; cb(r); };
     const s = document.createElement('script');
-    s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
+    s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + cbName;
     document.body.appendChild(s);
   }
 
-  function statusInfo(v) {
+  function statusInfo(v){
     const t = new Date(); t.setHours(0,0,0,0);
     const d = new Date(v); d.setHours(0,0,0,0);
     const diff = (d - t) / 86400000;
@@ -114,89 +120,44 @@ document.addEventListener('DOMContentLoaded', () => {
     return { t:'進行中', c:'status-open' };
   }
 
-  function allowedPositions(n) {
+  function allowedPositions(n){
     n = Number(n);
     if (n === 2) return ['auto','PU','U1'];
     if (n === 3) return ['auto','PU','U1','U3'];
     return ['auto'];
   }
 
-  /* ✅ 上方篩選 UI（動態插入，不改 HTML 檔） */
-  const panel = document.querySelector('.panel');
-  const filterBar = document.createElement('div');
-  filterBar.style.margin = '8px 0';
-  filterBar.innerHTML = `
-    <label style="margin-right:16px;">
-      <input type="checkbox" id="chkThisYear" checked>
-      顯示本年度賽事
-    </label>
-    <label>
-      <input type="checkbox" id="chkHideEnded">
-      隱藏完成賽事
-    </label>
-  `;
-  panel.insertBefore(filterBar, panel.querySelector('table'));
+  function loadGames(){
+    gameBody.innerHTML = '<tr><td colspan="6">載入中…</td></tr>';
 
-  document.getElementById('chkThisYear').onchange = render;
-  document.getElementById('chkHideEnded').onchange = render;
+    callApi('action=getSignableGames', res => {
+      if (!res || !Array.isArray(res.games)) {
+        gameBody.innerHTML = '<tr><td colspan="6">無法讀取資料</td></tr>';
+        return;
+      }
 
-  /* ✅ 主要 render（月份分組） */
-  function render() {
-    gameBody.innerHTML = '';
+      gameBody.innerHTML = '';
 
-    const showThisYear = document.getElementById('chkThisYear').checked;
-    const hideEnded   = document.getElementById('chkHideEnded').checked;
-    const currentYear = new Date().getFullYear();
+      // ✅ 完全防呆排序（不會炸）
+      const games = res.games.map(g => ({
+        ...g,
+        date: g.date || '',
+        time: (g.time && typeof g.time === 'string') ? g.time : '',
+        category: g.category || ''
+      })).sort((a, b) => {
+        const da = new Date(a.date).getTime() || Infinity;
+        const db = new Date(b.date).getTime() || Infinity;
+        if (da !== db) return da - db;
+        const ta = a.time || '99:99';
+        const tb = b.time || '99:99';
+        if (ta !== tb) return ta.localeCompare(tb);
+        return a.category.localeCompare(b.category);
+      });
 
-    /* 篩選 */
-    let games = allGames.filter(g => {
-      const d = new Date(g.date);
-      if (showThisYear && d.getFullYear() !== currentYear) return false;
-      if (hideEnded && g.past) return false;
-      return true;
-    });
-
-    /* 依排序 */
-    games.sort((a, b) => {
-  // ① 日期（無效日期放最後）
-  const da = new Date(a.date);
-  const db = new Date(b.date);
-  const ta = isNaN(da) ? Infinity : da.getTime();
-  const tb = isNaN(db) ? Infinity : db.getTime();
-  if (ta !== tb) return ta - tb;
-
-  // ② 時間（空的丟到最後）
-  const timeA = a.time || '99:99';
-  const timeB = b.time || '99:99';
-  if (timeA !== timeB) return timeA.localeCompare(timeB);
-
-  // ③ 組別
-  return (a.category || '').localeCompare(b.category || '');
-});
-
-
-    /* 依月份分組 */
-    const groups = {};
-    games.forEach(g => {
-      const d = new Date(g.date);
-      const key = `${d.getFullYear()}-${d.getMonth()+1}`;
-      if (!groups[key]) groups[key] = { year:d.getFullYear(), month:d.getMonth()+1, items:[] };
-      groups[key].items.push(g);
-    });
-
-    Object.values(groups).forEach(group => {
-
-      /* 月份標題列 */
-      const monthTr = document.createElement('tr');
-      monthTr.innerHTML = `
-        <td colspan="6" style="background:#e9ecef;font-weight:bold;">
-          ${group.month}月
-        </td>
-      `;
-      gameBody.appendChild(monthTr);
-
-      group.items.forEach(g => {
+      games.forEach(g => {
         const tr = document.createElement('tr');
+        if (g.signed || g.full || g.past) tr.classList.add('locked');
+
         const s = statusInfo(g.date);
 
         let options = '';
@@ -210,38 +171,44 @@ document.addEventListener('DOMContentLoaded', () => {
           options = list.map(p => {
             const used = (g.occupied_positions || []).includes(p);
             return `
-              <label class="${used?'occupied':''}">
+              <label class="${used ? 'occupied' : ''}">
                 <input type="radio"
                        name="pos_${g.game_id}"
                        value="${p}"
                        ${used || g.full || g.past ? 'disabled' : ''}>
-                ${posText[p]}${used?'（已有人）':''}
+                ${posText[p]}${used ? '（已有人）' : ''}
               </label>
             `;
           }).join(' ');
+
+          if (!g.past) {
+            options += `
+              <button type="button"
+                      onclick="clearChoice('${g.game_id}')">
+                取消選擇
+              </button>
+            `;
+          }
         }
 
-          tr.innerHTML = `
-            <td class="${s.c}">${s.t}</td>
-            <td>${g.date}</td>
-            <td>${g.time || ''}</td>       <!-- ✅ 新欄位 -->
-            <td>${g.category}</td>
-            <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
-            <td>${g.field || ''}</td>
-            <td>${options}</td>
-          `;
+        tr.innerHTML = `
+          <td class="${s.c}">${s.t}</td>
+          <td>${g.date.slice(0,10)}</td>
+          <td>${g.category}</td>
+          <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
+          <td>${g.field || ''}</td>
+          <td>${options}</td>
+        `;
+
         gameBody.appendChild(tr);
       });
     });
   }
 
-  function loadGames() {
-    gameBody.innerHTML = '<tr><td colspan="6">載入中…</td></tr>';
-    callApi('action=getSignableGames', res => {
-      allGames = res.games || [];
-      render();
-    });
-  }
+  window.clearChoice = function(gameId){
+    document.querySelectorAll(`[name="pos_${gameId}"]`)
+      .forEach(r => r.checked = false);
+  };
 
   document.getElementById('btnSubmit').onclick = () => {
     const sel = [];
@@ -249,8 +216,10 @@ document.addEventListener('DOMContentLoaded', () => {
       sel.push(r.name.replace('pos_','') + ':' + r.value);
     });
     if (!sel.length) { alert('尚未選擇任何比賽'); return; }
+
     callApi(
-      'action=judgeSignupByGames&games_with_position=' + encodeURIComponent(sel.join(',')),
+      'action=judgeSignupByGames&games_with_position=' +
+      encodeURIComponent(sel.join(',')),
       () => { alert('報名完成'); loadGames(); }
     );
   };
