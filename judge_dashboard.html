@@ -55,6 +55,7 @@ button{margin-top:8px;padding:4px 10px;font-size:12px}
         <tr>
           <th>狀態</th>
           <th>日期</th>
+          <th>時間</th>
           <th>組別</th>
           <th>對戰</th>
           <th>場地</th>
@@ -221,14 +222,15 @@ document.addEventListener('DOMContentLoaded', () => {
           }).join(' ');
         }
 
-        tr.innerHTML = `
-          <td class="${s.c}">${s.t}</td>
-          <td>${g.date.slice(0,10)}</td>
-          <td>${g.category}</td>
-          <td>${g.away_team||''} vs ${g.home_team||''}</td>
-          <td>${g.field||''}</td>
-          <td>${options}</td>
-        `;
+          tr.innerHTML = `
+            <td class="${s.c}">${s.t}</td>
+            <td>${g.date}</td>
+            <td>${g.time || ''}</td>       <!-- ✅ 新欄位 -->
+            <td>${g.category}</td>
+            <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
+            <td>${g.field || ''}</td>
+            <td>${options}</td>
+          `;
         gameBody.appendChild(tr);
       });
     });
