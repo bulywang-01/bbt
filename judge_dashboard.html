@@ -3,26 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <title>裁判報名</title>
-
 <style>
 body{margin:0;font-family:system-ui;background:#f5f6f8}
 .header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd}
-.nav a{margin-right:16px;color:#0066cc;text-decoration:none;font-weight:500}
+.nav a{margin-right:16px;color:#0066cc;text-decoration:none}
 .nav a:hover{text-decoration:underline}
 .main{padding:20px}
 .panel{background:#fff;padding:16px;border-radius:6px}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid #eee}
 th{background:#f0f2f5;text-align:left}
-tr.locked{background:#f4f4f4;color:#777}
 label{margin-right:8px}
-button{margin-top:12px}
+.badge{color:#0b5ed7;font-weight:bold}
+button{margin-top:10px}
 </style>
 </head>
 
 <body>
 
-<!-- Header -->
 <div class="header">
   <div class="nav">
     <a href="index.html">首頁</a>
@@ -34,11 +32,9 @@ button{margin-top:12px}
   </div>
 </div>
 
-<!-- Main -->
 <div class="main">
   <div class="panel">
     <h3>可報名比賽</h3>
-
     <table>
       <thead>
         <tr>
@@ -53,62 +49,70 @@ button{margin-top:12px}
         <tr><td colspan="5">載入中…</td></tr>
       </tbody>
     </table>
-
     <button id="btnSubmit">送出報名</button>
   </div>
 </div>
 
-<!-- ✅ 正確載入 JS -->
 <script src="js/config.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded',()=>{
   const token = localStorage.getItem('token');
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  const session = JSON.parse(localStorage.getItem('session_user')||'{}');
+  if(!token){location.href='login.html';return;}
 
-  if (!token) {
-    location.href = 'login.html';
-    return;
-  }
-
-  document.getElementById('u_name').textContent = session.name || '';
-
-  document.getElementById('btnLogout').onclick = (e) => {
+  document.getElementById('u_name').textContent=session.name||'';
+  document.getElementById('btnLogout').onclick=e=>{
     e.preventDefault();
     localStorage.clear();
-    location.href = 'login.html';
+    location.href='login.html';
   };
 
-  const body = document.getElementById('gameBody');
+  const body=document.getElementById('gameBody');
 
-  function callApi(action, cb){
-    const fn = 'cb_' + Date.now();
-    window[fn] = r => { delete window[fn]; cb(r); };
-    const s = document.createElement('script');
-    s.src = API_URL + '?action=' + action + '&token=' + token + '&callback=' + fn;
+  function callApi(action,cb){
+    const f='cb_'+Date.now();
+    window[f]=r=>{delete window[f];cb(r);};
+    const s=document.createElement('script');
+    s.src=API_URL+'?action='+action+'&token='+token+'&callback='+f;
     document.body.appendChild(s);
   }
 
-  callApi('getSignableGames', res => {
-    body.innerHTML = '';
-    if (!res || res.result !== 'ok') {
-      body.innerHTML = '<tr><td colspan="5">無法讀取資料</td></tr>';
-      return;
-    }
-
-    res.games.forEach(g => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
+  callApi('getSignableGames',res=>{
+    body.innerHTML='';
+    if(!res||res.result!=='ok'){body.innerHTML='<tr><td colspan="5">讀取失敗</td></tr>';return;}
+    res.games.forEach(g=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
         <td>${g.date}</td>
         <td>${g.category}</td>
-        <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
-        <td>${g.field || ''}</td>
-        <td>排班</td>
+        <td>${g.away_team||''} vs ${g.home_team||''}</td>
+        <td>${g.field||''}</td>
+        <td>
+          ${
+            g.signed
+              ? `<span class="badge">已報名</span>`
+              : `
+                <label><input type="radio" name="pos_${g.game_id}" value="auto">排班</label>
+              `
+          }
+        </td>
       `;
       body.appendChild(tr);
     });
   });
+
+  document.getElementById('btnSubmit').onclick=()=>{
+    const list=[];
+    document.querySelectorAll('input[type=radio]:checked').forEach(r=>{
+      list.push(r.name.replace('pos_','')+':'+r.value);
+    });
+    if(!list.length){alert('尚未選擇任何比賽');return;}
+    callApi(
+      'judgeSignupByGames&games_with_position='+encodeURIComponent(list.join(',')),
+      ()=>{alert('已送出報名');location.reload();}
+    );
+  };
 });
 </script>
-
 </body>
 </html>
