@@ -116,6 +116,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const gameList = document.getElementById('gameList');
   const btnSubmit = document.getElementById('btnSubmit');
 
+  function formatDate(v){
+    const d = new Date(v);
+    if (isNaN(d)) return v;
+    return (
+      d.getFullYear() + '/' +
+      String(d.getMonth()+1).padStart(2,'0') + '/' +
+      String(d.getDate()).padStart(2,'0')
+    );
+  }
+  
   /* ===============================
    * 工具：依人制可用站位
    * ===============================
@@ -170,7 +180,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         if(g.full){
           gameList.innerHTML += `
             <div class="game-row disabled">
-              ${g.date}｜${g.tournament}｜${g.category}
+              ${formatDate(g.date)}｜${g.tournament}｜${g.category}
               （已滿額）
             </div>`;
           return;
@@ -197,7 +207,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         gameList.innerHTML += `
           <div class="game-row">
             <div class="game-title">
-              ${g.date}｜${g.tournament}｜${g.category}
+              ${formatDate(g.date)}｜${g.tournament}｜${g.category}
             </div>
             <div>${g.home_team} vs ${g.away_team}｜${g.field}</div>
             <div class="position-options">
