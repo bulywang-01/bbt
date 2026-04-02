@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>裁判報名</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  background:#f5f6f8;
+}
+
+/* ===== Header ===== */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#ffffff;
+  border-bottom:1px solid #ddd;
+}
+.nav a{
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500;
+}
+.user-info a{
+  margin-left:12px;
+  cursor:pointer;
+}
+
+/* ===== Main ===== */
+.main{
+  padding:20px;
+}
+.panel{
+  background:#fff;
+  padding:16px;
+  border-radius:6px;
+  margin-bottom:24px;
+}
+
+/* ===== Game List ===== */
+.game-row{
+  border-bottom:1px solid #eee;
+  padding:12px 0;
+}
+.game-title{
+  font-weight:bold;
+}
+.position-options{
+  margin-top:6px;
+  font-size:14px;
+}
+.position-options label{
+  margin-right:12px;
+}
+.disabled{
+  color:#aaa;
+}
+
+/* ===== Button ===== */
+button{
+  padding:6px 14px;
+  margin-top:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="nav">
+    <a href="index.html">首頁</a>
+    <a href="judge_dashboard.html">裁判報名</a>
+  </div>
+  <div class="user-info">
+    <b id="u_name"></b>
+    <a id="btnLogout">登出</a>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="panel">
+    <h3>可報名比賽</h3>
+    <div id="gameList">載入中…</div>
+
+    <button id="btnSubmit">送出報名</button>
+  </div>
+
+</div>
+
+<script src="js/config.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+
+  /* ===============================
+   * 基本登入檢查
+   * =============================== */
+  const token = localStorage.getItem('token');
+  const session = JSON.parse(localStorage.getItem('session_user')||'{}');
+  if(!token){
+    location.href='login.html';
+    return;
+  }
+
+  document.getElementById('u_name').textContent = session.name;
+  document.getElementById('btnLogout').onclick = ()=>{
+    localStorage.clear();
+    location.href='login.html';
+  };
+
+  const gameList = document.getElementById('gameList');
+  const btnSubmit = document.getElementById('btnSubmit');
+
+  /* ===============================
+   * 工具：依人制可用站位
+   * ===============================
+   * 兩人制：PU + U1
+   * 三人制：PU + U1 + U3
+   */
+  function getAllowedPositions(umpireCount){
+    if(umpireCount == 2){
+      return ['auto','PU','U1'];
+    }
+    if(umpireCount == 3){
+      return ['auto','PU','U1','U3'];
+    }
+    return ['auto'];
+  }
+
+  function positionText(p){
+    if(p==='auto') return '排班';
+    if(p==='PU') return '主審';
+    if(p==='U1') return '一壘';
+    if(p==='U2') return '二壘';
+    if(p==='U3') return '三壘';
+    return p;
+  }
+
+  function callApi(q, cb){
+    const f = 'cb_' + Date.now();
+    window[f] = res=>{
+      delete window[f];
+      cb(res);
+    };
+    const s = document.createElement('script');
+    s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
+    document.body.appendChild(s);
+  }
+
+  /* ===============================
+   * 載入可報名比賽
+   * =============================== */
+  function loadGames(){
+    gameList.innerHTML = '載入中…';
+
+    callApi('action=getSignableGames', res=>{
+      if(res.result !== 'ok' || !res.games.length){
+        gameList.innerHTML = '目前沒有可報名比賽';
+        return;
+      }
+
+      gameList.innerHTML = '';
+      res.games.forEach(g=>{
+        // 若比賽已滿額，直接顯示不可選
+        if(g.full){
+          gameList.innerHTML += `
+            <div class="game-row disabled">
+              ${g.date}｜${g.tournament}｜${g.category}
+              （已滿額）
+            </div>`;
+          return;
+        }
+
+        // 管理端是否允許選站位
+        const allowSelect = (g.position_mode === 'allow_select');
+
+        const allowed = allowSelect
+          ? getAllowedPositions(g.need_count)
+          : ['auto'];
+
+        const radios = allowed.map(p=>{
+          return `
+            <label>
+              <input type="radio"
+                name="pos_${g.game_id}"
+                value="${p}"
+                ${p==='auto'?'checked':''}>
+              ${positionText(p)}
+            </label>`;
+        }).join('');
+
+        gameList.innerHTML += `
+          <div class="game-row">
+            <div class="game-title">
+              ${g.date}｜${g.tournament}｜${g.category}
+            </div>
+            <div>${g.home_team} vs ${g.away_team}｜${g.field}</div>
+            <div class="position-options">
+              站位偏好：${radios}
+            </div>
+          </div>`;
+      });
+    });
+  }
+
+  /* ===============================
+   * 送出報名
+   * ===============================
+   * 每一場比賽送出：
+   * game_id + preferred_position
+   */
+  btnSubmit.onclick = ()=>{
+    const selections = [];
+
+    document.querySelectorAll('.game-row').forEach(row=>{
+      const radios = row.querySelectorAll('input[type=radio]');
+      if(!radios.length) return;
+
+      const gameId = radios[0].name.replace('pos_','');
+      const selected = row.querySelector('input[type=radio]:checked');
+      if(selected){
+        selections.push(`${gameId}:${selected.value}`);
+      }
+    });
+
+    if(!selections.length){
+      alert('尚未選擇任何比賽');
+      return;
+    }
+
+    /* 傳送格式範例：
+       G001:auto,G002:PU
+    */
+    callApi(
+      'action=judgeSignupByGames'
+      + '&games_with_position=' + encodeURIComponent(selections.join(',')),
+      ()=>{
+        alert('報名完成');
+        loadGames();
+      }
+    );
+  };
+
+  loadGames();
+});
+</script>
+
+</body>
+</html>
