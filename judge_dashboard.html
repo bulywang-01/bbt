@@ -10,7 +10,6 @@ body{
   font-family:system-ui;
   background:#f5f6f8;
 }
-
 .header{
   display:flex;
   justify-content:space-between;
@@ -19,13 +18,17 @@ body{
   background:#ffffff;
   border-bottom:1px solid #ddd;
 }
-
-.main{
-  padding:20px;
+.nav a{
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500;
 }
+.nav a:hover{text-decoration:underline}
 
+.main{padding:20px}
 .panel{
-  background:#fff;
+  background:#ffffff;
   padding:16px;
   border-radius:6px;
 }
@@ -34,31 +37,18 @@ body{
   border-bottom:1px solid #eee;
   padding:12px 0;
 }
-
 .game-row.full{
   background:#f4f4f4;
-  color:#888;
+  color:#777;
 }
 
-.game-title{
-  font-weight:bold;
-  margin-bottom:4px;
-}
-
-.position-options{
-  margin-top:6px;
-  font-size:14px;
-}
-
-.position-options label{
-  margin-right:12px;
-}
-
+.game-title{font-weight:bold}
+.position-line{margin-top:6px;font-size:14px}
 .position-selected{
-  display:none;
   margin-left:8px;
   font-weight:bold;
   color:#0b5ed7;
+  display:none;
 }
 
 button{
@@ -70,8 +60,12 @@ button{
 
 <body>
 
+<!-- ===== Header ===== -->
 <div class="header">
-  <div>可報名比賽</div>
+  <div class="nav">
+    <a href="index.html">首頁</a>
+    <a href="judge_dashboard.html">裁判報名</a>
+  </div>
   <div>
     <b id="u_name"></b>
     <a id="btnLogout" style="margin-left:12px;cursor:pointer;">登出</a>
@@ -80,19 +74,22 @@ button{
 
 <div class="main">
   <div class="panel">
+    <h3>可報名比賽</h3>
     <div id="gameList">載入中…</div>
     <button id="btnSubmit">送出報名</button>
   </div>
 </div>
 
+<!-- ✅ 正確 script 引入 -->
 <script src="js/config.js"></script>
+
 <script>
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', () => {
 
   const token = localStorage.getItem('token');
   const session = JSON.parse(localStorage.getItem('session_user')||'{}');
   if(!token){
-    location.href = 'login.html';
+    location.href='login.html';
     return;
   }
 
@@ -108,82 +105,72 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function formatDate(v){
     const d = new Date(v);
     if(isNaN(d)) return v;
-    return d.getFullYear() + '/' +
-      String(d.getMonth()+1).padStart(2,'0') + '/' +
-      String(d.getDate()).padStart(2,'0');
+    return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
   }
 
   function positionText(p){
-    return {
-      auto:'排班',
-      PU:'主審',
-      U1:'一壘',
-      U3:'三壘'
-    }[p] || p;
+    return {auto:'排班',PU:'主審',U1:'一壘',U3:'三壘'}[p] || p;
   }
 
   function getAllowedPositions(n){
-    if(n === 2) return ['auto','PU','U1'];
-    if(n === 3) return ['auto','PU','U1','U3'];
+    if(n===2) return ['auto','PU','U1'];
+    if(n===3) return ['auto','PU','U1','U3'];
     return ['auto'];
   }
 
   function callApi(q, cb){
-    const f = 'cb_' + Date.now();
-    window[f] = r => { delete window[f]; cb(r); };
-    const s = document.createElement('script');
-    s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
+    const f='cb_'+Date.now();
+    window[f]=r=>{delete window[f];cb(r);};
+    const s=document.createElement('script');
+    s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
     document.body.appendChild(s);
   }
 
   function loadGames(){
-    gameList.innerHTML = '載入中…';
+    gameList.innerHTML='載入中…';
 
     callApi('action=getSignableGames', res=>{
-      if(res.result !== 'ok' || !res.games.length){
-        gameList.innerHTML = '目前沒有可報名比賽';
+      if(res.result!=='ok' || !res.games.length){
+        gameList.innerHTML='目前沒有可報名比賽';
         return;
       }
 
-      gameList.innerHTML = '';
-
+      gameList.innerHTML='';
       res.games.forEach(g=>{
-        const isFull = g.full === true;
-        const allowed = getAllowedPositions(g.need_count);
+        const row=document.createElement('div');
+        row.className='game-row'+(g.full?' full':'');
 
-        const radios = allowed.map(p=>{
-          return `
+        let positionHtml='';
+        if(g.position_mode!=='allow_select'){
+          positionHtml='<div class="position-line">站位偏好：排班</div>';
+        }else{
+          const radios=getAllowedPositions(g.need_count).map(p=>`
             <label>
-              <input type="radio"
-                name="pos_${g.game_id}"
-                value="${p}"
-                ${p==='auto'?'checked':''}
-                ${isFull?'disabled':''}>
+              <input type="radio" name="pos_${g.game_id}" value="${p}" ${p==='auto'?'checked':''}>
               ${positionText(p)}
-            </label>`;
-        }).join('');
+            </label>
+          `).join('');
 
-        const row = document.createElement('div');
-        row.className = 'game-row' + (isFull ? ' full' : '');
-        row.innerHTML = `
+          positionHtml=`
+            <div class="position-line">
+              站位偏好：${radios}
+              <span class="position-selected"></span>
+            </div>`;
+        }
+
+        row.innerHTML=`
           <div class="game-title">
-            ${formatDate(g.date)} ｜ ${g.category}
-            ${isFull ? '（已額滿）' : ''}
+            ${formatDate(g.date)} ｜ ${g.category} ${g.full?'（已額滿）':''}
           </div>
-          <div>VS ｜ ${g.home_team || ''} ｜ ${g.field}</div>
-          <div class="position-options">
-            站位偏好：
-            ${radios}
-            <span class="position-selected">※ 已選擇：</span>
-          </div>
+          <div>VS ｜ ${g.home_team||''} ｜ ${g.field}</div>
+          ${positionHtml}
         `;
 
-        // ✅ 關鍵修正：只有使用者 change 才顯示「已選擇」
-        row.querySelectorAll('input[type=radio]').forEach(radio=>{
-          radio.addEventListener('change', ()=>{
-            const span = row.querySelector('.position-selected');
-            span.textContent = '※ 已選擇：' + positionText(radio.value);
-            span.style.display = 'inline';
+        row.querySelectorAll('input[type=radio]').forEach(r=>{
+          r.addEventListener('change',()=>{
+            const span=row.querySelector('.position-selected');
+            span.textContent='※ 已選擇：'+positionText(r.value);
+            span.style.display='inline';
           });
         });
 
@@ -192,18 +179,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
   }
 
-  btnSubmit.onclick = ()=>{
-    const selections = [];
-    document.querySelectorAll('.game-row').forEach(row=>{
-      const radios = row.querySelectorAll('input[type=radio]');
-      if(!radios.length) return;
-
-      const name = radios[0].name;
-      const gameId = name.replace('pos_','');
-      const selected = row.querySelector('input[type=radio]:checked');
-      if(selected){
-        selections.push(gameId + ':' + selected.value);
-      }
+  btnSubmit.onclick=()=>{
+    const selections=[];
+    document.querySelectorAll('.game-row').forEach(r=>{
+      const radio=r.querySelector('input[type=radio]:checked');
+      if(!radio) return;
+      selections.push(radio.name.replace('pos_','')+':'+radio.value);
     });
 
     if(!selections.length){
@@ -212,8 +193,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
 
     callApi(
-      'action=judgeSignupByGames&games_with_position=' +
-        encodeURIComponent(selections.join(',')),
+      'action=judgeSignupByGames&games_with_position='+encodeURIComponent(selections.join(',')),
       ()=>{
         alert('報名完成');
         loadGames();
