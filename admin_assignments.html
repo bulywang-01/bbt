@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>管理端｜裁判審核／排班</title>
+<title>裁判審核／排班</title>
 
 <style>
 body{margin:0;font-family:system-ui;background:#f5f6f8}
@@ -10,14 +10,8 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
 .nav a{margin-right:16px;color:#0066cc;text-decoration:none;font-weight:500}
 .nav a:hover{text-decoration:underline}
 .main{padding:20px}
-.panel{background:#fff;padding:16px;border-radius:6px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:8px;border-bottom:1px solid #eee}
-th{background:#f0f2f5;text-align:left}
-.badge-pending{color:#e6a700;font-weight:bold}
-.badge-approved{color:#2e7d32;font-weight:bold}
-.badge-rejected{color:#c62828;font-weight:bold}
-button{padding:4px 10px;margin-right:4px}
+.panel{background:#fff;padding:16px;border-radius:6px;margin-bottom:20px}
+.game{margin-bottom:12px;padding:8px;border:1px solid #ddd;border-radius:4px}
 </style>
 </head>
 
@@ -29,135 +23,86 @@ button{padding:4px 10px;margin-right:4px}
     <a href="admin_assignments.html">裁判審核／排班</a>
   </div>
   <div>
-    <b id="u_name"></b>
-    <a id="btnLogout" style="margin-left:12px;cursor:pointer;">登出</a>
+    <span id="u_name"></span>
+    <a href="#" id="btnLogout" style="margin-left:12px;">登出</a>
   </div>
 </div>
-
 
 <div class="main">
-  <div class="panel">
-    <h3>裁判審核／排班</h3>
 
-    <table>
-      <thead>
-        <tr>
-          <th>日期</th>
-          <th>組別</th>
-          <th>對戰</th>
-          <th>場地</th>
-          <th>裁判</th>
-          <th>偏好</th>
-          <th>指派</th>
-          <th>狀態</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="adminBody">
-        <tr><td colspan="9">載入中…</td></tr>
-      </tbody>
-    </table>
+  <div class="panel">
+    <h3>待審查</h3>
+    <div id="pending">載入中…</div>
   </div>
+
+  <div class="panel">
+    <h3>已核准</h3>
+    <div id="approved">載入中…</div>
+  </div>
+
+  <div class="panel">
+    <h3>已拒絕</h3>
+    <div id="rejected">載入中…</div>
+  </div>
+
 </div>
 
+<!-- ✅ 正確載入 JS -->
 <script src="js/config.js"></script>
-  
 <script>
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem('token');
-  const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-  if(!token){ location.href='login.html'; return; }
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  if (!token) {
+    location.href = 'login.html';
+    return;
+  }
 
   document.getElementById('u_name').textContent = session.name || '';
-  document.getElementById('btnLogout').onclick = ()=>{
+
+  document.getElementById('btnLogout').onclick = e => {
+    e.preventDefault();
     localStorage.clear();
-    location.href='login.html';
+    location.href = 'login.html';
   };
 
-  const adminBody = document.getElementById('adminBody');
-  const posText = {auto:'排班',PU:'主審',U1:'一壘',U3:'三壘'};
-
-  function callApi(q,cb){
-    const f='cb_'+Date.now();
-    window[f]=r=>{delete window[f];cb(r);};
-    const s=document.createElement('script');
-    s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
+  function callApi(action, cb){
+    const fn = 'cb_' + Date.now();
+    window[fn] = r => { delete window[fn]; cb(r); };
+    const s = document.createElement('script');
+    s.src = API_URL + '?action=' + action + '&token=' + token + '&callback=' + fn;
     document.body.appendChild(s);
   }
 
-  function formatDate(v){
-    const d=new Date(v); if(isNaN(d))return v;
-    return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
-  }
+  callApi('getAdminSignupList', res => {
+    console.log('ADMIN API:', res);
 
-  function loadAdminList(){
-    adminBody.innerHTML = '<tr><td colspan="9">載入中…</td></tr>';
+    ['pending','approved','rejected'].forEach(id=>{
+      document.getElementById(id).innerHTML = '';
+    });
 
-    callApi('action=getAdminSignupList', res=>{
-      console.log('ADMIN API RESULT:', res);
+    if (!res || res.result !== 'ok') {
+      document.getElementById('pending').textContent = '無法讀取資料';
+      return;
+    }
 
-      if(!res || res.result!=='ok'){
-        adminBody.innerHTML='<tr><td colspan="9">無法讀取資料</td></tr>';
-        return;
-      }
+    if (!res.groups.length) {
+      document.getElementById('pending').textContent = '目前沒有申請資料';
+      return;
+    }
 
-      if(!res.items || res.items.length===0){
-        adminBody.innerHTML='<tr><td colspan="9">目前沒有待審或可排班資料</td></tr>';
-        return;
-      }
-
-      adminBody.innerHTML='';
-      res.items.forEach(i=>{
-        const tr=document.createElement('tr');
-
-        const badge =
-          i.status==='pending' ? '<span class="badge-pending">待審</span>' :
-          i.status==='approved' ? '<span class="badge-approved">已核准</span>' :
-          '<span class="badge-rejected">已退回</span>';
-
-        tr.innerHTML=`
-          <td>${formatDate(i.date)}</td>
-          <td>${i.category}</td>
-          <td>${i.away_team} vs ${i.home_team}</td>
-          <td>${i.field}</td>
-          <td>${i.judge_name}</td>
-          <td>${posText[i.preferred_position]||'排班'}</td>
-          <td>
-            <select data-id="${i.signup_id}" ${i.status!=='pending'?'disabled':''}>
-              ${i.available_positions.map(p=>`<option value="${p}">${posText[p]||p}</option>`).join('')}
-            </select>
-          </td>
-          <td>${badge}</td>
-          <td>
-            ${
-              i.status==='pending'
-              ? `<button onclick="approve('${i.signup_id}')">核准</button>
-                 <button onclick="reject('${i.signup_id}')">退回</button>`
-              : ''
-            }
-          </td>
-        `;
-        adminBody.appendChild(tr);
+    res.groups.forEach(g => {
+      g.signups.forEach(s => {
+        const box = document.createElement('div');
+        box.className = 'game';
+        box.textContent = `${g.date}｜${g.category}｜${s.judge_name}（${s.status}）`;
+        document.getElementById(s.status).appendChild(box);
       });
     });
-  }
-
-  window.approve = id =>{
-    const s = document.querySelector(`select[data-id="${id}"]`);
-    callApi(
-      `action=assignUmpire&signup_id=${id}&assigned_position=${s.value}`,
-      loadAdminList
-    );
-  };
-  window.reject = id =>{
-    callApi(
-      `action=assignUmpire&signup_id=${id}&mode=reject`,
-      loadAdminList
-    );
-  };
-
-  loadAdminList();
+  });
 });
 </script>
+
 </body>
 </html>
