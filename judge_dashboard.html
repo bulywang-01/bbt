@@ -115,23 +115,36 @@ document.addEventListener('DOMContentLoaded',()=>{
         const s=statusInfo(g.date);
 
         let options='';
-        if(g.signed){
-          options=`已報名 <span class="badge">(${posText[g.my_position]})</span>`;
-        }else{
-          const list=g.position_mode!=='allow_select'
-            ?['auto']
-            :allowedPositions(g.need_count);
-          options=list.map(p=>{
-            const used=(g.occupied_positions||[]).includes(p);
-            return `
-              <label class="${used?'occupied':''}">
-                <input type="radio" name="pos_${g.game_id}" value="${p}"
-                  ${(used||g.full||g.past)?'disabled':''}>
-                ${posText[p]}${used?'（已有人）':''}
-              </label>`;
-          }).join(' ')
-          + ` <button type="button" onclick="clearChoice('${g.game_id}')">取消選擇</button>`;
-        }
+if (g.signed) {
+  options = `已報名 <span class="badge">(${posText[g.my_position]})</span>`;
+}
+else {
+  const list = g.position_mode !== 'allow_select'
+    ? ['auto']
+    : allowedPositions(g.need_count);
+
+  options = list.map(p => {
+    const used = (g.occupied_positions || []).includes(p);
+    return `
+      <label class="${used ? 'occupied' : ''}">
+        <input type="radio"
+          name="pos_${g.game_id}"
+          value="${p}"
+          ${(used || g.full || g.past) ? 'disabled' : ''}>
+        ${posText[p]}${used ? '（已有人）' : ''}
+      </label>
+    `;
+  }).join(' ');
+
+  // ✅ 只有「尚未結束」才顯示取消按鈕
+  if (!g.past) {
+    options += `
+      <button type="button" onclick="clearChoice('${g.game_id}')">
+        取消選擇
+      </button>
+    `;
+  }
+}
 
         tr.innerHTML=`
           <td class="${s.c}">${s.t}</td>
