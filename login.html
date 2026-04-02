@@ -84,15 +84,23 @@ function doLogin(){
       return;
     }
 
-    if(res.result === 'ok'){
-      // ✅ 儲存登入資訊
+    if (res.result === 'ok') {
+    
+      // ✅ 1. 存 token
       localStorage.setItem('token', res.token);
-      localStorage.setItem('session_user', JSON.stringify(res.auth));
-
-      // ✅ 前往首頁
+    
+      // ✅ 2. 存 session_user（這是 index.html 會讀的）
+      localStorage.setItem('session_user', JSON.stringify({
+        user_id: res.user_id,     // 🔴 必須有
+        username: res.username,   // Users 表的 username
+        name: res.name,
+        role: res.role
+      }));
+    
+      // ✅ 3. 進首頁
       location.replace('index.html');
-      return;
     }
+    
 
     if(res.result === 'inactive'){
       msg.textContent = '此帳號尚未啟用，請聯絡管理員';
