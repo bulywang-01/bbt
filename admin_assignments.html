@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>管理端｜裁判審核與排班</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  background: #f5f6f8;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #ddd;
+}
+
+.nav a {
+  margin-right: 16px;
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 500;
+}
+.nav a:hover {
+  text-decoration: underline;
+}
+
+.main {
+  padding: 20px;
+}
+
+.panel {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 6px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+th {
+  background: #f0f2f5;
+  text-align: left;
+}
+
+tr.locked {
+  background: #f4f4f4;
+  color: #777;
+}
+
+select {
+  padding: 2px 4px;
+}
+
+button {
+  padding: 4px 10px;
+  margin-right: 4px;
+}
+
+.badge {
+  font-weight: bold;
+  color: #0b5ed7;
+}
+
+.badge-pending { color: #e6a700; }
+.badge-approved { color: #2e7d32; }
+.badge-rejected { color: #c62828; }
+</style>
+</head>
+
+<body>
+
+<!-- ===== Header ===== -->
+<div class="header">
+  <div class="nav">
+    <a href="index.html">首頁</a>
+    <a href="admin_assignments.html">裁判審核／排班</a>
+  </div>
+  <div>
+    <b id="u_name"></b>
+    <a id="btnLogout" style="margin-left:12px;cursor:pointer;">登出</a>
+  </div>
+</div>
+
+<!-- ===== Main ===== -->
+<div class="main">
+  <div class="panel">
+    <h3>裁判審核與排班</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>日期</th>
+          <th>組別</th>
+          <th>對戰</th>
+          <th>場地</th>
+          <th>裁判</th>
+          <th>偏好站位</th>
+          <th>指派站位</th>
+          <th>狀態</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="adminBody">
+        <tr>
+          <td colspan="9">載入中…</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ✅ 正確載入共用設定 -->
+<script src="js/config.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  const token = localStorage.getItem('token');
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  if (!token) {
+    location.href = 'login.html';
+    return;
+  }
+
+  document.getElementById('u_name').textContent = session.name || '';
+  document.getElementById('btnLogout').onclick = () => {
+    localStorage.clear();
+    location.href = 'login.html';
+  };
+
+  const adminBody = document.getElementById('adminBody');
+
+  const posText = {
+    auto: '排班',
+    PU: '主審',
+    U1: '一壘',
+    U3: '三壘'
+  };
+
+  function formatDate(v) {
+    const d = new Date(v);
+    if (isNaN(d)) return v;
+    return d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate();
+  }
+
+  function callApi(query, callback) {
+    const cbName = 'cb_' + Date.now();
+    window[cbName] = (res) => {
+      delete window[cbName];
+      callback(res);
+    };
+    const s = document.createElement('script');
+    s.src = API_URL + '?' + query + '&token=' + token + '&callback=' + cbName;
+    document.body.appendChild(s);
+  }
+
+  // ===== 載入管理端清單 =====
+  function loadAdminList() {
+    adminBody.innerHTML = '<tr><td colspan="9">載入中…</td></tr>';
+
+    callApi('action=getAdminSignupList', (res) => {
+      console.log('ADMIN LIST:', res);
+
+      if (!res || res.result !== 'ok' || !Array.isArray(res.items)) {
+        adminBody.innerHTML = '<tr><td colspan="9">讀取失敗</td></tr>';
+        return;
+      }
+
+      if (res.items.length === 0) {
+        adminBody.innerHTML = '<tr><td colspan="9">目前沒有待審核資料</td></tr>';
+        return;
+      }
+
+      adminBody.innerHTML = '';
+
+      res.items.forEach(item => {
+        const tr = document.createElement('tr');
+
+        if (item.status !== 'pending') {
+          tr.classList.add('locked');
+        }
+
+        const options = item.available_positions.map(p => {
+          return `<option value="${p}" ${p === item.preferred_position ? 'selected' : ''}>
+            ${posText[p] || p}
+          </option>`;
+        }).join('');
+
+        const statusBadge =
+          item.status === 'pending'
+            ? '<span class="badge badge-pending">待審</span>'
+            : item.status === 'approved'
+              ? '<span class="badge badge-approved">已核准</span>'
+              : '<span class="badge badge-rejected">已退回</span>';
+
+        tr.innerHTML = `
+          <td>${formatDate(item.date)}</td>
+          <td>${item.category}</td>
+          <td>${item.away_team} vs ${item.home_team}</td>
+          <td>${item.field}</td>
+          <td>${item.judge_name}</td>
+          <td>${posText[item.preferred_position] || '排班'}</td>
+          <td>
+            <select ${item.status !== 'pending' ? 'disabled' : ''} data-id="${item.signup_id}">
+              ${options}
+            </select>
+          </td>
+          <td>${statusBadge}</td>
+          <td>
+            ${item.status === 'pending'       reject退回</button>
+            ` : ''}
+          </td>
+        `;
+
+        adminBody.appendChild(tr);
+      });
+    });
+  }
+
+  // ===== 處理核准／退回 =====
+  adminBody.addEventListener('click', (e) => {
+    const btn = e.target;
+    if (!btn.dataset.action) return;
+
+    const signupId = btn.dataset.id;
+    const action = btn.dataset.action;
+
+    if (action === 'reject') {
+      if (!confirm('確定要退回此申請？')) return;
+      callApi(`action=assignUmpire&signup_id=${signupId}&mode=reject`, loadAdminList);
+    }
+
+    if (action === 'approve') {
+      const select = document.querySelector(`select[data-id="${signupId}"]`);
+      const pos = select.value;
+
+      callApi(
+        `action=assignUmpire&signup_id=${signupId}&assigned_position=${pos}`,
+        loadAdminList
+      );
+    }
+  });
+
+  loadAdminList();
+});
+</script>
+
+</body>
+</html>
