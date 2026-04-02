@@ -2,16 +2,20 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>裁判審核／排班</title>
-
+<title>裁判審核</title>
 <style>
 body{margin:0;font-family:system-ui;background:#f5f6f8}
 .header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd}
-.nav a{margin-right:16px;color:#0066cc;text-decoration:none;font-weight:500}
+.nav a{margin-right:16px;color:#0066cc;text-decoration:none}
 .nav a:hover{text-decoration:underline}
 .main{padding:20px}
 .panel{background:#fff;padding:16px;border-radius:6px;margin-bottom:20px}
-.game{margin-bottom:12px;padding:8px;border:1px solid #ddd;border-radius:4px}
+.row{padding:6px;border-bottom:1px dashed #ddd}
+.row:last-child{border-bottom:none}
+.badge-p{color:#e6a700;font-weight:bold}
+.badge-a{color:#2e7d32;font-weight:bold}
+.badge-r{color:#c62828;font-weight:bold}
+button{margin-left:6px}
 </style>
 </head>
 
@@ -20,7 +24,7 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
 <div class="header">
   <div class="nav">
     <a href="index.html">首頁</a>
-    <a href="admin_assignments.html">裁判審核／排班</a>
+    <a href="admin_assignments.html">裁判審核</a>
   </div>
   <div>
     <span id="u_name"></span>
@@ -47,62 +51,65 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
 
 </div>
 
-<!-- ✅ 正確載入 JS -->
 <script src="js/config.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const token = localStorage.getItem('token');
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-
-  if (!token) {
-    location.href = 'login.html';
-    return;
-  }
-
-  document.getElementById('u_name').textContent = session.name || '';
-
-  document.getElementById('btnLogout').onclick = e => {
-    e.preventDefault();
-    localStorage.clear();
-    location.href = 'login.html';
+document.addEventListener('DOMContentLoaded',()=>{
+  const token=localStorage.getItem('token');
+  const session=JSON.parse(localStorage.getItem('session_user')||'{}');
+  if(!token){location.href='login.html';return;}
+  document.getElementById('u_name').textContent=session.name||'';
+  document.getElementById('btnLogout').onclick=e=>{
+    e.preventDefault();localStorage.clear();location.href='login.html';
   };
 
-  function callApi(action, cb){
-    const fn = 'cb_' + Date.now();
-    window[fn] = r => { delete window[fn]; cb(r); };
-    const s = document.createElement('script');
-    s.src = API_URL + '?action=' + action + '&token=' + token + '&callback=' + fn;
+  function callApi(action,cb){
+    const f='cb_'+Date.now();
+    window[f]=r=>{delete window[f];cb(r);};
+    const s=document.createElement('script');
+    s.src=API_URL+'?action='+action+'&token='+token+'&callback='+f;
     document.body.appendChild(s);
   }
 
-  callApi('getAdminSignupList', res => {
-    console.log('ADMIN API:', res);
+  const box={
+    pending:document.getElementById('pending'),
+    approved:document.getElementById('approved'),
+    rejected:document.getElementById('rejected')
+  };
 
-    ['pending','approved','rejected'].forEach(id=>{
-      document.getElementById(id).innerHTML = '';
-    });
+  callApi('getAllGameSignups',res=>{
+    box.pending.innerHTML='';
+    box.approved.innerHTML='';
+    box.rejected.innerHTML='';
+    if(!res||res.result!=='ok'){box.pending.textContent='無法讀取資料';return;}
 
-    if (!res || res.result !== 'ok') {
-      document.getElementById('pending').textContent = '無法讀取資料';
-      return;
-    }
+    if(!res.items.length){box.pending.textContent='目前沒有資料';return;}
 
-    if (!res.groups.length) {
-      document.getElementById('pending').textContent = '目前沒有申請資料';
-      return;
-    }
+    res.items.forEach(s=>{
+      const div=document.createElement('div');
+      div.className='row';
+      const badge=s.status==='pending'
+        ?'<span class=badge-p>待審</span>'
+        :s.status==='approved'
+          ?'<span class=badge-a>已核准</span>'
+          :'<span class=badge-r>已拒絕</span>';
 
-    res.groups.forEach(g => {
-      g.signups.forEach(s => {
-        const box = document.createElement('div');
-        box.className = 'game';
-        box.textContent = `${g.date}｜${g.category}｜${s.judge_name}（${s.status}）`;
-        document.getElementById(s.status).appendChild(box);
-      });
+      let actions='';
+      if(s.status==='pending'){
+        actions=`
+          <button onclick="review('${s.signup_id}','approve')">核准</button>
+          <button onclick="review('${s.signup_id}','reject')">拒絕</button>
+        `;
+      }
+
+      div.innerHTML=`${s.date}｜${s.category}｜${s.judge_name} ${badge} ${actions}`;
+      box[s.status].appendChild(div);
     });
   });
+
+  window.review=(id,mode)=>{
+    callApi(`reviewSingleGame&signup_id=${id}&mode=${mode}`,()=>location.reload());
+  };
 });
 </script>
-
 </body>
 </html>
