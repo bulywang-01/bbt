@@ -10,7 +10,6 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont;
   background: #f5f6f8;
 }
-
 .header {
   display: flex;
   justify-content: space-between;
@@ -19,63 +18,40 @@ body {
   background: #ffffff;
   border-bottom: 1px solid #ddd;
 }
-
 .nav a {
   margin-right: 16px;
   color: #0066cc;
   text-decoration: none;
   font-weight: 500;
 }
-.nav a:hover {
-  text-decoration: underline;
-}
-
-.main {
-  padding: 20px;
-}
-
+.nav a:hover { text-decoration: underline; }
+.main { padding: 20px; }
 .panel {
   background: #ffffff;
   padding: 16px;
   border-radius: 6px;
 }
-
 table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
-
 th, td {
   padding: 8px;
   border-bottom: 1px solid #eee;
   vertical-align: top;
 }
-
 th {
   background: #f0f2f5;
   text-align: left;
 }
-
-tr.locked {
-  background: #f4f4f4;
-  color: #777;
-}
-
-select {
-  padding: 2px 4px;
-}
-
 button {
   padding: 4px 10px;
   margin-right: 4px;
 }
-
 .badge {
   font-weight: bold;
-  color: #0b5ed7;
 }
-
 .badge-pending { color: #e6a700; }
 .badge-approved { color: #2e7d32; }
 .badge-rejected { color: #c62828; }
@@ -116,9 +92,7 @@ button {
         </tr>
       </thead>
       <tbody id="adminBody">
-        <tr>
-          <td colspan="9">載入中…</td>
-        </tr>
+        <tr><td colspan="9">載入中…</td></tr>
       </tbody>
     </table>
   </div>
@@ -146,19 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const adminBody = document.getElementById('adminBody');
 
-  const posText = {
-    auto: '排班',
-    PU: '主審',
-    U1: '一壘',
-    U3: '三壘'
-  };
-
-  function formatDate(v) {
-    const d = new Date(v);
-    if (isNaN(d)) return v;
-    return d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate();
-  }
-
   function callApi(query, callback) {
     const cbName = 'cb_' + Date.now();
     window[cbName] = (res) => {
@@ -170,88 +131,48 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(s);
   }
 
-  // ===== 載入管理端清單 =====
   function loadAdminList() {
     adminBody.innerHTML = '<tr><td colspan="9">載入中…</td></tr>';
-
     callApi('action=getAdminSignupList', (res) => {
-      console.log('ADMIN LIST:', res);
-
-      if (!res || res.result !== 'ok' || !Array.isArray(res.items)) {
-        adminBody.innerHTML = '<tr><td colspan="9">讀取失敗</td></tr>';
+      console.log('ADMIN LIST', res);
+      if (!res || res.result !== 'ok') {
+        adminBody.innerHTML = '<tr><td colspan="9">無法讀取資料</td></tr>';
         return;
       }
-
-      if (res.items.length === 0) {
-        adminBody.innerHTML = '<tr><td colspan="9">目前沒有待審核資料</td></tr>';
-        return;
-      }
-
       adminBody.innerHTML = '';
-
       res.items.forEach(item => {
         const tr = document.createElement('tr');
-
-        if (item.status !== 'pending') {
-          tr.classList.add('locked');
-        }
-
-        const options = item.available_positions.map(p => {
-          return `<option value="${p}" ${p === item.preferred_position ? 'selected' : ''}>
-            ${posText[p] || p}
-          </option>`;
-        }).join('');
-
-        const statusBadge =
-          item.status === 'pending'
-            ? '<span class="badge badge-pending">待審</span>'
-            : item.status === 'approved'
-              ? '<span class="badge badge-approved">已核准</span>'
-              : '<span class="badge badge-rejected">已退回</span>';
-
         tr.innerHTML = `
-          <td>${formatDate(item.date)}</td>
+          <td>${item.date}</td>
           <td>${item.category}</td>
           <td>${item.away_team} vs ${item.home_team}</td>
           <td>${item.field}</td>
           <td>${item.judge_name}</td>
-          <td>${posText[item.preferred_position] || '排班'}</td>
+          <td>${item.preferred_position}</td>
           <td>
-            <select ${item.status !== 'pending' ? 'disabled' : ''} data-id="${item.signup_id}">
-              ${options}
+            <select data-id="${item.signup_id}">
+              ${item.available_positions.map(p => `<option value="${p}">${p}</option>`).join('')}
             </select>
           </td>
-          <td>${statusBadge}</td>
+          <td>${item.status}</td>
           <td>
-            ${item.status === 'pending'       reject退回</button>
-            ` : ''}
-          </td>
-        `;
-
-        adminBody.appendChild(tr);
+            <button data-action="approve" data-id="${item.signup_id(tr);
       });
     });
   }
 
-  // ===== 處理核准／退回 =====
   adminBody.addEventListener('click', (e) => {
     const btn = e.target;
     if (!btn.dataset.action) return;
+    const id = btn.dataset.id;
 
-    const signupId = btn.dataset.id;
-    const action = btn.dataset.action;
-
-    if (action === 'reject') {
-      if (!confirm('確定要退回此申請？')) return;
-      callApi(`action=assignUmpire&signup_id=${signupId}&mode=reject`, loadAdminList);
+    if (btn.dataset.action === 'reject') {
+      callApi(`action=assignUmpire&signup_id=${id}&mode=reject`, loadAdminList);
     }
-
-    if (action === 'approve') {
-      const select = document.querySelector(`select[data-id="${signupId}"]`);
-      const pos = select.value;
-
+    if (btn.dataset.action === 'approve') {
+      const sel = document.querySelector(`select[data-id="${id}"]`);
       callApi(
-        `action=assignUmpire&signup_id=${signupId}&assigned_position=${pos}`,
+        `action=assignUmpire&signup_id=${id}&assigned_position=${sel.value}`,
         loadAdminList
       );
     }
