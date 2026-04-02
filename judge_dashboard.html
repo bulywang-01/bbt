@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     callApi('action=getSignableGames', res => {
       gameBody.innerHTML = '';
       if (!res || !Array.isArray(res.games)) {
-        gameBody.innerHTML = '<tr><td colspan="6">讀取失敗</td></tr>';
+        gameBody.innerHTML = '<tr><td colspan="8">讀取失敗</td></tr>';
         return;
       }
 
@@ -153,16 +153,18 @@ document.addEventListener('DOMContentLoaded', () => {
           }).join(' ');
         }
 
-          tr.innerHTML = `
-            <td class="${s.c}">${s.t}</td>
-            <td>${g.date}</td>
-            <td>${g.time || ''}</td>
-            <td>${formatDuration(g.duration)}</td>
-            <td>${g.category}</td>
-            <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
-            <td>${g.field || ''}</td>
-            <td>${options}</td>
-          `;
+
+            tr.innerHTML = `
+              <td class="${s.c}">${s.t}</td>
+              <td>${g.date}</td>
+              <td>${g.time || ''}</td>
+              <td>${formatDuration(g.duration)}</td>
+              <td>${g.category}</td>
+              <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
+              <td>${g.field || ''}</td>
+              <td>${options}</td>
+            `;
+
 
 
         gameBody.appendChild(tr);
