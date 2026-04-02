@@ -86,13 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
     location.href = 'login.html';
   };
 
-  /* ✅ admin-only 導航顯示控制 */
+  /* admin-only 顯示 */
   document.querySelectorAll('.admin-only').forEach(el => {
     el.style.display = (session.role === 'admin') ? '' : 'none';
   });
 
   const gameBody = document.getElementById('gameBody');
   const posText  = { auto:'排班', PU:'主審', U1:'一壘', U3:'三壘' };
+
+  let allGames = [];
 
   function callApi(q, cb) {
     const f = 'cb_' + Date.now();
@@ -118,41 +120,69 @@ document.addEventListener('DOMContentLoaded', () => {
     return ['auto'];
   }
 
-  /* ✅ 記錄已選擇，用於防同日重複 */
-  const selectedByDate = {};
+  /* ✅ 上方篩選 UI（動態插入，不改 HTML 檔） */
+  const panel = document.querySelector('.panel');
+  const filterBar = document.createElement('div');
+  filterBar.style.margin = '8px 0';
+  filterBar.innerHTML = `
+    <label style="margin-right:16px;">
+      <input type="checkbox" id="chkThisYear" checked>
+      顯示本年度賽事
+    </label>
+    <label>
+      <input type="checkbox" id="chkHideEnded">
+      隱藏完成賽事
+    </label>
+  `;
+  panel.insertBefore(filterBar, panel.querySelector('table'));
 
-  function loadGames() {
-    gameBody.innerHTML = '<tr><td colspan="6">載入中…</td></tr>';
+  document.getElementById('chkThisYear').onchange = render;
+  document.getElementById('chkHideEnded').onchange = render;
 
-    callApi('action=getSignableGames', res => {
-      gameBody.innerHTML = '';
-      const games = res.games || [];
+  /* ✅ 主要 render（月份分組） */
+  function render() {
+    gameBody.innerHTML = '';
 
-      /* ✅ 依日期排序（由近到遠） */
-      games.sort((a,b) => new Date(a.date) - new Date(b.date));
+    const showThisYear = document.getElementById('chkThisYear').checked;
+    const hideEnded   = document.getElementById('chkHideEnded').checked;
+    const currentYear = new Date().getFullYear();
 
-      games.forEach(g => {
+    /* 篩選 */
+    let games = allGames.filter(g => {
+      const d = new Date(g.date);
+      if (showThisYear && d.getFullYear() !== currentYear) return false;
+      if (hideEnded && g.past) return false;
+      return true;
+    });
+
+    /* 依日期排序 */
+    games.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+    /* 依月份分組 */
+    const groups = {};
+    games.forEach(g => {
+      const d = new Date(g.date);
+      const key = `${d.getFullYear()}-${d.getMonth()+1}`;
+      if (!groups[key]) groups[key] = { year:d.getFullYear(), month:d.getMonth()+1, items:[] };
+      groups[key].items.push(g);
+    });
+
+    Object.values(groups).forEach(group => {
+
+      /* 月份標題列 */
+      const monthTr = document.createElement('tr');
+      monthTr.innerHTML = `
+        <td colspan="6" style="background:#e9ecef;font-weight:bold;">
+          ${group.month}月
+        </td>
+      `;
+      gameBody.appendChild(monthTr);
+
+      group.items.forEach(g => {
         const tr = document.createElement('tr');
-
         const s = statusInfo(g.date);
 
-        /* ✅ 快滿提醒（剩 1 人） */
-        const remain = g.need_count - (g.signup_count || 0);
-        if (remain === 1 && !g.full) {
-          tr.style.background = '#fff3cd';
-        }
-
-        /* ✅ 自己已報名 → 淡藍底 */
-        if (g.signed) {
-          tr.style.background = '#eef5ff';
-        }
-
-        if (g.signed || g.full || g.past) {
-          tr.classList.add('locked');
-        }
-
         let options = '';
-
         if (g.signed) {
           options = `已報名 <span class="badge">(${posText[g.my_position]})</span>`;
         } else {
@@ -162,72 +192,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
           options = list.map(p => {
             const used = (g.occupied_positions || []).includes(p);
-
             return `
-              <label class="${used ? 'occupied' : ''}">
+              <label class="${used?'occupied':''}">
                 <input type="radio"
                        name="pos_${g.game_id}"
                        value="${p}"
-                       ${used || g.full || g.past ? 'disabled' : ''}
-                       onchange="onSelect('${g.game_id}','${g.date}',this)">
-                ${posText[p]}${used ? '（已有人）' : ''}
+                       ${used || g.full || g.past ? 'disabled' : ''}>
+                ${posText[p]}${used?'（已有人）':''}
               </label>
             `;
           }).join(' ');
-
-          /* ✅ 只有尚未結束才顯示取消 */
-          if (!g.past) {
-            options += `
-              <button type="button"
-                      onclick="clearChoice('${g.game_id}','${g.date}')">
-                取消選擇
-              </button>
-            `;
-          }
         }
 
         tr.innerHTML = `
           <td class="${s.c}">${s.t}</td>
           <td>${g.date.slice(0,10)}</td>
           <td>${g.category}</td>
-          <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
-          <td>${g.field || ''}</td>
+          <td>${g.away_team||''} vs ${g.home_team||''}</td>
+          <td>${g.field||''}</td>
           <td>${options}</td>
         `;
-
         gameBody.appendChild(tr);
       });
     });
   }
 
-  /* ✅ 防同日重複報名 */
-  window.onSelect = function(gameId, date, el) {
-    if (selectedByDate[date] && selectedByDate[date] !== gameId) {
-      alert('同一天只能報名一場比賽');
-      el.checked = false;
-      return;
-    }
-    selectedByDate[date] = gameId;
-  };
-
-  window.clearChoice = function(gameId, date) {
-    document.querySelectorAll(`[name="pos_${gameId}"]`).forEach(r => r.checked = false);
-    if (selectedByDate[date] === gameId) {
-      delete selectedByDate[date];
-    }
-  };
+  function loadGames() {
+    gameBody.innerHTML = '<tr><td colspan="6">載入中…</td></tr>';
+    callApi('action=getSignableGames', res => {
+      allGames = res.games || [];
+      render();
+    });
+  }
 
   document.getElementById('btnSubmit').onclick = () => {
     const sel = [];
     document.querySelectorAll('input[type=radio]:checked').forEach(r => {
       sel.push(r.name.replace('pos_','') + ':' + r.value);
     });
-
-    if (!sel.length) {
-      alert('尚未選擇任何比賽');
-      return;
-    }
-
+    if (!sel.length) { alert('尚未選擇任何比賽'); return; }
     callApi(
       'action=judgeSignupByGames&games_with_position=' + encodeURIComponent(sel.join(',')),
       () => { alert('報名完成'); loadGames(); }
