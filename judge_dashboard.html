@@ -81,19 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const gameBody = document.getElementById('gameBody');
   const posText = { auto:'排班', PU:'主審', U1:'一壘', U3:'三壘' };
 
-  function formatDuration(min) {
-    if (!min || min <= 0) return '';
-    if (min % 60 === 0) {
-      return (min / 60) + ' 小時';
-    }
-    if (min > 60) {
-      const h = Math.floor(min / 60);
-      const m = min % 60;
-      return `${h} 小時 ${m} 分鐘`;
-    }
-    return min + ' 分鐘';
-  }
-  
   function callApi(q, cb) {
     const f = 'cb_' + Date.now();
     window[f] = r => { delete window[f]; cb(r); };
@@ -118,6 +105,21 @@ document.addEventListener('DOMContentLoaded', () => {
     return ['auto'];
   }
 
+  function formatDuration(min) {
+    min = Number(min);
+    if (!min || isNaN(min) || min <= 0) return '';
+    if (min % 60 === 0) {
+      return (min / 60) + ' 小時';
+    }
+    if (min > 60) {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return `${h} 小時 ${m} 分鐘`;
+    }
+    return min + ' 分鐘';
+  }
+
+  
   function loadGames() {
     gameBody.innerHTML = '<tr><td colspan="6">載入中…</td></tr>';
 
