@@ -157,24 +157,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* 依排序 */
-        games.sort((a, b) => {
-      // ① 日期
-      const da = new Date(a.date);
-      const db = new Date(b.date);
-      if (da.getTime() !== db.getTime()) {
-        return da - db;
-      }
-    
-      // ② 時間（沒有時間的放後面）
-      const ta = a.time || '99:99';
-      const tb = b.time || '99:99';
-      if (ta !== tb) {
-        return ta.localeCompare(tb);
-      }
-    
-      // ③ 組別
-      return (a.category || '').localeCompare(b.category || '');
-    });
+    games.sort((a, b) => {
+  // ① 日期（無效日期放最後）
+  const da = new Date(a.date);
+  const db = new Date(b.date);
+  const ta = isNaN(da) ? Infinity : da.getTime();
+  const tb = isNaN(db) ? Infinity : db.getTime();
+  if (ta !== tb) return ta - tb;
+
+  // ② 時間（空的丟到最後）
+  const timeA = a.time || '99:99';
+  const timeB = b.time || '99:99';
+  if (timeA !== timeB) return timeA.localeCompare(timeB);
+
+  // ③ 組別
+  return (a.category || '').localeCompare(b.category || '');
+});
+
 
     /* 依月份分組 */
     const groups = {};
