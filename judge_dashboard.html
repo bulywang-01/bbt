@@ -11,36 +11,30 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
 .nav a:hover{text-decoration:underline}
 .main{padding:20px}
 .panel{background:#fff;padding:16px;border-radius:6px}
-
 table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:8px;border-bottom:1px solid #eee;vertical-align:top}
+th,td{padding:8px;border-bottom:1px solid #eee}
 th{background:#f0f2f5;text-align:left}
 tr.locked{background:#f4f4f4;color:#777}
-
-label{margin-right:8px;white-space:nowrap;padding:2px 6px;border-radius:4px}
-label.occupied{background:#ffecec;color:#a00;font-weight:bold}
-
-button{margin-top:8px;padding:4px 10px;font-size:12px}
-
-.badge{font-weight:bold;color:#0b5ed7}
-.status-ended{color:#999}
-.status-soon{color:#e6a700;font-weight:bold}
-.status-open{color:#0b5ed7;font-weight:bold}
+label{margin-right:8px}
+button{margin-top:12px}
 </style>
 </head>
 
 <body>
+
+<!-- Header -->
 <div class="header">
   <div class="nav">
     <a href="index.html">首頁</a>
     <a href="judge_dashboard.html">裁判報名</a>
   </div>
   <div>
-    <b id="u_name"></b>
-    <a id="btnLogout" style="margin-left:12px;cursor:pointer;">登出</a>
+    <span id="u_name"></span>
+    <a href="#" id="btnLogout" style="margin-left:12px;">登出</a>
   </div>
 </div>
 
+<!-- Main -->
 <div class="main">
   <div class="panel">
     <h3>可報名比賽</h3>
@@ -48,16 +42,15 @@ button{margin-top:8px;padding:4px 10px;font-size:12px}
     <table>
       <thead>
         <tr>
-          <th>狀態</th>
           <th>日期</th>
           <th>組別</th>
           <th>對戰</th>
           <th>場地</th>
-          <th>站位偏好</th>
+          <th>站位</th>
         </tr>
       </thead>
       <tbody id="gameBody">
-        <tr><td colspan="6">載入中…</td></tr>
+        <tr><td colspan="5">載入中…</td></tr>
       </tbody>
     </table>
 
@@ -65,116 +58,57 @@ button{margin-top:8px;padding:4px 10px;font-size:12px}
   </div>
 </div>
 
+<!-- ✅ 正確載入 JS -->
 <script src="js/config.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
 
-  const token=localStorage.getItem('token');
-  const session=JSON.parse(localStorage.getItem('session_user')||'{}');
-  if(!token){location.href='login.html';return;}
+  if (!token) {
+    location.href = 'login.html';
+    return;
+  }
 
-  document.getElementById('u_name').textContent=session.name||'';
-  document.getElementById('btnLogout').onclick=()=>{
-    localStorage.clear();location.href='login.html';
+  document.getElementById('u_name').textContent = session.name || '';
+
+  document.getElementById('btnLogout').onclick = (e) => {
+    e.preventDefault();
+    localStorage.clear();
+    location.href = 'login.html';
   };
 
-  const gameBody=document.getElementById('gameBody');
-  const posText={auto:'排班',PU:'主審',U1:'一壘',U3:'三壘'};
+  const body = document.getElementById('gameBody');
 
-  function callApi(q,cb){
-    const f='cb_'+Date.now();
-    window[f]=r=>{delete window[f];cb(r);};
-    const s=document.createElement('script');
-    s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
+  function callApi(action, cb){
+    const fn = 'cb_' + Date.now();
+    window[fn] = r => { delete window[fn]; cb(r); };
+    const s = document.createElement('script');
+    s.src = API_URL + '?action=' + action + '&token=' + token + '&callback=' + fn;
     document.body.appendChild(s);
   }
 
-  function statusInfo(v){
-    const t=new Date();t.setHours(0,0,0,0);
-    const d=new Date(v);d.setHours(0,0,0,0);
-    const diff=(d-t)/86400000;
-    if(diff<0)return{t:'已結束',c:'status-ended'};
-    if(diff<=3)return{t:'即將結束',c:'status-soon'};
-    return{t:'進行中',c:'status-open'};
-  }
+  callApi('getSignableGames', res => {
+    body.innerHTML = '';
+    if (!res || res.result !== 'ok') {
+      body.innerHTML = '<tr><td colspan="5">無法讀取資料</td></tr>';
+      return;
+    }
 
-  function allowedPositions(n){
-    n=Number(n);
-    if(n===2)return['auto','PU','U1'];
-    if(n===3)return['auto','PU','U1','U3'];
-    return['auto'];
-  }
-
-  function loadGames(){
-    gameBody.innerHTML='<tr><td colspan="6">載入中…</td></tr>';
-    callApi('action=getSignableGames',res=>{
-      gameBody.innerHTML='';
-      res.games.forEach(g=>{
-        const tr=document.createElement('tr');
-        if(g.signed||g.full||g.past)tr.classList.add('locked');
-        const s=statusInfo(g.date);
-
-        let options='';
-if (g.signed) {
-  options = `已報名 <span class="badge">(${posText[g.my_position]})</span>`;
-}
-else {
-  const list = g.position_mode !== 'allow_select'
-    ? ['auto']
-    : allowedPositions(g.need_count);
-
-  options = list.map(p => {
-    const used = (g.occupied_positions || []).includes(p);
-    return `
-      <label class="${used ? 'occupied' : ''}">
-        <input type="radio"
-          name="pos_${g.game_id}"
-          value="${p}"
-          ${(used || g.full || g.past) ? 'disabled' : ''}>
-        ${posText[p]}${used ? '（已有人）' : ''}
-      </label>
-    `;
-  }).join(' ');
-
-  // ✅ 只有「尚未結束」才顯示取消按鈕
-  if (!g.past) {
-    options += `
-      <button type="button" onclick="clearChoice('${g.game_id}')">
-        取消選擇
-      </button>
-    `;
-  }
-}
-
-        tr.innerHTML=`
-          <td class="${s.c}">${s.t}</td>
-          <td>${g.date.slice(0,10)}</td>
-          <td>${g.category}</td>
-          <td>${g.away_team||''} vs ${g.home_team||''}</td>
-          <td>${g.field||''}</td>
-          <td>${options}</td>`;
-        gameBody.appendChild(tr);
-      });
+    res.games.forEach(g => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${g.date}</td>
+        <td>${g.category}</td>
+        <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
+        <td>${g.field || ''}</td>
+        <td>排班</td>
+      `;
+      body.appendChild(tr);
     });
-  }
-
-  window.clearChoice=function(gameId){
-    document.querySelectorAll(`[name="pos_${gameId}"]`)
-      .forEach(r=>r.checked=false);
-  };
-
-  document.getElementById('btnSubmit').onclick=()=>{
-    const sel=[];
-    document.querySelectorAll('input[type=radio]:checked').forEach(r=>{
-      sel.push(r.name.replace('pos_','')+':'+r.value);
-    });
-    if(!sel.length){alert('尚未選擇任何比賽');return;}
-    callApi('action=judgeSignupByGames&games_with_position='+encodeURIComponent(sel.join(',')),
-      ()=>{alert('報名完成');loadGames();});
-  };
-
-  loadGames();
+  });
 });
 </script>
+
 </body>
 </html>
