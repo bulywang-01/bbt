@@ -29,8 +29,31 @@ body{
 }
 .user-info{
   text-align:right;
+  line-height:1.6;
+}
+
+/* 帳號 */
+.user-username{
+  font-size:15px;
+  color:#555;
+}
+
+/* 姓名：最大、最顯眼 */
+.user-name{
+  font-size:18px;
+  font-weight:600;
+}
+
+/* 角色：給一點視覺層級 */
+.user-role{
   font-size:14px;
-  line-height:1.5;
+  color:#666;
+}
+
+/* 登出 */
+.user-logout{
+  margin-top:4px;
+  font-size:13px;
 }
 .main{
   padding:20px;
@@ -61,12 +84,21 @@ body{
     </span>
   </div>
 
-  <div class="user-info">
-    👤 <b id="u_username"></b><br>
-    🧑 <b id="u_name"></b><br>
-    🛡 <b id="u_role"></b><br>
+<div class="user-info"><div class="user-username">
+    👤 <b id="u_username"></b>
+  </div>
+  <div class="user-name">
+    🧑 <b id="u_name"></b>
+  </div>
+  <div class="user-role">
+    🛡 <b id="u_role"></b>
+  </div>
+  <div class="user-logout">
     <a href="#" onclick="logout()">🚪 登出</a>
   </div>
+</div>
+
+
 </div>
 
 <!-- ================= Main ================= -->
