@@ -22,7 +22,7 @@ label.occupied{background:#ffecec;color:#a00;font-weight:bold}
 
 button{margin-top:8px;padding:4px 10px;font-size:12px}
 
-.badge{font-weight:bold;color:#0b5ed7}
+.badge{font-weight:bold;color:#0b5ed7}ames.sort
 .status-ended{color:#999}
 .status-soon{color:#e6a700;font-weight:bold}
 .status-open{color:#0b5ed7;font-weight:bold}
@@ -155,8 +155,25 @@ document.addEventListener('DOMContentLoaded', () => {
       return true;
     });
 
-    /* 依日期排序 */
-    games.sort((a,b) => new Date(a.date) - new Date(b.date));
+    /* 依排序 */
+        games.sort((a, b) => {
+      // ① 日期
+      const da = new Date(a.date);
+      const db = new Date(b.date);
+      if (da.getTime() !== db.getTime()) {
+        return da - db;
+      }
+    
+      // ② 時間（沒有時間的放後面）
+      const ta = a.time || '99:99';
+      const tb = b.time || '99:99';
+      if (ta !== tb) {
+        return ta.localeCompare(tb);
+      }
+    
+      // ③ 組別
+      return (a.category || '').localeCompare(b.category || '');
+    });
 
     /* 依月份分組 */
     const groups = {};
