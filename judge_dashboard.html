@@ -66,6 +66,16 @@ button{margin-top:8px;padding:4px 10px;font-size:12px}
 
 <script src="js/config.js"></script>
 <script>
+
+<script>
+/* ===== 強制封鎖 Fetch / XHR，避免任何非 JSONP 請求 ===== */
+(function(){
+  const msg = 'Blocked non-JSONP request (use callback only)';
+  window.fetch = function(){ throw new Error(msg); };
+  window.XMLHttpRequest = function(){ throw new Error(msg); };
+})();
+</script>
+  
 document.addEventListener('DOMContentLoaded', () => {
 
   const token = localStorage.getItem('token');
