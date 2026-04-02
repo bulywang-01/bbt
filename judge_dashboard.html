@@ -11,12 +11,17 @@ body{margin:0;font-family:system-ui;background:#f5f6f8}
 .nav a:hover{text-decoration:underline}
 .main{padding:20px}
 .panel{background:#fff;padding:16px;border-radius:6px}
+
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid #eee;vertical-align:top}
 th{background:#f0f2f5;text-align:left}
 tr.locked{background:#f4f4f4;color:#777}
-label{margin-right:8px;white-space:nowrap}
-button{margin-top:16px;padding:6px 14px}
+
+label{margin-right:8px;white-space:nowrap;padding:2px 6px;border-radius:4px}
+label.occupied{background:#ffecec;color:#a00;font-weight:bold}
+
+button{margin-top:8px;padding:4px 10px;font-size:12px}
+
 .badge{font-weight:bold;color:#0b5ed7}
 .status-ended{color:#999}
 .status-soon{color:#e6a700;font-weight:bold}
@@ -25,7 +30,6 @@ button{margin-top:16px;padding:6px 14px}
 </head>
 
 <body>
-
 <div class="header">
   <div class="nav">
     <a href="index.html">首頁</a>
@@ -61,25 +65,20 @@ button{margin-top:16px;padding:6px 14px}
   </div>
 </div>
 
-<!-- ✅ 正確載入 -->
 <script src="js/config.js"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
 
-  const token = localStorage.getItem('token');
-  const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-  if(!token){ location.href='login.html'; return; }
+  const token=localStorage.getItem('token');
+  const session=JSON.parse(localStorage.getItem('session_user')||'{}');
+  if(!token){location.href='login.html';return;}
 
   document.getElementById('u_name').textContent=session.name||'';
   document.getElementById('btnLogout').onclick=()=>{
-    localStorage.clear();
-    location.href='login.html';
+    localStorage.clear();location.href='login.html';
   };
 
   const gameBody=document.getElementById('gameBody');
-  const btnSubmit=document.getElementById('btnSubmit');
-
   const posText={auto:'排班',PU:'主審',U1:'一壘',U3:'三壘'};
 
   function callApi(q,cb){
@@ -90,18 +89,13 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.body.appendChild(s);
   }
 
-  function formatDate(v){
-    const d=new Date(v); if(isNaN(d))return v;
-    return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
-  }
-
   function statusInfo(v){
-    const today=new Date(); today.setHours(0,0,0,0);
-    const d=new Date(v); d.setHours(0,0,0,0);
-    const diff=(d-today)/86400000;
-    if(diff<0) return {t:'已結束',c:'status-ended'};
-    if(diff<=3) return {t:'即將結束',c:'status-soon'};
-    return {t:'進行中',c:'status-open'};
+    const t=new Date();t.setHours(0,0,0,0);
+    const d=new Date(v);d.setHours(0,0,0,0);
+    const diff=(d-t)/86400000;
+    if(diff<0)return{t:'已結束',c:'status-ended'};
+    if(diff<=3)return{t:'即將結束',c:'status-soon'};
+    return{t:'進行中',c:'status-open'};
   }
 
   function allowedPositions(n){
@@ -113,67 +107,57 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   function loadGames(){
     gameBody.innerHTML='<tr><td colspan="6">載入中…</td></tr>';
-
     callApi('action=getSignableGames',res=>{
-      if(!res||res.result!=='ok'){
-        gameBody.innerHTML='<tr><td colspan="6">讀取失敗</td></tr>'; return;
-      }
-      if(!res.games.length){
-        gameBody.innerHTML='<tr><td colspan="6">目前沒有資料</td></tr>'; return;
-      }
-
       gameBody.innerHTML='';
       res.games.forEach(g=>{
         const tr=document.createElement('tr');
-        if(g.signed||g.full||g.past) tr.classList.add('locked');
-
+        if(g.signed||g.full||g.past)tr.classList.add('locked');
         const s=statusInfo(g.date);
-        let cell='';
 
+        let options='';
         if(g.signed){
-          cell=`已報名 <span class="badge">(${posText[g.my_position]||'排班'})</span>`;
-        }else if(g.position_mode!=='allow_select'){
-          /* ✅ auto_only 仍可選排班 */
-          cell=`
-            <label>
-              <input type="radio" name="pos_${g.game_id}" value="auto"
-                ${(g.full||g.past)?'disabled':''}>
-              排班
-            </label>`;
+          options=`已報名 <span class="badge">(${posText[g.my_position]})</span>`;
         }else{
-          cell=allowedPositions(g.need_count).map(p=>{
+          const list=g.position_mode!=='allow_select'
+            ?['auto']
+            :allowedPositions(g.need_count);
+          options=list.map(p=>{
             const used=(g.occupied_positions||[]).includes(p);
-            return`
-              <label>
+            return `
+              <label class="${used?'occupied':''}">
                 <input type="radio" name="pos_${g.game_id}" value="${p}"
                   ${(used||g.full||g.past)?'disabled':''}>
-                ${posText[p]||p}${used?'（已有人）':''}
+                ${posText[p]}${used?'（已有人）':''}
               </label>`;
-          }).join(' ');
+          }).join(' ')
+          + ` <button type="button" onclick="clearChoice('${g.game_id}')">取消選擇</button>`;
         }
 
         tr.innerHTML=`
           <td class="${s.c}">${s.t}</td>
-          <td>${formatDate(g.date)}</td>
+          <td>${g.date.slice(0,10)}</td>
           <td>${g.category}</td>
           <td>${g.away_team||''} vs ${g.home_team||''}</td>
           <td>${g.field||''}</td>
-          <td>${cell}</td>`;
+          <td>${options}</td>`;
         gameBody.appendChild(tr);
       });
     });
   }
 
-  btnSubmit.onclick=()=>{
-    const list=[];
+  window.clearChoice=function(gameId){
+    document.querySelectorAll(`[name="pos_${gameId}"]`)
+      .forEach(r=>r.checked=false);
+  };
+
+  document.getElementById('btnSubmit').onclick=()=>{
+    const sel=[];
     document.querySelectorAll('input[type=radio]:checked').forEach(r=>{
-      list.push(r.name.replace('pos_','')+':'+r.value);
+      sel.push(r.name.replace('pos_','')+':'+r.value);
     });
-    if(!list.length){ alert('尚未選擇任何比賽'); return; }
-    callApi(
-      'action=judgeSignupByGames&games_with_position='+encodeURIComponent(list.join(',')),
-      ()=>{ alert('報名完成'); loadGames(); }
-    );
+    if(!sel.length){alert('尚未選擇任何比賽');return;}
+    callApi('action=judgeSignupByGames&games_with_position='+encodeURIComponent(sel.join(',')),
+      ()=>{alert('報名完成');loadGames();});
   };
 
   loadGames();
