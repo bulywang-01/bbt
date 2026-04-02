@@ -47,7 +47,8 @@ button{margin-top:8px;padding:4px 10px;font-size:12px}
         <tr>
           <th>狀態</th>
           <th>日期</th>
-          <th>時間</th>     <!-- ✅ 新增 -->
+          <th>比賽時間</th>     <!-- ✅ 新增 -->
+          <th>賽事時間</th>
           <th>組別</th>
           <th>對戰</th>
           <th>場地</th>
@@ -80,6 +81,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const gameBody = document.getElementById('gameBody');
   const posText = { auto:'排班', PU:'主審', U1:'一壘', U3:'三壘' };
 
+  function formatDuration(min) {
+    if (!min || min <= 0) return '';
+    if (min % 60 === 0) {
+      return (min / 60) + ' 小時';
+    }
+    if (min > 60) {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return `${h} 小時 ${m} 分鐘`;
+    }
+    return min + ' 分鐘';
+  }
+  
   function callApi(q, cb) {
     const f = 'cb_' + Date.now();
     window[f] = r => { delete window[f]; cb(r); };
@@ -142,7 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
           tr.innerHTML = `
             <td class="${s.c}">${s.t}</td>
             <td>${g.date}</td>
-            <td>${g.time || ''}</td>     <!-- ✅ 新增 -->
+            <td>${g.time || ''}</td>
+            <td>${formatDuration(g.duration)}</td>
             <td>${g.category}</td>
             <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
             <td>${g.field || ''}</td>
