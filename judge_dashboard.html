@@ -41,7 +41,35 @@ body{
   border-radius:6px;
   margin-bottom:24px;
 }
+  
+/* 站位選擇區 */
+.position-options {
+  margin-top: 6px;
+  font-size: 14px;
+}
 
+/* 已選站位標示 */
+.position-selected {
+  font-weight: bold;
+  color: #0b5ed7;
+  margin-left: 8px;
+}
+
+/* 已滿額比賽 */
+.game-row.full {
+  background: #f4f4f4;
+  color: #777;
+}
+
+/* 已滿額仍顯示站位 */
+.game-row.full .position-options {
+  opacity: 0.8;
+}
+
+/* Radio 排列 */
+.position-options label {
+  margin-right: 12px;
+}
 /* ===== Game List ===== */
 .game-row{
   border-bottom:1px solid #eee;
@@ -175,46 +203,47 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }
 
       gameList.innerHTML = '';
-      res.games.forEach(g=>{
-        // 若比賽已滿額，直接顯示不可選
-        if(g.full){
-          gameList.innerHTML += `
-            <div class="game-row disabled">
-              ${formatDate(g.date)}｜${g.tournament}｜${g.category}
-              （已滿額）
-            </div>`;
-          return;
-        }
+res.games.forEach(g => {
 
-        // 管理端是否允許選站位
-        const allowSelect = (g.position_mode === 'allow_select');
+  const isFull = g.full === true;
+  const allowSelect = (g.position_mode === 'allow_select');
 
-        const allowed = allowSelect
-          ? getAllowedPositions(g.need_count)
-          : ['auto'];
+  const allowed = allowSelect
+    ? getAllowedPositions(g.need_count)
+    : ['auto'];
 
-        const radios = allowed.map(p=>{
-          return `
-            <label>
-              <input type="radio"
-                name="pos_${g.game_id}"
-                value="${p}"
-                ${p==='auto'?'checked':''}>
-              ${positionText(p)}
-            </label>`;
-        }).join('');
+  const radios = allowed.map(p => {
+    const checked = (p === 'auto'); // 預設排班
+    return `
+      <label>
+        <input type="radio"
+          name="pos_${g.game_id}"
+          value="${p}"
+          ${checked ? 'checked' : ''}
+          ${isFull ? 'disabled' : ''}>
+        ${positionText(p)}
+      </label>`;
+  }).join('');
 
-        gameList.innerHTML += `
-          <div class="game-row">
-            <div class="game-title">
-              ${formatDate(g.date)}｜${g.tournament}｜${g.category}
-            </div>
-            <div>${g.home_team} vs ${g.away_team}｜${g.field}</div>
-            <div class="position-options">
-              站位偏好：${radios}
-            </div>
-          </div>`;
-      });
+  gameList.innerHTML += `
+    <div class="game-row ${isFull ? 'full' : ''}">
+      <div class="game-title">
+        ${formatDate(g.date)} ｜ ${g.category}
+        ${isFull ? '（已額滿）' : ''}
+      </div>
+      <div>
+        VS ｜ ${g.home_team} ｜ ${g.field}
+      </div>
+      <div class="position-options">
+        站位偏好：
+        ${radios}
+        <span class="position-selected">
+          ※ 已選擇：${positionText('auto')}
+        </span>
+      </div>
+    </div>`;
+});
+
     });
   }
 
