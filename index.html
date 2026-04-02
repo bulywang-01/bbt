@@ -115,14 +115,6 @@ body{
 <script src="js/config.js"></script>
 <script>
 
-/* ====== 強制封鎖 Fetch / XHR，避免 CORB ====== */
-(function(){
-  const msg = 'Blocked fetch/XHR: JSONP only';
-  window.fetch = function(){ throw new Error(msg); };
-  window.XMLHttpRequest = function(){ throw new Error(msg); };
-})();
-  
-  
 /**
  * 系統首頁初始化
  * - 檢查登入狀態
