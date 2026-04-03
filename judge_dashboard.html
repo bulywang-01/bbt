@@ -4,40 +4,26 @@
   <meta charset="UTF-8">
   <title>裁判報名</title>
   <style>
-    body { margin:0; font-family:system-ui; background:#f5f6f8 }
-    .header {
-      display:flex; justify-content:space-between; align-items:center;
-      padding:12px 20px; background:#fff; border-bottom:1px solid #ddd
-    }
-    .nav a {
-      margin-right:16px; color:#0066cc; text-decoration:none; font-weight:500
-    }
-    .nav a:hover { text-decoration:underline }
-    .main { padding:20px }
-    .panel { background:#fff; padding:16px; border-radius:6px }
-    table { width:100%; border-collapse:collapse; font-size:14px }
-    th,td { padding:8px; border-bottom:1px solid #eee; vertical-align:top }
-    th { background:#f0f2f5; text-align:left }
+    body{margin:0;font-family:system-ui;background:#f5f6f8}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd}
+    .nav a{margin-right:16px;color:#0066cc;text-decoration:none;font-weight:500}
+    .nav a:hover{text-decoration:underline}
+    .main{padding:20px}
+    .panel{background:#fff;padding:16px;border-radius:6px}
 
-    tr.locked { background:#f4f4f4; color:#777 }
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:8px;border-bottom:1px solid #eee;vertical-align:top}
+    th{background:#f0f2f5;text-align:left}
 
-    label {
-      margin-right:8px;
-      white-space:nowrap;
-      padding:2px 6px;
-      border-radius:4px;
-      display:inline-block;
-    }
-    label.occupied {
-      background:#ffecec;
-      color:#a00;
-      font-weight:bold;
-    }
+    tr.locked{background:#f4f4f4;color:#777}
 
-    button { margin-top:8px; padding:6px 14px; font-size:13px }
-    .status-ended { color:#999 }
-    .status-soon { color:#e6a700; font-weight:bold }
-    .status-open { color:#0b5ed7; font-weight:bold }
+    label{margin-right:8px;white-space:nowrap;padding:2px 6px;border-radius:4px;display:inline-block}
+    label.occupied{background:#ffecec;color:#a00;font-weight:bold}
+
+    button{margin-top:8px;padding:6px 14px;font-size:13px}
+    .status-ended{color:#999}
+    .status-soon{color:#e6a700;font-weight:bold}
+    .status-open{color:#0b5ed7;font-weight:bold}
   </style>
 </head>
 
@@ -49,7 +35,7 @@
   </div>
   <div>
     <b id="u_name"></b>
-    <a id="btnLogout" style="margin-left:12px; cursor:pointer;">登出</a>
+    <a id="btnLogout" style="margin-left:12px;cursor:pointer;">登出</a>
   </div>
 </div>
 
@@ -76,10 +62,12 @@
   </div>
 </div>
 
+<!-- ✅ 一定要正確載入 -->
 js/config.jsscript>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+
   const token = localStorage.getItem('token');
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
   if (!token) {
@@ -95,19 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const gameBody = document.getElementById('gameBody');
 
-  const posText = {
-    auto: '排班',
-    PU: '主審',
-    U1: '一壘',
-    U3: '三壘'
-  };
+  const posText = { auto:'排班', PU:'主審', U1:'一壘', U3:'三壘' };
 
   function callApi(q, cb) {
     const f = 'cb_' + Date.now();
-    window[f] = r => {
-      delete window[f];
-      cb(r);
-    };
+    window[f] = r => { delete window[f]; cb(r); };
     const s = document.createElement('script');
     s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
     document.body.appendChild(s);
@@ -144,30 +124,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (g.past || g.full) tr.classList.add('locked');
 
         const s = statusInfo(g.date);
-
         const posList = g.position_mode !== 'allow_select'
           ? ['auto']
           : allowedPositions(g.need_count);
 
         const options = posList.map(p => {
-          const occupiedName = (g.occupied_positions || {})[p];
-
-          // ✅ 已有人（包含自己）
-          if (occupiedName) {
-            return `
-              <label class="occupied">
-                ${posText[p]}：<b>${occupiedName}</b>
-              </label>
-            `;
+          const name = (g.occupied_positions || {})[p];
+          if (name) {
+            return `<label class="occupied">${posText[p]}：<b>${name}</b></label>`;
           }
-
-          // ✅ 尚未佔用 → 可選
           return `
             <label>
-              <input type="radio"
-                     name="pos_${g.game_id}"
-                     value="${p}"
-                     ${g.full || g.past ? 'disabled' : ''}>
+              <input type="radio" name="pos_${g.game_id}" value="${p}"
+                ${g.past || g.full ? 'disabled' : ''}>
               ${posText[p]}
             </label>
           `;
@@ -198,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     callApi(
       'action=judgeSignupByGames&games_with_position=' +
-        encodeURIComponent(sel.join(',')),
+      encodeURIComponent(sel.join(',')),
       () => {
         alert('報名完成');
         loadGames();
