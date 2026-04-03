@@ -1,86 +1,91 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>裁判報名</title>
+  <meta charset="UTF-8">
+  <title>裁判報名</title>
+  <style>
+    body { margin:0; font-family:system-ui; background:#f5f6f8 }
+    .header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:12px 20px; background:#fff; border-bottom:1px solid #ddd
+    }
+    .nav a {
+      margin-right:16px; color:#0066cc; text-decoration:none; font-weight:500
+    }
+    .nav a:hover { text-decoration:underline }
+    .main { padding:20px }
+    .panel { background:#fff; padding:16px; border-radius:6px }
+    table { width:100%; border-collapse:collapse; font-size:14px }
+    th,td { padding:8px; border-bottom:1px solid #eee; vertical-align:top }
+    th { background:#f0f2f5; text-align:left }
 
-<style>
-body{margin:0;font-family:system-ui;background:#f5f6f8}
-.header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd}
-.nav a{margin-right:16px;color:#0066cc;text-decoration:none;font-weight:500}
-.nav a:hover{text-decoration:underline}
-.main{padding:20px}
-.panel{background:#fff;padding:16px;border-radius:6px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:8px;border-bottom:1px solid #eee;vertical-align:top}
-th{background:#f0f2f5;text-align:left}
-tr.locked{background:#f4f4f4;color:#777}
-label{margin-right:8px;white-space:nowrap;padding:2px 6px;border-radius:4px}
-label.occupied{background:#ffecec;color:#a00;font-weight:bold}
-button{margin-top:8px;padding:4px 10px;font-size:12px}
-.badge{font-weight:bold;color:#0b5ed7}
-.status-ended{color:#999}
-.status-soon{color:#e6a700;font-weight:bold}
-.status-open{color:#0b5ed7;font-weight:bold}
-</style>
+    tr.locked { background:#f4f4f4; color:#777 }
+
+    label {
+      margin-right:8px;
+      white-space:nowrap;
+      padding:2px 6px;
+      border-radius:4px;
+      display:inline-block;
+    }
+    label.occupied {
+      background:#ffecec;
+      color:#a00;
+      font-weight:bold;
+    }
+
+    button { margin-top:8px; padding:6px 14px; font-size:13px }
+    .status-ended { color:#999 }
+    .status-soon { color:#e6a700; font-weight:bold }
+    .status-open { color:#0b5ed7; font-weight:bold }
+  </style>
 </head>
 
 <body>
-
 <div class="header">
   <div class="nav">
-    <a href="index.html">🏠 首頁</a>
-    <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
+    index.html🏠 首頁</a>
+    judge_dashboard.html🧑‍⚖️ 裁判報名</a>
   </div>
   <div>
     <b id="u_name"></b>
-    <a id="btnLogout" style="margin-left:12px;cursor:pointer;">登出</a>
+    <a id="btnLogout" style="margin-left:12px; cursor:pointer;">登出</a>
   </div>
 </div>
 
 <div class="main">
   <div class="panel">
     <h3>可報名比賽</h3>
-
     <table>
       <thead>
         <tr>
           <th>狀態</th>
           <th>日期</th>
-          <th>比賽時間</th>     <!-- ✅ 新增 -->
-          <th>賽事時間</th>
+          <th>比賽時間</th>
           <th>組別</th>
           <th>對戰</th>
           <th>場地</th>
-          <th>站位偏好</th>
+          <th>站位</th>
         </tr>
       </thead>
       <tbody id="gameBody">
-        <tr><td colspan="6">載入中…</td></tr>
+        <tr><td colspan="7">載入中…</td></tr>
       </tbody>
     </table>
-
     <button id="btnSubmit">送出報名</button>
   </div>
 </div>
 
-<script src="js/config.js"></script>
+js/config.jsscript>
 
 <script>
-/* ===== 強制封鎖 Fetch / XHR，避免任何非 JSONP 請求 ===== */
-(function(){
-  const msg = 'Blocked non-JSONP request (use callback only)';
-  window.fetch = function(){ throw new Error(msg); };
-  window.XMLHttpRequest = function(){ throw new Error(msg); };
-})();
-</script>
-
-<script>  
 document.addEventListener('DOMContentLoaded', () => {
-
   const token = localStorage.getItem('token');
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  if (!token) { location.href = 'login.html'; return; }
+  if (!token) {
+    location.href = 'login.html';
+    return;
+  }
 
   document.getElementById('u_name').textContent = session.name || '';
   document.getElementById('btnLogout').onclick = () => {
@@ -89,22 +94,31 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const gameBody = document.getElementById('gameBody');
-  const posText = { auto:'排班', PU:'主審', U1:'一壘', U3:'三壘' };
+
+  const posText = {
+    auto: '排班',
+    PU: '主審',
+    U1: '一壘',
+    U3: '三壘'
+  };
 
   function callApi(q, cb) {
     const f = 'cb_' + Date.now();
-    window[f] = r => { delete window[f]; cb(r); };
+    window[f] = r => {
+      delete window[f];
+      cb(r);
+    };
     const s = document.createElement('script');
     s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
     document.body.appendChild(s);
   }
 
-  function statusInfo(v) {
+  function statusInfo(dateStr) {
     const t = new Date(); t.setHours(0,0,0,0);
-    const d = new Date(v); d.setHours(0,0,0,0);
+    const d = new Date(dateStr); d.setHours(0,0,0,0);
     const diff = (d - t) / 86400000;
     if (diff < 0) return { t:'已結束', c:'status-ended' };
-    if (diff <= 3) return { t:'即將結束', c:'status-soon' };
+    if (diff <= 3) return { t:'即將開賽', c:'status-soon' };
     return { t:'進行中', c:'status-open' };
   }
 
@@ -115,70 +129,59 @@ document.addEventListener('DOMContentLoaded', () => {
     return ['auto'];
   }
 
-  function formatDuration(min) {
-    min = Number(min);
-    if (!min || isNaN(min) || min <= 0) return '';
-    if (min % 60 === 0) {
-      return (min / 60) + ' 小時';
-    }
-    if (min > 60) {
-      const h = Math.floor(min / 60);
-      const m = min % 60;
-      return `${h} 小時 ${m} 分鐘`;
-    }
-    return min + ' 分鐘';
-  }
-
-  
   function loadGames() {
-    gameBody.innerHTML = '<tr><td colspan="6">載入中…</td></tr>';
+    gameBody.innerHTML = '<tr><td colspan="7">載入中…</td></tr>';
 
     callApi('action=getSignableGames', res => {
       gameBody.innerHTML = '';
       if (!res || !Array.isArray(res.games)) {
-        gameBody.innerHTML = '<tr><td colspan="8">讀取失敗</td></tr>';
+        gameBody.innerHTML = '<tr><td colspan="7">讀取失敗</td></tr>';
         return;
       }
 
       res.games.forEach(g => {
         const tr = document.createElement('tr');
-        if (g.signed || g.full || g.past) tr.classList.add('locked');
+        if (g.past || g.full) tr.classList.add('locked');
+
         const s = statusInfo(g.date);
 
-        let options = '';
-        if (g.signed) {
-          options = `已報名 <span class="badge">(${posText[g.my_position]})</span>`;
-        } else {
-          const list = g.position_mode !== 'allow_select'
-            ? ['auto']
-            : allowedPositions(g.need_count);
+        const posList = g.position_mode !== 'allow_select'
+          ? ['auto']
+          : allowedPositions(g.need_count);
 
-          options = list.map(p => {
-            const used = (g.occupied_positions || []).includes(p);
+        const options = posList.map(p => {
+          const occupiedName = (g.occupied_positions || {})[p];
+
+          // ✅ 已有人（包含自己）
+          if (occupiedName) {
             return `
-              <label class="${used ? 'occupied' : ''}">
-                <input type="radio" name="pos_${g.game_id}" value="${p}"
-                  ${used || g.full || g.past ? 'disabled' : ''}>
-                ${posText[p]}${used ? '（已有人）' : ''}
+              <label class="occupied">
+                ${posText[p]}：<b>${occupiedName}</b>
               </label>
             `;
-          }).join(' ');
-        }
+          }
 
+          // ✅ 尚未佔用 → 可選
+          return `
+            <label>
+              <input type="radio"
+                     name="pos_${g.game_id}"
+                     value="${p}"
+                     ${g.full || g.past ? 'disabled' : ''}>
+              ${posText[p]}
+            </label>
+          `;
+        }).join(' ');
 
-            tr.innerHTML = `
-              <td class="${s.c}">${s.t}</td>
-              <td>${g.date}</td>
-              <td>${g.time_range}</td>
-              <td>${formatDuration(g.duration)}</td>
-              <td>${g.category}</td>
-              <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
-              <td>${g.field || ''}</td>
-              <td>${options}</td>
-            `;
-
-
-
+        tr.innerHTML = `
+          <td class="${s.c}">${s.t}</td>
+          <td>${g.date}</td>
+          <td>${g.time_range}</td>
+          <td>${g.category || ''}</td>
+          <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
+          <td>${g.field || ''}</td>
+          <td>${options}</td>
+        `;
         gameBody.appendChild(tr);
       });
     });
@@ -189,11 +192,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('input[type=radio]:checked').forEach(r => {
       sel.push(r.name.replace('pos_','') + ':' + r.value);
     });
-    if (!sel.length) { alert('尚未選擇任何比賽'); return; }
-
+    if (!sel.length) {
+      alert('尚未選擇任何比賽');
+      return;
+    }
     callApi(
-      'action=judgeSignupByGames&games_with_position=' + encodeURIComponent(sel.join(',')),
-      () => { alert('報名完成'); loadGames(); }
+      'action=judgeSignupByGames&games_with_position=' +
+        encodeURIComponent(sel.join(',')),
+      () => {
+        alert('報名完成');
+        loadGames();
+      }
     );
   };
 
@@ -202,4 +211,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
