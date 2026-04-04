@@ -252,10 +252,12 @@ function updateUser(uid, field, value){
 
   callApi(
     `action=updateUserField&user_id=${uid}&field=${field}&value=${encodeURIComponent(value)}`,
-    res=>{
-      if(!res || res.result !== 'ok'){
+    res => {
+      if (!res || res.result !== 'ok') {
         alert('更新失敗');
+        return;
       }
+      showToast('✅ 資料已更新');
     }
   );
 }
