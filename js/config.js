@@ -1,5 +1,5 @@
 // ===== Apps Script Web App URL（務必確認正確）=====
-const API_URL='https://script.google.com/macros/s/AKfycbweM91I-ndbnXbB_eYgT8D01SV_NyUTWOCozKAajUOC4RzXYUllAOaF5KGH_8CCmcnc/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbxjo1jDShECSvgUkoPTjYslmLXkSHI_sEvoui0L9TVQL7xofLTfk3iDA59GP6cdhWfu/exec';
 
 // ===== JSONP 呼叫工具 =====
 function callApi(query, callback) {
