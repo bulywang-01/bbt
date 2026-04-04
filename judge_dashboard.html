@@ -46,10 +46,8 @@ button{padding:8px 16px;margin-top:10px}
 
 <div class="header">
   <div class="nav">
-<a href="index.html">🏠 首頁</a>
-    <a href="judge_dashboard.html"><b>🧑‍⚖️ 裁判報名</b></a>
-
-  
+    index.html🏠 首頁</a>
+    judge_dashboard.html<b>🧑‍⚖️ 裁判報名</b></a>
   </div>
   <div>
     <b id="u_name"></b>
@@ -95,7 +93,7 @@ button{padding:8px 16px;margin-top:10px}
 </div>
 </div>
 
-<script src="js/config.js"></script>
+js/config.jsscript>
 <script>
 const today = new Date();
 today.setHours(0,0,0,0);
@@ -228,146 +226,6 @@ function submitSignup(){
       alert('報名完成');
       loadGames();
     }
-  );
-}
-
-function logout(){
-  localStorage.clear();
-  location.href='login.html';
-}
-</script>
-</body>
-</html>
-  <div>
-    <b id="u_name"></b>
-    #登出</a>
-  </div>
-</div>
-
-<div class="main">
-<h2>裁判報名</h2>
-
-<div class="panel">
-
-<label>
-  <input type="checkbox" id="showPast" onchange="loadGames()">
-  顯示已過期比賽
-</label>
-
-<table>
-<thead>
-<tr>
-  <th>日期</th>
-  <th>時間</th>
-  <th>組別</th>
-  <th>客隊</th>
-  <th>主隊</th>
-  <th>地點</th>
-  <th>裁判制</th>
-  <th>主審</th>
-  <th>一壘</th>
-  <th>二壘</th>
-  <th>三壘</th>
-</tr>
-</thead>
-<tbody id="gameBody">
-<tr><td colspan="11">載入中…</td></tr>
-</tbody>
-</table>
-
-<button onclick="submitSignup()">送出報名</button>
-</div>
-</div>
-
-<script src="js/config.js"></script>
-
-<script>
-const today=new Date();today.setHours(0,0,0,0);
-
-document.addEventListener('DOMContentLoaded',()=>{
-  const s=JSON.parse(localStorage.getItem('session_user')||'{}');
-  if(!s.user_id){location.href='login.html';return;}
-  document.getElementById('u_name').textContent=s.name||'';
-  loadGames();
-});
-
-function callApi(q,cb){
-  const f='cb_'+Date.now();
-  window[f]=r=>{delete window[f];cb(r)};
-  const s=document.createElement('script');
-  s.src=API_URL+'?'+q+'&callback='+f;
-  document.body.appendChild(s);
-}
-
-function needRole(n,r){
-  if(n>=4)return true;
-  if(n===3)return r!=='U2';
-  if(n===2)return r==='PU'||r==='U1';
-  if(n===1)return r==='PU';
-  return false;
-}
-
-function renderCell(g,r){
-  if(!needRole(g.need_count,r))
-    return '<span class="badge gray">不需要</span>';
-
-  const name=(g.occupied_positions||{})[r];
-  if(name){
-    const cls=g.my_position===r?'badge me':'badge';
-    return `<span class="${cls}">${name}</span>`;
-  }
-  return `<label><input type="radio" name="pos_${g.game_id}" value="${r}"> ${r}</label>`;
-}
-
-function loadGames(){
-  callApi('action=getSignableGames',res=>{
-    const body=document.getElementById('gameBody');
-    const showPast=document.getElementById('showPast').checked;
-    body.innerHTML='';
-
-    const list=res.games.filter(g=>{
-      if(showPast) return true;
-      const d=new Date(g.date);
-      d.setHours(0,0,0,0);
-      return d>=today;
-    });
-
-    if(!list.length){
-      body.innerHTML =
-        `<tr><td colspan="11" class="empty">
-          ⚠️ 目前沒有可報名的比賽<br>
-          可勾選「顯示已過期比賽」查看歷史資料
-        </td></tr>`;
-      return;
-    }
-
-    list.forEach(g=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${g.date}</td>
-        <td>${g.time_range}</td>
-        <td>${g.category}</td>
-        <td>${g.away_team}</td>
-        <td>${g.home_team}</td>
-        <td>${g.field}</td>
-        <td>${g.need_count}人制</td>
-        <td>${renderCell(g,'PU')}</td>
-        <td>${renderCell(g,'U1')}</td>
-        <td>${renderCell(g,'U2')}</td>
-        <td>${renderCell(g,'U3')}</td>`;
-      body.appendChild(tr);
-    });
-  });
-}
-
-function submitSignup(){
-  const sel=[];
-  document.querySelectorAll('input[type=radio]:checked')
-    .forEach(r=>sel.push(r.name.replace('pos_','')+':'+r.value));
-  if(!sel.length){alert('尚未選擇站位');return;}
-  callApi(
-    'action=judgeSignupByGames&games_with_position='+encodeURIComponent(sel.join(',')),
-    ()=>{alert('報名完成');loadGames();}
   );
 }
 
