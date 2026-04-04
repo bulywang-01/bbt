@@ -1,30 +1,83 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>裁判排班表</title>
+  <meta charset="UTF-8">
+  <title>裁判報名表</title>
 
-<style>
-body{margin:0;font-family:system-ui;background:#f5f6f8}
-.header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#0f3d5e;color:#fff}
-.nav a{margin-right:16px;color:#fff;text-decoration:none;font-weight:500}
-.nav a:hover{text-decoration:underline}
-.main{padding:20px}
-.panel{background:#fff;padding:16px;border-radius:6px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{border:1px solid #dcdcdc;padding:6px 8px;text-align:center}
-th{background:#e9eef3}
-.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:600;color:#fff;background:#2c7be5}
-.badge.gray{background:#999}
-.badge.empty{background:#f1f1f1;color:#555;font-weight:normal}
-</style>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system;
+      background: #f5f6f8;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: #0f3d5e;
+      color: #fff;
+    }
+    .nav a {
+      margin-right: 16px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .main { padding: 20px; }
+    .panel {
+      background: #fff;
+      padding: 16px;
+      border-radius: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #dcdcdc;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    th { background: #e9eef3; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: #2c7be5;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .badge.gray { background: #999; }
+    .badge.empty {
+      background: #f1f1f1;
+      color: #555;
+    }
+
+    label.option {
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button {
+      margin-top: 12px;
+      padding: 8px 18px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="header">
   <div class="nav">
-   <a href="index.html">🏠 首頁</a>
+    <a href="index.html">🏠 首頁</a>
     <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
   </div>
   <div>
@@ -34,85 +87,128 @@ th{background:#e9eef3}
 </div>
 
 <div class="main">
-<div class="panel">
-<h3>裁判排班表</h3>
+  <div class="panel">
+    <h3>裁判報名表</h3>
 
-<table>
-<thead>
-<tr>
-<th>組別</th>
-<th>日期</th>
-<th>時間</th>
-<th>客隊</th>
-<th>主隊</th>
-<th>地點</th>
-<th>裁判數</th>
-<th>主審</th>
-<th>一壘</th>
-<th>二壘</th>
-<th>三壘</th>
-</tr>
-</thead>
-<tbody id="gameBody">
-<tr><td colspan="11">載入中…</td></tr>
-</tbody>
-</table>
-</div>
+    <table>
+      <thead>
+        <tr>
+          <th>組別</th>
+          <th>日期</th>
+          <th>時間</th>
+          <th>客隊</th>
+          <th>主隊</th>
+          <th>地點</th>
+          <th>裁判制</th>
+          <th>主審</th>
+          <th>一壘</th>
+          <th>二壘</th>
+          <th>三壘</th>
+        </tr>
+      </thead>
+      <tbody id="gameBody">
+        <tr><td colspan="11">載入中…</td></tr>
+      </tbody>
+    </table>
+
+    <button id="btnSubmit">送出報名</button>
+  </div>
 </div>
 
 <!-- ✅ 正確的 JS 載入（重點） -->
 <script src="js/config.js"></script>
 
 <script>
-const token = localStorage.getItem('token');
-const user  = JSON.parse(localStorage.getItem('session_user')||'{}');
-if(!token){location.href='login.html';}
+document.addEventListener('DOMContentLoaded', () => {
 
-document.getElementById('u_name').textContent = user.name||'';
-document.getElementById('btnLogout').onclick=()=>{
-  localStorage.clear();location.href='login.html';
-};
+  const token = localStorage.getItem('token');
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!token) { location.href = 'login.html'; return; }
 
-function callApi(q,cb){
-  const f='cb_'+Date.now();
-  window[f]=(r)=>{delete window[f];cb(r)};
-  const s=document.createElement('script');
-  s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
-  document.body.appendChild(s);
-}
+  document.getElementById('u_name').textContent = session.name || '';
+  document.getElementById('btnLogout').onclick = () => {
+    localStorage.clear();
+    location.href = 'login.html';
+  };
 
-function judgeCell(name, needed){
-  if(!needed) return '<span class="badge gray">不需要</span>';
-  if(name)   return `<span class="badge">${name}</span>`;
-  return '<span class="badge empty">尚未指派</span>';
-}
+  const gameBody = document.getElementById('gameBody');
 
-callApi('action=getSignableGames', res=>{
-  const tb=document.getElementById('gameBody');
-  tb.innerHTML='';
-  res.games.forEach(g=>{
-    const n=g.need_count;
-    const need={
-      PU:true,
-      U1:n>=2,
-      U2:n===4,
-      U3:n>=3
-    };
-    tb.innerHTML+=`
-<tr>
-<td>${g.category||''}</td>
-<td>${g.date}</td>
-<td>${g.time_range}</td>
-<td>${g.away_team||''}</td>
-<td>${g.home_team||''}</td>
-<td>${g.field||''}</td>
-<td>${n}人制</td>
-<td>${judgeCell(g.occupied_positions.PU,need.PU)}</td>
-<td>${judgeCell(g.occupied_positions.U1,need.U1)}</td>
-<td>${judgeCell(g.occupied_positions.U2,need.U2)}</td>
-<td>${judgeCell(g.occupied_positions.U3,need.U3)}</td>
-</tr>`;
-  });
+  function callApi(q, cb) {
+    const f = 'cb_' + Date.now();
+    window[f] = r => { delete window[f]; cb(r); };
+    const s = document.createElement('script');
+    s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
+    document.body.appendChild(s);
+  }
+
+  function needRole(cnt, role) {
+    if (cnt >= 4) return true;
+    if (cnt === 3) return role !== 'U2';
+    if (cnt === 2) return role === 'PU' || role === 'U1';
+    if (cnt === 1) return role === 'PU';
+    return false;
+  }
+
+  function renderCell(g, role) {
+    if (!needRole(g.need_count, role)) {
+      return '<span class="badge gray">不需要</span>';
+    }
+
+    const name = (g.occupied_positions || {})[role];
+    if (name) {
+      return `<span class="badge">${name}</span>`;
+    }
+
+    return `
+      <label class="option">
+        <input type="radio" name="pos_${g.game_id}" value="${role}">
+        ${role}
+      </label>`;
+  }
+
+  function loadGames() {
+    gameBody.innerHTML = '';
+    callApi('action=getSignableGames', res => {
+      res.games.forEach(g => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${g.category}</td>
+          <td>${g.date}</td>
+          <td>${g.time_range}</td>
+          <td>${g.away_team}</td>
+          <td>${g.home_team}</td>
+          <td>${g.field}</td>
+          <td>${g.need_count}人制</td>
+          <td>${renderCell(g,'PU')}</td>
+          <td>${renderCell(g,'U1')}</td>
+          <td>${renderCell(g,'U2')}</td>
+          <td>${renderCell(g,'U3')}</td>
+        `;
+        gameBody.appendChild(tr);
+      });
+    });
+  }
+
+  document.getElementById('btnSubmit').onclick = () => {
+    const sel = [];
+    document.querySelectorAll('input[type=radio]:checked').forEach(r => {
+      sel.push(r.name.replace('pos_','') + ':' + r.value);
+    });
+    if (!sel.length) {
+      alert('尚未選擇任何站位');
+      return;
+    }
+    callApi(
+      'action=judgeSignupByGames&games_with_position=' +
+      encodeURIComponent(sel.join(',')),
+      () => {
+        alert('報名完成');
+        loadGames();
+      }
+    );
+  };
+
+  loadGames();
 });
 </script>
 
