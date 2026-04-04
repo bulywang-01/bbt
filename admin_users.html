@@ -167,6 +167,14 @@ function updateRole(uid,role){
   );
 }
 
+function updateUser(uid, field, value) {
+  if (field === 'password' && !value) return;
+
+  callApi(
+    `action=updateUserField&user_id=${uid}&field=${field}&value=${encodeURIComponent(value)}`,
+    () => console.log('updated', uid, field)
+  );
+}
 function callApi(q,cb){
   const f='cb_'+Date.now();
   window[f]=r=>{delete window[f];cb(r)};
