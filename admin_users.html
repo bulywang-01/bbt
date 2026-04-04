@@ -105,31 +105,44 @@ document.addEventListener('DOMContentLoaded',()=>{
     return;
   }
 
-  callApi('action=getUsers',res=>{
-    const body=document.getElementById('userBody');
-    body.innerHTML='';
-    res.users.forEach(u=>{
-      const tr=document.createElement('tr');
-      if(u.active!=='Y') tr.classList.add('inactive');
+callApi('action=getUsers', res => {
+  console.log('getUsers response:', res);
 
-      tr.innerHTML=`
-        <td>${u.username}</td>
-        <td>${u.name}</td>
-        <td>
-          <select onchange="updateRole('${u.user_id}',this.value)">
-            ${renderRoleOptions(u.role)}
-          </select>
-        </td>
-        <td>${u.active==='Y'?'啟用':'停用'}</td>
-        <td>
-          <button onclick="toggleActive('${u.user_id}','${u.active}')">
-            ${u.active==='Y'?'停用':'啟用'}
-          </button>
-        </td>
-      `;
-      body.appendChild(tr);
-    });
+  if (!res || res.result !== 'ok') {
+    alert('讀取使用者失敗');
+    return;
+  }
+
+  const body = document.getElementById('userBody');
+  body.innerHTML = '';
+
+  if (!Array.isArray(res.users) || res.users.length === 0) {
+    body.innerHTML = '<tr><td colspan="5">沒有使用者資料</td></tr>';
+    return;
+  }
+
+  res.users.forEach(u => {
+    const tr = document.createElement('tr');
+    if (u.active !== 'Y') tr.classList.add('inactive');
+
+    tr.innerHTML = `
+      <td>${u.username}</td>
+      <td>${u.name}</td>
+      <td>
+        <select onchange="updateRole('${u.user_id}', this.value)">
+          ${renderRoleOptions(u.role)}
+        </select>
+      </td>
+      <td>${u.active === 'Y' ? '啟用' : '停用'}</td>
+      <td>
+        <button onclick="toggleActive('${u.user_id}', '${u.active}')">
+          ${u.active === 'Y' ? '停用' : '啟用'}
+        </button>
+      </td>
+    `;
+    body.appendChild(tr);
   });
+});
 });
 
 function renderRoleOptions(role){
