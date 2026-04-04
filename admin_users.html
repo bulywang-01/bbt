@@ -3,99 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <title>裁判帳號管理</title>
-
 <style>
-body{
-  margin:0;
-  font-family:system-ui,-apple-system;
-  background:#f5f6f8;
-}
-
-/* ===== Header ===== */
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 20px;
-  background:#ffffff;
-  border-bottom:1px solid #ddd;
-}
-.nav a{
-  margin-right:16px;
-  color:#0066cc;
-  text-decoration:none;
-  font-weight:500;
-}
-.nav a:hover{
-  text-decoration:underline;
-}
-
-/* ===== Layout ===== */
-.main{ padding:20px; }
-.panel{
-  background:#ffffff;
-  padding:16px;
-  border-radius:6px;
-  box-shadow:0 1px 4px rgba(0,0,0,.08);
-}
-
-/* ===== Table ===== */
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th,td{
-  border:1px solid #ddd;
-  padding:6px 8px;
-  text-align:center;
-}
-th{
-  background:#eef2f6;
-}
-tr.inactive{
-  background:#f4f4f4;
-  color:#999;
-}
-
-input{
-  width:100%;
-  box-sizing:border-box;
-  padding:2px 4px;
-}
-select{
-  width:100%;
-}
-
-/* ===== Button ===== */
-button{
-  padding:4px 10px;
-  cursor:pointer;
-}
+body{margin:0;font-family:system-ui;background:#f5f6f8}
+.header{display:flex;justify-content:space-between;align-items:center;
+ padding:12px 20px;background:#fff;border-bottom:1px solid #ddd}
+.nav a{margin-right:16px;color:#0066cc;text-decoration:none}
+.main{padding:20px}
+.panel{background:#fff;padding:16px;border-radius:6px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border:1px solid #ddd;padding:6px 8px;text-align:center}
+th{background:#eef2f6}
+tr.inactive{background:#f3f3f3;color:#999}
+input,select{width:100%}
+button{padding:4px 10px}
 </style>
 </head>
 
 <body>
 
-<!-- ===== Header ===== -->
 <div class="header">
   <div class="nav">
-    <a href="index.html">🏠 首頁</a>
-    <a href="judge_dashboard.html"><b>🧑‍⚖️ 裁判報名</b></a>
+    <a href="index.html">🏠 系統首頁</a>
     <a href="admin_dashboard.html">⚙️ 後端管理</a>
     <b>👤 裁判帳號管理</b>
   </div>
   <div>
     <b id="u_name"></b>
-    <a href="#" onclick="logout()" style="margin-left:12px;color:#c00;">登出</a>
+    <a href="#" onclick="logout()" style="margin-left:12px;color:#c00">登出</a>
   </div>
 </div>
 
-<!-- ===== Main ===== -->
 <div class="main">
+<div class="panel">
+
 <h2>裁判帳號管理</h2>
 
-<div class="panel">
 <table>
 <thead>
 <tr>
@@ -111,123 +53,101 @@ button{
 </tr>
 </thead>
 <tbody id="userBody">
-  <tr>
-    <td colspan="9">載入中…</td>
-  </tr>
+<tr><td colspan="9">載入中…</td></tr>
 </tbody>
 </table>
-</div>
-</div>
 
-<!-- ✅ 一定要用正確的 script tag -->
-<script src="js/config.js"></script>
+</div>
+</div>
 
 <script>
-/* ================= Page Init ================= */
-document.addEventListener('DOMContentLoaded', () => {
+/* ===== ✅ 這裡是關鍵：直接內建 callApi，不靠 config.js ===== */
+const API_URL = 'https://script.google.com/macros/s/【請換成你的部署ID】/exec';
 
+function callApi(query, callback){
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
+    delete window[cb];
+    callback(res);
+    script.remove();
+  };
+  const script = document.createElement('script');
+  script.src = API_URL + '?' + query + '&callback=' + cb;
+  document.body.appendChild(script);
+}
+
+/* ===== Page Init ===== */
+document.addEventListener('DOMContentLoaded', ()=>{
   const raw = localStorage.getItem('session_user');
-  if (!raw) {
-    location.replace('login.html');
-    return;
-  }
-
+  if(!raw){location.href='login.html';return;}
   const session = JSON.parse(raw);
   document.getElementById('u_name').textContent = session.name || '';
 
-  if (!['admin','judge_admin'].includes(session.role)) {
-    alert('沒有權限訪問此頁');
-    location.replace('index.html');
+  if(!['admin','judge_admin'].includes(session.role)){
+    alert('沒有權限');
+    location.href='index.html';
     return;
   }
 
   loadUsers();
 });
 
-/* ================= Load Users ================= */
+/* ===== 功能 ===== */
 function loadUsers(){
-  console.log('呼叫 getUsers');
+  callApi('action=getUsers', res=>{
+    const body=document.getElementById('userBody');
+    body.innerHTML='';
 
-callApi('action=getUsers', res => {
+    if(!res || res.result!=='ok'){
+      body.innerHTML='<tr><td colspan="9">讀取失敗</td></tr>';
+      return;
+    }
 
-  console.log('getUsers response 👇', res);
-  alert('getUsers callback 有進來，請看 console');
+    res.users.forEach(u=>{
+      const tr=document.createElement('tr');
+      if(u.active!=='Y')tr.classList.add('inactive');
 
-  const body = document.getElementById('userBody');
-  body.innerHTML = '';
-
-  if (!res) {
-    body.innerHTML = '<tr><td colspan="9">res 是空的</td></tr>';
-    return;
-  }
-
-  if (res.result !== 'ok') {
-    body.innerHTML = `<tr><td colspan="9">result 不正確：${res.result}</td></tr>`;
-    return;
-  }
-
-  if (!Array.isArray(res.users)) {
-    body.innerHTML = '<tr><td colspan="9">users 不是 array</td></tr>';
-    return;
-  }
-
-  if (res.users.length === 0) {
-    body.innerHTML = '<tr><td colspan="9">users 為空</td></tr>';
-    return;
-  }
-
-  res.users.forEach(u => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${u.username}</td>
-      <td>---</td>
-      <td>${u.name}</td>
-      <td>${u.phone || ''}</td>
-      <td>${u.email || ''}</td>
-      <td>${u.level || ''}</td>
-      <td>${u.role}</td>
-      <td>${u.active}</td>
-      <td>OK</td>
-    `;
-    body.appendChild(tr);
+      tr.innerHTML=`
+        <td><input value="${u.username}"
+          onchange="updateUser('${u.user_id}','username',this.value)"></td>
+        <td><input type="password" placeholder="留空不修改"
+          onchange="updateUser('${u.user_id}','password',this.value)"></td>
+        <td><input value="${u.name}"
+          onchange="updateUser('${u.user_id}','name',this.value)"></td>
+        <td><input value="${u.phone||''}"
+          onchange="updateUser('${u.user_id}','phone',this.value)"></td>
+        <td><input value="${u.email||''}"
+          onchange="updateUser('${u.user_id}','email',this.value)"></td>
+        <td><input value="${u.level||''}"
+          onchange="updateUser('${u.user_id}','level',this.value)"></td>
+        <td>${u.role}</td>
+        <td>${u.active==='Y'?'啟用':'停用'}</td>
+        <td>
+          <button onclick="toggleActive('${u.user_id}')">
+            ${u.active==='Y'?'停用':'啟用'}
+          </button>
+        </td>
+      `;
+      body.appendChild(tr);
+    });
   });
-});
-  
-}
-
-/* ================= Helpers ================= */
-function renderRoleOptions(role){
-  const roles = ['admin','match_admin','judge_admin','chief_judge','judge'];
-  return roles.map(r =>
-    `<option value="${r}" ${r === role ? 'selected' : ''}>${r}</option>`
-  ).join('');
 }
 
 function updateUser(uid, field, value){
-  if (field === 'password' && !value) return;
-
+  if(field==='password' && !value) return;
   callApi(
     `action=updateUserField&user_id=${uid}&field=${field}&value=${encodeURIComponent(value)}`,
-    res => {
-      if (res.result !== 'ok') {
-        alert('更新失敗');
-      }
-    }
+    ()=>{}
   );
 }
 
 function toggleActive(uid){
-  if (!confirm('確定要切換狀態？')) return;
-  callApi(
-    `action=toggleUserActive&user_id=${uid}`,
-    () => loadUsers()
-  );
+  callApi(`action=toggleUserActive&user_id=${uid}`, loadUsers);
 }
 
 function logout(){
-  if (!confirm('確定要登出？')) return;
   localStorage.clear();
-  location.replace('login.html');
+  location.href='login.html';
 }
 </script>
 
