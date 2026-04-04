@@ -80,14 +80,18 @@ button{
     <thead>
       <tr>
         <th>帳號</th>
+        <th>新密碼</th>
         <th>姓名</th>
+        <th>電話</th>
+        <th>Email</th>
+        <th>Level</th>
         <th>角色</th>
         <th>狀態</th>
         <th>操作</th>
       </tr>
     </thead>
     <tbody id="userBody">
-      <tr><td colspan="5">載入中…</td></tr>
+      <tr><td colspan="9">載入中…</td></tr>
     </tbody>
   </table>
 </div>
@@ -108,36 +112,30 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 
 callApi('action=getUsers', res => {
-  console.log('getUsers response:', res);
-
-  if (!res || res.result !== 'ok') {
-    alert('讀取使用者失敗');
-    return;
-  }
-
   const body = document.getElementById('userBody');
   body.innerHTML = '';
-
-  if (!Array.isArray(res.users) || res.users.length === 0) {
-    body.innerHTML = '<tr><td colspan="5">沒有使用者資料</td></tr>';
-    return;
-  }
 
   res.users.forEach(u => {
     const tr = document.createElement('tr');
     if (u.active !== 'Y') tr.classList.add('inactive');
 
     tr.innerHTML = `
-      <td>${u.username}</td>
-      <td>${u.name}</td>
+      <td><input value="${u.username}" onchange="updateUser('${u.user_id}','username',this.value)"></td>
+      <td><input type="password" placeholder="不修改留空"
+                 onchange="updateUser('${u.user_id}','password',this.value)"></td>
+      <td><input value="${u.name}" onchange="updateUser('${u.user_id}','name',this.value)"></td>
+      <td><input value="${u.phone || ''}" onchange="updateUser('${u.user_id}','phone',this.value)"></td>
+      <td><input value="${u.email || ''}" onchange="updateUser('${u.user_id}','email',this.value)"></td>
+      <td><input value="${u.level || ''}" style="width:50px"
+                 onchange="updateUser('${u.user_id}','level',this.value)"></td>
       <td>
-        <select onchange="updateRole('${u.user_id}', this.value)">
+        <select onchange="updateUser('${u.user_id}','role',this.value)">
           ${renderRoleOptions(u.role)}
         </select>
       </td>
       <td>${u.active === 'Y' ? '啟用' : '停用'}</td>
       <td>
-        <button onclick="toggleActive('${u.user_id}', '${u.active}')">
+        <button onclick="toggleActive('${u.user_id}')">
           ${u.active === 'Y' ? '停用' : '啟用'}
         </button>
       </td>
@@ -145,6 +143,7 @@ callApi('action=getUsers', res => {
     body.appendChild(tr);
   });
 });
+  
 });
 
 function renderRoleOptions(role){
