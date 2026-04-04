@@ -83,7 +83,6 @@ button{
     <a href="index.html">🏠 首頁</a>
     <a href="judge_dashboard.html"><b>🧑‍⚖️ 裁判報名</b></a>
     <a href="admin_dashboard.html">⚙️ 後端管理</a>
-    <a href="index.html">🏠 系統首頁</a>
     <b>👤 裁判帳號管理</b>
   </div>
   <div>
@@ -148,67 +147,52 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ================= Load Users ================= */
 function loadUsers(){
   console.log('呼叫 getUsers');
-  callApi('action=getUsers', res => {
-    console.log('getUsers 回傳：', res);
 
-    const body = document.getElementById('userBody');
-    body.innerHTML = '';
+callApi('action=getUsers', res => {
 
-    if (!res || res.result !== 'ok') {
-      body.innerHTML = '<tr><td colspan="9">讀取失敗</td></tr>';
-      return;
-    }
+  console.log('getUsers response 👇', res);
+  alert('getUsers callback 有進來，請看 console');
 
-    if (!res.users || res.users.length === 0) {
-      body.innerHTML = '<tr><td colspan="9">目前沒有資料</td></tr>';
-      return;
-    }
+  const body = document.getElementById('userBody');
+  body.innerHTML = '';
 
-    res.users.forEach(u => {
-      const tr = document.createElement('tr');
-      if (u.active !== 'Y') tr.classList.add('inactive');
+  if (!res) {
+    body.innerHTML = '<tr><td colspan="9">res 是空的</td></tr>';
+    return;
+  }
 
-      tr.innerHTML = `
-        <td>
-          <input value="${u.username || ''}"
-            onchange="updateUser('${u.user_id}','username',this.value)">
-        </td>
-        <td>
-          <input type="password"
-            placeholder="留空不修改"
-            onchange="updateUser('${u.user_id}','password',this.value)">
-        </td>
-        <td>
-          <input value="${u.name || ''}"
-            onchange="updateUser('${u.user_id}','name',this.value)">
-        </td>
-        <td>
-          <input value="${u.phone || ''}"
-            onchange="updateUser('${u.user_id}','phone',this.value)">
-        </td>
-        <td>
-          <input value="${u.email || ''}"
-            onchange="updateUser('${u.user_id}','email',this.value)">
-        </td>
-        <td>
-          <input value="${u.level || ''}"
-            onchange="updateUser('${u.user_id}','level',this.value)">
-        </td>
-        <td>
-          <select onchange="updateUser('${u.user_id}','role',this.value)">
-            ${renderRoleOptions(u.role)}
-          </select>
-        </td>
-        <td>${u.active === 'Y' ? '啟用' : '停用'}</td>
-        <td>
-          <button onclick="toggleActive('${u.user_id}')">
-            ${u.active === 'Y' ? '停用' : '啟用'}
-          </button>
-        </td>
-      `;
-      body.appendChild(tr);
-    });
+  if (res.result !== 'ok') {
+    body.innerHTML = `<tr><td colspan="9">result 不正確：${res.result}</td></tr>`;
+    return;
+  }
+
+  if (!Array.isArray(res.users)) {
+    body.innerHTML = '<tr><td colspan="9">users 不是 array</td></tr>';
+    return;
+  }
+
+  if (res.users.length === 0) {
+    body.innerHTML = '<tr><td colspan="9">users 為空</td></tr>';
+    return;
+  }
+
+  res.users.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${u.username}</td>
+      <td>---</td>
+      <td>${u.name}</td>
+      <td>${u.phone || ''}</td>
+      <td>${u.email || ''}</td>
+      <td>${u.level || ''}</td>
+      <td>${u.role}</td>
+      <td>${u.active}</td>
+      <td>OK</td>
+    `;
+    body.appendChild(tr);
   });
+});
+  
 }
 
 /* ================= Helpers ================= */
