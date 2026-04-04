@@ -7,9 +7,11 @@
 <style>
 body{
   margin:0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont;
   background:#f5f6f8;
 }
+
+/* ===== Header ===== */
 .header{
   display:flex;
   justify-content:space-between;
@@ -18,55 +20,53 @@ body{
   background:#ffffff;
   border-bottom:1px solid #ddd;
 }
+
 .nav a{
   margin-right:16px;
   color:#0066cc;
   text-decoration:none;
   font-weight:500;
 }
-.nav a:hover{
-  text-decoration:underline;
-}
+.nav a:hover{ text-decoration:underline; }
+
 .user-info{
   text-align:right;
-  line-height:1.6;
+  line-height:1.5;
 }
-
-/* 帳號 */
-.user-username{
-  font-size:15px;
-  color:#555;
-}
-
-/* 姓名：最大、最顯眼 */
-.user-name{
-  font-size:18px;
-  font-weight:600;
-}
-
-/* 角色：給一點視覺層級 */
-.user-role{
-  font-size:14px;
-  color:#666;
-}
-
-/* 登出 */
+.user-username{ font-size:14px; color:#666; }
+.user-name{ font-size:17px; font-weight:600; }
+.user-role{ font-size:13px; color:#888; }
 .user-logout{
   margin-top:4px;
   font-size:13px;
 }
-.main{
-  padding:20px;
+.user-logout a{
+  color:#cc0000;
+  text-decoration:none;
 }
+
+/* ===== Layout ===== */
+.main{ padding:20px; }
+
 .panel{
   background:#ffffff;
-  padding:16px;
+  padding:18px;
   border-radius:6px;
   box-shadow:0 1px 4px rgba(0,0,0,.08);
+  margin-bottom:20px;
+  max-width:900px;
 }
-.admin-only{
-  display:none;
+
+/* 文件下載清單 */
+.download-list{
+  padding-left:20px;
 }
+.download-list li{
+  margin:6px 0;
+}
+
+/* 管理者專用 */
+.admin-only{ display:none; }
 </style>
 </head>
 
@@ -74,53 +74,68 @@ body{
 
 <!-- ================= Header ================= -->
 <div class="header">
-  <div class="nav">
-    <a href="index.html">🏠 首頁</a>
-    <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
 
-    <!-- 管理者專用 -->
+  <div class="nav">
+    <a href="index.html">🏠 系統首頁</a>
+    <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
+    <a href="#download">📄 文件下載</a>
+
     <span class="admin-only">
       <a href="judge_signup_review.html">📋 報名審核</a>
+      <a href="admin_dashboard.html">⚙️ 後端管理</a>
     </span>
   </div>
 
-<div class="user-info"><div class="user-username">
-    👤 <b id="u_username"></b>
+  <div class="user-info">
+    <div class="user-username">👤 <b id="u_username"></b></div>
+    <div class="user-name">🧑 <b id="u_name"></b></div>
+    <div class="user-role">🛡 <b id="u_role"></b></div>
+    <div class="user-logout">
+      <a href="#" onclick="logout()">🚪 登出</a>
+    </div>
   </div>
-  <div class="user-name">
-    🧑 <b id="u_name"></b>
-  </div>
-  <div class="user-role">
-    🛡 <b id="u_role"></b>
-  </div>
-  <div class="user-logout">
-    <a href="#" onclick="logout()">🚪 登出</a>
-  </div>
-</div>
-
 
 </div>
 
 <!-- ================= Main ================= -->
 <div class="main">
+
   <h2>系統首頁</h2>
 
   <div class="panel">
-    歡迎使用裁判出勤管理系統。  
-    請由上方選單選擇功能。
+    <p>
+      歡迎使用 <b>裁判出勤管理系統</b>。<br>
+      請由上方功能選單進行操作。
+    </p>
   </div>
+
+  <!-- ===== 文件下載 ===== -->
+  <div class="panel" id="download">
+    <h3>📄 文件下載</h3>
+    <ul class="download-list">
+      <li>
+        <a href="files/referee_notice.pdf" target="_blank">
+          裁判執勤注意事項（PDF）
+        </a>
+      </li>
+      <li>
+        <a href="files/referee_rules.docx" target="_blank">
+          裁判出勤規範（Word）
+        </a>
+      </li>
+      <li>
+        <a href="files/game_day_flow.xlsx" target="_blank">
+          比賽日流程表（Excel）
+        </a>
+      </li>
+    </ul>
+  </div>
+
 </div>
 
 <!-- ================= Script ================= -->
 <script src="js/config.js"></script>
 <script>
-
-/**
- * 系統首頁初始化
- * - 檢查登入狀態
- * - 顯示使用者資訊
- * - 依角色顯示選單
- */
 document.addEventListener('DOMContentLoaded', function () {
 
   const raw = localStorage.getItem('session_user');
@@ -142,22 +157,17 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  // 顯示使用者資訊
   document.getElementById('u_username').textContent = session.username || '';
   document.getElementById('u_name').textContent = session.name || '';
   document.getElementById('u_role').textContent = session.role || '';
 
-  // 管理者顯示管理選單
   if (session.role === 'admin') {
     document.querySelectorAll('.admin-only').forEach(el=>{
-      el.style.display = 'inline';
+      el.style.display='inline';
     });
   }
 });
 
-/**
- * 登出
- */
 function logout(){
   if (!confirm('確定要登出系統？')) return;
   localStorage.clear();
