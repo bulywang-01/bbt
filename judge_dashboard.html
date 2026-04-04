@@ -42,8 +42,11 @@
       border: 1px solid #dcdcdc;
       padding: 6px 8px;
       text-align: center;
+      vertical-align: middle;
     }
     th { background: #e9eef3; }
+
+    tr.full { background: #fff3f6; }
 
     .badge {
       display: inline-block;
@@ -54,38 +57,24 @@
       color: #fff;
       white-space: nowrap;
     }
-    .badge.gray { background: #999; }
-    .badge.empty {
-      background: #f1f1f1;
-      color: #555;
+    .badge.me {
+      background: #ffd6e5;
+      color: #0f3d5e;
+    }
+    .badge.gray {
+      background: #999;
+      color: #fff;
     }
 
     label.option {
-      cursor: pointer;
       white-space: nowrap;
+      cursor: pointer;
     }
 
     button {
       margin-top: 12px;
       padding: 8px 18px;
       font-size: 14px;
-    }
-
-    /* ✅ 該場裁判已滿額 */
-    tr.full {
-      background: #fff3f6; /* 很淡的粉紅底，不刺眼 */
-    }
-    
-    /* ✅ 我的報名（粉紅底、藍字） */
-    .badge.me {
-      background: #ffd6e5;   /* 淡粉紅 */
-      color: #0f3d5e;        /* 深藍字 */
-    }
-    
-    /* 保險：已滿但我有報名，不要被蓋灰 */
-    tr.full .badge.me {
-      background: #ffd6e5;
-      color: #0f3d5e;
     }
   </style>
 </head>
@@ -104,32 +93,32 @@
 </div>
 
 <div class="main">
-  <div class="panel">
-    <h3>裁判報名表</h3>
+<div class="panel">
+<h3>裁判報名表</h3>
 
-    <table>
-      <thead>
-        <tr>
-          <th>組別</th>
-          <th>日期</th>
-          <th>時間</th>
-          <th>客隊</th>
-          <th>主隊</th>
-          <th>地點</th>
-          <th>裁判制</th>
-          <th>主審</th>
-          <th>一壘</th>
-          <th>二壘</th>
-          <th>三壘</th>
-        </tr>
-      </thead>
-      <tbody id="gameBody">
-        <tr><td colspan="11">載入中…</td></tr>
-      </tbody>
-    </table>
+<table>
+<thead>
+<tr>
+  <th>日期</th>
+  <th>組別</th>
+  <th>時間</th>
+  <th>客隊</th>
+  <th>主隊</th>
+  <th>地點</th>
+  <th>裁判制</th>
+  <th>主審</th>
+  <th>一壘</th>
+  <th>二壘</th>
+  <th>三壘</th>
+</tr>
+</thead>
+<tbody id="gameBody">
+<tr><td colspan="11">載入中…</td></tr>
+</tbody>
+</table>
 
-    <button id="btnSubmit">送出報名</button>
-  </div>
+<button id="btnSubmit">送出報名</button>
+</div>
 </div>
 
 <!-- ✅ 正確的 JS 載入（重點） -->
@@ -140,7 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const token = localStorage.getItem('token');
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  if (!token) { location.href = 'login.html'; return; }
+  if (!token) {
+    location.href = 'login.html';
+    return;
+  }
 
   document.getElementById('u_name').textContent = session.name || '';
   document.getElementById('btnLogout').onclick = () => {
@@ -166,58 +158,95 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   }
 
-function renderCell(g, role) {
+  function renderCell(g, role) {
+    if (!needRole(g.need_count, role)) {
+      return '<span class="badge gray">不需要</span>';
+    }
 
-  // 不需要的站位
-  if (!needRole(g.need_count, role)) {
-    return '<span class="badge gray">不需要</span>';
+    const name = (g.occupied_positions || {})[role];
+    if (name) {
+      const cls = g.my_position === role ? 'badge me' : 'badge';
+      return `<span class="${cls}">${name}</span>`;
+    }
+
+    return `
+      <label class="option">
+        <input type="radio" name="pos_${g.game_id}" value="${role}">
+        ${role}
+      </label>
+    `;
   }
-
-  const name = (g.occupied_positions || {})[role];
-
-  // ✅ 已有人
-  if (name) {
-    const isMine = g.my_position === role;
-    const cls = isMine ? 'badge me' : 'badge';
-    return `<span class="${cls}">${name}</span>`;
-  }
-
-  // ✅ 尚未佔用 → 可報名
-  return `
-    <label class="option">
-      <input type="radio"
-             name="pos_${g.game_id}"
-             value="${role}">
-      ${role}
-    </label>
-  `;
-}
 
   function loadGames() {
-    gameBody.innerHTML = '';
     callApi('action=getSignableGames', res => {
-      res.games.forEach(g => {
-        const tr = document.createElement('tr');
-        
-        if (g.full) {
-          tr.classList.add('full');
+
+      if (!res || !Array.isArray(res.games)) {
+        gameBody.innerHTML = '<tr><td colspan="11">讀取失敗</td></tr>';
+        return;
+      }
+
+      // ✅ 排序：日期 → 組別 → 時間
+      const data = res.games.slice().sort((a,b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        if (a.category !== b.category) return a.category.localeCompare(b.category);
+        return a.time_range.localeCompare(b.time_range);
+      });
+
+      gameBody.innerHTML = '';
+
+      let dateStart = 0;
+      while (dateStart < data.length) {
+        let dateEnd = dateStart;
+        while (dateEnd < data.length && data[dateEnd].date === data[dateStart].date) {
+          dateEnd++;
         }
 
-        tr.innerHTML = `
-          <td>${g.category}</td>
-          <td>${g.date}</td>
-          <td>${g.time_range}</td>
-          <td>${g.away_team}</td>
-          <td>${g.home_team}</td>
-          <td>${g.field}</td>
-          <td>${g.need_count}人制</td>
-          <td>${renderCell(g,'PU')}</td>
-          <td>${renderCell(g,'U1')}</td>
-          <td>${renderCell(g,'U2')}</td>
-          <td>${renderCell(g,'U3')}</td>
-        `;
-        gameBody.appendChild(tr);
-      });
+        let catStart = dateStart;
+        while (catStart < dateEnd) {
+          let catEnd = catStart;
+          while (catEnd < dateEnd && data[catEnd].category === data[catStart].category) {
+            catEnd++;
+          }
+
+          for (let i = catStart; i < catEnd; i++) {
+            const g = data[i];
+            const tr = document.createElement('tr');
+            if (g.full) tr.classList.add('full');
+
+            if (i === dateStart) {
+              const td = document.createElement('td');
+              td.rowSpan = dateEnd - dateStart;
+              td.textContent = g.date;
+              tr.appendChild(td);
+            }
+
+            if (i === catStart) {
+              const td = document.createElement('td');
+              td.rowSpan = catEnd - catStart;
+              td.textContent = g.category;
+              tr.appendChild(td);
+            }
+
+            tr.innerHTML += `
+              <td>${g.time_range}</td>
+              <td>${g.away_team}</td>
+              <td>${g.home_team}</td>
+              <td>${g.field}</td>
+              <td>${g.need_count}人制</td>
+              <td>${renderCell(g,'PU')}</td>
+              <td>${renderCell(g,'U1')}</td>
+              <td>${renderCell(g,'U2')}</td>
+              <td>${renderCell(g,'U3')}</td>
+            `;
+
+            gameBody.appendChild(tr);
+          }
+
+          catStart = catEnd;
+        }
+
+        dateStart = dateEnd;
+      }
     });
   }
 
@@ -226,10 +255,12 @@ function renderCell(g, role) {
     document.querySelectorAll('input[type=radio]:checked').forEach(r => {
       sel.push(r.name.replace('pos_','') + ':' + r.value);
     });
+
     if (!sel.length) {
       alert('尚未選擇任何站位');
       return;
     }
+
     callApi(
       'action=judgeSignupByGames&games_with_position=' +
       encodeURIComponent(sel.join(',')),
