@@ -70,6 +70,23 @@
       padding: 8px 18px;
       font-size: 14px;
     }
+
+    /* ✅ 該場裁判已滿額 */
+    tr.full {
+      background: #fff3f6; /* 很淡的粉紅底，不刺眼 */
+    }
+    
+    /* ✅ 我的報名（粉紅底、藍字） */
+    .badge.me {
+      background: #ffd6e5;   /* 淡粉紅 */
+      color: #0f3d5e;        /* 深藍字 */
+    }
+    
+    /* 保險：已滿但我有報名，不要被蓋灰 */
+    tr.full .badge.me {
+      background: #ffd6e5;
+      color: #0f3d5e;
+    }
   </style>
 </head>
 
@@ -149,28 +166,43 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   }
 
-  function renderCell(g, role) {
-    if (!needRole(g.need_count, role)) {
-      return '<span class="badge gray">不需要</span>';
-    }
+function renderCell(g, role) {
 
-    const name = (g.occupied_positions || {})[role];
-    if (name) {
-      return `<span class="badge">${name}</span>`;
-    }
-
-    return `
-      <label class="option">
-        <input type="radio" name="pos_${g.game_id}" value="${role}">
-        ${role}
-      </label>`;
+  // 不需要的站位
+  if (!needRole(g.need_count, role)) {
+    return '<span class="badge gray">不需要</span>';
   }
+
+  const name = (g.occupied_positions || {})[role];
+
+  // ✅ 已有人
+  if (name) {
+    const isMine = g.my_position === role;
+    const cls = isMine ? 'badge me' : 'badge';
+    return `<span class="${cls}">${name}</span>`;
+  }
+
+  // ✅ 尚未佔用 → 可報名
+  return `
+    <label class="option">
+      <input type="radio"
+             name="pos_${g.game_id}"
+             value="${role}">
+      ${role}
+    </label>
+  `;
+}
 
   function loadGames() {
     gameBody.innerHTML = '';
     callApi('action=getSignableGames', res => {
       res.games.forEach(g => {
         const tr = document.createElement('tr');
+        
+        if (g.full) {
+          tr.classList.add('full');
+        }
+
         tr.innerHTML = `
           <td>${g.category}</td>
           <td>${g.date}</td>
