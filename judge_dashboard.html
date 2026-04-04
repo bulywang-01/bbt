@@ -241,14 +241,15 @@ callApi('action=getSignableGames',res=>{
               <td>${g.time_range}</td>                 <!-- 時間 -->
               <td>${g.away_team || ''}</td>            <!-- 客隊 -->
               <td>${g.home_team || ''}</td>            <!-- 主隊 -->
-              <td>${g.need_count}人制</td>             <!-- 裁判制 -->
 
               if (r === l) {
                 const td = document.createElement('td');  <!-- 地點 -->
                 td.rowSpan = lEnd - l;
                 td.textContent = g.field;
                 tr.appendChild(td);
-              }              
+              }
+              
+              <td>${g.need_count}人制</td>             <!-- 裁判制 -->
               <td>${renderCell(g,'PU')}</td>            <!-- 主審 -->
               <td>${renderCell(g,'U1')}</td>            <!-- 一壘 -->
               <td>${renderCell(g,'U2')}</td>            <!-- 二壘 -->
