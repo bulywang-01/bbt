@@ -1,82 +1,83 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>裁判報名表</title>
+<meta charset="UTF-8">
+<title>裁判報名表</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system;
-      background: #f5f6f8;
-    }
+<style>
+body {
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:#f5f6f8;
+}
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      background: #0f3d5e;
-      color: #fff;
-    }
-    .nav a {
-      margin-right: 16px;
-      color: #fff;
-      text-decoration: none;
-      font-weight: 500;
-    }
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#0f3d5e;
+  color:#fff;
+}
+.nav a{
+  margin-right:16px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:500;
+}
 
-    .main { padding: 20px; }
-    .panel {
-      background: #fff;
-      padding: 16px;
-      border-radius: 6px;
-    }
+.main{padding:20px}
+.panel{
+  background:#fff;
+  padding:16px;
+  border-radius:6px;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-    th, td {
-      border: 1px solid #dcdcdc;
-      padding: 6px 8px;
-      text-align: center;
-      vertical-align: middle;
-    }
-    th { background: #e9eef3; }
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+  margin-bottom:28px;
+}
+th,td{
+  border:1px solid #dcdcdc;
+  padding:6px 8px;
+  text-align:center;
+  vertical-align:middle;
+}
+th{background:#e9eef3}
 
-    tr.full { background: #fff3f6; }
+tr.full{background:#fff3f6}
+tr.date-alt{background:#f9fbfd}
 
-    .badge {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 999px;
-      font-size: 13px;
-      background: #2c7be5;
-      color: #fff;
-      white-space: nowrap;
-    }
-    .badge.me {
-      background: #ffd6e5;
-      color: #0f3d5e;
-    }
-    .badge.gray {
-      background: #999;
-      color: #fff;
-    }
+.badge{
+  display:inline-block;
+  padding:2px 10px;
+  border-radius:999px;
+  font-size:13px;
+  background:#2c7be5;
+  color:#fff;
+}
+.badge.me{
+  background:#ffd6e5;
+  color:#0f3d5e;
+}
+.badge.gray{
+  background:#999;
+  color:#fff;
+}
 
-    label.option {
-      white-space: nowrap;
-      cursor: pointer;
-    }
+label.option{
+  cursor:pointer;
+  white-space:nowrap;
+}
 
-    button {
-      margin-top: 12px;
-      padding: 8px 18px;
-      font-size: 14px;
-    }
-  </style>
+button{
+  margin-top:12px;
+  padding:8px 18px;
+  font-size:14px;
+}
+</style>
 </head>
 
 <body>
@@ -96,26 +97,7 @@
 <div class="panel">
 <h3>裁判報名表</h3>
 
-<table>
-<thead>
-<tr>
-  <th>日期</th>
-  <th>組別</th>
-  <th>時間</th>
-  <th>客隊</th>
-  <th>主隊</th>
-  <th>地點</th>
-  <th>裁判制</th>
-  <th>主審</th>
-  <th>一壘</th>
-  <th>二壘</th>
-  <th>三壘</th>
-</tr>
-</thead>
-<tbody id="gameBody">
-<tr><td colspan="11">載入中…</td></tr>
-</tbody>
-</table>
+<div id="monthContainer"></div>
 
 <button id="btnSubmit">送出報名</button>
 </div>
@@ -125,153 +107,175 @@
 <script src="js/config.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded',()=>{
 
-  const token = localStorage.getItem('token');
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  if (!token) {
-    location.href = 'login.html';
-    return;
+const token=localStorage.getItem('token');
+const session=JSON.parse(localStorage.getItem('session_user')||'{}');
+if(!token){location.href='login.html';return;}
+
+document.getElementById('u_name').textContent=session.name||'';
+document.getElementById('btnLogout').onclick=()=>{
+  localStorage.clear();
+  location.href='login.html';
+};
+
+function callApi(q,cb){
+  const f='cb_'+Date.now();
+  window[f]=r=>{delete window[f];cb(r);};
+  const s=document.createElement('script');
+  s.src=API_URL+'?'+q+'&token='+token+'&callback='+f;
+  document.body.appendChild(s);
+}
+
+function needRole(n,r){
+  if(n>=4)return true;
+  if(n===3)return r!=='U2';
+  if(n===2)return r==='PU'||r==='U1';
+  if(n===1)return r==='PU';
+  return false;
+}
+
+function renderCell(g,r){
+  if(!needRole(g.need_count,r))
+    return '<span class="badge gray">不需要</span>';
+
+  const name=(g.occupied_positions||{})[r];
+  if(name){
+    const c=g.my_position===r?'badge me':'badge';
+    return `<span class="${c}">${name}</span>`;
   }
 
-  document.getElementById('u_name').textContent = session.name || '';
-  document.getElementById('btnLogout').onclick = () => {
-    localStorage.clear();
-    location.href = 'login.html';
-  };
+  return `
+    <label class="option">
+      <input type="radio" name="pos_${g.game_id}" value="${r}"> ${r}
+    </label>`;
+}
 
-  const gameBody = document.getElementById('gameBody');
+function monthKey(d){
+  const [y,m]=d.split('/');
+  return `${y}年 ${m}月`;
+}
 
-  function callApi(q, cb) {
-    const f = 'cb_' + Date.now();
-    window[f] = r => { delete window[f]; cb(r); };
-    const s = document.createElement('script');
-    s.src = API_URL + '?' + q + '&token=' + token + '&callback=' + f;
-    document.body.appendChild(s);
-  }
+function loadGames(){
+callApi('action=getSignableGames',res=>{
+  if(!res||!Array.isArray(res.games))return;
 
-  function needRole(cnt, role) {
-    if (cnt >= 4) return true;
-    if (cnt === 3) return role !== 'U2';
-    if (cnt === 2) return role === 'PU' || role === 'U1';
-    if (cnt === 1) return role === 'PU';
-    return false;
-  }
+  const sorted=res.games.slice().sort((a,b)=>{
+    if(a.date!==b.date)return a.date.localeCompare(b.date);
+    if(a.category!==b.category)return a.category.localeCompare(b.category);
+    return a.time_range.localeCompare(b.time_range);
+  });
 
-  function renderCell(g, role) {
-    if (!needRole(g.need_count, role)) {
-      return '<span class="badge gray">不需要</span>';
-    }
+  const byMonth={};
+  sorted.forEach(g=>{
+    const k=monthKey(g.date);
+    if(!byMonth[k])byMonth[k]=[];
+    byMonth[k].push(g);
+  });
 
-    const name = (g.occupied_positions || {})[role];
-    if (name) {
-      const cls = g.my_position === role ? 'badge me' : 'badge';
-      return `<span class="${cls}">${name}</span>`;
-    }
+  const container=document.getElementById('monthContainer');
+  container.innerHTML='';
 
-    return `
-      <label class="option">
-        <input type="radio" name="pos_${g.game_id}" value="${role}">
-        ${role}
-      </label>
-    `;
-  }
+  Object.keys(byMonth).forEach(m=>{
+    const h=document.createElement('h3');
+    h.textContent=m;
+    container.appendChild(h);
 
-  function loadGames() {
-    callApi('action=getSignableGames', res => {
+    const tbl=document.createElement('table');
+    tbl.innerHTML=`
+    <thead><tr>
+      <th>日期</th><th>組別</th><th>時間</th>
+      <th>客隊</th><th>主隊</th><th>地點</th>
+      <th>裁判制</th>
+      <th>主審</th><th>一壘</th>
+      <th>二壘</th><th>三壘</th>
+    </tr></thead>`;
+    const tb=document.createElement('tbody');
 
-      if (!res || !Array.isArray(res.games)) {
-        gameBody.innerHTML = '<tr><td colspan="11">讀取失敗</td></tr>';
-        return;
-      }
+    const data=byMonth[m];
+    let i=0;
+    let dateFlip=false;
 
-      // ✅ 排序：日期 → 組別 → 時間
-      const data = res.games.slice().sort((a,b) => {
-        if (a.date !== b.date) return a.date.localeCompare(b.date);
-        if (a.category !== b.category) return a.category.localeCompare(b.category);
-        return a.time_range.localeCompare(b.time_range);
-      });
+    while(i<data.length){
+      let dEnd=i;
+      while(dEnd<data.length&&data[dEnd].date===data[i].date)dEnd++;
 
-      gameBody.innerHTML = '';
+      let c=i;
+      while(c<dEnd){
+        let cEnd=c;
+        while(cEnd<dEnd&&data[cEnd].category===data[c].category)cEnd++;
 
-      let dateStart = 0;
-      while (dateStart < data.length) {
-        let dateEnd = dateStart;
-        while (dateEnd < data.length && data[dateEnd].date === data[dateStart].date) {
-          dateEnd++;
-        }
+        let l=c;
+        while(l<cEnd){
+          let lEnd=l;
+          while(lEnd<cEnd&&data[lEnd].field===data[l].field)lEnd++;
 
-        let catStart = dateStart;
-        while (catStart < dateEnd) {
-          let catEnd = catStart;
-          while (catEnd < dateEnd && data[catEnd].category === data[catStart].category) {
-            catEnd++;
-          }
+          for(let r=l;r<lEnd;r++){
+            const g=data[r];
+            const tr=document.createElement('tr');
+            if(dateFlip)tr.classList.add('date-alt');
+            if(g.full)tr.classList.add('full');
 
-          for (let i = catStart; i < catEnd; i++) {
-            const g = data[i];
-            const tr = document.createElement('tr');
-            if (g.full) tr.classList.add('full');
-
-            if (i === dateStart) {
-              const td = document.createElement('td');
-              td.rowSpan = dateEnd - dateStart;
-              td.textContent = g.date;
+            if(r===i){
+              const td=document.createElement('td');
+              td.rowSpan=dEnd-i;
+              td.textContent=g.date;
+              tr.appendChild(td);
+              dateFlip=!dateFlip;
+            }
+            if(r===c){
+              const td=document.createElement('td');
+              td.rowSpan=cEnd-c;
+              td.textContent=g.category;
+              tr.appendChild(td);
+            }
+            if(r===l){
+              const td=document.createElement('td');
+              td.rowSpan=lEnd-l;
+              td.textContent=g.field;
               tr.appendChild(td);
             }
 
-            if (i === catStart) {
-              const td = document.createElement('td');
-              td.rowSpan = catEnd - catStart;
-              td.textContent = g.category;
-              tr.appendChild(td);
-            }
-
-            tr.innerHTML += `
+            tr.innerHTML+=`
               <td>${g.time_range}</td>
               <td>${g.away_team}</td>
               <td>${g.home_team}</td>
-              <td>${g.field}</td>
               <td>${g.need_count}人制</td>
               <td>${renderCell(g,'PU')}</td>
               <td>${renderCell(g,'U1')}</td>
               <td>${renderCell(g,'U2')}</td>
-              <td>${renderCell(g,'U3')}</td>
-            `;
+              <td>${renderCell(g,'U3')}</td>`;
 
-            gameBody.appendChild(tr);
+            tb.appendChild(tr);
           }
-
-          catStart = catEnd;
+          l=lEnd;
         }
-
-        dateStart = dateEnd;
+        c=cEnd;
       }
-    });
-  }
-
-  document.getElementById('btnSubmit').onclick = () => {
-    const sel = [];
-    document.querySelectorAll('input[type=radio]:checked').forEach(r => {
-      sel.push(r.name.replace('pos_','') + ':' + r.value);
-    });
-
-    if (!sel.length) {
-      alert('尚未選擇任何站位');
-      return;
+      i=dEnd;
     }
 
-    callApi(
-      'action=judgeSignupByGames&games_with_position=' +
-      encodeURIComponent(sel.join(',')),
-      () => {
-        alert('報名完成');
-        loadGames();
-      }
-    );
-  };
+    tbl.appendChild(tb);
+    container.appendChild(tbl);
+  });
+});
+}
 
-  loadGames();
+document.getElementById('btnSubmit').onclick=()=>{
+  const sel=[];
+  document.querySelectorAll('input[type=radio]:checked')
+    .forEach(r=>sel.push(r.name.replace('pos_','')+':'+r.value));
+
+  if(!sel.length){alert('尚未選擇站位');return;}
+
+  callApi(
+    'action=judgeSignupByGames&games_with_position='+
+    encodeURIComponent(sel.join(',')),
+    ()=>{alert('報名完成');loadGames();}
+  );
+};
+
+loadGames();
 });
 </script>
 
