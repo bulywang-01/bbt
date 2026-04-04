@@ -2,81 +2,29 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>裁判班表</title>
+<title>裁判報名表</title>
 
 <style>
-body {
-  margin:0;
-  font-family:system-ui,-apple-system;
-  background:#f5f6f8;
-}
-
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 20px;
-  background:#0f3d5e;
-  color:#fff;
-}
-.nav a{
-  margin-right:16px;
-  color:#fff;
-  text-decoration:none;
-  font-weight:500;
-}
-
+body{margin:0;font-family:system-ui;background:#f5f6f8}
+.header{display:flex;justify-content:space-between;align-items:center;
+ padding:12px 20px;background:#0f3d5e;color:#fff}
+.nav a{margin-right:16px;color:#fff;text-decoration:none}
 .main{padding:20px}
-.panel{
-  background:#fff;
-  padding:16px;
-  border-radius:6px;
-}
+.panel{background:#fff;padding:16px;border-radius:6px}
 
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-  margin-bottom:28px;
-}
-th,td{
-  border:1px solid #dcdcdc;
-  padding:6px 8px;
-  text-align:center;
-  vertical-align:middle;
-}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px}
+th,td{border:1px solid #dcdcdc;padding:6px 8px;text-align:center}
 th{background:#e9eef3}
 
 tr.full{background:#fff3f6}
 tr.date-alt{background:#f9fbfd}
 
-.badge{
-  display:inline-block;
-  padding:2px 10px;
-  border-radius:999px;
-  font-size:13px;
-  background:#2c7be5;
-  color:#fff;
-}
-.badge.me{
-  background:#ffd6e5;
-  color:#0f3d5e;
-}
-.badge.gray{
-  background:#999;
-  color:#fff;
-}
+.badge{padding:2px 10px;border-radius:999px;font-size:13px;
+ background:#2c7be5;color:#fff}
+.badge.me{background:#ffd6e5;color:#0f3d5e}
+.badge.gray{background:#999}
 
-label.option{
-  cursor:pointer;
-  white-space:nowrap;
-}
-
-button{
-  margin-top:12px;
-  padding:8px 18px;
-  font-size:14px;
-}
+button{margin-top:12px;padding:8px 18px}
 </style>
 </head>
 
@@ -95,7 +43,7 @@ button{
 
 <div class="main">
 <div class="panel">
-<h3>裁判班表</h3>
+<h3>裁判報名表</h3>
 
 <div id="monthContainer"></div>
 
@@ -103,7 +51,6 @@ button{
 </div>
 </div>
 
-<!-- ✅ 正確的 JS 載入（重點） -->
 <script src="js/config.js"></script>
 
 <script>
@@ -112,12 +59,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 const token=localStorage.getItem('token');
 const session=JSON.parse(localStorage.getItem('session_user')||'{}');
 if(!token){location.href='login.html';return;}
-
 document.getElementById('u_name').textContent=session.name||'';
-document.getElementById('btnLogout').onclick=()=>{
-  localStorage.clear();
-  location.href='login.html';
-};
+document.getElementById('btnLogout').onclick=()=>{localStorage.clear();location.href='login.html';};
 
 function callApi(q,cb){
   const f='cb_'+Date.now();
@@ -135,138 +78,100 @@ function needRole(n,r){
   return false;
 }
 
-function renderCell(g,r){
-  if(!needRole(g.need_count,r))
-    return '<span class="badge gray">不需要</span>';
-
-  const name=(g.occupied_positions||{})[r];
-  if(name){
-    const c=g.my_position===r?'badge me':'badge';
-    return `<span class="${c}">${name}</span>`;
-  }
-
-  return `
-    <label class="option">
-      <input type="radio" name="pos_${g.game_id}" value="${r}"> ${r}
-    </label>`;
-}
-
 function monthKey(d){
   const [y,m]=d.split('/');
   return `${y}年 ${m}月`;
+}
+
+function renderBadge(g,r){
+  if(!needRole(g.need_count,r)){
+    const s=document.createElement('span');
+    s.className='badge gray';
+    s.textContent='不需要';
+    return s;
+  }
+  const name=(g.occupied_positions||{})[r];
+  if(name){
+    const s=document.createElement('span');
+    s.className=g.my_position===r?'badge me':'badge';
+    s.textContent=name;
+    return s;
+  }
+  const label=document.createElement('label');
+  const i=document.createElement('input');
+  i.type='radio';i.name='pos_'+g.game_id;i.value=r;
+  label.appendChild(i);
+  label.append(r);
+  return label;
+}
+
+function cell(tr,text){
+  const td=document.createElement('td');
+  td.textContent=text;
+  tr.appendChild(td);
 }
 
 function loadGames(){
 callApi('action=getSignableGames',res=>{
   if(!res||!Array.isArray(res.games))return;
 
-  const sorted=res.games.slice().sort((a,b)=>{
+  const data=res.games.slice().sort((a,b)=>{
     if(a.date!==b.date)return a.date.localeCompare(b.date);
     if(a.category!==b.category)return a.category.localeCompare(b.category);
     return a.time_range.localeCompare(b.time_range);
   });
 
   const byMonth={};
-  sorted.forEach(g=>{
+  data.forEach(g=>{
     const k=monthKey(g.date);
     if(!byMonth[k])byMonth[k]=[];
     byMonth[k].push(g);
   });
 
-  const container=document.getElementById('monthContainer');
-  container.innerHTML='';
+  const root=document.getElementById('monthContainer');
+  root.innerHTML='';
 
-  Object.keys(byMonth).forEach(m=>{
-    const h=document.createElement('h3');
-    h.textContent=m;
-    container.appendChild(h);
+  Object.keys(byMonth).forEach(mon=>{
+    const h=document.createElement('h3');h.textContent=mon;root.appendChild(h);
 
-    const tbl=document.createElement('table');
-    tbl.innerHTML=`
-    <thead><tr>
+    const table=document.createElement('table');
+    const thead=document.createElement('thead');
+    thead.innerHTML=`<tr>
       <th>日期</th><th>組別</th><th>時間</th>
       <th>客隊</th><th>主隊</th><th>地點</th>
-      <th>裁判人數</th>
-      <th>主審</th><th>一壘</th>
-      <th>二壘</th><th>三壘</th>
-    </tr></thead>`;
-    const tb=document.createElement('tbody');
+      <th>裁判制</th><th>主審</th><th>一壘</th>
+      <th>二壘</th><th>三壘</th></tr>`;
+    table.appendChild(thead);
 
-    const data=byMonth[m];
-    let i=0;
-    let dateFlip=false;
+    const tbody=document.createElement('tbody');
+    table.appendChild(tbody);
 
-    while(i<data.length){
-      let dEnd=i;
-      while(dEnd<data.length&&data[dEnd].date===data[i].date)dEnd++;
+    let lastDate='',alt=false;
 
-      let c=i;
-      while(c<dEnd){
-        let cEnd=c;
-        while(cEnd<dEnd&&data[cEnd].category===data[c].category)cEnd++;
+    byMonth[mon].forEach(g=>{
+      const tr=document.createElement('tr');
+      if(g.full)tr.classList.add('full');
+      if(g.date!==lastDate){alt=!alt;lastDate=g.date;}
+      if(alt)tr.classList.add('date-alt');
 
-        let l=c;
-        while(l<cEnd){
-          let lEnd=l;
-          while(lEnd<cEnd&&data[lEnd].field===data[l].field)lEnd++;
+      cell(tr,g.date);
+      cell(tr,g.category);
+      cell(tr,g.time_range);
+      cell(tr,g.away_team);
+      cell(tr,g.home_team);
+      cell(tr,g.field);
+      cell(tr,`${g.need_count}人制`);
 
-          for(let r=l;r<lEnd;r++){
-            const g=data[r];
-            const tr=document.createElement('tr');
-            if(dateFlip)tr.classList.add('date-alt');
-            if(g.full)tr.classList.add('full');
+      ['PU','U1','U2','U3'].forEach(r=>{
+        const td=document.createElement('td');
+        td.appendChild(renderBadge(g,r));
+        tr.appendChild(td);
+      });
 
-            if(r===i){
-              const td=document.createElement('td');
-              td.rowSpan=dEnd-i;
-              td.textContent=g.date;
-              tr.appendChild(td);
-              dateFlip=!dateFlip;
-            }
-            if(r===c){
-              const td=document.createElement('td');
-              td.rowSpan=cEnd-c;
-              td.textContent=g.category;
-              tr.appendChild(td);
-            }
-            if(r===l){
-              const td=document.createElement('td');
-              td.rowSpan=lEnd-l;
-              td.textContent=g.field;
-              tr.appendChild(td);
-            }
+      tbody.appendChild(tr);
+    });
 
-
-            tr.innerHTML += `
-              <td>${g.time_range}</td>                 <!-- 時間 -->
-              <td>${g.away_team || ''}</td>            <!-- 客隊 -->
-              <td>${g.home_team || ''}</td>            <!-- 主隊 -->
-
-              if (r === l) {
-                const td = document.createElement('td');  <!-- 地點 -->
-                td.rowSpan = lEnd - l;
-                td.textContent = g.field;
-                tr.appendChild(td);
-              }
-              
-              <td>${g.need_count}人制</td>             <!-- 裁判制 -->
-              <td>${renderCell(g,'PU')}</td>            <!-- 主審 -->
-              <td>${renderCell(g,'U1')}</td>            <!-- 一壘 -->
-              <td>${renderCell(g,'U2')}</td>            <!-- 二壘 -->
-              <td>${renderCell(g,'U3')}</td>            <!-- 三壘 -->
-            `;
-
-            tb.appendChild(tr);
-          }
-          l=lEnd;
-        }
-        c=cEnd;
-      }
-      i=dEnd;
-    }
-
-    tbl.appendChild(tb);
-    container.appendChild(tbl);
+    root.appendChild(table);
   });
 });
 }
@@ -275,14 +180,9 @@ document.getElementById('btnSubmit').onclick=()=>{
   const sel=[];
   document.querySelectorAll('input[type=radio]:checked')
     .forEach(r=>sel.push(r.name.replace('pos_','')+':'+r.value));
-
-  if(!sel.length){alert('尚未選擇站位');return;}
-
-  callApi(
-    'action=judgeSignupByGames&games_with_position='+
-    encodeURIComponent(sel.join(',')),
-    ()=>{alert('報名完成');loadGames();}
-  );
+  if(!sel.length){alert('尚未選擇');return;}
+  callApi('action=judgeSignupByGames&games_with_position='+encodeURIComponent(sel.join(',')),
+    ()=>{alert('報名完成');loadGames();});
 };
 
 loadGames();
