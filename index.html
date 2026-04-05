@@ -139,7 +139,33 @@ body{
 </div>
 
 <!-- ================= Script ================= -->
+<script>
+function loadHeader(){
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+
+      // 補上使用者名稱
+      const s = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if(s.name){
+        const u = document.getElementById('u_name');
+        if(u) u.textContent = s.name;
+      }
+
+      // 高亮目前頁面（如果你有 nav active 樣式）
+      const page = location.pathname.split('/').pop();
+      document.querySelectorAll('.nav a').forEach(a=>{
+        if(a.getAttribute('href') === page){
+          a.classList.add('active');
+        }
+      });
+    });
+}
+</script>
+
 <script src="js/config.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
