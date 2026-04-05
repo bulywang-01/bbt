@@ -186,23 +186,33 @@ function loadUsers(){
 }
 
 /* ===== Save One User ===== */
-function saveUser(btn){
+function saveUser(btn) {
   const tr = btn.closest('tr');
   const uid = tr.dataset.userId;
 
-  const data = { user_id: uid };
+  // ✅ 組成 query string
+  const params = [];
+  params.push('action=updateUser');
+  params.push('user_id=' + encodeURIComponent(uid));
 
-  tr.querySelectorAll('input,select').forEach(el=>{
-    if(el.name==='password' && !el.value) return; // 空密碼不更新
-    data[el.name] = el.value.trim();
+  tr.querySelectorAll('input, select').forEach(el => {
+    // 空密碼不更新
+    if (el.name === 'password' && !el.value) return;
+
+    params.push(
+      encodeURIComponent(el.name) + '=' + encodeURIComponent(el.value.trim())
+    );
   });
 
-  callApi('action=updateUser', data, res=>{
-    if(res && res.result==='ok'){
+  const query = params.join('&');
+
+  callApi(query, res => {
+    if (res && res.result === 'ok') {
       showToast('✅ 已更新');
-      loadUsers();
-    }else{
+      loadUsers(); // 重新載入顯示最新資料
+    } else {
       alert('更新失敗');
+      console.log(res);
     }
   });
 }
