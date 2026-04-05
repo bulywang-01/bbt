@@ -1,0 +1,53 @@
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 24px;
+  background:#ffffff;
+  border-bottom:1px solid #ddd;
+  font-size:14px;
+}
+
+.nav{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+
+.nav a{
+  color:#444;
+  text-decoration:none;
+  font-weight:500;
+  padding:4px 2px;
+}
+
+.nav a:hover{
+  color:#2c7be5;
+}
+
+.nav a.active{
+  color:#2c7be5;
+  font-weight:700;
+  border-bottom:2px solid #2c7be5;
+}
+
+.user-box{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.user-name{
+  font-weight:600;
+  color:#111;
+}
+
+.logout{
+  color:#c00;
+  text-decoration:none;
+  font-size:13px;
+}
+
+.logout:hover{
+  text-decoration:underline;
+}
