@@ -114,6 +114,19 @@ function doLogin(){
       return;
     }
 
+    if (res.result === 'must_change_password') {
+      localStorage.setItem('session_user', JSON.stringify({
+      user_id: res.user_id,
+      username: res.username,
+      name: res.name,
+      role: res.role,
+      token: res.token
+      }));
+    
+      location.replace('change_password.html');
+      return;
+    }
+    
     msg.textContent = '登入失敗，帳號或密碼錯誤';
   };
 
