@@ -328,10 +328,22 @@ function formatDate(d){
   return `${d.getMonth()+1}/${d.getDate()}（${w}）`;
 }
 function pad(t){ return t.split(':').map(x=>x.padStart(2,'0')).join(':'); }
-function formatTimeRange(r){
-  const [s,e]=r.split('–');
-  return `${pad(s)}–${pad(e)}`;
+
+function formatTimeRange(r) {
+  if (!r || typeof r !== 'string') {
+    return '';
+  }
+
+  // 容許 '-' 或 '–'
+  const sep = r.includes('–') ? '–' : '-';
+  const parts = r.split(sep);
+
+  if (parts.length !== 2) return r;
+
+  const pad = t => t.split(':').map(x => x.padStart(2, '0')).join(':');
+  return `${pad(parts[0])}–${pad(parts[1])}`;
 }
+  
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;
