@@ -71,6 +71,19 @@ button{
 <script src="js/config.js"></script>
 
 <script>
+
+callApi(
+  {
+    action: 'login',
+    username: username.value.trim(),
+    password: password.value.trim()
+  },
+  res => {
+    console.log('login response', res);
+    // 原本 login 邏輯照走
+  }
+);
+
 /**
  * 執行登入
  */
