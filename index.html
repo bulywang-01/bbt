@@ -1,114 +1,24 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>系統首頁</title>
-  
-  <!-- ✅ 正確載入共用樣式 -->
+  <meta charset="UTF-8">
+  <title>系統首頁｜裁判出勤管理系統</title>
+
+  <!-- ✅ 共用樣式 -->
   <link rel="stylesheet" href="common.css">
-  
-<style>
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,BlinkMacSystemFont;
-  background:#f5f6f8;
-}
-
-/* ===== Header ===== */
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 20px;
-  background:#ffffff;
-  border-bottom:1px solid #ddd;
-}
-
-.nav a{
-  margin-right:16px;
-  color:#0066cc;
-  text-decoration:none;
-  font-weight:500;
-}
-.nav a:hover{ text-decoration:underline; }
-
-.user-info{
-  text-align:right;
-  line-height:1.5;
-}
-.user-username{ font-size:14px; color:#666; }
-.user-name{ font-size:17px; font-weight:600; }
-.user-role{ font-size:13px; color:#888; }
-.user-logout{
-  margin-top:4px;
-  font-size:13px;
-}
-.user-logout a{
-  color:#cc0000;
-  text-decoration:none;
-}
-
-/* ===== Layout ===== */
-.main{ padding:20px; }
-
-.panel{
-  background:#ffffff;
-  padding:18px;
-  border-radius:6px;
-  box-shadow:0 1px 4px rgba(0,0,0,.08);
-  margin-bottom:20px;
-  max-width:900px;
-}
-
-/* 文件下載清單 */
-.download-list{
-  padding-left:20px;
-}
-.download-list li{
-  margin:6px 0;
-}
-
-/* 管理者專用 */
-.admin-only{ display:none; }
-</style>
 </head>
 
 <body>
 
-
-<!-- ================= Header ================= -->
 <!-- ✅ 共用 Header -->
 <div id="header-container"></div>
-<!--
-  <div class="header">
-  <div class="nav">
-    <a href="index.html">🏠 系統首頁</a>
-    <a href="judge_dashboard.html">🧑‍⚖️ 裁判報名</a>
-    <a href="#download">📄 文件下載</a>
-
-    <span class="admin-only">
-      <a href="judge_signup_review.html">📋 報名審核</a>
-      <a href="admin_dashboard.html">⚙️ 後端管理</a>
-    </span>
-  </div>
--->
-
-  <div class="user-info">
-    <div class="user-username">👤 <b id="u_username"></b></div>
-    <div class="user-name">🧑 <b id="u_name"></b></div>
-    <div class="user-role">🛡 <b id="u_role"></b></div>
-    <div class="user-logout">
-      <a href="#" onclick="logout()">🚪 登出</a>
-    </div>
-  </div>
-
-</div>
 
 <!-- ================= Main ================= -->
 <div class="main">
 
   <h2>系統首頁</h2>
 
+  <!-- ✅ 歡迎區塊 -->
   <div class="panel">
     <p>
       歡迎使用 <b>裁判出勤管理系統</b>。<br>
@@ -116,8 +26,24 @@ body{
     </p>
   </div>
 
-  <!-- ===== 文件下載 ===== -->
-  <div class="panel" id="download">
+  <!-- ✅ 系統公告 -->
+  <div class="panel">
+    <h3>📢 系統公告</h3>
+    <p style="color:#666;">
+      目前尚無最新公告。
+    </p>
+  </div>
+
+  <!-- ✅ 我的本週班表 -->
+  <div class="panel">
+    <h3>🗓 我的本週班表</h3>
+    <p style="color:#666;">
+      本週尚未安排任何執勤賽事。
+    </p>
+  </div>
+
+  <!-- ✅ 文件下載 -->
+  <div class="panel">
     <h3>📄 文件下載</h3>
     <ul class="download-list">
       <li>
@@ -141,21 +67,27 @@ body{
 </div>
 
 <!-- ================= Script ================= -->
+<script src="js/config.js"></script>
 <script>
+/* ===== 載入共用 Header ===== */
 function loadHeader(){
   fetch('header.html')
     .then(res => res.text())
     .then(html => {
       document.getElementById('header-container').innerHTML = html;
 
-      // 補上使用者名稱
+      // 使用者名稱
       const s = JSON.parse(localStorage.getItem('session_user') || '{}');
       if(s.name){
         const u = document.getElementById('u_name');
         if(u) u.textContent = s.name;
       }
 
-      // 高亮目前頁面（如果你有 nav active 樣式）
+      // 頁面標題
+      const t = document.getElementById('pageTitle');
+      if(t) t.textContent = '系統首頁';
+
+      // Nav active
       const page = location.pathname.split('/').pop();
       document.querySelectorAll('.nav a').forEach(a=>{
         if(a.getAttribute('href') === page){
@@ -164,48 +96,35 @@ function loadHeader(){
       });
     });
 }
-</script>
 
-<script src="js/config.js"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-  const raw = localStorage.getItem('session_user');
-  if (!raw) {
-    location.replace('login.html');
-    return;
-  }
-
-  let session;
-  try {
-    session = JSON.parse(raw);
-  } catch (e) {
-    location.replace('login.html');
-    return;
-  }
-
-  if (!session.user_id) {
-    location.replace('login.html');
-    return;
-  }
-
-  document.getElementById('u_username').textContent = session.username || '';
-  document.getElementById('u_name').textContent = session.name || '';
-  document.getElementById('u_role').textContent = session.role || '';
-
-  if (session.role === 'admin') {
-    document.querySelectorAll('.admin-only').forEach(el=>{
-      el.style.display='inline';
-    });
-  }
-});
-
+/* ===== 登出 ===== */
 function logout(){
-  if (!confirm('確定要登出系統？')) return;
+  if(!confirm('確定要登出系統？')) return;
   localStorage.clear();
   location.replace('login.html');
 }
+
+/* ===== 初始化 ===== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // 必須先確保登入
+  const raw = localStorage.getItem('session_user');
+  if(!raw){
+    location.replace('login.html');
+    return;
+  }
+  try{
+    const s = JSON.parse(raw);
+    if(!s.user_id){
+      location.replace('login.html');
+      return;
+    }
+  }catch(e){
+    location.replace('login.html');
+    return;
+  }
+
+  loadHeader();
+});
 </script>
 
 </body>
