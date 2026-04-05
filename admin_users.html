@@ -147,26 +147,6 @@ button{
 
 <script src="js/config.js"></script>
 <script>
-
-callApi(
-  { action: 'getUsers' },
-  res => {
-    console.log('getUsers response', res);
-    // render users
-  }
-);
-callApi(
-  {
-    action: 'updateUser',
-    user_id: uid,
-    username: 'admin',
-    phone: '0912345678'
-    // 其餘欄位
-  },
-  res => {
-    console.log('updateUser response', res);
-  }
-);
   
 /* ===== Init ===== */
 document.addEventListener('DOMContentLoaded',()=>{
@@ -186,14 +166,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* ===== Load Users ===== */
 function loadUsers(){
-  callApi('action=getUsers', res=>{
-    const body = document.getElementById('userBody');
-    body.innerHTML = '';
 
-    if(!res || res.result!=='ok'){
-      body.innerHTML='<tr><td colspan="9">讀取失敗</td></tr>';
-      return;
-    }
+  callApi(
+    { action: 'getUsers' },
+    res => {
+      const body = document.getElementById('userBody');
+      body.innerHTML = '';
+
+      if (!res || res.result !== 'ok') {
+        body.innerHTML = '<tr><td colspan="9">讀取失敗</td></tr>';
+        return;
+      }
 
     res.users.forEach(u=>{
       const tr=document.createElement('tr');
@@ -251,16 +234,15 @@ function saveUser(btn) {
   // ✅ 先印出 query，方便你確認真的有送
   console.log('updateUser query:', query);
 
-  callApi(query, res => {
-    console.log('updateUser response:', res);
-
+  callApi(data, res => {
     if (res && res.result === 'ok') {
       showToast('✅ 儲存成功');
+      loadUsers();
     } else {
       showToast('❌ 儲存失敗');
-      alert('儲存失敗，請查看 Console');
     }
   });
+
 }
   
 function createUser() {
