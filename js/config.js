@@ -1,5 +1,6 @@
-// ===== Apps Script Web App URL（務必確認正確）=====
-const API_URL='https://script.google.com/macros/s/AKfycby3vcIuYyMNxxaE90qSqdK7v3_HqqoXnOoG8YPL0oWXQcWnUdly8NC740AlL8_r7er2/exec';
+// ===== Apps Script Web App URL =====
+const API_URL =
+  'https://script.google.com/macros/s/AKfycby3vcIuYyMNxxaE90qSqdK7v3_HqqoXnOoG8YPL0oWXQcWnUdly8NC740AlL8_r7er2/exec';
 
 // ===== JSONP helper（全站共用）=====
 function callApi(query, callback) {
@@ -19,7 +20,8 @@ function callApi(query, callback) {
 
   const script = document.createElement('script');
   script.src =
-    API_URL + '?' + query +
+    API_URL +
+    '?' + query +
     '&token=' + encodeURIComponent(token) +
     '&callback=' + cbName;
 
