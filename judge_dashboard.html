@@ -170,12 +170,22 @@ function render(){
   });
 
   Object.keys(byMonth).sort().forEach(month=>{
-    const games = byMonth[month]
-      .filter(g=>{
-        if(showPast) return true;
-        return g._dateObj >= today;
-      })
-      .sort((a,b)=>a._dateObj - b._dateObj);
+  const games = byMonth[month]
+    .filter(g => {
+      if (showPast) return true;
+      return g._dateObj >= today;
+    })
+    .sort((a, b) => {
+      // ✅ 先依日期
+      if (a._dateObj.getTime() !== b._dateObj.getTime()) {
+        return a._dateObj - b._dateObj;
+      }
+  
+      // ✅ 同日期 → 依開始時間排序
+      const tA = a.time_range?.split('–')[0] || '';
+      const tB = b.time_range?.split('–')[0] || '';
+      return tA.localeCompare(tB); // 字串即可正確排序 HH:mm
+    });
 
     if(games.length === 0) return;
 
@@ -226,7 +236,8 @@ games.forEach(g => {
     }
 
     dateCell = document.createElement('td');
-    dateCell.textContent = g.date;
+    // dateCell.textContent = g.date;
+    dateCell.textContent = formatMonthDay(g._dateObj);
     tr.appendChild(dateCell);
 
     dateRowspan = 1;
@@ -257,6 +268,12 @@ if (dateCell) {
   dateCell.rowSpan = dateRowspan;
 }
 
+function formatMonthDay(d) {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${m}/${day}`;
+}
+    
 function td(text) {
   const cell = document.createElement('td');
   cell.textContent = text;
