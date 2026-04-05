@@ -61,7 +61,17 @@ table{
   border-collapse:collapse;
   font-size:14px;
   background:#fff;
+  position: relative;
 }
+
+/* === Sticky 表頭 === */
+table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;               /* 確保蓋在 td 上方 */
+  background: #eef2f6;      /* 必須指定，不然會透明 */
+}
+
 th,td{
   border:1px solid #dcdcdc;
   padding:6px 8px;
