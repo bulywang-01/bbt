@@ -11,26 +11,6 @@ body{
   background:#f5f6f8;
 }
 
-/* ===== Header ===== */
-<!-- 更新成功提示 -->
-<div id="toast" style="
-  position:fixed;
-  top:20px;
-  right:20px;
-  background:#2c7be5;
-  color:#fff;
-  padding:10px 16px;
-  border-radius:6px;
-  font-size:14px;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .3s ease;
-  z-index:9999;
-">
-  ✅ 更新成功
-</div>
-  
 .header{
   display:flex;
   justify-content:space-between;
@@ -39,24 +19,23 @@ body{
   background:#ffffff;
   border-bottom:1px solid #ddd;
 }
+
 .nav a{
   margin-right:16px;
   color:#0066cc;
   text-decoration:none;
   font-weight:500;
 }
-.nav a:hover{text-decoration:underline}
 
-/* ===== Layout ===== */
-.main{padding:20px}
+.main{ padding:20px; }
+
 .panel{
-  background:#ffffff;
+  background:#fff;
   padding:16px;
   border-radius:6px;
   box-shadow:0 1px 4px rgba(0,0,0,.08);
 }
 
-/* ===== Table ===== */
 table{
   width:100%;
   border-collapse:collapse;
@@ -67,34 +46,27 @@ th,td{
   padding:6px 8px;
   text-align:center;
 }
-th{background:#eef2f6}
+th{ background:#eef2f6; }
 
-tr.inactive{
-  background:#f4f4f4;
-  color:#999;
-}
-
-/* ===== Form ===== */
 input,select{
   width:100%;
   box-sizing:border-box;
-  padding:2px 4px;
+  padding:4px;
   font-size:13px;
 }
-input[type="password"]{
-  font-family:monospace;
+
+tr.inactive{
+  background:#f3f3f3;
+  color:#888;
 }
+
 button{
-  padding:4px 10px;
+  padding:6px 12px;
   cursor:pointer;
 }
-</style>
-</head>
 
-<body>
-
-<!-- 更新成功提示 -->
-<div id="toast" style="
+/* toast */
+#toast{
   position:fixed;
   top:20px;
   right:20px;
@@ -103,19 +75,19 @@ button{
   padding:10px 16px;
   border-radius:6px;
   font-size:14px;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
   opacity:0;
   pointer-events:none;
-  transition:opacity .3s ease;
+  transition:opacity .3s;
   z-index:9999;
-">
-  ✅ 更新成功
-</div>
-  
-<!-- ===== Header ===== -->
+}
+</style>
+</head>
+
+<body>
+
 <div class="header">
   <div class="nav">
-    <a href="index.html">🏠 系統首頁</a>
+    <a href="index.html">🏠 首頁</a>
     <a href="admin_dashboard.html">⚙️ 後端管理</a>
     <b>👤 裁判帳號管理</b>
   </div>
@@ -125,11 +97,9 @@ button{
   </div>
 </div>
 
-<!-- ===== Main ===== -->
 <div class="main">
-<h2>裁判帳號管理</h2>
-
 <div class="panel">
+
 <table>
 <thead>
 <tr>
@@ -148,177 +118,113 @@ button{
 <tr><td colspan="9">載入中…</td></tr>
 </tbody>
 </table>
+
 </div>
 </div>
+
+<div id="toast">✅ 已更新</div>
 
 <script src="js/config.js"></script>
-
 <script>
-function callApi(query, callback){
-  const cb = 'cb_' + Date.now();
-  window[cb] = function(res){
-    try{
-      callback(res);
-    } finally {
-      delete window[cb];
-      script.remove();
-    }
-  };
-  const script = document.createElement('script');
-  script.src = API_URL + '?' + query + '&callback=' + cb;
-  document.body.appendChild(script);
-}
-
-/* =====================================================
- * Page Init
- * ===================================================== */
+/* ===== Init ===== */
 document.addEventListener('DOMContentLoaded',()=>{
   const raw = localStorage.getItem('session_user');
-  if(!raw){
-    location.replace('login.html');
-    return;
-  }
+  if(!raw){ location.href='login.html'; return; }
 
   const session = JSON.parse(raw);
   document.getElementById('u_name').textContent = session.name || '';
 
-  // ✅ 僅 admin / judge_admin 可進
   if(!['admin','judge_admin'].includes(session.role)){
-    alert('沒有權限進入此頁');
-    location.replace('index.html');
+    alert('沒有權限');
+    location.href='index.html';
     return;
   }
-
   loadUsers();
 });
 
-/* =====================================================
- * Load Users
- * ===================================================== */
+/* ===== Load Users ===== */
 function loadUsers(){
   callApi('action=getUsers', res=>{
     const body = document.getElementById('userBody');
     body.innerHTML = '';
 
-    if(!res || res.result !== 'ok'){
-      body.innerHTML = '<tr><td colspan="9">讀取失敗</td></tr>';
+    if(!res || res.result!=='ok'){
+      body.innerHTML='<tr><td colspan="9">讀取失敗</td></tr>';
       return;
     }
 
-    if(!Array.isArray(res.users) || res.users.length === 0){
-      body.innerHTML = '<tr><td colspan="9">目前沒有資料</td></tr>';
-      return;
-    }
+    res.users.forEach(u=>{
+      const tr=document.createElement('tr');
+      tr.dataset.userId=u.user_id;
+      if(u.active!=='Y') tr.classList.add('inactive');
 
-res.users.forEach(u => {
-  const tr = document.createElement('tr');
-  if (u.active !== 'Y') tr.classList.add('inactive');
-
-  tr.innerHTML = `
-    <!-- 帳號 -->
-    <td>
-      <input value="${u.username || ''}"
-        onchange="updateUser('${u.user_id}','username',this.value)">
-    </td>
-
-    <!-- 新密碼（刻意不顯示原值） -->
-    <td>
-      <input type="password"
-        placeholder="留空不修改"
-        onchange="updateUser('${u.user_id}','password',this.value)">
-    </td>
-
-    <!-- 姓名 -->
-    <td>
-      <input value="${u.name || ''}"
-        onchange="updateUser('${u.user_id}','name',this.value)">
-    </td>
-
-    <!-- 電話 -->
-    <td>
-      <input value="${u.phone || ''}"
-        onchange="updateUser('${u.user_id}','phone',this.value)">
-    </td>
-
-    <!-- Email -->
-    <td>
-      <input value="${u.email || ''}"
-        onchange="updateUser('${u.user_id}','email',this.value)">
-    </td>
-
-    <!-- Level -->
-    <td>
-      <input value="${u.level || ''}"
-        onchange="updateUser('${u.user_id}','level',this.value)">
-    </td>
-
-    <!-- 角色 -->
-    <td>
-      <select onchange="updateUser('${u.user_id}','role',this.value)">
-        ${renderRoleOptions(u.role)}
-      </select>
-    </td>
-
-    <!-- 狀態 -->
-    <td>${u.active === 'Y' ? '啟用' : '停用'}</td>
-
-    <!-- 操作 -->
-    <td>
-      <button onclick="toggleActive('${u.user_id}')">
-        ${u.active === 'Y' ? '停用' : '啟用'}
-      </button>
-    </td>
-  `;
-
-  body.appendChild(tr);
-});
+      tr.innerHTML=`
+        <td><input name="username" value="${u.username||''}"></td>
+        <td><input name="password" type="password" placeholder="留空不修改"></td>
+        <td><input name="name" value="${u.name||''}"></td>
+        <td><input name="phone" value="${u.phone||''}"></td>
+        <td><input name="email" value="${u.email||''}"></td>
+        <td><input name="level" value="${u.level||''}"></td>
+        <td>
+          <select name="role">
+            ${renderRoleOptions(u.role)}
+          </select>
+        </td>
+        <td>
+          <select name="active">
+            <option value="Y" ${u.active==='Y'?'selected':''}>啟用</option>
+            <option value="N" ${u.active!=='Y'?'selected':''}>停用</option>
+          </select>
+        </td>
+        <td>
+          <button onclick="saveUser(this)">儲存</button>
+        </td>
+      `;
+      body.appendChild(tr);
+    });
   });
 }
 
-/* =====================================================
- * Helpers
- * ===================================================== */
+/* ===== Save One User ===== */
+function saveUser(btn){
+  const tr = btn.closest('tr');
+  const uid = tr.dataset.userId;
+
+  const data = { user_id: uid };
+
+  tr.querySelectorAll('input,select').forEach(el=>{
+    if(el.name==='password' && !el.value) return; // 空密碼不更新
+    data[el.name] = el.value.trim();
+  });
+
+  callApi('action=updateUser', data, res=>{
+    if(res && res.result==='ok'){
+      showToast('✅ 已更新');
+      loadUsers();
+    }else{
+      alert('更新失敗');
+    }
+  });
+}
+
+/* ===== Helpers ===== */
 function renderRoleOptions(role){
-  const roles = ['admin','match_admin','judge_admin','chief_judge','judge'];
+  const roles=['admin','match_admin','judge_admin','chief_judge','judge'];
   return roles.map(r =>
-    `<option value="${r}" ${r === role ? 'selected' : ''}>${r}</option>`
+    `<option value="${r}" ${r===role?'selected':''}>${r}</option>`
   ).join('');
 }
 
-function updateUser(uid, field, value){
-  if(field === 'password' && !value) return;
-
-  callApi(
-    `action=updateUserField&user_id=${uid}&field=${field}&value=${encodeURIComponent(value)}`,
-    res => {
-      if (!res || res.result !== 'ok') {
-        alert('更新失敗');
-        return;
-      }
-      showToast('✅ 資料已更新');
-    }
-  );
-}
-
-function showToast(message) {
-  const toast = document.getElementById('toast');
-  toast.textContent = message || '✅ 更新成功';
-  toast.style.opacity = '1';
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-  }, 2000);
-}
-  
-function toggleActive(uid){
-  if(!confirm('確定要切換狀態？')) return;
-  callApi(`action=toggleUserActive&user_id=${uid}`, ()=>loadUsers());
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+ t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',2000);
 }
 
 function logout(){
-  if(!confirm('確定要登出？')) return;
   localStorage.clear();
-  location.replace('login.html');
+  location.href='login.html';
 }
 </script>
 
