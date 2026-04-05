@@ -190,13 +190,13 @@ function saveUser(btn) {
   const tr = btn.closest('tr');
   const uid = tr.dataset.userId;
 
-  // ✅ 組成 query string
+  // ✅ 組 query string（這一步非常關鍵）
   const params = [];
   params.push('action=updateUser');
   params.push('user_id=' + encodeURIComponent(uid));
 
   tr.querySelectorAll('input, select').forEach(el => {
-    // 空密碼不更新
+    // 空密碼不送（避免覆蓋）
     if (el.name === 'password' && !el.value) return;
 
     params.push(
@@ -206,13 +206,17 @@ function saveUser(btn) {
 
   const query = params.join('&');
 
+  // ✅ 先印出 query，方便你確認真的有送
+  console.log('updateUser query:', query);
+
   callApi(query, res => {
+    console.log('updateUser response:', res);
+
     if (res && res.result === 'ok') {
-      showToast('✅ 已更新');
-      loadUsers(); // 重新載入顯示最新資料
+      showToast('✅ 儲存成功');
     } else {
-      alert('更新失敗');
-      console.log(res);
+      showToast('❌ 儲存失敗');
+      alert('儲存失敗，請查看 Console');
     }
   });
 }
