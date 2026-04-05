@@ -4,15 +4,6 @@
 <meta charset="UTF-8">
 <title>裁判報名</title>
 
-  <!-- ✅ 共用樣式 -->
-  <link rel="stylesheet" href="common.css">
-</head>
-
-<body>
-
-<!-- ✅ 共用 Header -->
-<div id="header-container"></div>
-  
 <style>
 body{
   margin:0;
@@ -159,16 +150,6 @@ button{
 <script src="js/config.js"></script>
 
 <script>
-
-/* ===== 載入共用 Header ===== */
-function loadHeader(){
-  fetch('header.html')
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById('header-container').innerHTML = html;
-    }
-          }
-
 const today = new Date();
 today.setHours(0,0,0,0);
 
@@ -506,7 +487,6 @@ function logout(){
   location.replace('login.html');
 }
 
-loadHeader();
 </script>
 
 </body>
