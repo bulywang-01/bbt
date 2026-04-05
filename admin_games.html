@@ -162,72 +162,76 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 /* ===== 載入賽事 ===== */
-function loadGames(){
-  callApi({ action:'getGames' }, res=>{
+function loadGames() {
+  callApi({ action: 'getGames' }, res => {
     const body = document.getElementById('gameBody');
-    body.innerHTML='';
+    body.innerHTML = '';
 
     if (!res || res.result !== 'ok') {
       body.innerHTML = '<tr><td colspan="10">讀取失敗</td></tr>';
       return;
     }
 
-const games = res.games
-  .map(g => {
-    if (!g || typeof g !== 'object') return null;
+    const games = res.games
+      .map(g => {
+        if (!g || typeof g !== 'object') return null;
 
-    const d = parseDateSafe(g.date);
+        const d = parseDateSafe(g.date);
 
-    return {
-      game_id: g.game_id,
-      date: g.date,
-      time: g.time,
-      time_range: g.time_range,
-      tournament: g.tournament,
-      category: g.category,
-      field: g.field,
-      away_team: g.away_team,
-      home_team: g.home_team,
-      umpire_count: g.umpire_count,
-      position_mode: g.position_mode,
+        return {
+          game_id: g.game_id,
+          date: g.date,
+          time: g.time,
+          time_range: g.time_range,
+          tournament: g.tournament,
+          category: g.category,
+          field: g.field,
+          away_team: g.away_team,
+          home_team: g.home_team,
+          umpire_count: g.umpire_count,
+          position_mode: g.position_mode,
+          _dateObj: d,                       // 允許為 null
+          _startMin: timeToMinSafe(g.time)
+        };
+      })
+      .filter(g => g !== null)
+      .sort((a, b) => {
+        // 日期為 null 的排最後
+        if (!a._dateObj && !b._dateObj) return 0;
+        if (!a._dateObj) return 1;
+        if (!b._dateObj) return -1;
 
-      // ⭐ 關鍵：允許 _dateObj 為 null
-      _dateObj: d,
-      _startMin: timeToMinSafe(g.time)
-    };
-  })
-  .filter(g => g !== null)   // ✅ 只過濾「整筆不存在」
-  .sort((a, b) => {
-    // ⭐ null 日期排到最後
-    if (!a._dateObj && !b._dateObj) return 0;
-    if (!a._dateObj) return 1;
-    if (!b._dateObj) return -1;
+        if (a._dateObj - b._dateObj !== 0) {
+          return a._dateObj - b._dateObj;
+        }
+        return a._startMin - b._startMin;
+      });
 
-    if (a._dateObj - b._dateObj !== 0) {
-      return a._dateObj - b._dateObj;
+    // ✅ 空結果保險
+    if (games.length === 0) {
+      body.innerHTML = '<tr><td colspan="10">目前沒有可顯示的賽事</td></tr>';
+      return;
     }
-    return a._startMin - b._startMin;
-  });
 
-    games.forEach(g=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${formatDate(g._dateObj)}</td>
-        <td>${formatTimeRange(g.time_range)}</td>
-        <td><input value="${g.tournament}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
-        <td><input value="${g.category}" onchange="updateGame('${g.game_id}','category',this.value)"></td>
-        <td><input value="${g.field}" onchange="updateGame('${g.game_id}','field',this.value)"></td>
-        <td><input value="${g.away_team}" onchange="updateGame('${g.game_id}','away_team',this.value)"></td>
-        <td><input value="${g.home_team}" onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
+    games.forEach(g => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${g._dateObj ? formatDate(g._dateObj) : '日期格式錯誤'}</td>
+        <td>${g.time_range ? formatTimeRange(g.time_range) : g.time}</td>
+        <td><input value="${g.tournament || ''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
+        <td><input value="${g.category || ''}" onchange="updateGame('${g.game_id}','category',this.value)"></td>
+        <td><input value="${g.field || ''}" onchange="updateGame('${g.game_id}','field',this.value)"></td>
+        <td><input value="${g.away_team || ''}" onchange="updateGame('${g.game_id}','away_team',this.value)"></td>
+        <td><input value="${g.home_team || ''}" onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
         <td>
           <select onchange="updateGame('${g.game_id}','umpire_count',this.value)">
-            ${[1,2,3,4].map(n=>`<option value="${n}" ${g.umpire_count==n?'selected':''}>${n}</option>`).join('')}
+            ${[1,2,3,4].map(n => `<option value="${n}" ${g.umpire_count == n ? 'selected' : ''}>${n}</option>`).join('')}
           </select>
         </td>
         <td>
           <select onchange="updateGame('${g.game_id}','position_mode',this.value)">
-            <option value="allow_select" ${g.position_mode==='allow_select'?'selected':''}>自行選</option>
-            <option value="auto_only" ${g.position_mode==='auto_only'?'selected':''}>系統排</option>
+            <option value="allow_select" ${g.position_mode === 'allow_select' ? 'selected' : ''}>自行選</option>
+            <option value="auto_only" ${g.position_mode === 'auto_only' ? 'selected' : ''}>系統排</option>
           </select>
         </td>
         <td>
