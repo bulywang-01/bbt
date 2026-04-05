@@ -72,87 +72,63 @@ button{
 
 <script>
 
-callApi(
-  {
-    action: 'login',
-    username: username.value.trim(),
-    password: password.value.trim()
-  },
-  res => {
-    console.log('login response', res);
-    // 原本 login 邏輯照走
-  }
-);
-
 /**
  * 執行登入
  */
-function doLogin(){
+function doLogin() {
   const u = username.value.trim();
   const p = password.value.trim();
   msg.textContent = '';
 
-  if(!u || !p){
+  if (!u || !p) {
     msg.textContent = '請輸入帳號與密碼';
     return;
   }
 
-  const cb = 'cb_login_' + Date.now();
+  callApi(
+    {
+      action: 'login',
+      username: u,
+      password: p
+    },
+    res => {
+      if (!res || !res.result) {
+        msg.textContent = '系統錯誤';
+        return;
+      }
 
-  window[cb] = function(res){
-    delete window[cb];
-    script.remove();
+      if (res.result === 'ok') {
+        localStorage.setItem('session_user', JSON.stringify({
+          user_id: res.user_id,
+          username: res.username,
+          name: res.name,
+          role: res.role,
+          token: res.token
+        }));
+        location.replace('index.html');
+        return;
+      }
 
-    if(!res || !res.result){
-      msg.textContent = '系統錯誤，請稍後再試';
-      return;
+      if (res.result === 'must_change_password') {
+        localStorage.setItem('session_user', JSON.stringify({
+          user_id: res.user_id,
+          username: res.username,
+          name: res.name,
+          role: res.role,
+          token: res.token
+        }));
+        location.replace('change_password.html');
+        return;
+      }
+
+      if (res.result === 'inactive') {
+        msg.textContent = '帳號尚未啟用';
+        return;
+      }
+
+      msg.textContent = '登入失敗';
     }
-
-    if(res.result === 'ok'){
-      // ✅ 將登入資訊全部存進 session_user（關鍵）
-      localStorage.setItem('session_user', JSON.stringify({
-        user_id: res.user_id,
-        username: res.username,
-        name: res.name,
-        role: res.role,
-        token: res.token
-      }));
-
-      location.replace('index.html');
-      return;
-    }
-
-    if(res.result === 'inactive'){
-      msg.textContent = '此帳號尚未啟用，請聯絡管理員';
-      return;
-    }
-
-    if (res.result === 'must_change_password') {
-      localStorage.setItem('session_user', JSON.stringify({
-      user_id: res.user_id,
-      username: res.username,
-      name: res.name,
-      role: res.role,
-      token: res.token
-      }));
-    
-      location.replace('change_password.html');
-      return;
-    }
-    
-    msg.textContent = '登入失敗，帳號或密碼錯誤';
-  };
-
-  // ✅ JSONP 呼叫（注意：全都用 &）
-  const script = document.createElement('script');
-  script.src =
-    API_URL +
-    '?action=login' +
-    '&username=' + encodeURIComponent(u) +
-    '&password=' + encodeURIComponent(p) +
-    '&callback=' + cb;
-
-  document.body.appendChild(script);
+  );
 }
 </script>
 
