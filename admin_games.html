@@ -216,8 +216,8 @@ function loadGames() {
     games.forEach(g => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${g._dateObj ? formatDate(g._dateObj) : '日期格式錯誤'}</td>
-        <td>${g.time_range ? formatTimeRange(g.time_range) : g.time}</td>
+        <td>${g._dateObj ? formatDateText(g.date) : '日期格式錯誤'}</td>
+        <td>${g.time_range ? formatTimeText(g.time, g.duration) : g.time}</td>
         <td><input value="${g.tournament || ''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
         <td><input value="${g.category || ''}" onchange="updateGame('${g.game_id}','category',this.value)"></td>
         <td><input value="${g.field || ''}" onchange="updateGame('${g.game_id}','field',this.value)"></td>
@@ -293,6 +293,25 @@ function deleteGame(id){
 }
 
 /* ===== Utils ===== */
+
+function formatDateText(dateStr) {
+  const d = parseDateSafe(dateStr);
+  if (!d) return '日期格式錯誤';
+
+  const week = ['日','一','二','三','四','五','六'][d.getDay()];
+  return `${d.getMonth() + 1}/${d.getDate()}（${week}）`;
+}
+
+function formatTimeText(time, duration) {
+  if (!time || !time.includes(':')) return '';
+
+  const [h, m] = time.split(':').map(Number);
+  const end = new Date(2000, 0, 1, h, m + Number(duration || 0));
+
+  return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}–` +
+         `${end.getHours().toString().padStart(2,'0')}:${end.getMinutes().toString().padStart(2,'0')}`;
+}
+
 function parseDateSafe(val){
   if(!val) return null;
 
