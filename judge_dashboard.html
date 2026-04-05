@@ -166,14 +166,31 @@ function loadGames(){
     }
 
     // ✅ 日期過濾（過期不顯示）
-    const list = res.games.filter(g=>{
-      if(showPast) return true;
-      const d = new Date(g.date);
-      if(isNaN(d)) return false; // 日期格式錯誤直接排除
-      d.setHours(0,0,0,0);
+    //const list = res.games.filter(g=>{
+    //  if(showPast) return true;
+    //  const d = new Date(g.date);
+    //  if(isNaN(d)) return false; // 日期格式錯誤直接排除
+    //  d.setHours(0,0,0,0);
+    //  return d >= today;
+    //});
+
+   const list = res.games.filter(g => {
+      if (showPast) return true;
+    
+      // ✅ g.date = '2026/04/02'
+      const parts = g.date.split('/');
+      if (parts.length !== 3) return false;
+    
+      const d = new Date(
+        Number(parts[0]),
+        Number(parts[1]) - 1, // 月份 0-based
+        Number(parts[2])
+      );
+      d.setHours(0, 0, 0, 0);
+    
       return d >= today;
     });
-
+   
     dbg.textContent +=
       `\n總筆數=${res.games.length}，顯示筆數=${list.length}`;
 
