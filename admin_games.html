@@ -3,85 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <title>賽事管理</title>
-
 <style>
-body{
-  margin:0;
-  font-family:system-ui,-apple-system;
-  background:#f5f6f8;
-}
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 20px;
-  background:#ffffff;
-  border-bottom:1px solid #ddd;
-}
-.nav a{
-  margin-right:16px;
-  color:#0066cc;
-  text-decoration:none;
-  font-weight:500;
-}
-.main{ padding:20px; }
-
-.panel{
-  background:#fff;
-  padding:16px;
-  border-radius:6px;
-  box-shadow:0 1px 4px rgba(0,0,0,.08);
-  margin-bottom:24px;
-}
-h2{ margin:0 0 12px; }
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th,td{
-  border:1px solid #ddd;
-  padding:6px 8px;
-  text-align:center;
-}
-th{
-  background:#eef2f6;
-}
-
-input,select{
-  width:100%;
-  padding:4px;
-  box-sizing:border-box;
-}
-
-button{
-  padding:4px 10px;
-  cursor:pointer;
-}
-.delete-btn{
-  color:#c00;
-}
-
-/* toast */
-#toast{
-  position:fixed;
-  top:20px;
-  right:20px;
-  background:#2c7be5;
-  color:#fff;
-  padding:10px 16px;
-  border-radius:6px;
-  font-size:14px;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .3s;
-}
+body{margin:0;font-family:system-ui,-apple-system;background:#f5f6f8;}
+.header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd;}
+.nav a{margin-right:16px;color:#0066cc;text-decoration:none;font-weight:500;}
+.main{padding:20px;}
+.panel{background:#fff;padding:16px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:24px;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th,td{border:1px solid #ddd;padding:6px 8px;text-align:center;}
+th{background:#eef2f6;}
+input,select{width:100%;padding:4px;box-sizing:border-box;}
+.delete-btn{color:#c00;}
+#toast{position:fixed;top:20px;right:20px;background:#2c7be5;color:#fff;padding:10px 16px;border-radius:6px;opacity:0;transition:.3s;}
 </style>
 </head>
 
 <body>
-
 <div class="header">
   <div class="nav">
     <a href="index.html">🏠 首頁</a>
@@ -95,201 +32,120 @@ button{
 </div>
 
 <div class="main">
-
-<!-- 新增賽事 -->
 <div class="panel">
 <h2>➕ 新增賽事</h2>
 <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
-  <input id="g_date" type="date">
-  <input id="g_time" placeholder="開始時間 08:30">
-  <input id="g_duration" type="number" placeholder="分鐘 90">
-  <input id="g_field" placeholder="場地">
-  <input id="g_tournament" placeholder="賽事名稱">
-  <input id="g_category" placeholder="組別">
-  <input id="g_away" placeholder="客隊">
-  <input id="g_home" placeholder="主隊">
-  <select id="g_umpire">
-    <option value="1">1 人</option>
-    <option value="2">2 人</option>
-    <option value="3">3 人</option>
-    <option value="4">4 人</option>
-  </select>
-  <select id="g_mode">
-    <option value="allow_select">裁判自行選站位</option>
-    <option value="auto_only">系統自動排</option>
-  </select>
-  <button onclick="createGame()">新增</button>
+<input id="g_date" type="date">
+<input id="g_time" type="time">
+<input id="g_duration" type="number" placeholder="分鐘">
+<input id="g_field" placeholder="場地">
+<input id="g_tournament" placeholder="賽事名稱">
+<input id="g_category" placeholder="組別">
+<input id="g_away" placeholder="客隊">
+<input id="g_home" placeholder="主隊">
+<select id="g_umpire">
+<option value="1">1 人</option>
+<option value="2">2 人</option>
+<option value="3">3 人</option>
+<option value="4">4 人</option>
+</select>
+<select id="g_mode">
+<option value="allow_select">裁判自行選</option>
+<option value="auto_only">系統排</option>
+</select>
+<button onclick="createGame()">新增</button>
 </div>
 </div>
 
-<!-- 賽事列表 -->
 <div class="panel">
 <h2>📋 賽事列表</h2>
 <table>
 <thead>
 <tr>
-  <th>日期</th>
-  <th>時間</th>
-  <th>賽事</th>
-  <th>組別</th>
-  <th>場地</th>
-  <th>客隊</th>
-  <th>主隊</th>
-  <th>裁判數</th>
-  <th>站位</th>
-  <th>操作</th>
+<th>日期</th><th>時間</th><th>賽事</th><th>組別</th>
+<th>場地</th><th>客隊</th><th>主隊</th>
+<th>裁判數</th><th>站位</th><th>操作</th>
 </tr>
 </thead>
-<tbody id="gameBody">
-<tr><td colspan="10">載入中…</td></tr>
-</tbody>
+<tbody id="gameBody"><tr><td colspan="10">載入中…</td></tr></tbody>
 </table>
 </div>
-
 </div>
 
 <div id="toast"></div>
 
-<!-- ✅ 一定要正確載入 -->
 <script src="js/config.js"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
   const s = JSON.parse(localStorage.getItem('session_user')||'{}');
-  if(!s.user_id){ location.href='login.html'; return; }
-  document.getElementById('u_name').textContent = s.name || '';
+  if(!s.user_id){location.href='login.html';return;}
+  u_name.textContent=s.name;
   loadGames();
 });
 
-/* ===== 載入賽事 ===== */
-function loadGames() {
-  callApi({ action: 'getGames' }, res => {
-    const body = document.getElementById('gameBody');
-    body.innerHTML = '';
-
-    if (!res || res.result !== 'ok') {
-      body.innerHTML = '<tr><td colspan="10">讀取失敗</td></tr>';
-      return;
-    }
-
-    const games = res.games
-      .map(g => {
-        if (!g || typeof g !== 'object') return null;
-
-        const d = parseDateSafe(g.date);
-
-        return {
-          game_id: g.game_id,
-          date: g.date,
-          time: g.time,
-          time_range: g.time_range,
-          tournament: g.tournament,
-          category: g.category,
-          field: g.field,
-          away_team: g.away_team,
-          home_team: g.home_team,
-          umpire_count: g.umpire_count,
-          position_mode: g.position_mode,
-          _dateObj: d,                       // 允許為 null
-          _startMin: timeToMinSafe(g.time)
-        };
-      })
-      .filter(g => g !== null)
-      .sort((a, b) => {
-        // 日期為 null 的排最後
-        if (!a._dateObj && !b._dateObj) return 0;
-        if (!a._dateObj) return 1;
-        if (!b._dateObj) return -1;
-
-        if (a._dateObj - b._dateObj !== 0) {
-          return a._dateObj - b._dateObj;
-        }
-        return a._startMin - b._startMin;
-      });
-
-// ✅ 沒有任何資料的狀態
-if (games.length === 0) {
-  body.innerHTML = '<tr><td colspan="10">目前沒有可顯示的賽事</td></tr>';
-  return;
+/* ✅ 關鍵：時間正規化 */
+function normalizeTime(val){
+  if(!val) return '';
+  if(typeof val==='string' && /^\d{2}:\d{2}$/.test(val)) return val;
+  if(typeof val==='string' && val.includes('–')) return normalizeTime(val.split('–')[0]);
+  const d=new Date(val);
+  if(!isNaN(d)){
+    return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  }
+  return '';
 }
-    
-// console.log('raw time=', g.time, 'formatted=', formatTimeForTimeInput(g.time));
-    
-// ✅ 正式 render
-games.forEach(g => {
-  const tr = document.createElement('tr');
 
-  tr.innerHTML = `
+function timeToMinSafe(val){
+  const t=normalizeTime(val);
+  if(!t) return 0;
+  const [h,m]=t.split(':').map(Number);
+  return h*60+m;
+}
 
-  <!-- 日期（可改，正確顯示） -->
-  <td>
-    <input type="date"
-      value="${formatDateForDateInput(g.date)}"
-      onchange="updateGame('${g.game_id}','date',this.value)">
-  </td>
+function formatDateForInput(val){
+  if(val instanceof Date){
+    return `${val.getFullYear()}-${String(val.getMonth()+1).padStart(2,'0')}-${String(val.getDate()).padStart(2,'0')}`;
+  }
+  return val||'';
+}
 
-  <!-- 時間（開始）＋分鐘 -->
-  <td>
-    <input type="time"
-      value="${formatTimeForTimeInput(g.time)}"
-      onchange="updateGame('${g.game_id}','time',this.value)">
-    <br>
-    <small>
-      <input type="number"
-        min="10" step="10"
-        value="${g.duration ?? ''}"
-        onchange="updateGame('${g.game_id}','duration',this.value)">
-      分鐘
-    </small>
-  </td>
+function loadGames(){
+  callApi({action:'getGames'},res=>{
+    const body=gameBody;
+    body.innerHTML='';
+    if(!res||res.result!=='ok'){body.innerHTML='<tr><td colspan=10>讀取失敗</td></tr>';return;}
 
-    <td><input value="${g.tournament || ''}"
-               onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
-
-    <td><input value="${g.category || ''}"
-               onchange="updateGame('${g.game_id}','category',this.value)"></td>
-
-    <td><input value="${g.field || ''}"
-               onchange="updateGame('${g.game_id}','field',this.value)"></td>
-
-    <td><input value="${g.away_team || ''}"
-               onchange="updateGame('${g.game_id}','away_team',this.value)"></td>
-
-    <td><input value="${g.home_team || ''}"
-               onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
-
-    <td>
-      <select onchange="updateGame('${g.game_id}','umpire_count',this.value)">
-        ${[1,2,3,4].map(n =>
-          `<option value="${n}" ${g.umpire_count == n ? 'selected' : ''}>${n}</option>`
-        ).join('')}
-      </select>
-    </td>
-
-    <td>
-      <select onchange="updateGame('${g.game_id}','position_mode',this.value)">
-        <option value="allow_select" ${g.position_mode === 'allow_select' ? 'selected' : ''}>自行選</option>
-        <option value="auto_only" ${g.position_mode === 'auto_only' ? 'selected' : ''}>系統排</option>
-      </select>
-    </td>
-
-    <td>
-      <button class="delete-btn"
-              onclick="deleteGame('${g.game_id}')">刪除</button>
-    </td>
-  `;
-
-  body.appendChild(tr);
-});
+    res.games
+    .sort((a,b)=>timeToMinSafe(a.time)-timeToMinSafe(b.time))
+    .forEach(g=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+      <td><input type="date" value="${formatDateForInput(g.date)}"
+        onchange="updateGame('${g.game_id}','date',this.value)"></td>
+      <td><input type="time" value="${normalizeTime(g.time)}"
+        onchange="updateGame('${g.game_id}','time',this.value)">
+        <br><small>
+        <input type="number" value="${g.duration||''}"
+        onchange="updateGame('${g.game_id}','duration',this.value)"> 分鐘</small></td>
+      <td><input value="${g.tournament||''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
+      <td><input value="${g.category||''}" onchange="updateGame('${g.game_id}','category',this.value)"></td>
+      <td><input value="${g.field||''}" onchange="updateGame('${g.game_id}','field',this.value)"></td>
+      <td><input value="${g.away_team||''}" onchange="updateGame('${g.game_id}','away_team',this.value)"></td>
+      <td><input value="${g.home_team||''}" onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
+      <td><select onchange="updateGame('${g.game_id}','umpire_count',this.value)">
+        ${[1,2,3,4].map(n=>`<option ${g.umpire_count==n?'selected':''}>${n}</option>`).join('')}
+      </select></td>
+      <td><select onchange="updateGame('${g.game_id}','position_mode',this.value)">
+        <option value="allow_select" ${g.position_mode==='allow_select'?'selected':''}>自行選</option>
+        <option value="auto_only" ${g.position_mode==='auto_only'?'selected':''}>系統排</option>
+      </select></td>
+      <td><button class="delete-btn" onclick="deleteGame('${g.game_id}')">刪除</button></td>`;
+      body.appendChild(tr);
+    });
   });
 }
 
-/* ===== CRUD ===== */
 function createGame(){
-  if (!g_date.value || !g_time.value || !g_duration.value) {
-    alert('請填寫日期、時間、分鐘');
-    return;
-  }
   callApi({
     action:'createGame',
     date:g_date.value,
@@ -302,167 +158,21 @@ function createGame(){
     home_team:g_home.value,
     umpire_count:g_umpire.value,
     position_mode:g_mode.value
-  },res=>{
-    if(res && res.result==='ok'){
-      showToast('✅ 已新增賽事');
-      loadGames();
-    }
-  });
+  },res=>{if(res.result==='ok'){showToast('✅ 已新增');loadGames();}});
 }
 
-function updateGame(id, field, value){
-  callApi({
-    action:'updateGame',
-    game_id:id,
-    field_name:field,
-    value:value
-  },res=>{
-    if(res && res.result==='ok'){
-      showToast('✅ 已更新');
-    }
-  });
+function updateGame(id,f,v){
+  callApi({action:'updateGame',game_id:id,field_name:f,value:v},
+    r=>{if(r.result==='ok')showToast('✅ 已更新');});
 }
 
 function deleteGame(id){
-  if(!confirm('確定刪除此賽事？')) return;
-  callApi({ action:'deleteGame', game_id:id },res=>{
-    if(res && res.result==='ok'){
-      showToast('🗑 已刪除');
-      loadGames();
-    }
-  });
+  if(!confirm('確定刪除？'))return;
+  callApi({action:'deleteGame',game_id:id},r=>{if(r.result==='ok')loadGames();});
 }
 
-/* ===== Utils ===== */
-
-function formatDateText(dateStr) {
-  const d = parseDateSafe(dateStr);
-  if (!d) return '日期格式錯誤';
-
-  const week = ['日','一','二','三','四','五','六'][d.getDay()];
-  return `${d.getMonth() + 1}/${d.getDate()}（${week}）`;
-}
-
-function formatTimeText(time, duration) {
-  if (!time || !time.includes(':')) return '';
-
-  const [h, m] = time.split(':').map(Number);
-  const end = new Date(2000, 0, 1, h, m + Number(duration || 0));
-
-  return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}–` +
-         `${end.getHours().toString().padStart(2,'0')}:${end.getMinutes().toString().padStart(2,'0')}`;
-}
-
-function parseDateSafe(val) {
-  if (!val) return null;
-
-  // ✅ 已經是 Date 物件（Google Sheet 常見）
-  if (val instanceof Date && !isNaN(val)) {
-    return val;
-  }
-
-  // ✅ yyyy-mm-dd
-  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
-    const [y, m, d] = val.split('-').map(Number);
-    return new Date(y, m - 1, d);
-  }
-
-  // ✅ yyyy/m/d
-  if (typeof val === 'string' && /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(val)) {
-    const [y, m, d] = val.split('/').map(Number);
-    return new Date(y, m - 1, d);
-  }
-
-  return null;
-}
-  
-function timeToMin(t){
-  const [h,m]=t.split(':').map(Number);
-  return h*60+m;
-}
-
-function timeToMinSafe(val) {
-  if (!val || typeof val !== 'string' || !val.includes(':')) return 0;
-  const [h, m] = val.split(':').map(n => parseInt(n, 10));
-  if (isNaN(h) || isNaN(m)) return 0;
-  return h * 60 + m;
-}
-
-function formatDate(d){
-  const w=['日','一','二','三','四','五','六'][d.getDay()];
-  return `${d.getMonth()+1}/${d.getDate()}（${w}）`;
-}
-function pad(t){ return t.split(':').map(x=>x.padStart(2,'0')).join(':'); }
-
-function formatTimeRange(r) {
-  if (!r || typeof r !== 'string') return '';
-
-  const sep = r.includes('–') ? '–' : '-';
-  const parts = r.split(sep);
-  if (parts.length !== 2) return r;
-
-  const pad = t => t.split(':').map(x => x.padStart(2, '0')).join(':');
-  return `${pad(parts[0])}–${pad(parts[1])}`;
-}
-
-function formatDateForInput(d) {
-  if (!d || !(d instanceof Date)) return '';
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function formatDateForDateInput(val) {
-  if (!val) return '';
-
-  // 已經是 Date 物件（Apps Script 常見）
-  if (val instanceof Date && !isNaN(val)) {
-    const y = val.getFullYear();
-    const m = String(val.getMonth() + 1).padStart(2, '0');
-    const d = String(val.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-
-  // 字串 yyyy/m/d 或 yyyy/mm/dd
-  if (typeof val === 'string' && val.includes('/')) {
-    const [y,m,d] = val.split('/');
-    return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-  }
-
-  // 已經是 yyyy-mm-dd
-  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
-    return val;
-  }
-
-  return '';
-}
-
-function formatTimeForTimeInput(val) {
-  if (!val || typeof val !== 'string') return '';
-
-  // 如果是區間，先取開始時間
-  if (val.includes('–')) {
-    val = val.split('–')[0];
-  }
-
-  const [h, m] = val.split(':');
-  if (h === undefined || m === undefined) return '';
-
-  return `${h.padStart(2,'0')}:${m.padStart(2,'0')}`;
-}
-  
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.style.opacity='1';
-  setTimeout(()=>t.style.opacity='0',2000);
-}
-function logout(){
-  localStorage.clear();
-  location.href='login.html';
-}
+function showToast(m){toast.textContent=m;toast.style.opacity=1;setTimeout(()=>toast.style.opacity=0,2000);}
+function logout(){localStorage.clear();location.href='login.html';}
 </script>
 </body>
 </html>
-``
