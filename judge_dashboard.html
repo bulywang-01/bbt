@@ -116,16 +116,39 @@ function needRole(n,r){
   return false;
 }
 
-function renderCell(g,r){
-  if(!needRole(g.need_count,r))
-    return '<span class="badge gray">不需要</span>';
+//function renderCell(g,r){
+//  if(!needRole(g.need_count,r))
+//    return '<span class="badge gray">不需要</span>';
+//
+//  const name=(g.occupied_positions||{})[r];
+//  if(name){
+//    const cls=g.my_position===r?'badge me':'badge';
+//    return `<span class="${cls}">${name}</span>`;
+//  }
+//  return `<label><input type="radio" name="pos_${g.game_id}" value="${r}"> ${r}</label>`;
+//}
 
-  const name=(g.occupied_positions||{})[r];
-  if(name){
-    const cls=g.my_position===r?'badge me':'badge';
+function renderCell(g, r) {
+  // 不需要的站位
+  if (!needRole(g.need_count, r)) {
+    return '<span class="badge gray">不需要</span>';
+  }
+
+  const name = (g.occupied_positions || {})[r];
+
+  // 已有人
+  if (name) {
+    const cls = g.my_position === r ? 'badge me' : 'badge';
     return `<span class="${cls}">${name}</span>`;
   }
-  return `<label><input type="radio" name="pos_${g.game_id}" value="${r}"> ${r}</label>`;
+
+  // ✅ 尚未有人 → 可以報名
+  return `
+    <label>
+      <input type="radio" name="pos_${g.game_id}" value="${r}">
+      ${r}
+    </label>
+  `;
 }
 
 function loadGames(){
@@ -222,12 +245,14 @@ function submitSignup(){
   const sel=[];
   document.querySelectorAll('input[type=radio]:checked')
     .forEach(r=>sel.push(r.name.replace('pos_','')+':'+r.value));
+
   if(!sel.length){
     alert('尚未選擇站位');
     return;
   }
+
   callApi(
-    'action=judgeSignupByGames&games_with_position='+encodeURIComponent(sel.join(',')),
+    'action=judgeSignupByGames&games_with_position=' + encodeURIComponent(sel.join(',')),
     ()=>{
       alert('報名完成');
       loadGames();
