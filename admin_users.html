@@ -256,25 +256,31 @@ function createUser() {
     return;
   }
 
-  const params = [
-    'action=createUser',
-    'username=' + encodeURIComponent(username),
-    'name=' + encodeURIComponent(name),
-    'phone=' + encodeURIComponent(phone),
-    'email=' + encodeURIComponent(email),
-    'level=' + encodeURIComponent(level),
-    'role=' + encodeURIComponent(role)
-  ].join('&');
+  // ✅ 改成物件模式（符合 config.js）
+  const data = {
+    action: 'createUser',
+    username: username,
+    name: name,
+    phone: phone,
+    email: email,
+    level: level,
+    role: role
+  };
 
-  callApi(params, res => {
+  console.log('createUser payload:', data);
+
+  callApi(data, res => {
+    console.log('createUser response:', res);
+
     if (res && res.result === 'ok') {
       showToast('✅ 帳號已建立，預設密碼為 00000000');
-      loadUsers(); // 重新載入清單
+      loadUsers();
     } else {
-      alert(res.message || '新增失敗');
+      alert(res?.message || '新增失敗');
     }
   });
 }
+
 
 /* ===== Helpers ===== */
 function renderRoleOptions(role){
