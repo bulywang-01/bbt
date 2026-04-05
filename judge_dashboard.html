@@ -159,6 +159,14 @@ button{
 <script src="js/config.js"></script>
 
 <script>
+
+/* ===== 載入共用 Header ===== */
+function loadHeader(){
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+
 const today = new Date();
 today.setHours(0,0,0,0);
 
