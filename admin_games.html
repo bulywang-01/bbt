@@ -167,8 +167,8 @@ function loadGames(){
     const body = document.getElementById('gameBody');
     body.innerHTML='';
 
-    if(!res || res.result!=='ok'){
-      body.innerHTML='<tr><td colspan="10">讀取失敗</td></tr>';
+    if (!res || res.result !== 'ok') {
+      body.innerHTML = '<tr><td colspan="10">讀取失敗</td></tr>';
       return;
     }
 
@@ -221,7 +221,7 @@ const games = res.games
 
 /* ===== CRUD ===== */
 function createGame(){
-  if(!g_date.value||!g_time.value||!g_duration.value){
+  if (!g_date.value || !g_time.value || !g_duration.value) {
     alert('請填寫日期、時間、分鐘');
     return;
   }
