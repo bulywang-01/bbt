@@ -191,16 +191,19 @@ const games = res.games
       umpire_count: g.umpire_count,
       position_mode: g.position_mode,
 
-      // ✅ 衍生欄位
+      // ⭐ 關鍵：允許 _dateObj 為 null
       _dateObj: d,
       _startMin: timeToMinSafe(g.time)
     };
   })
-  .filter(g => g && g._dateObj);   // ✅ 再保險一次
+  .filter(g => g !== null)   // ✅ 只過濾「整筆不存在」
+  .sort((a, b) => {
+    // ⭐ null 日期排到最後
+    if (!a._dateObj && !b._dateObj) return 0;
+    if (!a._dateObj) return 1;
+    if (!b._dateObj) return -1;
 
-  .filter(g => g._dateObj)   // ✅ 過濾壞資料
-  .sort((a,b)=>{
-    if(a._dateObj - b._dateObj !== 0){
+    if (a._dateObj - b._dateObj !== 0) {
       return a._dateObj - b._dateObj;
     }
     return a._startMin - b._startMin;
