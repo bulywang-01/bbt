@@ -210,48 +210,56 @@ function render(){
 
     // 日期合併用
     let lastDate = null;
-    let dateCell = null;
-    let dateRowspan = 0;
+let dateCell = null;
+let dateRowspan = 0;
 
-    games.forEach(g=>{
-      const tr = document.createElement('tr');
-      const isExpired = g._dateObj < today;
+games.forEach(g => {
+  const tr = document.createElement('tr');
+  const isExpired = g._dateObj < today;
+  if (isExpired) tr.classList.add('expired');
 
-      if(isExpired) tr.classList.add('expired');
-
-      // 日期欄位合併
-      if(lastDate !== g.date){
-        if(dateCell){
-          dateCell.rowSpan = dateRowspan;
-        }
-        dateCell = document.createElement('td');
-        dateCell.textContent = g.date;
-        dateRowspan = 1;
-        tr.appendChild(dateCell);
-        lastDate = g.date;
-      }else{
-        dateRowspan++;
-      }
-
-      tr.innerHTML += `
-        <td>${g.time_range}</td>
-        <td>${g.category||''}</td>
-        <td>${g.away_team||''}</td>
-        <td>${g.home_team||''}</td>
-        <td>${g.field||''}</td>
-        <td>${g.need_count}人制</td>
-        <td>${renderCell(g,'PU',isExpired)}</td>
-        <td>${renderCell(g,'U1',isExpired)}</td>
-        <td>${renderCell(g,'U2',isExpired)}</td>
-        <td>${renderCell(g,'U3',isExpired)}</td>
-      `;
-
-      tbody.appendChild(tr);
-    });
-
-    if(dateCell){
+  // ===== 日期欄處理 =====
+  if (lastDate !== g.date) {
+    // 結束上一組日期 rowspan
+    if (dateCell) {
       dateCell.rowSpan = dateRowspan;
     }
+
+    // 新日期
+    dateCell = document.createElement('td');
+    dateCell.textContent = g.date;
+    dateRowspan = 1;
+    tr.appendChild(dateCell);
+    lastDate = g.date;
+  } else {
+    // ✅ 同日期的後續列：補「日期佔位 td」
+    const placeholder = document.createElement('td');
+    placeholder.style.display = 'none';
+    tr.appendChild(placeholder);
+    dateRowspan++;
+  }
+
+  // ===== 其餘欄位（順序固定）=====
+  tr.innerHTML += `
+    <td>${g.time_range}</td>
+    <td>${g.category || ''}</td>
+    <td>${g.away_team || ''}</td>
+    <td>${g.home_team || ''}</td>
+    <td>${g.field || ''}</td>
+    <td>${g.need_count}人制</td>
+    <td>${renderCell(g,'PU',isExpired)}</td>
+    <td>${renderCell(g,'U1',isExpired)}</td>
+    <td>${renderCell(g,'U2',isExpired)}</td>
+    <td>${renderCell(g,'U3',isExpired)}</td>
+  `;
+
+  tbody.appendChild(tr);
+});
+
+// ✅ 最後一組日期回填 rowspan
+if (dateCell) {
+  dateCell.rowSpan = dateRowspan;
+}
 
     panel.appendChild(table);
     container.appendChild(panel);
