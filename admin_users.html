@@ -147,6 +147,15 @@ button{
 
 <script src="js/config.js"></script>
 <script>
+
+  callApi(
+  { action: 'getUsers' },
+  res => {
+    console.log('getUsers response', res);
+    // render users
+  }
+);
+  
 /* ===== Init ===== */
 document.addEventListener('DOMContentLoaded',()=>{
   const raw = localStorage.getItem('session_user');
