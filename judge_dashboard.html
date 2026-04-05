@@ -124,14 +124,22 @@ function callApi(q, cb){
   const token = session.token || '';
 
   const f = 'cb_' + Date.now();
-  window[f] = r => {
+  window[f] = function (r) {
     delete window[f];
     cb(r);
+    script.remove();
   };
 
-  const s = document.createElement('script');
-  s.src = API_URL + '?' + q + '&token=' + encodeURIComponent(token) + '&callback=' + f;
-  document.body.appendChild(s);
+  const script = document.createElement('script');
+  // ✅ 關鍵在這一行：一定要用「&」，不是 &amp;
+  script.src = API_URL + '?' + q + '&token=' + encodeURIComponent(token) + '&callback=' + f;
+
+  // ✅ 防呆：如果 script 載不進來，至少知道原因
+  script.onerror = function () {
+    console.error('JSONP 載入失敗:', script.src);
+  };
+
+  document.body.appendChild(script);
 }
 
 function needRole(n,r){
