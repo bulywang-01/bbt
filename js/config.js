@@ -1,5 +1,5 @@
 // ===== Apps Script Web App URL（務必確認正確）=====
-const API_URL='https://script.google.com/macros/s/AKfycbzqocrhzWj7MlJvuHvhex5OCW_FLQ0pgcEyTS54y8oo89Ml7qbfeZrogomUReX6WMFC/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbxq5gaDqwrnD8ME1478Nd-xaArdzzDLd-Qc3sGt2qegJunEvjhUtY-vdF2QOBSValjn/exec';
 
 // ===== JSONP helper（全站共用）=====
 function callApi(query, callback) {
