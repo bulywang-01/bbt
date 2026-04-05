@@ -27,7 +27,9 @@ body{
   font-weight:500;
 }
 
-.main{ padding:20px; }
+.main{
+  padding:20px;
+}
 
 .panel{
   background:#fff;
@@ -37,7 +39,7 @@ body{
   margin-bottom:24px;
 }
 
-h2{ margin-top:0; }
+h2{ margin:0 0 12px; }
 
 table{
   width:100%;
@@ -49,7 +51,9 @@ th,td{
   padding:6px 8px;
   text-align:center;
 }
-th{ background:#eef2f6; }
+th{
+  background:#eef2f6;
+}
 
 input,select{
   width:100%;
@@ -101,41 +105,55 @@ button{
 
 <div class="main">
 
+<!-- ===== 新增賽事 ===== -->
 <div class="panel">
 <h2>➕ 新增賽事</h2>
 
 <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
   <input id="g_date" type="date">
-  <input id="g_time" placeholder="時間 (例 08:30-10:00)">
-  <input id="g_category" placeholder="組別">
+  <input id="g_time" placeholder="開始時間 (例 08:30)">
+  <input id="g_duration" type="number" placeholder="比賽分鐘 (例 90)">
   <input id="g_field" placeholder="場地">
-  <select id="g_need">
+  <input id="g_tournament" placeholder="賽事名稱">
+  <input id="g_category" placeholder="組別">
+
+  <input id="g_away" placeholder="客隊">
+  <input id="g_home" placeholder="主隊">
+  <select id="g_umpire">
     <option value="1">1 人制</option>
     <option value="2">2 人制</option>
     <option value="3">3 人制</option>
     <option value="4">4 人制</option>
   </select>
-  <button onclick="createGame()">新增</button>
+  <select id="g_mode">
+    <option value="allow_select">裁判自行選站位</option>
+    <option value="auto_only">系統自動排</option>
+  </select>
+
+  <button onclick="createGame()">新增賽事</button>
 </div>
 </div>
 
+<!-- ===== 賽事列表 ===== -->
 <div class="panel">
-<h2>賽事列表</h2>
+<h2>📋 賽事列表</h2>
 
 <table>
 <thead>
 <tr>
   <th>日期</th>
   <th>時間</th>
+  <th>賽事</th>
   <th>組別</th>
   <th>場地</th>
-  <th>裁判制</th>
-  <th>狀態</th>
-  <th>操作</th>
+  <th>客隊</th>
+  <th>主隊</th>
+  <th>裁判數</th>
+  <th>站位模式</th>
 </tr>
 </thead>
 <tbody id="gameBody">
-<tr><td colspan="7">載入中…</td></tr>
+<tr><td colspan="9">載入中…</td></tr>
 </tbody>
 </table>
 </div>
@@ -148,7 +166,7 @@ button{
 <script>
 const ROLE_ALLOW = ['admin','match_admin'];
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded',()=>{
   const raw = localStorage.getItem('session_user');
   if(!raw){ location.href='login.html'; return; }
 
@@ -164,40 +182,31 @@ document.addEventListener('DOMContentLoaded', () => {
   loadGames();
 });
 
-/* ===== API ===== */
-
+/* ===== 讀取賽事 ===== */
 function loadGames(){
   callApi(
     { action:'getGames' },
-    res => {
+    res=>{
       const body = document.getElementById('gameBody');
-      body.innerHTML = '';
+      body.innerHTML='';
 
-      if(!res || res.result !== 'ok'){
-        body.innerHTML='<tr><td colspan="7">讀取失敗</td></tr>';
+      if(!res || res.result!=='ok'){
+        body.innerHTML='<tr><td colspan="9">讀取失敗</td></tr>';
         return;
       }
 
-      res.games.forEach(g => {
-        const tr = document.createElement('tr');
-        if(g.active !== 'Y') tr.classList.add('inactive');
-
-        tr.innerHTML = `
+      res.games.forEach(g=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
           <td>${g.date}</td>
-          <td>${g.time_range}</td>
-          <td><input value="${g.category}" onchange="editGame('${g.game_id}','category',this.value)"></td>
-          <td><input value="${g.field}" onchange="editGame('${g.game_id}','field',this.value)"></td>
-          <td>
-            <select onchange="editGame('${g.game_id}','need_count',this.value)">
-              ${[1,2,3,4].map(n=>`<option value="${n}" ${g.need_count==n?'selected':''}>${n}人制</option>`).join('')}
-            </select>
-          </td>
-          <td>${g.active==='Y'?'啟用':'停用'}</td>
-          <td>
-            <button onclick="toggleGame('${g.game_id}')">
-              ${g.active==='Y'?'停用':'啟用'}
-            </button>
-          </td>
+          <td>${g.time_range || g.time}</td>
+          <td>${g.tournament}</td>
+          <td>${g.category}</td>
+          <td>${g.field}</td>
+          <td>${g.away_team}</td>
+          <td>${g.home_team}</td>
+          <td>${g.umpire_count}</td>
+          <td>${g.position_mode==='allow_select'?'自行選站位':'系統自動排'}</td>
         `;
         body.appendChild(tr);
       });
@@ -205,9 +214,10 @@ function loadGames(){
   );
 }
 
+/* ===== 新增賽事 ===== */
 function createGame(){
-  if(!g_date.value || !g_time.value){
-    alert('請填日期與時間');
+  if(!g_date.value || !g_time.value || !g_duration.value){
+    alert('請填日期、時間、比賽分鐘');
     return;
   }
 
@@ -215,51 +225,28 @@ function createGame(){
     {
       action:'createGame',
       date: g_date.value,
-      time_range: g_time.value,
-      category: g_category.value,
+      time: g_time.value,
+      duration: g_duration.value,
       field: g_field.value,
-      need_count: g_need.value
+      tournament: g_tournament.value,
+      category: g_category.value,
+      away_team: g_away.value,
+      home_team: g_home.value,
+      umpire_count: g_umpire.value,
+      position_mode: g_mode.value
     },
     res=>{
       if(res && res.result==='ok'){
         showToast('✅ 賽事已新增');
         loadGames();
       }else{
-        alert('新增失敗');
+        alert(res?.message || '新增失敗');
       }
     }
   );
 }
 
-function editGame(id, field, value){
-  callApi(
-    {
-      action:'updateGame',
-      game_id: id,
-      field_name: field,
-      value: value
-    },
-    res=>{
-      if(res && res.result==='ok'){
-        showToast('✅ 已更新');
-      }
-    }
-  );
-}
-
-function toggleGame(id){
-  callApi(
-    { action:'toggleGame', game_id:id },
-    res=>{
-      if(res && res.result==='ok'){
-        loadGames();
-      }
-    }
-  );
-}
-
-/* ===== Helpers ===== */
-
+/* ===== helpers ===== */
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;
