@@ -210,56 +210,56 @@ function render(){
 
     // 日期合併用
     let lastDate = null;
-let dateCell = null;
-let dateRowspan = 0;
-
-games.forEach(g => {
-  const tr = document.createElement('tr');
-  const isExpired = g._dateObj < today;
-  if (isExpired) tr.classList.add('expired');
-
-  // ===== 日期欄處理 =====
-  if (lastDate !== g.date) {
-    // 結束上一組日期 rowspan
+    let dateRowSpan = 0;
+    let dateCell = null;
+    
+    games.forEach((g, index) => {
+      const tr = document.createElement('tr');
+      const isExpired = g._dateObj < today;
+      if (isExpired) tr.classList.add('expired');
+    
+      // ✅ 如果是新日期
+      if (g.date !== lastDate) {
+    
+        // 補上前一個日期的 rowspan
+        if (dateCell) {
+          dateCell.rowSpan = dateRowSpan;
+        }
+    
+        // 建立新的日期儲存格
+        dateCell = document.createElement('td');
+        dateCell.textContent = g.date;
+        tr.appendChild(dateCell);
+    
+        dateRowSpan = 1;
+        lastDate = g.date;
+    
+      } else {
+        // ✅ 同一天「不要畫日期欄位」
+        dateRowSpan++;
+      }
+    
+      // ✅ 後面的欄位「全部照正常順序畫」
+      tr.innerHTML += `
+        <td>${g.time_range}</td>
+        <td>${g.category || ''}</td>
+        <td>${g.away_team || ''}</td>
+        <td>${g.home_team || ''}</td>
+        <td>${g.field || ''}</td>
+        <td>${g.need_count}人制</td>
+        <td>${renderCell(g,'PU', isExpired)}</td>
+        <td>${renderCell(g,'U1', isExpired)}</td>
+        <td>${renderCell(g,'U2', isExpired)}</td>
+        <td>${renderCell(g,'U3', isExpired)}</td>
+      `;
+    
+      tbody.appendChild(tr);
+    });
+    
+    // ✅ 記得補上最後一個日期的 rowspan
     if (dateCell) {
-      dateCell.rowSpan = dateRowspan;
+      dateCell.rowSpan = dateRowSpan;
     }
-
-    // 新日期
-    dateCell = document.createElement('td');
-    dateCell.textContent = g.date;
-    dateRowspan = 1;
-    tr.appendChild(dateCell);
-    lastDate = g.date;
-  } else {
-    // ✅ 同日期的後續列：補「日期佔位 td」
-    const placeholder = document.createElement('td');
-    placeholder.style.display = 'none';
-    tr.appendChild(placeholder);
-    dateRowspan++;
-  }
-
-  // ===== 其餘欄位（順序固定）=====
-  tr.innerHTML += `
-    <td>${g.time_range}</td>
-    <td>${g.category || ''}</td>
-    <td>${g.away_team || ''}</td>
-    <td>${g.home_team || ''}</td>
-    <td>${g.field || ''}</td>
-    <td>${g.need_count}人制</td>
-    <td>${renderCell(g,'PU',isExpired)}</td>
-    <td>${renderCell(g,'U1',isExpired)}</td>
-    <td>${renderCell(g,'U2',isExpired)}</td>
-    <td>${renderCell(g,'U3',isExpired)}</td>
-  `;
-
-  tbody.appendChild(tr);
-});
-
-// ✅ 最後一組日期回填 rowspan
-if (dateCell) {
-  dateCell.rowSpan = dateRowspan;
-}
 
     panel.appendChild(table);
     container.appendChild(panel);
