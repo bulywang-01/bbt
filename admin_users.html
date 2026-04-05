@@ -148,11 +148,23 @@ button{
 <script src="js/config.js"></script>
 <script>
 
-  callApi(
+callApi(
   { action: 'getUsers' },
   res => {
     console.log('getUsers response', res);
     // render users
+  }
+);
+callApi(
+  {
+    action: 'updateUser',
+    user_id: uid,
+    username: 'admin',
+    phone: '0912345678'
+    // 其餘欄位
+  },
+  res => {
+    console.log('updateUser response', res);
   }
 );
   
