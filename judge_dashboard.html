@@ -35,6 +35,22 @@ body{
   margin-bottom:24px;
 }
 
+/* === 交錯底色（以日期群組為單位） === */
+tr.alt-date {
+  background-color: #fafafa;
+}
+
+/* === 額滿場次（整列） === */
+tr.full {
+  background-color: #ffecec !important;
+}
+
+/* === 不需要：黑底白字 === */
+.badge.na {
+  background: #000;
+  color: #fff;
+}
+
 h2{margin-top:0}
 h3{
   margin:30px 0 10px;
@@ -222,6 +238,7 @@ let lastDate = null;
 let dateCell = null;
 let dateRowspan = 0;
 
+/*
 games.forEach(g => {
   const tr = document.createElement('tr');
   const isExpired = g._dateObj < today;
@@ -261,6 +278,96 @@ games.forEach(g => {
 
   tbody.appendChild(tr);
 });
+*/
+// 新修正
+/** 
+✅ 不混用 innerHTML
+✅ 正確 日期 rowspan + 地點 rowspan
+✅ 日期群組交錯底色
+✅ 額滿列加 class full
+*/
+    
+let lastDate = null;
+let lastField = null;
+
+let dateCell = null;
+let dateRowspan = 0;
+
+let fieldCell = null;
+let fieldRowspan = 0;
+
+let dateStripe = false; // 日期交錯底色控制
+
+games.forEach((g, idx) => {
+  const tr = document.createElement('tr');
+
+  const isExpired = g._dateObj < today;
+
+  // ✅ 額滿判斷
+  const filledCount = Object.keys(g.occupied_positions || {}).length;
+  const isFull = filledCount >= g.need_count;
+
+  if (isExpired) tr.classList.add('expired');
+  if (isFull) tr.classList.add('full');
+
+  /* ===== 日期合併 ===== */
+  if (g.date !== lastDate) {
+    // 結算上一個日期 rowspan
+    if (dateCell) dateCell.rowSpan = dateRowspan;
+    if (fieldCell) fieldCell.rowSpan = fieldRowspan;
+
+    dateStripe = !dateStripe; // 日期切換 → 交錯底色
+
+    dateCell = document.createElement('td');
+    dateCell.textContent = formatMonthDay(g._dateObj);
+    tr.appendChild(dateCell);
+
+    dateRowspan = 1;
+    lastDate = g.date;
+
+    // 新日期，地點重算
+    lastField = null;
+    fieldCell = null;
+  } else {
+    dateRowspan++;
+  }
+
+  if (dateStripe) tr.classList.add('alt-date');
+
+  /* ===== 時間 / 組別 / 客主隊 ===== */
+  tr.appendChild(td(g.time_range));
+  tr.appendChild(td(g.category || ''));
+  tr.appendChild(td(g.away_team || ''));
+  tr.appendChild(td(g.home_team || ''));
+
+  /* ===== 地點合併（同日期下） ===== */
+  if (g.field !== lastField) {
+    if (fieldCell) fieldCell.rowSpan = fieldRowspan;
+
+    fieldCell = document.createElement('td');
+    fieldCell.textContent = g.field || '';
+    tr.appendChild(fieldCell);
+
+    fieldRowspan = 1;
+    lastField = g.field;
+  } else {
+    fieldRowspan++;
+  }
+
+  /* ===== 裁判制 & 站位 ===== */
+  tr.appendChild(td(`${g.need_count}人制`));
+
+  tr.appendChild(tdHtml(renderCell(g,'PU',isExpired)));
+  tr.appendChild(tdHtml(renderCell(g,'U1',isExpired)));
+  tr.appendChild(tdHtml(renderCell(g,'U2',isExpired)));
+  tr.appendChild(tdHtml(renderCell(g,'U3',isExpired)));
+
+  tbody.appendChild(tr);
+});
+
+/* ✅ 補最後一天的 rowspan */
+if (dateCell) dateCell.rowSpan = dateRowspan;
+if (fieldCell) fieldCell.rowSpan = fieldRowspan;
 
 // 最後一個日期一定要補 rowspan
 if (dateCell) {
@@ -307,7 +414,8 @@ function tdHtml(html) {
 /* ===== 站位呈現 ===== */
 function renderCell(g, role, isExpired){
   if(!needRole(g.need_count, role)){
-    return '<span class="badge gray">不需要</span>';
+    // return '<span class="badge gray">不需要</span>';  // 原本的設計，圓槓黑底白字
+    return '<span class="badge na">不需要</span>';  // 欄位黑底白字
   }
 
   const name = (g.occupied_positions||{})[role];
