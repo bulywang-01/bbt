@@ -175,16 +175,15 @@ function render(){
       if (showPast) return true;
       return g._dateObj >= today;
     })
+    
     .sort((a, b) => {
       // ✅ 先依日期
       if (a._dateObj.getTime() !== b._dateObj.getTime()) {
         return a._dateObj - b._dateObj;
       }
-  
-      // ✅ 同日期 → 依開始時間排序
-      const tA = a.time_range?.split('–')[0] || '';
-      const tB = b.time_range?.split('–')[0] || '';
-      return tA.localeCompare(tB); // 字串即可正確排序 HH:mm
+    
+      // ✅ 同日期 → 依「實際時間」排序
+      return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
     });
 
     if(games.length === 0) return;
@@ -268,6 +267,20 @@ if (dateCell) {
   dateCell.rowSpan = dateRowspan;
 }
 
+function timeToMinutes(timeRange) {
+  // timeRange 例如 "08:30–10:00" 或 "8:30–10:00"
+  if (!timeRange) return 0;
+
+  const start = timeRange.split('–')[0].trim(); // 取開始時間
+  const parts = start.split(':');
+  if (parts.length !== 2) return 0;
+
+  const hour = parseInt(parts[0], 10);
+  const min  = parseInt(parts[1], 10);
+
+  return hour * 60 + min;
+}
+    
 function formatMonthDay(d) {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
