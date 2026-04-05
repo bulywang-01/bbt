@@ -122,6 +122,27 @@ button{
 </div>
 </div>
 
+<h3>➕ 新增裁判帳號</h3>
+
+<div style="margin-bottom:16px; display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+  <input id="new_username" placeholder="帳號">
+  <input id="new_name" placeholder="姓名">
+  <input id="new_phone" placeholder="電話">
+  <input id="new_email" placeholder="Email">
+  <input id="new_level" placeholder="Level">
+  <select id="new_role">
+    <option value="judge">judge</option>
+    <option value="chief_judge">chief_judge</option>
+    <option value="judge_admin">judge_admin</option>
+    <option value="match_admin">match_admin</option>
+    <option value="admin">admin</option>
+  </select>
+  <button onclick="createUser()">新增帳號</button>
+</div>
+
+<hr>
+
+
 <div id="toast">✅ 已更新</div>
 
 <script src="js/config.js"></script>
@@ -217,6 +238,39 @@ function saveUser(btn) {
     } else {
       showToast('❌ 儲存失敗');
       alert('儲存失敗，請查看 Console');
+    }
+  });
+}
+  
+function createUser() {
+  const username = new_username.value.trim();
+  const name = new_name.value.trim();
+  const phone = new_phone.value.trim();
+  const email = new_email.value.trim();
+  const level = new_level.value.trim();
+  const role = new_role.value;
+
+  if (!username || !name) {
+    alert('帳號與姓名為必填');
+    return;
+  }
+
+  const params = [
+    'action=createUser',
+    'username=' + encodeURIComponent(username),
+    'name=' + encodeURIComponent(name),
+    'phone=' + encodeURIComponent(phone),
+    'email=' + encodeURIComponent(email),
+    'level=' + encodeURIComponent(level),
+    'role=' + encodeURIComponent(role)
+  ].join('&');
+
+  callApi(params, res => {
+    if (res && res.result === 'ok') {
+      showToast('✅ 帳號已建立，預設密碼為 00000000');
+      loadUsers(); // 重新載入清單
+    } else {
+      alert(res.message || '新增失敗');
     }
   });
 }
