@@ -10,7 +10,6 @@ body{
   font-family:system-ui,-apple-system;
   background:#f5f6f8;
 }
-
 .header{
   display:flex;
   justify-content:space-between;
@@ -19,18 +18,13 @@ body{
   background:#ffffff;
   border-bottom:1px solid #ddd;
 }
-
 .nav a{
   margin-right:16px;
   color:#0066cc;
   text-decoration:none;
   font-weight:500;
 }
-
-.main{
-  padding:20px;
-}
-
+.main{ padding:20px; }
 .panel{
   background:#fff;
   padding:16px;
@@ -38,7 +32,6 @@ body{
   box-shadow:0 1px 4px rgba(0,0,0,.08);
   margin-bottom:24px;
 }
-
 h2{ margin:0 0 12px; }
 
 table{
@@ -51,27 +44,18 @@ th,td{
   padding:6px 8px;
   text-align:center;
 }
-th{
-  background:#eef2f6;
-}
+th{ background:#eef2f6; }
 
 input,select{
   width:100%;
   padding:4px;
   box-sizing:border-box;
 }
-
 button{
   padding:6px 12px;
   cursor:pointer;
 }
 
-.inactive{
-  background:#f3f3f3;
-  color:#888;
-}
-
-/* toast */
 #toast{
   position:fixed;
   top:20px;
@@ -105,39 +89,33 @@ button{
 
 <div class="main">
 
-<!-- ===== 新增賽事 ===== -->
 <div class="panel">
 <h2>➕ 新增賽事</h2>
-
 <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
   <input id="g_date" type="date">
-  <input id="g_time" placeholder="開始時間 (例 08:30)">
-  <input id="g_duration" type="number" placeholder="比賽分鐘 (例 90)">
+  <input id="g_time" placeholder="開始時間 (08:30)">
+  <input id="g_duration" type="number" placeholder="分鐘 (90)">
   <input id="g_field" placeholder="場地">
-  <input id="g_tournament" placeholder="賽事名稱">
+  <input id="g_tournament" placeholder="賽事">
   <input id="g_category" placeholder="組別">
-
   <input id="g_away" placeholder="客隊">
   <input id="g_home" placeholder="主隊">
   <select id="g_umpire">
-    <option value="1">1 人制</option>
-    <option value="2">2 人制</option>
-    <option value="3">3 人制</option>
-    <option value="4">4 人制</option>
+    <option value="1">1 人</option>
+    <option value="2">2 人</option>
+    <option value="3">3 人</option>
+    <option value="4">4 人</option>
   </select>
   <select id="g_mode">
-    <option value="allow_select">裁判自行選站位</option>
+    <option value="allow_select">裁判自行選</option>
     <option value="auto_only">系統自動排</option>
   </select>
-
   <button onclick="createGame()">新增賽事</button>
 </div>
 </div>
 
-<!-- ===== 賽事列表 ===== -->
 <div class="panel">
 <h2>📋 賽事列表</h2>
-
 <table>
 <thead>
 <tr>
@@ -167,93 +145,102 @@ button{
 const ROLE_ALLOW = ['admin','match_admin'];
 
 document.addEventListener('DOMContentLoaded',()=>{
-  const raw = localStorage.getItem('session_user');
-  if(!raw){ location.href='login.html'; return; }
-
-  const session = JSON.parse(raw);
-  document.getElementById('u_name').textContent = session.name || '';
-
-  if(!ROLE_ALLOW.includes(session.role)){
+  const s = JSON.parse(localStorage.getItem('session_user')||'{}');
+  if(!s.user_id){ location.href='login.html'; return; }
+  document.getElementById('u_name').textContent = s.name || '';
+  if(!ROLE_ALLOW.includes(s.role)){
     alert('沒有權限');
     location.href='index.html';
     return;
   }
-
   loadGames();
 });
 
-/* ===== 讀取賽事 ===== */
+/* ===== 載入＆排序賽事 ===== */
 function loadGames(){
-  callApi(
-    { action:'getGames' },
-    res=>{
-      const body = document.getElementById('gameBody');
-      body.innerHTML='';
-
-      if(!res || res.result!=='ok'){
-        body.innerHTML='<tr><td colspan="9">讀取失敗</td></tr>';
-        return;
-      }
-
-      res.games.forEach(g=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`
-          <td>${g.date}</td>
-          <td>${g.time_range || g.time}</td>
-          <td>${g.tournament}</td>
-          <td>${g.category}</td>
-          <td>${g.field}</td>
-          <td>${g.away_team}</td>
-          <td>${g.home_team}</td>
-          <td>${g.umpire_count}</td>
-          <td>${g.position_mode==='allow_select'?'自行選站位':'系統自動排'}</td>
-        `;
-        body.appendChild(tr);
-      });
+  callApi({ action:'getGames' }, res=>{
+    const body = document.getElementById('gameBody');
+    body.innerHTML = '';
+    if(!res || res.result !== 'ok'){
+      body.innerHTML='<tr><td colspan="9">讀取失敗</td></tr>';
+      return;
     }
-  );
+
+    const games = res.games
+      .map(g=>({...g, _dateObj:parseDate(g.date), _startMin:timeToMin(g.time)}))
+      .sort((a,b)=>{
+        if(a._dateObj - b._dateObj !== 0) return a._dateObj - b._dateObj;
+        return a._startMin - b._startMin;
+      });
+
+    games.forEach(g=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${formatDate(g._dateObj)}</td>
+        <td>${formatTimeRange(g.time_range)}</td>
+        <td>${g.tournament}</td>
+        <td>${g.category}</td>
+        <td>${g.field}</td>
+        <td>${g.away_team}</td>
+        <td>${g.home_team}</td>
+        <td>${g.umpire_count} 人</td>
+        <td>${g.position_mode==='allow_select'?'自行選站位':'系統自動排'}</td>
+      `;
+      body.appendChild(tr);
+    });
+  });
 }
 
 /* ===== 新增賽事 ===== */
 function createGame(){
   if(!g_date.value || !g_time.value || !g_duration.value){
-    alert('請填日期、時間、比賽分鐘');
+    alert('請填日期、時間與分鐘');
     return;
   }
-
-  callApi(
-    {
-      action:'createGame',
-      date: g_date.value,
-      time: g_time.value,
-      duration: g_duration.value,
-      field: g_field.value,
-      tournament: g_tournament.value,
-      category: g_category.value,
-      away_team: g_away.value,
-      home_team: g_home.value,
-      umpire_count: g_umpire.value,
-      position_mode: g_mode.value
-    },
-    res=>{
-      if(res && res.result==='ok'){
-        showToast('✅ 賽事已新增');
-        loadGames();
-      }else{
-        alert(res?.message || '新增失敗');
-      }
+  callApi({
+    action:'createGame',
+    date:g_date.value,
+    time:g_time.value,
+    duration:g_duration.value,
+    field:g_field.value,
+    tournament:g_tournament.value,
+    category:g_category.value,
+    away_team:g_away.value,
+    home_team:g_home.value,
+    umpire_count:g_umpire.value,
+    position_mode:g_mode.value
+  },res=>{
+    if(res && res.result==='ok'){
+      showToast('✅ 賽事已新增');
+      loadGames();
     }
-  );
+  });
 }
 
-/* ===== helpers ===== */
+/* ===== Helpers ===== */
+function parseDate(str){
+  const [y,m,d]=str.split('/').map(n=>parseInt(n,10));
+  return new Date(y,m-1,d);
+}
+function timeToMin(t){
+  const [h,m]=t.split(':').map(n=>parseInt(n,10));
+  return h*60+m;
+}
+function formatDate(d){
+  const week=['日','一','二','三','四','五','六'][d.getDay()];
+  return `${d.getMonth()+1}/${d.getDate()}（${week}）`;
+}
+function pad(t){ return t.split(':').map(x=>x.padStart(2,'0')).join(':'); }
+function formatTimeRange(r){
+  const [s,e]=r.split('–');
+  return `${pad(s)}–${pad(e)}`;
+}
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;
   t.style.opacity='1';
   setTimeout(()=>t.style.opacity='0',2000);
 }
-
 function logout(){
   localStorage.clear();
   location.href='login.html';
