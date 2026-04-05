@@ -120,6 +120,23 @@ button{padding:4px 10px;cursor:pointer;}
 </div>
 
 <div id="toast"></div>
+  
+<script>
+function loadHeader(){
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+
+      // ✅ 載入後再補上使用者名稱
+      const s = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (s.name) {
+        const el = document.getElementById('u_name');
+        if (el) el.textContent = s.name;
+      }
+    });
+}
+</script>
 
 <script src="js/config.js"></script>
 <script>
