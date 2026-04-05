@@ -51,7 +51,7 @@ button{padding:8px 16px;margin-top:10px}
   </div>
   <div>
     <b id="u_name"></b>
-    #登出</a>
+    <a href="#" onclick="logout()" style="margin-left:12px;">登出</a>
   </div>
 </div>
 
@@ -120,13 +120,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 //}
 
 function callApi(q, cb){
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  const token = session.token || '';
+
   const f = 'cb_' + Date.now();
   window[f] = r => {
     delete window[f];
     cb(r);
   };
+
   const s = document.createElement('script');
-  s.src = API_URL + '?' + q + '&callback=' + f; // ✅ 注意 & 不是 &amp;
+  s.src = API_URL + '?' + q + '&token=' + encodeURIComponent(token) + '&callback=' + f;
   document.body.appendChild(s);
 }
 
@@ -258,9 +262,11 @@ function submitSignup(){
 }
 
 function logout(){
+  console.log('logout');
   localStorage.clear();
-  location.href='login.html';
+  location.href = 'login.html';
 }
+ 
 </script>
 </body>
 </html>
