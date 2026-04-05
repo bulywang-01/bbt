@@ -1,30 +1,47 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>賽事管理｜裁判出勤管理系統</title>
-  
- <!-- ✅ 正確載入共用樣式 -->
-  <link rel="stylesheet" href="common.css">
-  
-<style>
-/* ===== 表格 ===== */
-table{ width:100%; border-collapse:collapse; font-size:14px; }
-th,td{ border:1px solid #ddd; padding:6px; text-align:center; }
-th{ background:#eef2f6; font-weight:600; }
-tbody tr:hover{ background:#f7fbff; }
+  <meta charset="UTF-8">
+  <title>賽事管理｜裁判出勤管理系統</title>
+  common.css
 
-/* ===== 狀態 ===== */
-.expired-row{ background:#f2f2f2; color:#888; }
-.expired-row:hover{ background:#f2f2f2; }
-.finished{ font-weight:600; color:#999; }
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
 
-.editing-row{ background:#fff7ed; }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: center;
+    }
 
-/* ===== 控制 ===== */
-.action-btn{ padding:4px 8px; margin:0 2px; cursor:pointer; }
-.inline-input{ width:100%; box-sizing:border-box; }
-</style>
+    th {
+      background: #eef2f6;
+      font-weight: 600;
+    }
+
+    .expired-row {
+      background: #f2f2f2;
+      color: #888;
+    }
+
+    .finished {
+      font-weight: 600;
+      color: #999;
+    }
+
+    .editing-row {
+      background: #fff7ed;
+    }
+
+    .inline {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 
 <body>
@@ -32,201 +49,174 @@ tbody tr:hover{ background:#f7fbff; }
 <div id="header-container"></div>
 
 <div class="main">
-<h2>賽事管理</h2>
+  <h2>賽事管理</h2>
 
-<!-- 新增賽事 -->
-<div class="panel">
-<h3>➕ 新增賽事</h3>
-<table>
-<tr>
-  <td><input id="g_date" type="date"></td>
-  <td><input id="g_time" type="time"></td>
-  <td><input id="g_duration" type="number"></td>
-  <td><input id="g_tournament"></td>
-  <td><input id="g_category"></td>
-  <td><input id="g_field"></td>
-  <td><input id="g_away"></td>
-  <td><input id="g_home"></td>
-  <td>
-    <select id="g_umpire">
-      <option value="0">0</option><option>1</option><option>2</option><option>3</option><option>4</option>
-    </select>
-  </td>
-  <td>
-    <select id="g_mode">
-      <option value="allow_select">自行選</option>
-      <option value="auto_only">系統排</option>
-    </select>
-  </td>
-  <td><button onclick="createGame()">新增</button></td>
-</tr>
-</table>
+  <div class="panel">
+    <h3>➕ 新增賽事</h3>
+    <table>
+      <tr>
+        <td><input id="g_date" type="date"></td>
+        <td><input id="g_time" type="time"></td>
+        <td><input id="g_duration" type="number"></td>
+        <td><input id="g_tournament"></td>
+        <td><input id="g_category"></td>
+        <td><input id="g_field"></td>
+        <td><input id="g_away"></td>
+        <td><input id="g_home"></td>
+        <td>
+          <select id="g_umpire">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </td>
+        <td>
+          <select id="g_mode">
+            <option value="allow_select">自行選</option>
+            <option value="auto_only">系統排</option>
+          </select>
+        </td>
+        <td><button onclick="createGame()">新增</button></td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="gamesContainer"></div>
 </div>
 
-<div id="gamesContainer"></div>
-</div>
-
-<script src="js/config.js"></script>
-  
+js/config.js</script>
 <script>
 let editingId = null;
 
-/* ===== Header ===== */
-function loadHeader(){
-  fetch('header.html').then(r=>r.text()).then(h=>{
-    document.getElementById('header-container').innerHTML=h;
-    document.getElementById('pageTitle').textContent='賽事管理';
-  });
+function loadHeader() {
+  fetch('header.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+      document.getElementById('pageTitle').textContent = '賽事管理';
+      const s = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (s.name) document.getElementById('u_name').textContent = s.name;
+    });
 }
 
-/* ===== 工具 ===== */
-function isExpired(g){
+function isExpired(g) {
   return new Date(g.date + 'T' + g.time) < new Date();
 }
-function posText(v){
+
+function posText(v) {
   return v === 'auto_only' ? '系統排' : '自行選';
 }
 
-/* ===== Render ===== */
-function loadGames(){
-callApi({action:'getGames'},res=>{
-  const box=document.getElementById('gamesContainer');
-  box.innerHTML='';
-  if(!res||res.result!=='ok') return;
+function loadGames() {
+  callApi({ action: 'getGames' }, res => {
+    if (!res || res.result !== 'ok') return;
+    const box = document.getElementById('gamesContainer');
+    box.innerHTML = '';
 
-  let html=`<div class="panel"><table>
-  <tr>
-    <th>日期</th><th>時間</th><th>分鐘</th>
-    <th>賽事</th><th>組別</th><th>場地</th>
-    <th>客隊</th><th>主隊</th>
-    <th>裁判</th><th>站位</th><th>操作</th>
-  </tr>`;
+    let html = '<div class="panel"><table>';
+    html += '<tr><th>日期</th><th>時間</th><th>賽事</th><th>站位</th><th>操作</th></tr>';
 
-  res.games.forEach(g=>{
-    const expired=isExpired(g);
-
-    /* ===== 過期賽事 ===== */
-    if(expired){
-      html+=`<tr class="expired-row">
-        <td>${g.date}</td>
-        <td>${g.time}</td>
-        <td>${g.duration||''}</td>
-        <td>${g.tournament||''}</td>
-        <td>${g.category||''}</td>
-        <td>${g.field||''}</td>
-        <td>${g.away_team||''}</td>
-        <td>${g.home_team||''}</td>
-        <td>${g.umpire_count}</td>
-        <td>${posText(g.position_mode)}</td>
-        <td class="finished">已完賽</td>
-      </tr>`;
-      return;
-    }
-
-    /* ===== 編輯模式 ===== */
-    if(editingId === g.game_id){
-      html+=`<tr class="editing-row">
-        <td><input class="inline-input" id="e_date" type="date" value="${g.date}"></td>
-        <td><input class="inline-input" id="e_time" type="time" value="${g.time}"></td>
-        <td><input class="inline-input" id="e_duration" value="${g.duration||''}"></td>
-        <td><input class="inline-input" id="e_tournament" value="${g.tournament||''}"></td>
-        <td><input class="inline-input" id="e_category" value="${g.category||''}"></td>
-        <td><input class="inline-input" id="e_field" value="${g.field||''}"></td>
-        <td><input class="inline-input" id="e_away" value="${g.away_team||''}"></td>
-        <td><input class="inline-input" id="e_home" value="${g.home_team||''}"></td>
-        <td>
-          <select id="e_umpire" class="inline-input">
-            ${[0,1,2,3,4].map(n=>`<option ${Number(g.umpire_count)===n?'selected':''}>${n}</option>`).join('')}
-          </select>
-        </td>
-        <td>
-          <select id="e_mode" class="inline-input">
-            <option value="allow_select" ${g.position_mode==='allow_select'?'selected':''}>自行選</option>
-            <option value="auto_only" ${g.position_mode==='auto_only'?'selected':''}>系統排</option>
-          </select>
-        </td>
-        <td>
-          <button class="action-btn" onclick="saveEdit('${g.game_id}')">儲存</button>
-          <button class="action-btn" onclick="cancelEdit()">取消</button>
-        </td>
-      </tr>`;
-    }
-    /* ===== 顯示模式 ===== */
-    else{
-      html+=`<tr>
-        <td>${g.date}</td>
-        <td>${g.time}</td>
-        <td>${g.duration||''}</td>
-        <td>${g.tournament||''}</td>
-        <td>${g.category||''}</td>
-        <td>${g.field||''}</td>
-        <td>${g.away_team||''}</td>
-        <td>${g.home_team||''}</td>
-        <td>${g.umpire_count}</td>
-        <td>${posText(g.position_mode)}</td>
-        <td>
-          <button class="action-btn" onclick="startEdit('${g.game_id}')">編輯</button>
-        </td>
-      </tr>`;
-    }
-  });
-
-  html+='</table></div>';
-  box.innerHTML=html;
-});
-}
-
-/* ===== 編輯控制 ===== */
-function startEdit(id){
-  editingId=id;
-  loadGames();
-}
-function cancelEdit(){
-  editingId=null;
-  loadGames();
-}
-function saveEdit(id){
-  const fields={
-    date:e_date.value,
-    time:e_time.value,
-    duration:e_duration.value,
-    tournament:e_tournament.value,
-    category:e_category.value,
-    field:e_field.value,
-    away_team:e_away.value,
-    home_team:e_home.value,
-    umpire_count:e_umpire.value,
-    position_mode:e_mode.value
-  };
-  const updates=Object.entries(fields);
-  let pending=updates.length;
-
-  updates.forEach(([k,v])=>{
-    callApi({action:'updateGame',game_id:id,field_name:k,value:v},()=>{
-      if(--pending===0){
-        editingId=null;
-        loadGames();
+    res.games.forEach(g => {
+      if (isExpired(g)) {
+        html += '<tr class="expired-row">';
+        html += '<td>' + g.date + '</td>';
+        html += '<td>' + g.time + '</td>';
+        html += '<td>' + (g.tournament || '') + '</td>';
+        html += '<td>' + posText(g.position_mode) + '</td>';
+        html += '<td class="finished">已完賽</td>';
+        html += '</tr>';
+      } else {
+        if (editingId === g.game_id) {
+          html += '<tr class="editing-row">';
+          html += '<td><input id="e_date" class="inline" value="' + g.date + '"></td>';
+          html += '<td><input id="e_time" class="inline" value="' + g.time + '"></td>';
+          html += '<td><input id="e_tournament" class="inline" value="' + (g.tournament || '') + '"></td>';
+          html += '<td>';
+          html += '<select id="e_mode" class="inline">';
+          html += '<option value="allow_select"' + (g.position_mode==='allow_select'?'selected':'') + '>自行選</option>';
+          html += '<option value="auto_only"' + (g.position_mode==='auto_only'?'selected':'') + '>系統排</option>';
+          html += '</select></td>';
+          html += '<td>';
+          html += '<button onclick="saveEdit(\'' + g.game_id + '\')">儲存</button>';
+          html += '<button onclick="cancelEdit()">取消</button>';
+          html += '</td>';
+          html += '</tr>';
+        } else {
+          html += '<tr>';
+          html += '<td>' + g.date + '</td>';
+          html += '<td>' + g.time + '</td>';
+          html += '<td>' + (g.tournament || '') + '</td>';
+          html += '<td>' + posText(g.position_mode) + '</td>';
+          html += '<td><button onclick="startEdit(\'' + g.game_id + '\')">編輯</button></td>';
+          html += '</tr>';
+        }
       }
+    });
+
+    html += '</table></div>';
+    box.innerHTML = html;
+  });
+}
+
+function startEdit(id) {
+  editingId = id;
+  loadGames();
+}
+
+function cancelEdit() {
+  editingId = null;
+  loadGames();
+}
+
+function saveEdit(id) {
+  callApi({
+    action: 'updateGame',
+    game_id: id,
+    field_name: 'date',
+    value: document.getElementById('e_date').value
+  }, () => {
+    callApi({
+      action: 'updateGame',
+      game_id: id,
+      field_name: 'time',
+      value: document.getElementById('e_time').value
+    }, () => {
+      callApi({
+        action: 'updateGame',
+        game_id: id,
+        field_name: 'position_mode',
+        value: document.getElementById('e_mode').value
+      }, () => {
+        editingId = null;
+        loadGames();
+      });
     });
   });
 }
 
-/* ===== CRUD ===== */
-function createGame(){
-callApi({
-  action:'createGame',
-  date:g_date.value,time:g_time.value,duration:g_duration.value,
-  tournament:g_tournament.value,category:g_category.value,
-  field:g_field.value,away_team:g_away.value,home_team:g_home.value,
-  umpire_count:g_umpire.value,position_mode:g_mode.value
-},()=>loadGames());
+function createGame() {
+  callApi({
+    action: 'createGame',
+    date: g_date.value,
+    time: g_time.value,
+    duration: g_duration.value,
+    tournament: g_tournament.value,
+    category: g_category.value,
+    field: g_field.value,
+    away_team: g_away.value,
+    home_team: g_home.value,
+    umpire_count: g_umpire.value,
+    position_mode: g_mode.value
+  }, () => loadGames());
 }
 
-/* ===== Init ===== */
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
   loadHeader();
   loadGames();
 });
 </script>
+
 </body>
 </html>
