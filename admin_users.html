@@ -387,12 +387,21 @@ function createUser() {
   });
 }
 
-
+const ROLE_LABEL = {
+  admin: '系統管理員',
+  judge_admin: '裁判管理者',
+  chief_judge: '裁判長',
+  match_admin: '賽事管理者',
+  judge: '一般裁判'
+};
+  
 /* ===== Helpers ===== */
 function renderRoleOptions(role){
-  const roles=['admin','match_admin','judge_admin','chief_judge','judge'];
+  const roles = ['admin','match_admin','judge_admin','chief_judge','judge'];
   return roles.map(r =>
-    `<option value="${r}" ${r===role?'selected':''}>${r}</option>`
+    `<option value="${r}" ${r === role ? 'selected' : ''}>
+      ${ROLE_LABEL[r]}
+    </option>`
   ).join('');
 }
 
