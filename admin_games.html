@@ -212,7 +212,7 @@ if (games.length === 0) {
   body.innerHTML = '<tr><td colspan="10">目前沒有可顯示的賽事</td></tr>';
   return;
 }
-
+console.log('raw time=', g.time, 'formatted=', formatTimeForTimeInput(g.time));
 // ✅ 正式 render
 games.forEach(g => {
   const tr = document.createElement('tr');
@@ -228,16 +228,10 @@ games.forEach(g => {
 
   <!-- 時間（開始）＋分鐘 -->
   <td>
-    <input type="time"
-      value="${formatTimeForTimeInput(g.time)}"
-      onchange="updateGame('${g.game_id}','time',this.value)">
+    <input type="time" value="${formatTimeForTimeInput(g.time)}" onchange="updateGame('${g.game_id}','time',this.value)">
     <br>
     <small>
-      <input type="number"
-        min="10" step="10"
-        value="${g.duration ?? ''}"
-        onchange="updateGame('${g.game_id}','duration',this.value)">
-      分鐘
+      <input type="number" min="10" step="10" value="${g.duration ?? ''}" onchange="updateGame('${g.game_id}','duration',this.value)"> 分鐘
     </small>
   </td>
 `;
