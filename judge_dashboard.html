@@ -233,12 +233,12 @@ function render(){
 
     const tbody = table.querySelector('tbody');
 
+/*
     // 日期合併用
 let lastDate = null;
 let dateCell = null;
 let dateRowspan = 0;
 
-/*
 games.forEach(g => {
   const tr = document.createElement('tr');
   const isExpired = g._dateObj < today;
@@ -279,8 +279,9 @@ games.forEach(g => {
   tbody.appendChild(tr);
 });
 */
-// 新修正
-/** 
+    
+
+/** 新修正
 ✅ 不混用 innerHTML
 ✅ 正確 日期 rowspan + 地點 rowspan
 ✅ 日期群組交錯底色
