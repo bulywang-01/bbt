@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>賽事管理</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:#f5f6f8;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#ffffff;
+  border-bottom:1px solid #ddd;
+}
+
+.nav a{
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500;
+}
+
+.main{ padding:20px; }
+
+.panel{
+  background:#fff;
+  padding:16px;
+  border-radius:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+  margin-bottom:24px;
+}
+
+h2{ margin-top:0; }
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+th,td{
+  border:1px solid #ddd;
+  padding:6px 8px;
+  text-align:center;
+}
+th{ background:#eef2f6; }
+
+input,select{
+  width:100%;
+  padding:4px;
+  box-sizing:border-box;
+}
+
+button{
+  padding:6px 12px;
+  cursor:pointer;
+}
+
+.inactive{
+  background:#f3f3f3;
+  color:#888;
+}
+
+/* toast */
+#toast{
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:#2c7be5;
+  color:#fff;
+  padding:10px 16px;
+  border-radius:6px;
+  font-size:14px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s;
+  z-index:9999;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="nav">
+    <a href="index.html">🏠 首頁</a>
+    <a href="admin_users.html">👤 帳號管理</a>
+    <b>⚾ 賽事管理</b>
+  </div>
+  <div>
+    <b id="u_name"></b>
+    <a href="#" onclick="logout()" style="margin-left:12px;color:#c00;">登出</a>
+  </div>
+</div>
+
+<div class="main">
+
+<div class="panel">
+<h2>➕ 新增賽事</h2>
+
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
+  <input id="g_date" type="date">
+  <input id="g_time" placeholder="時間 (例 08:30-10:00)">
+  <input id="g_category" placeholder="組別">
+  <input id="g_field" placeholder="場地">
+  <select id="g_need">
+    <option value="1">1 人制</option>
+    <option value="2">2 人制</option>
+    <option value="3">3 人制</option>
+    <option value="4">4 人制</option>
+  </select>
+  <button onclick="createGame()">新增</button>
+</div>
+</div>
+
+<div class="panel">
+<h2>賽事列表</h2>
+
+<table>
+<thead>
+<tr>
+  <th>日期</th>
+  <th>時間</th>
+  <th>組別</th>
+  <th>場地</th>
+  <th>裁判制</th>
+  <th>狀態</th>
+  <th>操作</th>
+</tr>
+</thead>
+<tbody id="gameBody">
+<tr><td colspan="7">載入中…</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+
+<div id="toast"></div>
+
+<script src="js/config.js"></script>
+<script>
+const ROLE_ALLOW = ['admin','match_admin'];
+
+document.addEventListener('DOMContentLoaded', () => {
+  const raw = localStorage.getItem('session_user');
+  if(!raw){ location.href='login.html'; return; }
+
+  const session = JSON.parse(raw);
+  document.getElementById('u_name').textContent = session.name || '';
+
+  if(!ROLE_ALLOW.includes(session.role)){
+    alert('沒有權限');
+    location.href='index.html';
+    return;
+  }
+
+  loadGames();
+});
+
+/* ===== API ===== */
+
+function loadGames(){
+  callApi(
+    { action:'getGames' },
+    res => {
+      const body = document.getElementById('gameBody');
+      body.innerHTML = '';
+
+      if(!res || res.result !== 'ok'){
+        body.innerHTML='<tr><td colspan="7">讀取失敗</td></tr>';
+        return;
+      }
+
+      res.games.forEach(g => {
+        const tr = document.createElement('tr');
+        if(g.active !== 'Y') tr.classList.add('inactive');
+
+        tr.innerHTML = `
+          <td>${g.date}</td>
+          <td>${g.time_range}</td>
+          <td><input value="${g.category}" onchange="editGame('${g.game_id}','category',this.value)"></td>
+          <td><input value="${g.field}" onchange="editGame('${g.game_id}','field',this.value)"></td>
+          <td>
+            <select onchange="editGame('${g.game_id}','need_count',this.value)">
+              ${[1,2,3,4].map(n=>`<option value="${n}" ${g.need_count==n?'selected':''}>${n}人制</option>`).join('')}
+            </select>
+          </td>
+          <td>${g.active==='Y'?'啟用':'停用'}</td>
+          <td>
+            <button onclick="toggleGame('${g.game_id}')">
+              ${g.active==='Y'?'停用':'啟用'}
+            </button>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+  );
+}
+
+function createGame(){
+  if(!g_date.value || !g_time.value){
+    alert('請填日期與時間');
+    return;
+  }
+
+  callApi(
+    {
+      action:'createGame',
+      date: g_date.value,
+      time_range: g_time.value,
+      category: g_category.value,
+      field: g_field.value,
+      need_count: g_need.value
+    },
+    res=>{
+      if(res && res.result==='ok'){
+        showToast('✅ 賽事已新增');
+        loadGames();
+      }else{
+        alert('新增失敗');
+      }
+    }
+  );
+}
+
+function editGame(id, field, value){
+  callApi(
+    {
+      action:'updateGame',
+      game_id: id,
+      field_name: field,
+      value: value
+    },
+    res=>{
+      if(res && res.result==='ok'){
+        showToast('✅ 已更新');
+      }
+    }
+  );
+}
+
+function toggleGame(id){
+  callApi(
+    { action:'toggleGame', game_id:id },
+    res=>{
+      if(res && res.result==='ok'){
+        loadGames();
+      }
+    }
+  );
+}
+
+/* ===== Helpers ===== */
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',2000);
+}
+
+function logout(){
+  localStorage.clear();
+  location.href='login.html';
+}
+</script>
+</body>
+</html>
