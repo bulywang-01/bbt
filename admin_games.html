@@ -221,20 +221,27 @@ games.forEach(g => {
 
   tr.innerHTML = `
 
-  // 日期（可改，正確顯示)
+  <!-- 日期（可改，正確顯示） -->
   <td>
-    <input type="date" value="${formatDateForDateInput(g.date)}" onchange="updateGame('${g.game_id}','date',this.value)">
+    <input type="date"
+      value="${formatDateForDateInput(g.date)}"
+      onchange="updateGame('${g.game_id}','date',this.value)">
   </td>
 
-  // 時間（開始）分鐘
+  <!-- 時間（開始）＋分鐘 -->
   <td>
-    <input type="time" value="${formatTimeForTimeInput(g.time)}" onchange="updateGame('${g.game_id}','time',this.value)">
+    <input type="time"
+      value="${formatTimeForTimeInput(g.time)}"
+      onchange="updateGame('${g.game_id}','time',this.value)">
     <br>
     <small>
-      <input type="number" min="10" step="10" value="${g.duration ?? ''}" onchange="updateGame('${g.game_id}','duration',this.value)"> 分鐘
+      <input type="number"
+        min="10" step="10"
+        value="${g.duration ?? ''}"
+        onchange="updateGame('${g.game_id}','duration',this.value)">
+      分鐘
     </small>
   </td>
-`;
 
     <td><input value="${g.tournament || ''}"
                onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
@@ -275,7 +282,7 @@ games.forEach(g => {
   body.appendChild(tr);
 });
   });
-}}
+}
 
 /* ===== CRUD ===== */
 function createGame(){
