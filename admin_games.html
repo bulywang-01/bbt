@@ -173,14 +173,31 @@ function loadGames(){
     }
 
 const games = res.games
-  .map(g=>{
+  .map(g => {
+    if (!g || typeof g !== 'object') return null;
+
     const d = parseDateSafe(g.date);
+
     return {
-      ...g,
+      game_id: g.game_id,
+      date: g.date,
+      time: g.time,
+      time_range: g.time_range,
+      tournament: g.tournament,
+      category: g.category,
+      field: g.field,
+      away_team: g.away_team,
+      home_team: g.home_team,
+      umpire_count: g.umpire_count,
+      position_mode: g.position_mode,
+
+      // ✅ 衍生欄位
       _dateObj: d,
       _startMin: timeToMinSafe(g.time)
     };
   })
+  .filter(g => g && g._dateObj);   // ✅ 再保險一次
+
   .filter(g => g._dateObj)   // ✅ 過濾壞資料
   .sort((a,b)=>{
     if(a._dateObj - b._dateObj !== 0){
