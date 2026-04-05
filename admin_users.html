@@ -5,6 +5,77 @@
 <title>裁判帳號管理</title>
 
 <style>
+
+/* === 新增帳號卡片 === */
+.create-user-card {
+  background:#f9fafb;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  padding:16px;
+  margin-top:24px;
+}
+
+.create-user-card h3 {
+  margin:0 0 12px;
+  font-size:16px;
+  color:#333;
+}
+
+/* === 新增帳號表單排列 === */
+.create-user-grid {
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:12px;
+}
+
+.create-user-field {
+  display:flex;
+  flex-direction:column;
+}
+
+.create-user-field label {
+  font-size:12px;
+  color:#555;
+  margin-bottom:4px;
+}
+
+.create-user-field input,
+.create-user-field select {
+  padding:6px 8px;
+  font-size:13px;
+}
+
+/* === 行動列 === */
+.create-user-actions {
+  grid-column: 1 / -1;
+  display:flex;
+  justify-content:flex-end;
+  margin-top:8px;
+}
+
+/* === 新增按鈕 === */
+.btn-primary {
+  background:#2c7be5;
+  color:#fff;
+  border:none;
+  padding:8px 16px;
+  font-size:14px;
+  border-radius:4px;
+  cursor:pointer;
+}
+
+.btn-primary:hover {
+  background:#1a68d1;
+}
+
+/* 小提醒文字 */
+.form-hint {
+  grid-column: 1 / -1;
+  font-size:12px;
+  color:#666;
+}
+
+
 body{
   margin:0;
   font-family:system-ui,-apple-system;
@@ -122,23 +193,58 @@ button{
 </div>
 </div>
 
-<h3>➕ 新增裁判帳號</h3>
+<div class="create-user-card">
+  <h3>➕ 新增裁判帳號</h3>
 
-<div style="margin-bottom:16px; display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
-  <input id="new_username" placeholder="帳號">
-  <input id="new_name" placeholder="姓名">
-  <input id="new_phone" placeholder="電話">
-  <input id="new_email" placeholder="Email">
-  <input id="new_level" placeholder="Level">
-  <select id="new_role">
-    <option value="judge">judge</option>
-    <option value="chief_judge">chief_judge</option>
-    <option value="judge_admin">judge_admin</option>
-    <option value="match_admin">match_admin</option>
-    <option value="admin">admin</option>
-  </select>
-  <button onclick="createUser()">新增帳號</button>
+  <div class="create-user-grid">
+
+    <div class="create-user-field">
+      <label>帳號（登入用）</label>
+      <input id="new_username" placeholder="例如：admin01">
+    </div>
+
+    <div class="create-user-field">
+      <label>姓名</label>
+      <input id="new_name" placeholder="真實姓名">
+    </div>
+
+    <div class="create-user-field">
+      <label>電話</label>
+      <input id="new_phone" placeholder="09xxxxxxxx">
+    </div>
+
+    <div class="create-user-field">
+      <label>Email</label>
+      <input id="new_email" placeholder="example@mail.com">
+    </div>
+
+    <div class="create-user-field">
+      <label>Level</label>
+      <input id="new_level" placeholder="A / B / C">
+    </div>
+
+    <div class="create-user-field">
+      <label>角色</label>
+      <select id="new_role">
+        <option value="judge">judge</option>
+        <option value="chief_judge">chief_judge</option>
+        <option value="judge_admin">judge_admin</option>
+        <option value="match_admin">match_admin</option>
+        <option value="admin">admin</option>
+      </select>
+    </div>
+
+    <div class="form-hint">
+      ℹ️ 新帳號將自動設定預設密碼 <b>00000000</b>，首次登入需自行修改。
+    </div>
+
+    <div class="create-user-actions">
+      <button class="btn-primary" onclick="createUser()">新增帳號</button>
+    </div>
+
+  </div>
 </div>
+
 
 <hr>
 
