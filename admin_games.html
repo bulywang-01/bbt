@@ -5,17 +5,35 @@
 <title>賽事管理</title>
 <style>
 body{margin:0;font-family:system-ui,-apple-system;background:#f5f6f8;}
-.header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#fff;border-bottom:1px solid #ddd;}
+.header{display:flex;justify-content:space-between;align-items:center;
+  padding:12px 20px;background:#fff;border-bottom:1px solid #ddd;}
 .nav a{margin-right:16px;color:#0066cc;text-decoration:none;font-weight:500;}
 .main{padding:20px;}
-.panel{background:#fff;padding:16px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:24px;}
+.panel{background:#fff;padding:16px;border-radius:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:24px;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
 th,td{border:1px solid #ddd;padding:6px 8px;text-align:center;}
 th{background:#eef2f6;}
 input,select{width:100%;padding:4px;box-sizing:border-box;}
 button{padding:4px 10px;cursor:pointer;}
-.delete-btn{color:#c00;}
-#toast{position:fixed;top:20px;right:20px;background:#2c7be5;color:#fff;padding:10px 16px;border-radius:6px;opacity:0;transition:.3s;}
+.delete-btn{color:#c00}
+
+/* ✅ 置中 Toast */
+#toast{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#2c7be5;
+  color:#fff;
+  padding:14px 26px;
+  border-radius:8px;
+  font-size:16px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s;
+  z-index:9999;
+}
 </style>
 </head>
 
@@ -32,7 +50,7 @@ button{padding:4px 10px;cursor:pointer;}
 
 <div class="main">
 
-<!-- ✅ 新增賽事（欄位順序與表格一致） -->
+<!-- ✅ 新增賽事（欄位順序 = 列表順序） -->
 <div class="panel">
 <h2>➕ 新增賽事</h2>
 <table>
@@ -66,13 +84,123 @@ button{padding:4px 10px;cursor:pointer;}
 </table>
 </div>
 
-<!-- 賽事列表（略，維持你現在已正常的版本） -->
-<!-- ⚠️ 下方 loadGames / normalize 函式不用改 -->
+<!-- ✅ 賽事列表 -->
+<div class="panel">
+<h2>📋 賽事列表</h2>
+<table>
+<thead>
+<tr>
+  <th>日期</th>
+  <th>時間</th>
+  <th>分鐘</th>
+  <th>賽事</th>
+  <th>組別</th>
+  <th>場地</th>
+  <th>客隊</th>
+  <th>主隊</th>
+  <th>裁判數</th>
+  <th>站位</th>
+  <th>操作</th>
+</tr>
+</thead>
+<tbody id="gameBody">
+<tr><td colspan="11">載入中…</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+
+<div id="toast"></div>
 
 <script src="js/config.js"></script>
 <script>
-/* 只列出 createGame，其餘你現有的 그대로 */
+document.addEventListener('DOMContentLoaded',()=>{
+  const s = JSON.parse(localStorage.getItem('session_user')||'{}');
+  if(!s.user_id){location.href='login.html';return;}
+  u_name.textContent = s.name || '';
+  loadGames();
+});
 
+/* ===== 正規化工具 ===== */
+function normalizeTime(val){
+  if(!val) return '';
+  if(typeof val==='string' && /^\d{2}:\d{2}$/.test(val)) return val;
+  const d=new Date(val);
+  if(!isNaN(d)){
+    return String(d.getHours()).padStart(2,'0')+':'+
+           String(d.getMinutes()).padStart(2,'0');
+  }
+  return '';
+}
+function normalizeDate(val){
+  if(!val) return '';
+  if(val instanceof Date && !isNaN(val)){
+    return `${val.getFullYear()}-${String(val.getMonth()+1).padStart(2,'0')}-${String(val.getDate()).padStart(2,'0')}`;
+  }
+  if(typeof val==='string' && val.includes('/')){
+    const [y,m,d]=val.split('/');
+    return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+  if(/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+  const d=new Date(val);
+  if(!isNaN(d)){
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  return '';
+}
+
+/* ===== 載入賽事 ===== */
+function loadGames(){
+  callApi({action:'getGames'},res=>{
+    const body = gameBody;
+    body.innerHTML='';
+    if(!res || res.result!=='ok'){
+      body.innerHTML='<tr><td colspan="11">讀取失敗</td></tr>';
+      return;
+    }
+    if(res.games.length===0){
+      body.innerHTML='<tr><td colspan="11">目前沒有賽事</td></tr>';
+      return;
+    }
+    res.games.forEach(g=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td><input type="date" value="${normalizeDate(g.date)}"
+          onchange="updateGame('${g.game_id}','date',this.value)"></td>
+        <td><input type="time" value="${normalizeTime(g.time)}"
+          onchange="updateGame('${g.game_id}','time',this.value)"></td>
+        <td><input type="number" min="10" step="10" value="${g.duration||''}"
+          onchange="updateGame('${g.game_id}','duration',this.value)"></td>
+        <td><input value="${g.tournament||''}"
+          onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
+        <td><input value="${g.category||''}"
+          onchange="updateGame('${g.game_id}','category',this.value)"></td>
+        <td><input value="${g.field||''}"
+          onchange="updateGame('${g.game_id}','field',this.value)"></td>
+        <td><input value="${g.away_team||''}"
+          onchange="updateGame('${g.game_id}','away_team',this.value)"></td>
+        <td><input value="${g.home_team||''}"
+          onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
+        <td>
+          <select onchange="updateGame('${g.game_id}','umpire_count',this.value)">
+            ${[1,2,3,4].map(n=>`<option value="${n}" ${g.umpire_count==n?'selected':''}>${n}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <select onchange="updateGame('${g.game_id}','position_mode',this.value)">
+            <option value="allow_select" ${g.position_mode==='allow_select'?'selected':''}>自行選</option>
+            <option value="auto_only" ${g.position_mode==='auto_only'?'selected':''}>系統排</option>
+          </select>
+        </td>
+        <td><button class="delete-btn" onclick="deleteGame('${g.game_id}')">刪除</button></td>
+      `;
+      body.appendChild(tr);
+    });
+  });
+}
+
+/* ===== CRUD ===== */
 function createGame(){
   if(!g_date.value || !g_time.value || !g_duration.value){
     alert('請填寫日期、時間、分鐘');
@@ -80,22 +208,42 @@ function createGame(){
   }
   callApi({
     action:'createGame',
-    date: g_date.value,
-    time: g_time.value,
-    duration: g_duration.value,
-    tournament: g_tournament.value,
-    category: g_category.value,
-    field: g_field.value,
-    away_team: g_away.value,
-    home_team: g_home.value,
-    umpire_count: g_umpire.value,
-    position_mode: g_mode.value
+    date:g_date.value,
+    time:g_time.value,
+    duration:g_duration.value,
+    tournament:g_tournament.value,
+    category:g_category.value,
+    field:g_field.value,
+    away_team:g_away.value,
+    home_team:g_home.value,
+    umpire_count:g_umpire.value,
+    position_mode:g_mode.value
   },res=>{
     if(res && res.result==='ok'){
       showToast('✅ 已新增賽事');
       loadGames();
     }
   });
+}
+function updateGame(id,field,value){
+  callApi({action:'updateGame',game_id:id,field_name:field,value:value},
+    r=>{ if(r && r.result==='ok') showToast('✅ 已更新'); });
+}
+function deleteGame(id){
+  if(!confirm('確定刪除此賽事？')) return;
+  callApi({action:'deleteGame',game_id:id},
+    r=>{ if(r && r.result==='ok'){ showToast('🗑 已刪除'); loadGames(); }});
+}
+
+/* ===== 其他 ===== */
+function showToast(msg){
+  toast.textContent=msg;
+  toast.style.opacity=1;
+  setTimeout(()=>toast.style.opacity=0,2000);
+}
+function logout(){
+  localStorage.clear();
+  location.href='login.html';
 }
 </script>
 </body>
