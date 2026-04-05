@@ -211,39 +211,39 @@ function loadUsers(){
 }
 
 /* ===== Save One User ===== */
+<script>
 function saveUser(btn) {
   const tr = btn.closest('tr');
   const uid = tr.dataset.userId;
 
-  // ✅ 組 query string（這一步非常關鍵）
-  const params = [];
-  params.push('action=updateUser');
-  params.push('user_id=' + encodeURIComponent(uid));
+  // ✅ 改成「物件型」資料
+  const data = {
+    action: 'updateUser',
+    user_id: uid
+  };
 
   tr.querySelectorAll('input, select').forEach(el => {
-    // 空密碼不送（避免覆蓋）
+    // ✅ 密碼留空＝不更新
     if (el.name === 'password' && !el.value) return;
 
-    params.push(
-      encodeURIComponent(el.name) + '=' + encodeURIComponent(el.value.trim())
-    );
+    data[el.name] = el.value.trim();
   });
 
-  const query = params.join('&');
-
-  // ✅ 先印出 query，方便你確認真的有送
-  console.log('updateUser query:', query);
+  console.log('updateUser payload:', data);
 
   callApi(data, res => {
+    console.log('updateUser response:', res);
+
     if (res && res.result === 'ok') {
       showToast('✅ 儲存成功');
-      loadUsers();
+      loadUsers();               // ✅ 重新載入以確保一致
     } else {
       showToast('❌ 儲存失敗');
+      alert(res?.message || '儲存失敗，請查看 Console');
     }
   });
-
 }
+</script>
   
 function createUser() {
   const username = new_username.value.trim();
