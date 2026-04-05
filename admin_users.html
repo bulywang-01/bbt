@@ -156,15 +156,19 @@ button{
 
 <body>
 
+<!-- ===== Header ===== -->
 <div class="header">
   <div class="nav">
-    <a href="index.html">🏠 首頁</a>
+    <a href="index.html">🏠 系統首頁</a>
+    <a href="judge_dashboard.html">📋 裁判報名</a>
+    <a href="files.html">📂 文件下載</a>
+    <a href="review_dashboard.html">✅ 報名審核</a>
     <a href="admin_dashboard.html">⚙️ 後端管理</a>
-    <b>👤 裁判帳號管理</b>
   </div>
-  <div>
-    <b id="u_name"></b>
-    <a href="#" onclick="logout()" style="margin-left:12px;color:#c00;">登出</a>
+
+  <div class="user-box">
+    <span id="u_name" class="user-name"></span>
+    <a href="#" class="logout" onclick="logout()">登出</a>
   </div>
 </div>
 
