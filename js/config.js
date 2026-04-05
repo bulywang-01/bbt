@@ -7,29 +7,19 @@ function callApi(query, callback) {
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
   const token = session.token || '';
 
-  const cbName = 'cb_' + Date.now();
-
-  window[cbName] = function (res) {
-    try {
-      callback(res);
-    } finally {
-      delete window[cbName];
-      script.remove();
-    }
+  const cb = 'cb_' + Date.now();
+  window[cb] = r => {
+    delete window[cb];
+    callback(r);
+    script.remove();
   };
 
   const script = document.createElement('script');
-
-  // ✅ 關鍵：只能用 & ，絕對不能用 &amp;
   script.src =
     API_URL +
     '?' + query +
     '&token=' + encodeURIComponent(token) +
-    '&callback=' + cbName;
-
-  script.onerror = function () {
-    console.error('API 載入失敗：', script.src);
-  };
+    '&callback=' + cb;
 
   document.body.appendChild(script);
 }
