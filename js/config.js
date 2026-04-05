@@ -19,6 +19,8 @@ function callApi(query, callback) {
   };
 
   const script = document.createElement('script');
+
+  // ✅ 關鍵：只能用 & ，絕對不能用 &amp;
   script.src =
     API_URL +
     '?' + query +
