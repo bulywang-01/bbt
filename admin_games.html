@@ -218,26 +218,29 @@ games.forEach(g => {
   const tr = document.createElement('tr');
 
   tr.innerHTML = `
-    <!-- 日期（可改） -->
-    <td>
-      <input type="date"
-             value="${formatDateForInput(g._dateObj)}"
-             onchange="updateGame('${g.game_id}', 'date', this.value)">
-    </td>
 
-    <!-- 時間 / 分鐘（可改） -->
-    <td>
-      <input type="time"
-             value="${g.time || ''}"
-             onchange="updateGame('${g.game_id}', 'time', this.value)">
-      <br>
-      <small>
-        <input type="number" min="30" step="10"
-               value="${g.duration || ''}"
-               onchange="updateGame('${g.game_id}', 'duration', this.value)">
-        分鐘
-      </small>
-    </td>
+  <!-- 日期（可改，正確顯示） -->
+  <td>
+    <input type="date"
+      value="${formatDateForDateInput(g.date)}"
+      onchange="updateGame('${g.game_id}','date',this.value)">
+  </td>
+
+  <!-- 時間（開始）＋分鐘 -->
+  <td>
+    <input type="time"
+      value="${formatTimeForTimeInput(g.time)}"
+      onchange="updateGame('${g.game_id}','time',this.value)">
+    <br>
+    <small>
+      <input type="number"
+        min="10" step="10"
+        value="${g.duration ?? ''}"
+        onchange="updateGame('${g.game_id}','duration',this.value)">
+      分鐘
+    </small>
+  </td>
+`;
 
     <td><input value="${g.tournament || ''}"
                onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
@@ -409,6 +412,45 @@ function formatDateForInput(d) {
   return `${y}-${m}-${day}`;
 }
 
+function formatDateForDateInput(val) {
+  if (!val) return '';
+
+  // 已經是 Date 物件（Apps Script 常見）
+  if (val instanceof Date && !isNaN(val)) {
+    const y = val.getFullYear();
+    const m = String(val.getMonth() + 1).padStart(2, '0');
+    const d = String(val.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  // 字串 yyyy/m/d 或 yyyy/mm/dd
+  if (typeof val === 'string' && val.includes('/')) {
+    const [y,m,d] = val.split('/');
+    return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+
+  // 已經是 yyyy-mm-dd
+  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    return val;
+  }
+
+  return '';
+}
+
+function formatTimeForTimeInput(val) {
+  if (!val || typeof val !== 'string') return '';
+
+  // 如果是區間，先取開始時間
+  if (val.includes('–')) {
+    val = val.split('–')[0];
+  }
+
+  const [h, m] = val.split(':');
+  if (h === undefined || m === undefined) return '';
+
+  return `${h.padStart(2,'0')}:${m.padStart(2,'0')}`;
+}
+  
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;
