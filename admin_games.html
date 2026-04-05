@@ -172,16 +172,22 @@ function loadGames(){
       return;
     }
 
-    const games = res.games
-      .map(g=>({
-        ...g,
-        _dateObj: parseDateFlexible(g.date),
-        _startMin: timeToMin(g.time)
-      }))
-      .sort((a,b)=>{
-        if(a._dateObj - b._dateObj !== 0) return a._dateObj - b._dateObj;
-        return a._startMin - b._startMin;
-      });
+const games = res.games
+  .map(g=>{
+    const d = parseDateSafe(g.date);
+    return {
+      ...g,
+      _dateObj: d,
+      _startMin: timeToMinSafe(g.time)
+    };
+  })
+  .filter(g => g._dateObj)   // ✅ 過濾壞資料
+  .sort((a,b)=>{
+    if(a._dateObj - b._dateObj !== 0){
+      return a._dateObj - b._dateObj;
+    }
+    return a._startMin - b._startMin;
+  });
 
     games.forEach(g=>{
       const tr=document.createElement('tr');
@@ -263,18 +269,36 @@ function deleteGame(id){
 }
 
 /* ===== Utils ===== */
-function parseDateFlexible(str){
-  if(str.includes('-')){
-    const [y,m,d]=str.split('-');
-    return new Date(y,Number(m)-1,d);
+function parseDateSafe(val){
+  if(!val) return null;
+
+  // yyyy-mm-dd
+  if(/^\d{4}-\d{2}-\d{2}$/.test(val)){
+    const [y,m,d] = val.split('-').map(Number);
+    return new Date(y, m-1, d);
   }
-  const [y,m,d]=str.split('/');
-  return new Date(y,Number(m)-1,d);
+
+  // yyyy/m/d or yyyy/mm/dd
+  if(/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(val)){
+    const [y,m,d] = val.split('/').map(Number);
+    return new Date(y, m-1, d);
+  }
+
+  return null; // ❗ 不炸，回 null
 }
+  
 function timeToMin(t){
   const [h,m]=t.split(':').map(Number);
   return h*60+m;
 }
+
+function timeToMinSafe(val){
+  if(!val || !val.includes(':')) return 0;
+  const [h,m] = val.split(':').map(n => parseInt(n,10));
+  if(isNaN(h) || isNaN(m)) return 0;
+  return h*60 + m;
+}
+
 function formatDate(d){
   const w=['日','一','二','三','四','五','六'][d.getDay()];
   return `${d.getMonth()+1}/${d.getDate()}（${w}）`;
