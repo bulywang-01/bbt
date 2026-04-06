@@ -105,52 +105,113 @@ function match(g,k){
   return [g.tournament,g.field,g.home_team,g.away_team].some(v=>(v||'').toLowerCase().includes(k))
 }
 
-function loadGames(){
-  callApi({action:'getGames'},res=>{
-    const box=document.getElementById('gamesContainer')
-    box.innerHTML=''
-    if(!res||res.result!=='ok'||!res.games.length){
-      box.innerHTML='<div class="panel">目前沒有賽事</div>';return
+function loadGames() {
+
+  callApi({ action: 'getGames' }, function (res) {
+
+    const container = document.getElementById('gamesContainer');
+    container.innerHTML = '';
+
+    if (!res || res.result !== 'ok' || !Array.isArray(res.games) || res.games.length === 0) {
+      container.innerHTML = '<div class="panel">目前沒有賽事</div>';
+      return;
     }
 
-    const range=document.querySelector('[name=range]:checked').value
-    const showExpired=document.getElementById('showExpired').checked
-    const kw=document.getElementById('searchInput').value.trim()
+    const range = document.querySelector('input[name="range"]:checked')?.value || 'all';
+    const showExpired = document.getElementById('showExpired')?.checked || false;
+    const keyword = document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
 
-    const groups={}
-    res.games.sort((a,b)=>gameDT(a)-gameDT(b)).forEach(g=>{
-      if(!match(g,kw))return
-      if(isExpired(g)&&!showExpired)return
-      if(!isExpired(g)){
-        if(range==='week'&&!isInWeek(g))return
-        if(range==='month'&&!isInMonth(g))return
+    // 依照 date + time 排序（這邊不影響月份顯示）
+    const games = res.games.slice().sort((a, b) => {
+      return new Date(a.date + ' ' + (a.time || '00:00')) -
+             new Date(b.date + ' ' + (b.time || '00:00'));
+    });
+
+    // ===== 用「字串」分組，不用 Date =====
+    const groups = {};
+
+    games.forEach(g => {
+
+      if (keyword && !matchKeyword(g, keyword)) return;
+
+      const expired = isExpired(g);
+      if (expired && !showExpired) return;
+
+      if (!expired) {
+        if (range === 'week' && !isInThisWeek(g)) return;
+        if (range === 'month' && !isInThisMonth(g)) return;
       }
-      const d=gameDT(g)
-      const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')
-      ;(groups[k]=groups[k]||[]).push(g)
-    })
 
-    Object.keys(groups).forEach(k=>{
-      const ym=k.split('-')
-      let h='<div class="panel"><div class="month-title">📅 '+ym[0]+' 年 '+ym[1]+' 月</div>'
-      h+='<table><tr><th>日期</th><th>時間</th><th>賽事</th><th>場地</th><th>主隊</th><th>客隊</th><th>操作</th></tr>'
-      groups[k].forEach(g=>{
-        if(isExpired(g)){
-          h+='<tr class="expired"><td>'+g.date+'</td><td>'+g.time+'</td><td>'+g.tournament+'</td><td>'+g.field+'</td><td>'+g.home_team+'</td><td>'+g.away_team+'</td><td class="finished">已完賽</td></tr>'
-        }else{
-          h+='<tr><td><input type="date" value="'+g.date+'"onchange="updateGame(\''+g.game_id+'\',\'date\',this.value)"></td>'
-          h+='<td><input type="time" value="'+g.time+'"onchange="updateGame(\''+g.game_id+'\',\'time\',this.value)"></td>'
-          h+='<td><input value="'+(g.tournament||'')+'"onchange="updateGame(\''+g.game_id+'\',\'tournament\',this.value)"></td>'
-          h+='<td><input value="'+(g.field||'')+'"onchange="updateGame(\''+g.game_id+'\',\'field\',this.value)"></td>'
-          h+='<td><input value="'+(g.home_team||'')+'"onchange="updateGame(\''+g.game_id+'\',\'home_team\',this.value)"></td>'
-          h+='<td><input value="'+(g.away_team||'')+'"onchange="updateGame(\''+g.game_id+'\',\'away_team\',this.value)"></td>'
-          h+='<td><button class="delete-btn"onclick="deleteGame(\''+g.game_id+'\')">刪除</button></td></tr>'
+      // ✅ 假設 g.date 為 yyyy-MM-dd 或 yyyy/MM/dd
+      const dateStr = g.date || '';
+      const parts = dateStr.includes('-')
+        ? dateStr.split('-')
+        : dateStr.split('/');
+
+      if (parts.length < 2) return;
+
+      const year = parts[0];
+      const month = parts[1].padStart(2, '0');
+      const ymKey = year + '-' + month;
+
+      if (!groups[ymKey]) groups[ymKey] = [];
+      groups[ymKey].push(g);
+    });
+
+    // ===== 輸出每個月份 =====
+    Object.keys(groups).sort().forEach(ym => {
+
+      const [year, month] = ym.split('-');
+      const list = groups[ym];
+
+      let html = '';
+      html += '<div class="panel">';
+      html += `<div class="month-title">📅 ${year} 年 ${month} 月</div>`;
+      html += '<table class="styled-table">';
+      html += '<thead><tr>';
+      html += '<th>日期</th><th>時間</th><th>賽事</th><th>場地</th>';
+      html += '<th>主隊</th><th>客隊</th><th>操作</th>';
+      html += '</tr></thead><tbody>';
+
+      list.forEach(g => {
+
+        if (isExpired(g)) {
+          html += '<tr class="expired">';
+          html += `<td>${g.date || ''}</td>`;
+          html += `<td>${g.time || ''}</td>`;
+          html += `<td>${g.tournament || ''}</td>`;
+          html += `<td>${g.field || ''}</td>`;
+          html += `<td>${g.home_team || ''}</td>`;
+          html += `<td>${g.away_team || ''}</td>`;
+          html += '<td class="finished">已完賽</td>';
+          html += '</tr>';
+        } else {
+          html += '<tr>';
+          html += `<td><input type="date" value="${g.date || ''}"
+                    onchange="updateGame('${g.game_id}','date',this.value)"></td>`;
+          html += `<td><input type="time" value="${g.time || ''}"
+                    onchange="updateGame('${g.game_id}','time',this.value)"></td>`;
+          html += `<td><input value="${g.tournament || ''}"
+                    onchange="updateGame('${g.game_id}','tournament',this.value)"></td>`;
+          html += `<td><input value="${g.field || ''}"
+                    onchange="updateGame('${g.game_id}','field',this.value)"></td>`;
+          html += `<td><input value="${g.home_team || ''}"
+                    onchange="updateGame('${g.game_id}','home_team',this.value)"></td>`;
+          html += `<td><input value="${g.away_team || ''}"
+                    onchange="updateGame('${g.game_id}','away_team',this.value)"></td>`;
+          html += `<td><button class="delete-btn"
+                    onclick="deleteGame('${g.game_id}')">刪除</button></td>`;
+          html += '</tr>';
         }
-      })
-      h+='</table></div>'
-      box.insertAdjacentHTML('beforeend',h)
-    })
-  })
+
+      });
+
+      html += '</tbody></table></div>';
+      container.insertAdjacentHTML('beforeend', html);
+    });
+
+  });
+
 }
 
 function updateGame(id,f,v){
