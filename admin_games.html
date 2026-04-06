@@ -336,6 +336,19 @@ function renderImportPreview(rows){
   document.getElementById('confirmImportBtn').style.display = 'inline-block';
 }
 
+  // 送出匯入
+function confirmImport(){
+  callApi({
+    action:'importGames',
+    rows: JSON.stringify(importRows)
+  }, res=>{
+    if(res && res.result==='ok'){
+      alert(`成功匯入 ${res.count} 筆賽事`);
+      loadGames();
+    }
+  });
+}
+
 </script>
 
 </body>
