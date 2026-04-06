@@ -163,6 +163,34 @@ function positionModeText(v) {
 
 let currentRange = 'all';
 
+// 判斷是否屬於本月（只看日期）
+function isInThisMonthByDateStr(dateStr) {
+  if (!dateStr) return false;
+  const now = new Date();
+  const [y, m] = dateStr.split('-');
+  return Number(y) === now.getFullYear()
+      && Number(m) === (now.getMonth() + 1);
+}
+
+// 判斷是否屬於本週（週一～週日，只看日期）
+function isInThisWeekByDateStr(dateStr) {
+  if (!dateStr) return false;
+
+  const d = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+
+  // 週一為一週開始
+  const start = new Date(now);
+  start.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  start.setHours(0,0,0,0);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+
+  return d >= start && d < end;
+}
+
+
 function loadGames() {
 
   callApi({ action: 'getGames' }, function (res) {
@@ -238,10 +266,9 @@ document.getElementById('rangeMonth').addEventListener('change', function () {
       
       // 只有「未完成」才套用本週 / 本月
       if (!expired) {
-        if (range === 'week' && !isInThisWeek(gameDT)) return;
-        if (range === 'month' && !isInThisMonth(gameDT)) return;
+        if (range === 'week' && !isInThisWeekByDateStr(g._date)) return;
+        if (range === 'month' && !isInThisMonthByDateStr(g._date)) return;
       }
-
 
       const year = g._date.slice(0, 4);
       const month = g._date.slice(5, 7);
@@ -503,30 +530,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-function isInThisMonthByDateStr(dateStr) {
-  // dateStr = yyyy-mm-dd
-  const now = new Date();
-  const [y, m] = dateStr.split('-');
-  return Number(y) === now.getFullYear()
-      && Number(m) === (now.getMonth() + 1);
-}
-
-function isInThisWeekByDateStr(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
-  const now = new Date();
-
-  // 本週起始（週一）
-  const start = new Date(now);
-  start.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  start.setHours(0,0,0,0);
-
-  const end = new Date(start);
-  end.setDate(start.getDate() + 7);
-
-  return d >= start && d < end;
-}
-
-  
+ 
 </script>
 
 </body>
