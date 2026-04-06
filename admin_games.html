@@ -326,6 +326,11 @@ document.getElementById('rangeMonth').addEventListener('change', function () {
     });
 
   });
+  
+if (Object.keys(groups).length === 0) {
+  container.innerHTML = '<div class="panel">本範圍沒有賽事</div>';
+  return;
+}
 
 }
 
