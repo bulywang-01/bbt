@@ -243,6 +243,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadHeader()
   loadGames()
 })
+
+
+function logout() {
+  // 清掉登入資訊
+  localStorage.removeItem('session_user');
+
+  // 直接回登入頁
+  window.location.href = 'login.html';
+}
 </script>
 
 </body>
