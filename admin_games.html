@@ -53,33 +53,33 @@
   <div class="filter-bar">
 
     <label>
-      <input type="radio" name="range" value="all" checked onchange="loadGames()">
+      <input type="radio" name="range" value="all" checked>
       全部
     </label>
 
     <label>
-      <input type="radio" name="range" value="week" onchange="loadGames()">
+      <input type="radio" name="range" value="week">
       本週
     </label>
 
     <label>
-      <input type="radio" name="range" value="month" onchange="loadGames()">
+      <input type="radio" name="range" value="month">
       本月
     </label>
 
     <label>
-      <input type="checkbox" id="showExpired" onchange="loadGames()">
+      <input type="checkbox" id="showExpired">
       顯示已完成
     </label>
 
     <input
       id="searchInput"
       placeholder="搜尋賽事 / 場地 / 球隊"
-      oninput="loadGames()"
     >
 
   </div>
 </div>
+
 </div>
 
 <div id="gamesContainer"></div>
@@ -335,6 +335,37 @@ function logout() {
   // 直接回登入頁
   window.location.href = 'login.html';
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+
+  loadHeader();
+  loadGames();
+
+  // ✅ 所有 radio（全部 / 本週 / 本月）
+  document.querySelectorAll('input[name="range"]').forEach(function(radio){
+    radio.addEventListener('change', function(){
+      loadGames();
+    });
+  });
+
+  // ✅ 顯示已完成
+  var showExpired = document.getElementById('showExpired');
+  if (showExpired) {
+    showExpired.addEventListener('change', function(){
+      loadGames();
+    });
+  }
+
+  // ✅ 搜尋即時觸發
+  var search = document.getElementById('searchInput');
+  if (search) {
+    search.addEventListener('input', function(){
+      loadGames();
+    });
+  }
+
+});
+
 </script>
 
 </body>
