@@ -124,6 +124,19 @@
   <div id="gamesContainer"></div>
 </div>
 
+<!-- 匯入賽事 -->
+<div class="panel">
+  <h2>📥 匯入賽事（CSV / Excel）</h2>
+
+  <input type="file" id="importFile" accept=".csv,.xlsx">
+  <button onclick="previewImport()">預覽</button>
+
+  <div id="importPreview"></div>
+
+  <button id="confirmImportBtn" style="display:none;"
+          onclick="confirmImport()">確認匯入</button>
+</div>
+  
 <div id="toast"></div>
 
 <script src="js/config.js"></script>
@@ -278,6 +291,51 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadHeader();
   loadGames(); // ✅ 預設：本週 ＋ 已完賽收合
 });
+
+// 賽事匯入功能
+  // 讀取 CSV 並轉成資料列
+let importRows = [];
+
+function previewImport(){
+  const file = document.getElementById('importFile').files[0];
+  if(!file){ alert('請先選擇檔案'); return; }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const lines = text.split(/\r?\n/).filter(l=>l.trim());
+    const headers = lines[0].split(',');
+
+    importRows = lines.slice(1).map(line=>{
+      const data = {};
+      line.split(',').forEach((v,i)=>{
+        data[headers[i]] = v.trim();
+      });
+      return data;
+    });
+
+    renderImportPreview(importRows);
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+  // 防止誤匯入
+function renderImportPreview(rows){
+  let html = '<table><tr>';
+  Object.keys(rows[0]).forEach(k => html += `<th>${k}</th>`);
+  html += '</tr>';
+
+  rows.forEach(r=>{
+    html += '<tr>';
+    Object.values(r).forEach(v => html += `<td>${v}</td>`);
+    html += '</tr>';
+  });
+
+  html += '</table>';
+  document.getElementById('importPreview').innerHTML = html;
+  document.getElementById('confirmImportBtn').style.display = 'inline-block';
+}
+
 </script>
 
 </body>
