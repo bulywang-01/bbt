@@ -69,7 +69,7 @@
 
     <label>
       <input type="checkbox" id="showExpired" onchange="loadGames()">
-      顯示已完賽
+      顯示已完成
     </label>
 
     <input
@@ -79,6 +79,7 @@
     >
 
   </div>
+</div>
 </div>
 
 <div id="gamesContainer"></div>
@@ -138,9 +139,20 @@ function normalizeDate(d) {
 // 將各種 Date / Time 字串轉成 HH:mm
 function normalizeTime(t) {
   if (!t) return '';
-  const date = new Date(t);
-  if (isNaN(date)) return '';
-  return date.toISOString().slice(11, 16);
+
+  // 已經是 HH:mm（例如 8:30 / 13:50）
+  if (/^\d{1,2}:\d{2}$/.test(t)) {
+    const [h, m] = t.split(':');
+    return h.padStart(2, '0') + ':' + m;
+  }
+
+  // 來自 Excel（1899-12-30 的那種）
+  const d = new Date(t);
+  if (isNaN(d)) return '';
+
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
 }
 
 function positionModeText(v) {
