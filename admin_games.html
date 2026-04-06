@@ -5,11 +5,7 @@
   <title>賽事管理</title>
 
   <!-- 共用樣式 -->
-  <link rel="stylesheet" href="common.css">
-
-  <style>
-    .main{ padding:20px; }
-
+  <link rel="stylesheet" href="common.cssng:20px; }
     .panel{
       background:#fff;
       padding:16px;
@@ -17,7 +13,6 @@
       box-shadow:0 1px 4px rgba(0,0,0,.08);
       margin-bottom:24px;
     }
-
     .month-title{
       font-size:18px;
       font-weight:700;
@@ -27,7 +22,6 @@
     table{ width:100%; border-collapse:collapse; font-size:14px; }
     th,td{ border:1px solid #e0e0e0; padding:6px 8px; text-align:center; }
     th{ background:#eef2f6; font-weight:600; }
-
     .styled-table tbody tr:nth-child(even){ background:#fafafa; }
     .styled-table tbody tr:hover{ background:#f0f6ff; }
 
@@ -46,19 +40,12 @@
     }
 
     #toast{
-      position:fixed;
-      top:50%;
-      left:50%;
+      position:fixed; top:50%; left:50%;
       transform:translate(-50%,-50%);
-      background:#2c7be5;
-      color:#fff;
-      padding:12px 20px;
-      border-radius:8px;
-      font-size:15px;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .3s;
-      z-index:9999;
+      background:#2c7be5; color:#fff;
+      padding:12px 20px; border-radius:8px;
+      font-size:15px; opacity:0; pointer-events:none;
+      transition:opacity .3s; z-index:9999;
     }
   </style>
 </head>
@@ -69,403 +56,237 @@
 
 <div class="main">
 
-  <!-- 新增賽事 -->
-  <div class="panel">
-    <h2>➕ 新增賽事</h2>
-    <table>
-      <tr>
-        <td><input id="g_date" type="date"></td>
-        <td><input id="g_time" type="time"></td>
-        <td><input id="g_duration" type="number" min="10" step="10"></td>
-        <td><input id="g_tournament" placeholder="賽事"></td>
-        <td><input id="g_category" placeholder="組別"></td>
-        <td><input id="g_field" placeholder="場地"></td>
-        <td><input id="g_away" placeholder="客隊"></td>
-        <td><input id="g_home" placeholder="主隊"></td>
-        <td>
-          <select id="g_umpire">
-            <option value="0">0</option><option value="1">1</option>
-            <option value="2">2</option><option value="3">3</option><option value="4">4</option>
-          </select>
-        </td>
-        <td>
-          <select id="g_mode">
-            <option value="allow_select">自行選</option>
-            <option value="auto_only">系統排</option>
-          </select>
-        </td>
-        <td><button onclick="createGame()">新增</button></td>
-      </tr>
-    </table>
-  </div>
-
-  <!-- 篩選控制（預設：本週 + 不顯示已完賽） -->
-  <div class="panel">
-    <div class="filter-bar">
-      <label><input type="radio" name="range" value="all" onchange="loadGames()"> 全部</label>
-      <label><input type="radio" name="range" value="week" checked onchange="loadGames()"> 本週</label>
-      <label><input type="radio" name="range" value="month" onchange="loadGames()"> 本月</label>
-
-      <label style="margin-left:12px;">
-        <input type="checkbox" id="showExpired" onchange="loadGames()"> 顯示已完賽
-      </label>
-
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="即時搜尋（賽事 / 組別 / 場地 / 球隊）"
-        style="min-width:260px"
-        oninput="loadGames()"
-      >
-    </div>
-  </div>
-
-  <!-- 賽事列表 -->
-  <div id="gamesContainer"></div>
+<!-- 新增賽事 -->
+<div class="panel">
+  <h2>➕ 新增賽事</h2>
+  <table>
+    <tr>
+      <td><input id="g_date" type="date"></td>
+      <td><input id="g_time" type="time"></td>
+      <td><input id="g_duration" type="number" min="10" step="10"></td>
+      <td><input id="g_tournament" placeholder="賽事"></td>
+      <td><input id="g_category" placeholder="組別"></td>
+      <td><input id="g_field" placeholder="場地"></td>
+      <td><input id="g_away" placeholder="客隊"></td>
+      <td><input id="g_home" placeholder="主隊"></td>
+      <td>
+        <select id="g_umpire">
+          <option value="0">0</option><option value="1">1</option>
+          <option value="2">2</option><option value="3">3</option><option value="4">4</option>
+        </select>
+      </td>
+      <td>
+        <select id="g_mode">
+          <option value="allow_select">自行選</option>
+          <option value="auto_only">系統排</option>
+        </select>
+      </td>
+      <td><button onclick="createGame()">新增</button></td>
+    </tr>
+  </table>
 </div>
 
-<!-- 匯入賽事 -->
-<!-- 匯入賽事 -->
+<!-- 篩選 -->
+<div class="panel">
+  <div class="filter-bar">
+    <label><input type="radio" name="range" value="all" onchange="loadGames()"> 全部</label>
+    <label><input type="radio" name="range" value="week" checked onchange="loadGames()"> 本週</label>
+    <label><input type="radio" name="range" value="month" onchange="loadGames()"> 本月</label>
+    <label><input type="checkbox" id="showExpired" onchange="loadGames()"> 顯示已完賽</label>
+    <input id="searchInput" type="text" placeholder="即時搜尋（賽事 / 組別 / 場地 / 球隊）"
+           style="min-width:260px" oninput="loadGames()">
+  </div>
+</div>
+
+<!-- 賽事列表 -->
+<div id="gamesContainer"></div>
+
+<!-- Excel 匯入 -->
 <div class="panel">
   <h2>📥 匯入賽事（Excel）</h2>
-
   <input type="file" id="importFile" accept=".xlsx">
   <button onclick="previewImport()">預覽</button>
-
   <div id="importPreview" style="margin-top:12px;"></div>
-
-  <button id="confirmImportBtn"
-          style="display:none;margin-top:12px;"
-          onclick="confirmImport()">
-    ✅ 確認匯入
-  </button>
-
-  <hr>
-
-  <div style="font-size:13px;color:#666;">
-    <b>Excel 格式說明（第一列必須是欄位名稱）：</b>
-    <pre style="background:#f7f7f7;padding:8px;">
+  <button id="confirmImportBtn" style="display:none;margin-top:12px;" onclick="confirmImport()">✅ 確認匯入</button>
+  <pre style="background:#f7f7f7;padding:8px;margin-top:12px;">
 date,time,duration,tournament,category,field,away_team,home_team,umpire_count,position_mode
 2026-04-12,08:30,90,學齡盃,六年級,A球場,三峽,板橋,2,allow_select
-    </pre>
-  </div>
+  </pre>
 </div>
-  
+
+</div>
+
 <div id="toast"></div>
 
+<!-- 套件與後端 -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="js/config.js"></script>
   
 <script>
 /* ===== Header ===== */
 function loadHeader(){
-  fetch('header.html')
-    .then(r=>r.text())
-    .then(html=>{
-      document.getElementById('header-container').innerHTML = html;
-      const s = JSON.parse(localStorage.getItem('session_user')||'{}');
-      if(s.name && document.getElementById('u_name')){
-        document.getElementById('u_name').textContent = s.name;
-      }
-      if(document.getElementById('pageTitle')){
-        document.getElementById('pageTitle').textContent = '賽事管理';
-      }
-    });
+  fetch('header.html').then(r=>r.text()).then(h=>{
+    document.getElementById('header-container').innerHTML=h;
+    const s=JSON.parse(localStorage.getItem('session_user')||'{}');
+    if(s.name && document.getElementById('u_name')) u_name.textContent=s.name;
+    if(pageTitle) pageTitle.textContent='賽事管理';
+  });
 }
 
 /* ===== Utils ===== */
-function fmtDate(v){
-  const d=new Date(v); if(isNaN(d)) return '';
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
+function fmtDate(v){ const d=new Date(v); return isNaN(d)?'':d.toISOString().slice(0,10); }
 function fmtTime(v){
   if(/^\d{2}:\d{2}$/.test(v)) return v;
-  const d=new Date(v); if(isNaN(d)) return '';
-  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  const d=new Date(v); return isNaN(d)?'':String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 }
 function sortKey(g){ return new Date(fmtDate(g.date)+'T'+fmtTime(g.time)); }
-function isExpired(g){ return sortKey(g) < new Date(); }
+function isExpired(g){ return sortKey(g)<new Date(); }
 function posText(v){ return v==='auto_only'?'系統排':'自行選'; }
-
 function isInThisWeek(g){
-  const d=sortKey(g); const n=new Date();
+  const d=sortKey(g), n=new Date();
   const s=new Date(n); s.setDate(n.getDate()-n.getDay()); s.setHours(0,0,0,0);
-  const e=new Date(s); e.setDate(s.getDate()+7);
-  return d>=s && d<e;
+  const e=new Date(s); e.setDate(s.getDate()+7); return d>=s&&d<e;
 }
 function isInThisMonth(g){
-  const d=sortKey(g); const n=new Date();
+  const d=sortKey(g), n=new Date();
   return d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth();
 }
 function matchKeyword(g,k){
-  if(!k) return true;
-  const t=k.toLowerCase();
+  if(!k) return true; k=k.toLowerCase();
   return [g.tournament,g.category,g.field,g.away_team,g.home_team]
-    .some(v=>(v||'').toLowerCase().includes(t));
+    .some(v=>(v||'').toLowerCase().includes(k));
 }
 
-/* ===== Load Games ===== */
+/* ===== UI ===== */
 function loadGames(){
   callApi({action:'getGames'},res=>{
-    const box=document.getElementById('gamesContainer');
-    box.innerHTML='';
+    const box=gamesContainer; box.innerHTML='';
     if(!res||res.result!=='ok'||!res.games.length){
       box.innerHTML='<div class="panel">目前沒有賽事</div>'; return;
     }
 
-    const range=document.querySelector('input[name="range"]:checked').value;
-    const showExpired=document.getElementById('showExpired').checked;
-    const kw=document.getElementById('searchInput').value.trim();
+    const range=document.querySelector('[name=range]:checked').value;
+    const showExpired=showExpiredCheckbox.checked;
+    const kw=searchInput.value.trim();
 
     res.games.sort((a,b)=>sortKey(a)-sortKey(b));
-
     const byMonth={};
+
     res.games.forEach(g=>{
       if(!matchKeyword(g,kw)) return;
-      if(isExpired(g)){
-        if(!showExpired) return;
-      }else{
-        if(range==='week' && !isInThisWeek(g)) return;
-        if(range==='month' && !isInThisMonth(g)) return;
+      if(isExpired(g)){ if(!showExpired) return; }
+      else{
+        if(range==='week'&&!isInThisWeek(g)) return;
+        if(range==='month'&&!isInThisMonth(g)) return;
       }
-      const d=new Date(g.date); const k=d.getFullYear()+'-'+d.getMonth();
+      const d=new Date(g.date), k=d.getFullYear()+'-'+d.getMonth();
       (byMonth[k]=byMonth[k]||[]).push(g);
     });
 
     Object.keys(byMonth).forEach(k=>{
       const list=byMonth[k]; if(!list.length) return;
       const d=new Date(list[0].date);
-      const panel=document.createElement('div'); panel.className='panel';
-      let html=`<div class="month-title">📅 ${d.getFullYear()} 年 ${d.getMonth()+1} 月</div>
-        <table class="styled-table"><thead><tr>
-        <th>日期</th><th>時間</th><th>分鐘</th><th>賽事</th><th>組別</th>
-        <th>場地</th><th>客隊</th><th>主隊</th><th>裁判</th><th>站位</th><th>操作</th>
-        </tr></thead><tbody>`;
+      let html=`<div class="panel"><div class="month-title">📅 ${d.getFullYear()} 年 ${d.getMonth()+1} 月</div>
+      <table class="styled-table"><thead><tr>
+      ${['日期','時間','分鐘','賽事','組別','場地','客隊','主隊','裁判','站位','操作'].map(h=>`<th>${h}</th>`).join('')}
+      </tr></thead><tbody>`;
       list.forEach(g=>{
-        if(isExpired(g)){
-          html+=`<tr class="expired-row">
-            <td>${fmtDate(g.date)}</td><td>${fmtTime(g.time)}</td><td>${g.duration||''}</td>
-            <td>${g.tournament||''}</td><td>${g.category||''}</td><td>${g.field||''}</td>
-            <td>${g.away_team||''}</td><td>${g.home_team||''}</td>
-            <td>${g.umpire_count}</td><td>${posText(g.position_mode)}</td>
-            <td class="finished">已完賽</td></tr>`;
-        }else{
-          html+=`<tr>
-            <td><input type="date" value="${fmtDate(g.date)}" onchange="updateGame('${g.game_id}','date',this.value)"></td>
-            <td><input type="time" value="${fmtTime(g.time)}" onchange="updateGame('${g.game_id}','time',this.value)"></td>
-            <td><input type="number" value="${g.duration||''}" onchange="updateGame('${g.game_id}','duration',this.value)"></td>
-            <td><input value="${g.tournament||''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
-            <td><input value="${g.category||''}" onchange="updateGame('${g.game_id}','category',this.value)"></td>
-            <td><input value="${g.field||''}" onchange="updateGame('${g.game_id}','field',this.value)"></td>
-            <td><input value="${g.away_team||''}" onchange="updateGame('${g.game_id}','away_team',this.value)"></td>
-            <td><input value="${g.home_team||''}" onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
-            <td><select onchange="updateGame('${g.game_id}','umpire_count',this.value)">
-              ${[0,1,2,3,4].map(n=>`<option value="${n}" ${Number(g.umpire_count)===n?'selected':''}>${n}</option>`).join('')}
-            </select></td>
-            <td><select onchange="updateGame('${g.game_id}','position_mode',this.value)">
-              <option value="allow_select" ${g.position_mode==='allow_select'?'selected':''}>自行選</option>
-              <option value="auto_only" ${g.position_mode==='auto_only'?'selected':''}>系統排</option>
-            </select></td>
-            <td><button class="delete-btn" onclick="deleteGame('${g.game_id}')">刪除</button></td>
-          </tr>`;
-        }
+        html+= isExpired(g)
+        ? `<tr class="expired-row"><td>${fmtDate(g.date)}</td><td>${fmtTime(g.time)}</td><td>${g.duration||''}</td>
+           <td>${g.tournament||''}</td><td>${g.category||''}</td><td>${g.field||''}</td>
+           <td>${g.away_team||''}</td><td>${g.home_team||''}</td><td>${g.umpire_count}</td>
+           <td>${posText(g.position_mode)}</td><td class="finished">已完賽</td></tr>`
+        : `<tr>
+           <td><input type="date" value="${fmtDate(g.date)}" onchange="updateGame('${g.game_id}','date',this.value)"></td>
+           <td><input type="time" value="${fmtTime(g.time)}" onchange="updateGame('${g.game_id}','time',this.value)"></td>
+           <td><input type="number" value="${g.duration||''}" onchange="updateGame('${g.game_id}','duration',this.value)"></td>
+           <td><input value="${g.tournament||''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
+           <td><input value="${g.category||''}" onchange="updateGame('${g.game_id}','category',this.value)"></td>
+           <td><input value="${g.field||''}" onchange="updateGame('${g.game_id}','field',this.value)"></td>
+           <td><input value="${g.away_team||''}" onchange="updateGame('${g.game_id}','away_team',this.value)"></td>
+           <td><input value="${g.home_team||''}" onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
+           <td><select onchange="updateGame('${g.game_id}','umpire_count',this.value)">
+           ${[0,1,2,3,4].map(n=>`<option value="${n}" ${Number(g.umpire_count)===n?'selected':''}>${n}</option>`).join('')}
+           </select></td>
+           <td><select onchange="updateGame('${g.game_id}','position_mode',this.value)">
+           <option value="allow_select" ${g.position_mode==='allow_select'?'selected':''}>自行選</option>
+           <option value="auto_only" ${g.position_mode==='auto_only'?'selected':''}>系統排</option>
+           </select></td>
+           <td><button class="delete-btn" onclick="deleteGame('${g.game_id}')">刪除</button></td>
+           </tr>`;
       });
-      html+='</tbody></table>'; panel.innerHTML=html; box.appendChild(panel);
+      html+='</tbody></table></div>'; box.insertAdjacentHTML('beforeend',html);
     });
   });
 }
 
 /* ===== CRUD ===== */
-function createGame(){ callApi({
-  action:'createGame',
+function createGame(){ callApi({ action:'createGame',
   date:g_date.value,time:g_time.value,duration:g_duration.value,
   tournament:g_tournament.value,category:g_category.value,
   field:g_field.value,away_team:g_away.value,home_team:g_home.value,
   umpire_count:g_umpire.value,position_mode:g_mode.value
-}, r=>{ if(r&&r.result==='ok'){ showToast('✅ 已新增'); loadGames(); }}); }
+},()=>{ showToast('✅ 已新增'); loadGames(); });}
 
 function updateGame(id,f,v){
-  callApi({action:'updateGame',game_id:id,field_name:f,value:v}, r=>{
-    if(r&&r.result==='ok') showToast('✅ 已更新');
-  });
+  callApi({action:'updateGame',game_id:id,field_name:f,value:v},
+          r=>{ if(r&&r.result==='ok') showToast('✅ 已更新'); });
 }
 
 function deleteGame(id){
   if(!confirm('確定刪除?')) return;
-  callApi({action:'deleteGame',game_id:id}, r=>{
-    if(r&&r.result==='ok'){ showToast('🗑 已刪除'); loadGames(); }
-  });
+  callApi({action:'deleteGame',game_id:id},()=>{ showToast('🗑 已刪除'); loadGames(); });
 }
 
-function showToast(m){
-  toast.textContent=m; toast.style.opacity=1;
-  setTimeout(()=>toast.style.opacity=0,2000);
-}
+function showToast(m){ toast.textContent=m; toast.style.opacity=1;
+  setTimeout(()=>toast.style.opacity=0,2000); }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  loadHeader();
-  loadGames(); // ✅ 預設：本週 ＋ 已完賽收合
-});
-
-// 賽事匯入功能
-  // 讀取 CSV 並轉成資料列
-let importRows = [];
+/* ===== Excel 匯入 ===== */
+let importRows=[], importErrors=[];
+const REQUIRED=['date','time','duration','tournament','category','field','away_team','home_team','umpire_count','position_mode'];
 
 function previewImport(){
-  const file = document.getElementById('importFile').files[0];
-  if(!file){ alert('請先選擇檔案'); return; }
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    const text = e.target.result;
-    const lines = text.split(/\r?\n/).filter(l=>l.trim());
-    const headers = lines[0].split(',');
-
-    importRows = lines.slice(1).map(line=>{
-      const data = {};
-      line.split(',').forEach((v,i)=>{
-        data[headers[i]] = v.trim();
-      });
-      return data;
-    });
-
-    renderImportPreview(importRows);
-  };
-  reader.readAsText(file, 'utf-8');
-}
-
-  // 防止誤匯入
-function renderImportPreview(rows){
-  let html = '<table><tr>';
-  Object.keys(rows[0]).forEach(k => html += `<th>${k}</th>`);
-  html += '</tr>';
-
-  rows.forEach(r=>{
-    html += '<tr>';
-    Object.values(r).forEach(v => html += `<td>${v}</td>`);
-    html += '</tr>';
-  });
-
-  html += '</table>';
-  document.getElementById('importPreview').innerHTML = html;
-  document.getElementById('confirmImportBtn').style.display = 'inline-block';
-}
-
-  // 送出匯入
-function confirmImport(){
-  if(!importRows.length){
-    alert('沒有可匯入的資料');
-    return;
-  }
-
-  callApi({
-    action:'importGames',
-    rows: JSON.stringify(importRows)
-  }, res=>{
-    if(res && res.result==='ok'){
-      alert(`✅ 成功匯入 ${res.count} 筆賽事`);
-      importRows = [];
-      document.getElementById('importPreview').innerHTML='';
-      document.getElementById('confirmImportBtn').style.display='none';
-      loadGames();
-    }
-  });
-}
-
-// 前端 JS（Excel 解析 + 驗證 + 預覽）
-let importRows = [];
-let importErrors = [];
-
-const REQUIRED_FIELDS = [
-  'date','time','duration','tournament','category',
-  'field','away_team','home_team','umpire_count','position_mode'
-];
-
-function previewImport(){
-  const file = document.getElementById('importFile').files[0];
-  if(!file){
-    alert('請先選擇 Excel 檔案');
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    const data = new Uint8Array(e.target.result);
-    const workbook = XLSX.read(data, { type: 'array' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { defval:'' });
-
-    importRows = [];
-    importErrors = [];
-
-    rows.forEach((row, idx) => {
-      const rowErrors = [];
-
-      REQUIRED_FIELDS.forEach(f => {
-        if(!row[f] && row[f] !== 0){
-          rowErrors.push(`缺少欄位 ${f}`);
-        }
-      });
-
-      if(!/^\d{4}-\d{2}-\d{2}$/.test(row.date)){
-        rowErrors.push('date 格式錯誤（需 YYYY-MM-DD）');
-      }
-
-      if(!/^\d{2}:\d{2}$/.test(row.time)){
-        rowErrors.push('time 格式錯誤（需 HH:mm）');
-      }
-
-      if(!['allow_select','auto_only'].includes(row.position_mode)){
-        rowErrors.push('position_mode 只能是 allow_select 或 auto_only');
-      }
-
-      if(rowErrors.length){
-        importErrors.push({ index: idx+2, errors: rowErrors });
-      }
-
+  const f=importFile.files[0]; if(!f) return alert('請選擇 Excel');
+  const r=new FileReader();
+  r.onload=e=>{
+    const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+    importRows=[]; importErrors=[];
+    rows.forEach((row,i)=>{
+      const errs=[];
+      REQUIRED.forEach(k=>{ if(row[k]===''&&row[k]!==0) errs.push(k+' 必填'); });
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(row.date)) errs.push('date 格式');
+      if(!/^\d{2}:\d{2}$/.test(row.time)) errs.push('time 格式');
+      if(!['allow_select','auto_only'].includes(row.position_mode)) errs.push('position_mode');
+      if(errs.length) importErrors.push({row:i+2,errs});
       importRows.push(row);
     });
-
-    renderImportPreview();
+    let html='';
+    if(importErrors.length){
+      html='<b style="color:#c00">匯入錯誤：</b><ul>'+importErrors.map(e=>`<li>第 ${e.row} 列：${e.errs.join(', ')}</li>`).join('')+'</ul>';
+      confirmImportBtn.style.display='none';
+    }else{
+      html='<table class="styled-table"><tr>'+REQUIRED.map(h=>`<th>${h}</th>`).join('')+'</tr>'+
+        importRows.map(r=>'<tr>'+REQUIRED.map(h=>`<td>${r[h]}</td>`).join('')+'</tr>').join('')+'</table>';
+      confirmImportBtn.style.display='inline-block';
+    }
+    importPreview.innerHTML=html;
   };
-
-  reader.readAsArrayBuffer(file);
+  r.readAsArrayBuffer(f);
 }
 
-function renderImportPreview(){
-  const box = document.getElementById('importPreview');
-  box.innerHTML = '';
-
-  if(importErrors.length){
-    let html = '<h4 style="color:#c00;">❌ 匯入錯誤</h4><ul>';
-    importErrors.forEach(e=>{
-      html += `<li>第 ${e.index} 列：${e.errors.join('、')}</li>`;
-    });
-    html += '</ul>';
-    box.innerHTML = html;
-    document.getElementById('confirmImportBtn').style.display='none';
-    return;
-  }
-
-  let html = '<h4>✅ 預覽資料</h4><table class="styled-table"><tr>';
-  REQUIRED_FIELDS.forEach(f => html += `<th>${f}</th>`);
-  html += '</tr>';
-
-  importRows.forEach(r=>{
-    html += '<tr>';
-    REQUIRED_FIELDS.forEach(f=>{
-      html += `<td>${r[f]}</td>`;
-    });
-    html += '</tr>';
+function confirmImport(){
+  callApi({action:'importGames',rows:JSON.stringify(importRows)},res=>{
+    alert(`✅ 成功匯入 ${res.count} 筆`);
+    importRows=[]; importPreview.innerHTML='';
+    confirmImportBtn.style.display='none'; loadGames();
   });
-  html += '</table>';
-
-  box.innerHTML = html;
-  document.getElementById('confirmImportBtn').style.display='inline-block';
 }
 
+/* ===== Init ===== */
+document.addEventListener('DOMContentLoaded',()=>{
+  loadHeader(); loadGames();
+});
 </script>
-  
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
 </body>
 </html>
