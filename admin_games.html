@@ -340,18 +340,116 @@ function deleteGame(id){
 }
 
 let importRows=[]
+
+// 預覽
+const IMPORT_FIELDS = [
+  { key:'date',         label:'日期' },
+  { key:'time',         label:'時間' },
+  { key:'duration',     label:'分鐘' },
+  { key:'tournament',   label:'賽事名稱' },
+  { key:'category',     label:'組別' },
+  { key:'field',        label:'場地' },
+  { key:'away_team',    label:'客隊' },
+  { key:'home_team',    label:'主隊' },
+  { key:'umpire_count', label:'裁判數' },
+  { key:'position_mode',label:'站位方式' }
+];
+
 function previewImport(){
-  const f=document.getElementById('importFile').files[0]
-  if(!f)return alert('請選擇檔案')
-  const r=new FileReader()
-  r.onload=e=>{
-    const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'})
-    importRows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
-    document.getElementById('importPreview').innerText='共 '+importRows.length+' 筆'
-    document.getElementById('confirmImportBtn').style.display='inline'
+
+  const file = document.getElementById('importFile').files[0];
+  if (!file) {
+    alert('請先選擇 Excel 檔案');
+    return;
   }
-  r.readAsArrayBuffer(f)
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval:'' });
+
+    if (!rows.length) {
+      document.getElementById('importPreview').innerHTML =
+        '<div class="panel">⚠️ Excel 沒有資料</div>';
+      return;
+    }
+
+    // 驗證 & 正規化
+    let errors = [];
+    importRows = [];
+
+    rows.forEach((row, idx) => {
+
+      let rowErrors = [];
+
+      IMPORT_FIELDS.forEach(f => {
+        if (row[f.key] === '' || row[f.key] === undefined) {
+          rowErrors.push(`${f.label}空白`);
+        }
+      });
+
+      if (row.position_mode &&
+          !['allow_select','auto_only'].includes(row.position_mode)) {
+        rowErrors.push('站位方式錯誤');
+      }
+
+      if (rowErrors.length) {
+        errors.push(`第 ${idx+2} 列：${rowErrors.join('、')}`);
+      }
+
+      importRows.push(row);
+    });
+
+    // 有錯誤就直接顯示錯誤
+    if (errors.length) {
+      document.getElementById('importPreview').innerHTML =
+        '<div class="panel" style="color:#c00;">❌ 匯入錯誤：<br>' +
+        errors.join('<br>') + '</div>';
+      document.getElementById('confirmImportBtn').style.display = 'none';
+      return;
+    }
+
+    // ✅ 正常：顯示完整預覽表格
+    let html = '';
+    html += '<div class="panel">';
+    html += `<div style="margin-bottom:8px;">✅ 共 ${importRows.length} 筆</div>`;
+    html += '<table class="styled-table">';
+    html += '<thead><tr>';
+
+    IMPORT_FIELDS.forEach(f => {
+      html += `<th>${f.label}</th>`;
+    });
+
+    html += '</tr></thead><tbody>';
+
+    importRows.forEach(r => {
+      html += '<tr>';
+      IMPORT_FIELDS.forEach(f => {
+
+        let v = r[f.key];
+
+        if (f.key === 'position_mode') {
+          v = positionModeText(v);
+        }
+
+        html += `<td>${v}</td>`;
+      });
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+
+    document.getElementById('importPreview').innerHTML = html;
+    document.getElementById('confirmImportBtn').style.display = 'inline-block';
+  };
+
+  reader.readAsArrayBuffer(file);
 }
+
 function confirmImport(){
   callApi({action:'importGames',rows:JSON.stringify(importRows)},()=>loadGames())
 }
@@ -400,6 +498,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+
+  
 </script>
 
 </body>
