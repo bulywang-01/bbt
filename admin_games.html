@@ -125,16 +125,30 @@
 </div>
 
 <!-- 匯入賽事 -->
+<!-- 匯入賽事 -->
 <div class="panel">
-  <h2>📥 匯入賽事（CSV / Excel）</h2>
+  <h2>📥 匯入賽事（Excel）</h2>
 
-  <input type="file" id="importFile" accept=".csv,.xlsx">
+  <input type="file" id="importFile" accept=".xlsx">
   <button onclick="previewImport()">預覽</button>
 
-  <div id="importPreview"></div>
+  <div id="importPreview" style="margin-top:12px;"></div>
 
-  <button id="confirmImportBtn" style="display:none;"
-          onclick="confirmImport()">確認匯入</button>
+  <button id="confirmImportBtn"
+          style="display:none;margin-top:12px;"
+          onclick="confirmImport()">
+    ✅ 確認匯入
+  </button>
+
+  <hr>
+
+  <div style="font-size:13px;color:#666;">
+    <b>Excel 格式說明（第一列必須是欄位名稱）：</b>
+    <pre style="background:#f7f7f7;padding:8px;">
+date,time,duration,tournament,category,field,away_team,home_team,umpire_count,position_mode
+2026-04-12,08:30,90,學齡盃,六年級,A球場,三峽,板橋,2,allow_select
+    </pre>
+  </div>
 </div>
   
 <div id="toast"></div>
@@ -338,18 +352,120 @@ function renderImportPreview(rows){
 
   // 送出匯入
 function confirmImport(){
+  if(!importRows.length){
+    alert('沒有可匯入的資料');
+    return;
+  }
+
   callApi({
     action:'importGames',
     rows: JSON.stringify(importRows)
   }, res=>{
     if(res && res.result==='ok'){
-      alert(`成功匯入 ${res.count} 筆賽事`);
+      alert(`✅ 成功匯入 ${res.count} 筆賽事`);
+      importRows = [];
+      document.getElementById('importPreview').innerHTML='';
+      document.getElementById('confirmImportBtn').style.display='none';
       loadGames();
     }
   });
 }
 
+// 前端 JS（Excel 解析 + 驗證 + 預覽）
+let importRows = [];
+let importErrors = [];
+
+const REQUIRED_FIELDS = [
+  'date','time','duration','tournament','category',
+  'field','away_team','home_team','umpire_count','position_mode'
+];
+
+function previewImport(){
+  const file = document.getElementById('importFile').files[0];
+  if(!file){
+    alert('請先選擇 Excel 檔案');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval:'' });
+
+    importRows = [];
+    importErrors = [];
+
+    rows.forEach((row, idx) => {
+      const rowErrors = [];
+
+      REQUIRED_FIELDS.forEach(f => {
+        if(!row[f] && row[f] !== 0){
+          rowErrors.push(`缺少欄位 ${f}`);
+        }
+      });
+
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(row.date)){
+        rowErrors.push('date 格式錯誤（需 YYYY-MM-DD）');
+      }
+
+      if(!/^\d{2}:\d{2}$/.test(row.time)){
+        rowErrors.push('time 格式錯誤（需 HH:mm）');
+      }
+
+      if(!['allow_select','auto_only'].includes(row.position_mode)){
+        rowErrors.push('position_mode 只能是 allow_select 或 auto_only');
+      }
+
+      if(rowErrors.length){
+        importErrors.push({ index: idx+2, errors: rowErrors });
+      }
+
+      importRows.push(row);
+    });
+
+    renderImportPreview();
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function renderImportPreview(){
+  const box = document.getElementById('importPreview');
+  box.innerHTML = '';
+
+  if(importErrors.length){
+    let html = '<h4 style="color:#c00;">❌ 匯入錯誤</h4><ul>';
+    importErrors.forEach(e=>{
+      html += `<li>第 ${e.index} 列：${e.errors.join('、')}</li>`;
+    });
+    html += '</ul>';
+    box.innerHTML = html;
+    document.getElementById('confirmImportBtn').style.display='none';
+    return;
+  }
+
+  let html = '<h4>✅ 預覽資料</h4><table class="styled-table"><tr>';
+  REQUIRED_FIELDS.forEach(f => html += `<th>${f}</th>`);
+  html += '</tr>';
+
+  importRows.forEach(r=>{
+    html += '<tr>';
+    REQUIRED_FIELDS.forEach(f=>{
+      html += `<td>${r[f]}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</table>';
+
+  box.innerHTML = html;
+  document.getElementById('confirmImportBtn').style.display='inline-block';
+}
+
 </script>
+  
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 </body>
 </html>
