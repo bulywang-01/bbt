@@ -243,7 +243,7 @@ function loadGames() {
 
   showLoading('賽事資料載入中...');
   callApi({ action: 'getGames' }, function (res) {
-
+    try {
     const container = document.getElementById('gamesContainer');
     container.innerHTML = '';
 
@@ -409,6 +409,10 @@ if (Object.keys(groups).length === 0) {
 }
 
 }
+
+    } finally {
+      hideLoading();
+    }
 
 
 //
