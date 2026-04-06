@@ -4,47 +4,66 @@
   <meta charset="UTF-8">
   <title>賽事管理</title>
 
-  <!-- ✅ 正確載入共用樣式 -->
+  <!-- 共用樣式 -->
   <link rel="stylesheet" href="common.css">
+
   <style>
-    .panel{
-      background:#fff;
+    body { margin:0; }
+    .main { padding:20px; }
+
+    .panel {
+      background:#ffffff;
       padding:16px;
       border-radius:6px;
       box-shadow:0 1px 4px rgba(0,0,0,.08);
-      margin-bottom:24px;
+      margin-bottom:20px;
     }
-
-    .month-title{
-      font-size:18px;
-      font-weight:700;
-      margin-bottom:12px;
-    }
-
-    table{ width:100%; border-collapse:collapse; font-size:14px; }
-    th,td{ border:1px solid #e0e0e0; padding:6px 8px; text-align:center; }
-    th{ background:#eef2f6; font-weight:600; }
-    tbody tr:nth-child(even){ background:#fafafa; }
-    tbody tr:hover{ background:#f0f6ff; }
-
-    input,select{
-      width:100%;
-      padding:4px;
-      box-sizing:border-box;
-      font-size:13px;
-    }
-
-    button{ padding:4px 10px; cursor:pointer; }
-    .delete-btn{ color:#c00; }
-
-    .expired-row{ background:#f3f3f3; color:#888; }
-    .finished{ font-weight:600; color:#999; }
 
     .filter-bar{
       display:flex;
       flex-wrap:wrap;
       gap:16px;
       align-items:center;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+    }
+
+    th, td {
+      border:1px solid #e0e0e0;
+      padding:6px 8px;
+      text-align:center;
+    }
+
+    th {
+      background:#eef2f6;
+      font-weight:600;
+    }
+
+    tr:nth-child(even){ background:#fafafa; }
+    tr:hover{ background:#f0f6ff; }
+
+    input {
+      width:100%;
+      box-sizing:border-box;
+      padding:4px;
+    }
+
+    button {
+      padding:4px 10px;
+      cursor:pointer;
+    }
+
+    .delete-btn {
+      color:#c00;
+    }
+
+    .expired {
+      background:#f3f3f3;
+      color:#888;
     }
   </style>
 </head>
@@ -59,104 +78,107 @@
   <!-- 篩選 -->
   <div class="panel">
     <div class="filter-bar">
-      <label><input type="radio" name="range" value="all" onchange="loadGames()"> 全部</label>
-      <label><input type="radio" name="range" value="week" checked onchange="loadGames()"> 本週</label>
-      <label><input type="radio" name="range" value="month" onchange="loadGames()"> 本月</label>
+      <label>
+        <input type="radio" name="range" value="all" checked>
+        全部
+      </label>
+      <label>
+        <input type="radio" name="range" value="week">
+        本週
+      </label>
+      <label>
+        <input type="radio" name="range" value="month">
+        本月
+      </label>
 
-      <label><input type="checkbox" id="showExpired" onchange="loadGames()"> 顯示已完賽</label>
-
-      <input id="searchInput"
-             type="text"
-             placeholder="即時搜尋（賽事 / 組別 / 場地 / 球隊）"
-             style="min-width:260px"
-             oninput="loadGames()">
+      <input id="searchInput" type="text" placeholder="搜尋賽事 / 場地 / 球隊">
+      <button onclick="loadGames()">重新整理</button>
     </div>
   </div>
 
   <!-- 賽事列表 -->
   <div id="gamesContainer"></div>
+
 </div>
 
-<!-- 後端通訊 -->
+<!-- 後端 API -->
 <script src="js/config.js"></script>
 
 <script>
-/* ========= Header ========= */
+/* ===== Header ===== */
 function loadHeader(){
   fetch('header.html')
-    .then(r => r.text())
-    .then(html => {
+    .then(function(res){ return res.text(); })
+    .then(function(html){
       document.getElementById('header-container').innerHTML = html;
 
-      const s = JSON.parse(localStorage.getItem('session_user') || '{}');
-      const uName = document.getElementById('u_name');
-      if(s.name && uName) uName.textContent = s.name;
-
-      const pageTitle = document.getElementById('pageTitle');
-      if(pageTitle) pageTitle.textContent = '賽事管理';
+      var s = localStorage.getItem('session_user');
+      if(s){
+        try{
+          var user = JSON.parse(s);
+          var el = document.getElementById('u_name');
+          if(el && user.name){
+            el.textContent = user.name;
+          }
+        }catch(e){}
+      }
     });
 }
 
-/* ========= Utils ========= */
+/* ===== 工具 ===== */
 function gameDateTime(g){
-  return new Date(`${g.date}T${g.time}`);
+  return new Date(g.date + 'T' + g.time);
 }
-function isExpired(g){
-  return gameDateTime(g) < new Date();
-}
+
 function isInThisWeek(g){
-  const d = gameDateTime(g);
-  const now = new Date();
-  const start = new Date(now);
+  var d = gameDateTime(g);
+  var now = new Date();
+  var start = new Date(now);
   start.setDate(now.getDate() - now.getDay());
   start.setHours(0,0,0,0);
-  const end = new Date(start);
+  var end = new Date(start);
   end.setDate(start.getDate() + 7);
   return d >= start && d < end;
 }
+
 function isInThisMonth(g){
-  const d = gameDateTime(g);
-  const now = new Date();
-  return d.getFullYear() === now.getFullYear()
-      && d.getMonth() === now.getMonth();
+  var d = gameDateTime(g);
+  var now = new Date();
+  return d.getFullYear() === now.getFullYear() &&
+         d.getMonth() === now.getMonth();
 }
+
 function matchKeyword(g, kw){
   if(!kw) return true;
   kw = kw.toLowerCase();
-  return [g.tournament,g.category,g.field,g.home_team,g.away_team]
-    .some(v => (v||'').toLowerCase().includes(kw));
+  return (g.tournament || '').toLowerCase().includes(kw) ||
+         (g.field || '').toLowerCase().includes(kw) ||
+         (g.home_team || '').toLowerCase().includes(kw) ||
+         (g.away_team || '').toLowerCase().includes(kw);
 }
 
-/* ========= Load Games ========= */
+/* ===== 讀取賽事 ===== */
 function loadGames(){
+  callApi({ action:'getGames' }, function(res){
+    var box = document.getElementById('gamesContainer');
+    box.innerHTML = '';
 
-  callApi({ action: 'getGames' }, function(res){
-
-    var container = document.getElementById('gamesContainer');
-    container.innerHTML = '';
-
-    if(!res || res.result !== 'ok' || !Array.isArray(res.games) || res.games.length === 0){
-      container.innerHTML = '<div class="panel">目前沒有賽事</div>';
+    if(!res || res.result !== 'ok' || !res.games || res.games.length === 0){
+      box.innerHTML = '<div class="panel">目前沒有賽事</div>';
       return;
     }
 
     var rangeRadio = document.querySelector('input[name="range"]:checked');
     var range = rangeRadio ? rangeRadio.value : 'all';
+    var kw = document.getElementById('searchInput').value.trim();
 
-    var showExpiredCheckbox = document.getElementById('showExpired');
-    var showExpired = showExpiredCheckbox ? showExpiredCheckbox.checked : false;
-
-    var searchInput = document.getElementById('searchInput');
-    var keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
-
-    var games = res.games.slice().sort(function(a,b){
+    res.games.sort(function(a,b){
       return gameDateTime(a) - gameDateTime(b);
     });
 
     var html = '';
     html += '<div class="panel">';
-    html += '<table class="styled-table">';
-    html += '<thead>';
+    html += '<table>';
     html += '<tr>';
     html += '<th>日期</th>';
     html += '<th>時間</th>';
@@ -166,61 +188,32 @@ function loadGames(){
     html += '<th>客隊</th>';
     html += '<th>操作</th>';
     html += '</tr>';
-    html += '</thead>';
-    html += '<tbody>';
 
-    games.forEach(function(g){
+    res.games.forEach(function(g){
+      if(!matchKeyword(g, kw)) return;
 
-      if(keyword && !matchKeyword(g, keyword)){
-        return;
-      }
+      if(range === 'week' && !isInThisWeek(g)) return;
+      if(range === 'month' && !isInThisMonth(g)) return;
 
-      var expired = isExpired(g);
-
-      if(expired && !showExpired){
-        return;
-      }
-
-      if(!expired){
-        if(range === 'week' && !isInThisWeek(g)) return;
-        if(range === 'month' && !isInThisMonth(g)) return;
-      }
-
-      if(expired){
-        html += '<tr class="expired-row">';
-        html += '<td>' + g.date + '</td>';
-        html += '<td>' + g.time + '</td>';
-        html += '<td>' + (g.tournament || '') + '</td>';
-        html += '<td>' + (g.field || '') + '</td>';
-        html += '<td>' + (g.home_team || '') + '</td>';
-        html += '<td>' + (g.away_team || '') + '</td>';
-        html += '<td class="finished">已完賽</td>';
-        html += '</tr>';
-      }else{
-        html += '<tr>';
-        html += '<td><input type="date" value="' + g.date + '" onchange="updateGame(\'' + g.game_id + '\', \'date\', this.value)"></td>';
-        html += '<td><input type="time" value="' + g.time + '" onchange="updateGame(\'' + g.game_id + '\', \'time\', this.value)"></td>';
-        html += '<td><input value="' + (g.tournament || '') + '" onchange="updateGame(\'' + g.game_id + '\', \'tournament\', this.value)"></td>';
-        html += '<td><input value="' + (g.field || '') + '" onchange="updateGame(\'' + g.game_id + '\', \'field\', this.value)"></td>';
-        html += '<td><input value="' + (g.home_team || '') + '" onchange="updateGame(\'' + g.game_id + '\', \'home_team\', this.value)"></td>';
-        html += '<td><input value="' + (g.away_team || '') + '" onchange="updateGame(\'' + g.game_id + '\', \'away_team\', this.value)"></td>';
-        html += '<td><button class="delete-btn" onclick="deleteGame(\'' + g.game_id + '\')">刪除</button></td>';
-        html += '</tr>';
-      }
-
+      html += '<tr>';
+      html += '<td><input type="date" value="'+g.date+'" onchange="updateGame(\''+g.game_id+'\',\'date\',this.value)"></td>';
+      html += '<td><input type="time" value="'+g.time+'" onchange="updateGame(\''+g.game_id+'\',\'time\',this.value)"></td>';
+      html += '<td><input value="'+(g.tournament||'')+'" onchange="updateGame(\''+g.game_id+'\',\'tournament\',this.value)"></td>';
+      html += '<td><input value="'+(g.field||'')+'" onchange="updateGame(\''+g.game_id+'\',\'field\',this.value)"></td>';
+      html += '<td><input value="'+(g.home_team||'')+'" onchange="updateGame(\''+g.game_id+'\',\'home_team\',this.value)"></td>';
+      html += '<td><input value="'+(g.away_team||'')+'" onchange="updateGame(\''+g.game_id+'\',\'away_team\',this.value)"></td>';
+      html += '<td><button class="delete-btn" onclick="deleteGame(\''+g.game_id+'\')">刪除</button></td>';
+      html += '</tr>';
     });
 
-    html += '</tbody>';
     html += '</table>';
     html += '</div>';
 
-    container.innerHTML = html;
-
+    box.innerHTML = html;
   });
-
 }
 
-/* ========= CRUD ========= */
+/* ===== CRUD ===== */
 function updateGame(id, field, value){
   callApi({
     action:'updateGame',
@@ -231,12 +224,12 @@ function updateGame(id, field, value){
 }
 
 function deleteGame(id){
-  if(!confirm('確定刪除這筆賽事？')) return;
+  if(!confirm('確定刪除？')) return;
   callApi({ action:'deleteGame', game_id:id }, loadGames);
 }
 
-/* ========= Init ========= */
-document.addEventListener('DOMContentLoaded', () => {
+/* ===== Init ===== */
+document.addEventListener('DOMContentLoaded', function(){
   loadHeader();
   loadGames();
 });
