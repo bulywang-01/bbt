@@ -53,17 +53,17 @@
   <div class="filter-bar">
 
     <label>
-      <input type="radio" name="range" value="all" checked>
+      <input type="radio" id="rangeAll" name="range" value="all" checked>
       全部
     </label>
-
+    
     <label>
-      <input type="radio" name="range" value="week">
+      <input type="radio" id="rangeWeek" name="range" value="week">
       本週
     </label>
-
+    
     <label>
-      <input type="radio" name="range" value="month">
+      <input type="radio" id="rangeMonth" name="range" value="month">
       本月
     </label>
 
@@ -160,7 +160,9 @@ function positionModeText(v) {
   if (v === 'auto_only') return '系統排';
   return v || '';
 }
-  
+
+let currentRange = 'all';
+
 function loadGames() {
 
   callApi({ action: 'getGames' }, function (res) {
@@ -173,8 +175,32 @@ function loadGames() {
       return;
     }
 
-    const range =
-      document.querySelector('input[name="range"]:checked')?.value || 'all';
+    //const range =
+    //  document.querySelector('input[name="range"]:checked')?.value || 'all';
+
+    const range = currentRange;
+    
+    document.getElementById('rangeAll').addEventListener('change', function () {
+  if (this.checked) {
+    currentRange = 'all';
+    loadGames();
+  }
+});
+
+document.getElementById('rangeWeek').addEventListener('change', function () {
+  if (this.checked) {
+    currentRange = 'week';
+    loadGames();
+  }
+});
+
+document.getElementById('rangeMonth').addEventListener('change', function () {
+  if (this.checked) {
+    currentRange = 'month';
+    loadGames();
+  }
+});
+
     const showExpired =
       document.getElementById('showExpired')?.checked || false;
     const keyword =
