@@ -51,12 +51,33 @@
 <!-- 篩選 -->
 <div class="panel">
   <div class="filter-bar">
-    <label><input type="radio" name="range" value="all" checked> 全部</label>
-    <label><input type="radio" name="range" value="week"> 本週</label>
-    <label><input type="radio" name="range" value="month"> 本月</label>
-    <label><input type="checkbox" id="showExpired"> 顯示已完賽</label>
-    <input id="searchInput" placeholder="搜尋賽事 / 場地 / 球隊">
-    <button onclick="loadGames()">重新整理</button>
+
+    <label>
+      <input type="radio" name="range" value="all" checked onchange="loadGames()">
+      全部
+    </label>
+
+    <label>
+      <input type="radio" name="range" value="week" onchange="loadGames()">
+      本週
+    </label>
+
+    <label>
+      <input type="radio" name="range" value="month" onchange="loadGames()">
+      本月
+    </label>
+
+    <label>
+      <input type="checkbox" id="showExpired" onchange="loadGames()">
+      顯示已完賽
+    </label>
+
+    <input
+      id="searchInput"
+      placeholder="搜尋賽事 / 場地 / 球隊"
+      oninput="loadGames()"
+    >
+
   </div>
 </div>
 
@@ -122,6 +143,12 @@ function normalizeTime(t) {
   return date.toISOString().slice(11, 16);
 }
 
+function positionModeText(v) {
+  if (v === 'allow_select') return '自行選';
+  if (v === 'auto_only') return '系統排';
+  return v || '';
+}
+  
 function loadGames() {
 
   callApi({ action: 'getGames' }, function (res) {
@@ -129,48 +156,44 @@ function loadGames() {
     const container = document.getElementById('gamesContainer');
     container.innerHTML = '';
 
-    if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
-      container.innerHTML = '<div class="panel">資料讀取失敗</div>';
-      return;
-    }
-
-    if (res.games.length === 0) {
+    if (!res || res.result !== 'ok' || !Array.isArray(res.games) || res.games.length === 0) {
       container.innerHTML = '<div class="panel">目前沒有賽事</div>';
       return;
     }
 
-    const range = document.querySelector('input[name="range"]:checked')?.value || 'all';
-    const showExpired = document.getElementById('showExpired')?.checked || false;
-    const keyword = document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
+    const range =
+      document.querySelector('input[name="range"]:checked')?.value || 'all';
+    const showExpired =
+      document.getElementById('showExpired')?.checked || false;
+    const keyword =
+      document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
 
-    // ✅ 先正規化資料
-    const games = res.games.map(g => {
-      return {
-        ...g,
-        _date: normalizeDate(g.date),
-        _time: normalizeTime(g.time)
-      };
-    });
+    // 正規化資料
+    const games = res.games.map(g => ({
+      ...g,
+      _date: normalizeDate(g.date),
+      _time: normalizeTime(g.time)
+    }));
 
-    // ✅ 排序
+    // 日期時間排序
     games.sort((a, b) => {
       return new Date(a._date + 'T' + a._time) - new Date(b._date + 'T' + b._time);
     });
 
-    // ✅ 依 yyyy-mm 分組
+    // 依年月分組
     const groups = {};
 
     games.forEach(g => {
 
       if (keyword) {
         const hit = [
-          g.tournament, g.field, g.home_team, g.away_team
+          g.tournament, g.field, g.home_team, g.away_team, g.category
         ].some(v => (v || '').toLowerCase().includes(keyword));
         if (!hit) return;
       }
 
-      const gameDateTime = new Date(g._date + 'T' + g._time);
-      const expired = gameDateTime < new Date();
+      const gameDT = new Date(g._date + 'T' + g._time);
+      const expired = gameDT < new Date();
 
       if (expired && !showExpired) return;
 
@@ -182,7 +205,7 @@ function loadGames() {
       groups[ymKey].push({ ...g, expired });
     });
 
-    // ✅ 顯示
+    // 輸出畫面
     Object.keys(groups).sort().forEach(ym => {
 
       const [year, month] = ym.split('-');
@@ -191,19 +214,38 @@ function loadGames() {
       let html = '';
       html += '<div class="panel">';
       html += `<div class="month-title">📅 ${year} 年 ${month} 月</div>`;
-      html += '<table>';
-      html += '<tr><th>日期</th><th>時間</th><th>賽事</th><th>場地</th><th>主隊</th><th>客隊</th><th>操作</th></tr>';
+      html += '<table class="styled-table">';
+      html += '<thead><tr>';
+
+      html += '<th>日期</th>';
+      html += '<th>時間</th>';
+      html += '<th>分鐘</th>';
+      html += '<th>賽事名稱</th>';
+      html += '<th>組別</th>';
+      html += '<th>場地</th>';
+      html += '<th>客隊</th>';
+      html += '<th>主隊</th>';
+      html += '<th>裁判數</th>';
+      html += '<th>站位方式</th>';
+      html += '<th>操作</th>';
+
+      html += '</tr></thead><tbody>';
 
       list.forEach(g => {
+
         if (g.expired) {
           html += `
             <tr class="expired">
               <td>${g._date}</td>
               <td>${g._time}</td>
+              <td>${g.duration || ''}</td>
               <td>${g.tournament || ''}</td>
+              <td>${g.category || ''}</td>
               <td>${g.field || ''}</td>
-              <td>${g.home_team || ''}</td>
               <td>${g.away_team || ''}</td>
+              <td>${g.home_team || ''}</td>
+              <td>${g.umpire_count}</td>
+              <td>${positionModeText(g.position_mode)}</td>
               <td class="finished">已完賽</td>
             </tr>`;
         } else {
@@ -211,21 +253,36 @@ function loadGames() {
             <tr>
               <td><input type="date" value="${g._date}" onchange="updateGame('${g.game_id}','date',this.value)"></td>
               <td><input type="time" value="${g._time}" onchange="updateGame('${g.game_id}','time',this.value)"></td>
+              <td><input type="number" value="${g.duration || ''}" onchange="updateGame('${g.game_id}','duration',this.value)"></td>
               <td><input value="${g.tournament || ''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
+              <td><input value="${g.category || ''}" onchange="updateGame('${g.game_id}','category',this.value)"></td>
               <td><input value="${g.field || ''}" onchange="updateGame('${g.game_id}','field',this.value)"></td>
-              <td><input value="${g.home_team || ''}" onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
               <td><input value="${g.away_team || ''}" onchange="updateGame('${g.game_id}','away_team',this.value)"></td>
-              <td><button class="delete-btn" onclick="deleteGame('${g.game_id}')">刪除</button></td>
+              <td><input value="${g.home_team || ''}" onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
+              <td>
+                <select onchange="updateGame('${g.game_id}','umpire_count',this.value)">
+                  ${[0,1,2,3,4].map(n =>
+                    `<option value="${n}" ${Number(g.umpire_count)===n?'selected':''}>${n}</option>`
+                  ).join('')}
+                </select>
+              </td>
+              <td>${positionModeText(g.position_mode)}</td>
+              <td>
+                <button class="delete-btn" onclick="deleteGame('${g.game_id}')">刪除</button>
+              </td>
             </tr>`;
         }
+
       });
 
-      html += '</table></div>';
+      html += '</tbody></table></div>';
       container.insertAdjacentHTML('beforeend', html);
     });
 
   });
+
 }
+
 
 //
 function updateGame(id,f,v){
