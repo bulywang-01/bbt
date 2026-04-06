@@ -232,8 +232,16 @@ document.getElementById('rangeMonth').addEventListener('change', function () {
 
       const gameDT = new Date(g._date + 'T' + g._time);
       const expired = gameDT < new Date();
-
+      
+      // 已完成的顯示控制
       if (expired && !showExpired) return;
+      
+      // 只有「未完成」才套用本週 / 本月
+      if (!expired) {
+        if (range === 'week' && !isInThisWeek(gameDT)) return;
+        if (range === 'month' && !isInThisMonth(gameDT)) return;
+      }
+
 
       const year = g._date.slice(0, 4);
       const month = g._date.slice(5, 7);
