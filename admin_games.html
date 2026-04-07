@@ -584,6 +584,11 @@ function previewImport(){
   //確認匯入資料
 function confirmImport() {
 
+  if (!importRows || !importRows.length) {
+    alert('沒有可匯入的資料');
+    return;
+  }
+
   showLoading('賽事匯入中，請稍候…');
 
   callApi({
@@ -595,9 +600,12 @@ function confirmImport() {
 
     if (res && res.result === 'ok') {
       alert(`✅ 成功匯入 ${res.count} 筆賽事`);
+      importRows = [];
+      document.getElementById('importPreview').innerHTML = '';
+      document.getElementById('confirmImportBtn').style.display = 'none';
       loadGames();
     } else {
-      alert('❌ 匯入失敗');
+      alert('❌ 匯入失敗，請稍後再試');
     }
 
   });
