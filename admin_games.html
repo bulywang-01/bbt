@@ -292,18 +292,189 @@ function callApiPost(payload){
 }
 
 /* ========= 載入賽事 ========= */
-function loadGames(){
+// 裁入賽事資料
+
+function loadGames() {
+
   showLoading('賽事資料載入中...');
-  callApiPost({action:'getGames'})
-    .then(res=>{
-      if(!res||res.result!=='ok'){
-        document.getElementById('gamesContainer').innerHTML='資料讀取失敗';
+  // callApi({ action: 'getGames' }, function (res) 
+  
+  callApiPost({ action: 'getGames' })
+    .then(res => {
+      if (!res || res.result !== 'ok') {
+        document.getElementById('gamesContainer').innerHTML = '資料讀取失敗';
         return;
       }
-      renderGames(res.games||[]);
-    })
-    .finally(hideLoading);
-}
+
+    try {
+        const container = document.getElementById('gamesContainer');
+        container.innerHTML = '';
+    
+        if (!res || res.result !== 'ok' || !Array.isArray(res.games) || res.games.length === 0) {
+          container.innerHTML = '<div class="panel">目前沒有賽事</div>';
+          return;
+        }
+    
+        //const range =
+        //  document.querySelector('input[name="range"]:checked')?.value || 'all';
+    
+        const range = currentRange;
+        
+        document.getElementById('rangeAll').addEventListener('change', function () {
+      if (this.checked) {
+        currentRange = 'all';
+        loadGames();
+      }
+    });
+    
+    document.getElementById('rangeWeek').addEventListener('change', function () {
+      if (this.checked) {
+        currentRange = 'week';
+        loadGames();
+      }
+    });
+    
+    document.getElementById('rangeMonth').addEventListener('change', function () {
+      if (this.checked) {
+        currentRange = 'month';
+        loadGames();
+      }
+    });
+    
+        const showExpired =
+          document.getElementById('showExpired')?.checked || false;
+        const keyword =
+          document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
+    
+        // 正規化資料
+        const games = res.games.map(g => ({
+          ...g,
+          _date: normalizeDate(g.date),
+          _time: normalizeTime(g.time)
+        }));
+    
+        // 日期時間排序
+        games.sort((a, b) => {
+          return new Date(a._date + 'T' + a._time) - new Date(b._date + 'T' + b._time);
+        });
+    
+        // 依年月分組
+        const groups = {};
+    
+        games.forEach(g => {
+    
+          if (keyword) {
+            const hit = [
+              g.tournament, g.field, g.home_team, g.away_team, g.category
+            ].some(v => (v || '').toLowerCase().includes(keyword));
+            if (!hit) return;
+          }
+    
+          const gameDT = new Date(g._date + 'T' + g._time);
+          const expired = gameDT < new Date();
+          
+          // 已完成的顯示控制
+          if (expired && !showExpired) return;
+          
+          // 只有「未完成」才套用本週 / 本月
+          if (!expired) {
+            if (range === 'week' && !isInThisWeekByDateStr(g._date)) return;
+            if (range === 'month' && !isInThisMonthByDateStr(g._date)) return;
+          }
+    
+          const year = g._date.slice(0, 4);
+          const month = g._date.slice(5, 7);
+          const ymKey = year + '-' + month;
+    
+          if (!groups[ymKey]) groups[ymKey] = [];
+          groups[ymKey].push({ ...g, expired });
+        });
+    
+        // 輸出畫面
+        Object.keys(groups).sort().forEach(ym => {
+    
+          const [year, month] = ym.split('-');
+          const list = groups[ym];
+    
+          let html = '';
+          html += '<div class="panel">';
+          html += `<div class="month-title">📅 ${year} 年 ${month} 月</div>`;
+          html += '<table class="styled-table">';
+          html += '<thead><tr>';
+    
+          html += '<th>日期</th>';
+          html += '<th>時間</th>';
+          html += '<th>比賽時間長度</th>';
+          html += '<th>賽事名稱</th>';
+          html += '<th>組別</th>';
+          html += '<th>場地</th>';
+          html += '<th>客隊(三壘)</th>';
+          html += '<th>主隊(一壘)</th>';
+          html += '<th>裁判人數</th>';
+          html += '<th>站位選擇方式</th>';
+          html += '<th>操作</th>';
+    
+          html += '</tr></thead><tbody>';
+    
+          list.forEach(g => {
+    
+            if (g.expired) {
+              html += `
+                <tr class="expired">
+                  <td>${g._date}</td>
+                  <td>${g._time}</td>
+                  <td>${g.duration || ''}</td>
+                  <td>${g.tournament || ''}</td>
+                  <td>${g.category || ''}</td>
+                  <td>${g.field || ''}</td>
+                  <td>${g.away_team || ''}</td>
+                  <td>${g.home_team || ''}</td>
+                  <td>${g.umpire_count}</td>
+                  <td>${positionModeText(g.position_mode)}</td>
+                  <td class="finished">已完賽</td>
+                </tr>`;
+            } else {
+              html += `
+                <tr>
+                  <td><input type="date" value="${g._date}" onchange="updateGame('${g.game_id}','date',this.value)"></td>
+                  <td><input type="time" value="${g._time}" onchange="updateGame('${g.game_id}','time',this.value)"></td>
+                  <td><input type="number" value="${g.duration || ''}" onchange="updateGame('${g.game_id}','duration',this.value)"></td>
+                  <td><input value="${g.tournament || ''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
+                  <td><input value="${g.category || ''}" onchange="updateGame('${g.game_id}','category',this.value)"></td>
+                  <td><input value="${g.field || ''}" onchange="updateGame('${g.game_id}','field',this.value)"></td>
+                  <td><input value="${g.away_team || ''}" onchange="updateGame('${g.game_id}','away_team',this.value)"></td>
+                  <td><input value="${g.home_team || ''}" onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
+                  <td>
+                    <select onchange="updateGame('${g.game_id}','umpire_count',this.value)">
+                      ${[0,1,2,3,4].map(n =>
+                        `<option value="${n}" ${Number(g.umpire_count)===n?'selected':''}>${n}</option>`
+                      ).join('')}
+                    </select>
+                  </td>
+                  <td>${positionModeText(g.position_mode)}</td>
+                  <td>
+                    <button class="delete-btn" onclick="deleteGame('${g.game_id}')">刪除</button>
+                  </td>
+                </tr>`;
+            }
+          });
+    
+          html += '</tbody></table></div>';
+          container.insertAdjacentHTML('beforeend', html);
+        });
+      
+        if (Object.keys(groups).length === 0) {
+          container.innerHTML = '<div class="panel">本範圍沒有賽事</div>';
+          return;
+        }
+      
+    } finally {
+      hideLoading();
+    }
+  
+  // }); //callAPI
+    }
+} //原本的結束點
 
 function renderGames(games){
   const container=document.getElementById('gamesContainer');
