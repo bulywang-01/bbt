@@ -12,10 +12,11 @@ function callApi(params, callback) {
   const script = document.createElement('script');
   script.src = API_URL + '?' + qs.toString();
 
-  let called = false;
+  let finished = false;
 
   window[cbname] = function (res) {
-    called = true;
+    if (finished) return;
+    finished = true;
     try {
       callback(res);
     } finally {
@@ -24,20 +25,12 @@ function callApi(params, callback) {
     }
   };
 
+  // ✅ 登入用 callApi：錯誤「只清理，不 callback」
   script.onerror = function () {
     console.warn('JSONP load warning:', script.src);
-
-    // ✅ 核心：一定要呼叫 callback
-    if (!called) {
-      called = true;
-      callback({
-        result: 'error',
-        message: 'jsonp_load_failed'
-      });
-    }
-
     delete window[cbname];
     script.remove();
+    // ❌ 不要 callback({result:'error'})
   };
 
   document.head.appendChild(script);
