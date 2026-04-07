@@ -133,6 +133,11 @@
       margin-bottom: 16px;
     }
 
+    /* ===== 匯入功能開關 ===== */
+    #importPanel {
+      display: none;
+    }
+
   </style>
 </head>
 
@@ -176,7 +181,7 @@
 <div id="gamesContainer"></div>
 
 <!-- 匯入 -->
-<div class="panel">
+<div class="panel" id="importPanel">
   <h3>📥 匯入賽事（Excel）</h3>
   <input type="file" id="importFile" accept=".xlsx">
   <button onclick="previewImport()">預覽</button>
@@ -245,6 +250,14 @@
       </table>
   </pre>
 </div>
+</div>
+
+<div class="filter-bar">
+  <button
+  style="margin-left:auto"
+  onclick="addNewGameRow()">
+  ＋ 新增賽事
+</button>
 
 </div>
 
@@ -684,42 +697,97 @@ function previewImport(){
   hideLoading();
 }
 
-// 匯入賽事資料
+// 新增賽事
+  function addNewGameRow() {
 
-  //確認匯入資料
-/*
-function confirmImport() {
-
-  if (!importRows || !importRows.length) {
-    alert('沒有可匯入的資料');
+  const tbody = document.querySelector('.styled-table tbody');
+  if (!tbody) {
+    alert('請先載入賽事列表');
     return;
   }
 
-  showLoading('賽事匯入中，請稍候…');
+  // 防止一次新增多筆
+  if (document.getElementById('newGameRow')) {
+    alert('請先儲存目前的新賽事');
+    return;
+  }
 
-  callApi({
-    action: 'importGames',
-    rows: JSON.stringify(importRows)
-  }, function (res) {
+  const tr = document.createElement('tr');
+  tr.id = 'newGameRow';
 
-    hideLoading();
+  tr.innerHTML = `
+    <td><input type="date" id="ng_date"></td>
+    <td><input type="time" id="ng_time"></td>
+    <td><input type="number" id="ng_duration" value="90"></td>
+    <td><input id="ng_tournament"></td>
+    <td><input id="ng_category"></td>
+    <td><input id="ng_field"></td>
+    <td><input id="ng_away"></td>
+    <td><input id="ng_home"></td>
+    <td>
+      <select id="ng_umpires">
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2" selected>2</option>
+        <option value="3">3</option>
+      </select>
+    </td>
+    <td>
+      <select id="ng_position">
+        <option value="allow_select">自行選</option>
+        <option value="auto_only">系統排</option>
+      </select>
+    </td>
+    <td>
+      <button onclick="saveNewGame()">儲存</button>
+      <button onclick="cancelNewGame()">取消</button>
+    </td>
+  `;
 
-    if (res && res.result === 'ok') {
-      alert(`✅ 成功匯入 ${res.count} 筆賽事`);
-      importRows = [];
-      document.getElementById('importPreview').innerHTML = '';
-      document.getElementById('confirmImportBtn').style.display = 'none';
+  tbody.prepend(tr);
+}
+
+// 取消新增
+function cancelNewGame() {
+  const tr = document.getElementById('newGameRow');
+  if (tr) tr.remove();
+}
+
+// 儲存
+function saveNewGame() {
+
+  const data = {
+    action: 'createGame',
+    date: document.getElementById('ng_date').value,
+    time: document.getElementById('ng_time').value,
+    duration: document.getElementById('ng_duration').value,
+    tournament: document.getElementById('ng_tournament').value,
+    category: document.getElementById('ng_category').value,
+    field: document.getElementById('ng_field').value,
+    away_team: document.getElementById('ng_away').value,
+    home_team: document.getElementById('ng_home').value,
+    umpire_count: document.getElementById('ng_umpires').value,
+    position_mode: document.getElementById('ng_position').value
+  };
+
+  // 最基本驗證
+  if (!data.date || !data.time || !data.field) {
+    alert('日期、時間、場地必填');
+    return;
+  }
+
+  callApi(data, function (res) {
+    if (res.result === 'ok') {
+      alert('✅ 新增賽事成功');
       loadGames();
     } else {
-      alert('❌ 匯入失敗，請稍後再試');
+      alert('❌ 新增失敗');
     }
-
   });
-
 }
-*/
-
-// Test
+  
+// 匯入賽事資料
+// 確認匯入
 function confirmImport() {
 
   if (!importRows || !importRows.length) {
