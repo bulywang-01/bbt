@@ -315,36 +315,31 @@ function loadGames() {
           return;
         }
     
-        //const range =
-        //  document.querySelector('input[name="range"]:checked')?.value || 'all';
-    
         const range = currentRange;
         
         document.getElementById('rangeAll').addEventListener('change', function () {
-      if (this.checked) {
-        currentRange = 'all';
-        loadGames();
-      }
-    });
+          if (this.checked) {
+            currentRange = 'all';
+            loadGames();
+            }
+        });  
     
-    document.getElementById('rangeWeek').addEventListener('change', function () {
-      if (this.checked) {
-        currentRange = 'week';
-        loadGames();
-      }
-    });
+        document.getElementById('rangeWeek').addEventListener('change', function () {
+          if (this.checked) {
+            currentRange = 'week';
+            loadGames();
+            }
+        });
+        
+        document.getElementById('rangeMonth').addEventListener('change', function () {
+          if (this.checked) {
+            currentRange = 'month';
+            loadGames();
+            }
+        });
     
-    document.getElementById('rangeMonth').addEventListener('change', function () {
-      if (this.checked) {
-        currentRange = 'month';
-        loadGames();
-      }
-    });
-    
-        const showExpired =
-          document.getElementById('showExpired')?.checked || false;
-        const keyword =
-          document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
+        const showExpired = document.getElementById('showExpired')?.checked || false;
+        const keyword = document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
     
         // 正規化資料
         const games = res.games.map(g => ({
