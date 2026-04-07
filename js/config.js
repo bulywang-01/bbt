@@ -34,10 +34,11 @@ function callApi(params, callback) {
 }
 
 function jsonOutput(obj, callback) {
-
-  const cb = callback || 'callback';
+  if (!callback) {
+    throw new Error('Missing JSONP callback');
+  }
 
   return ContentService
-    .createTextOutput(`${cb}(${JSON.stringify(obj)})`)
+    .createTextOutput(`${callback}(${JSON.stringify(obj)})`)
     .setMimeType(ContentService.MimeType.JAVASCRIPT);
 }
