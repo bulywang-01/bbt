@@ -5,147 +5,252 @@
 <title>裁判報名</title>
 
 <style>
-body{margin:0;font-family:system-ui;background:#f5f6f8}
-.header{display:flex;justify-content:space-between;align-items:center;
- padding:12px 20px;background:#ffffff;border-bottom:1px solid #ddd}
-.nav a{margin-right:16px;color:#0066cc;text-decoration:none;font-weight:500}
-.main{padding:20px}
-.panel{background:#fff;padding:16px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:#f5f6f8;
+}
 
-table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px}
-th,td{border:1px solid #dcdcdc;padding:6px 8px;text-align:center}
-th{background:#eef2f6}
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#ffffff;
+  border-bottom:1px solid #ddd;
+}
+.nav a{
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500;
+}
+.user-box a{
+  margin-left:12px;
+  color:#c00;
+  text-decoration:none;
+}
 
-.badge{padding:2px 10px;border-radius:999px;font-size:13px;background:#2c7be5;color:#fff}
-.badge.me{background:#ffd6e5;color:#0f3d5e}
-.badge.gray{background:#999}
+.main{ padding:20px }
 
-label{cursor:pointer;white-space:nowrap}
-button{padding:8px 16px}
+.panel{
+  background:#fff;
+  padding:16px;
+  border-radius:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+  margin-bottom:24px;
+}
+
+h2{ margin-top:0 }
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  font-size:14px;
+}
+th,td{
+  border:1px solid #dcdcdc;
+  padding:6px 8px;
+  text-align:center;
+}
+th{
+  background:#eef2f6;
+}
+
+.badge{
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:13px;
+  display:inline-block;
+  background:#2c7be5;
+  color:#fff;
+}
+.badge.me{
+  background:#ffd6e5;
+  color:#0f3d5e;
+}
+.badge.gray{
+  background:#999;
+}
+.badge.na{
+  background:#000;
+  color:#fff;
+}
+
+button{
+  padding:8px 16px;
+  margin-top:16px;
+}
 </style>
 </head>
 
 <body>
 
+<!-- ===== Header（先 inline，確保穩定） ===== -->
 <div class="header">
   <div class="nav">
-    <a href="index.html">🏠 首頁</a>
-    <a href="judge_dashboard.html"><b>🧑‍⚖️ 裁判報名</b></a>
+    <a href="index.html">🏠 系統首頁</a>
+    <a href="judge_dashboard.html">📋 裁判報名</a>
   </div>
-  <div>
-    <b id="u_name"></b>
-    <a href="#" style="margin-left:12px;color:#c00" onclick="logout()">登出</a>
+  <div class="user-box">
+    <span id="u_name"></span>
+    <a href="#" onclick="logout()">登出</a>
   </div>
 </div>
 
 <div class="main">
-<h2>裁判報名</h2>
+  <h2>裁判報名</h2>
 
-<div class="panel">
-<table>
-<thead>
-<tr>
-  <th>日期</th>
-  <th>時間</th>
-  <th>組別</th>
-  <th>客隊</th>
-  <th>主隊</th>
-  <th>地點</th>
-  <th>裁判制</th>
-  <th>主審</th>
-  <th>一壘</th>
-  <th>二壘</th>
-  <th>三壘</th>
-</tr>
-</thead>
-<tbody id="gameBody">
-<tr><td colspan="11">載入中…</td></tr>
-</tbody>
-</table>
+  <div id="content"></div>
 
-<button onclick="submitSignup()">送出報名</button>
-</div>
+  <button onclick="submitSignup()">送出報名</button>
 </div>
 
+<!-- 共用 API -->
 <script src="js/config.js"></script>
-<script>
-const today=new Date();today.setHours(0,0,0,0);
 
-document.addEventListener('DOMContentLoaded',()=>{
-  const s=JSON.parse(localStorage.getItem('session_user')||'{}');
-  if(!s.user_id){location.href='login.html';return;}
-  document.getElementById('u_name').textContent=s.name||'';
+<script>
+let allGames = [];
+
+/* ===== 初始化 ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!session.user_id) {
+    location.replace('login.html');
+    return;
+  }
+  document.getElementById('u_name').textContent = session.name || '';
   loadGames();
 });
 
-function callApi(q,cb){
-  const f='cb_'+Date.now();
-  window[f]=r=>{delete window[f];cb(r)};
-  const s=document.createElement('script');
-  s.src=API_URL+'?'+q+'&callback='+f;
-  document.body.appendChild(s);
-}
+/* ===== 讀取可報名賽事 ===== */
+function loadGames() {
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
 
-function needRole(n,r){
-  if(n>=4)return true;
-  if(n===3)return r!=='U2';
-  if(n===2)return r==='PU'||r==='U1';
-  if(n===1)return r==='PU';
-  return false;
-}
-
-function renderCell(g,r){
-  if(!needRole(g.need_count,r))
-    return '<span class="badge gray">不需要</span>';
-
-  const name=(g.occupied_positions||{})[r];
-  if(name){
-    const cls=g.my_position===r?'badge me':'badge';
-    return `<span class="${cls}">${name}</span>`;
-  }
-  return `<label><input type="radio" name="pos_${g.game_id}" value="${r}"> ${r}</label>`;
-}
-
-function loadGames(){
-callApi('action=getSignableGames',res=>{
-  const body=document.getElementById('gameBody');
-  body.innerHTML='';
-  res.games
-    .filter(g=>{const d=new Date(g.date);d.setHours(0,0,0,0);return d>=today})
-    .forEach(g=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${g.date}</td>
-        <td>${g.time_range}</td>
-        <td>${g.category}</td>
-        <td>${g.away_team}</td>
-        <td>${g.home_team}</td>
-        <td>${g.field}</td>
-        <td>${g.need_count}人制</td>
-        <td>${renderCell(g,'PU')}</td>
-        <td>${renderCell(g,'U1')}</td>
-        <td>${renderCell(g,'U2')}</td>
-        <td>${renderCell(g,'U3')}</td>`;
-      body.appendChild(tr);
-    });
-});
-}
-
-function submitSignup(){
-  const sel=[];
-  document.querySelectorAll('input[type=radio]:checked')
-    .forEach(r=>sel.push(r.name.replace('pos_','')+':'+r.value));
-  if(!sel.length){alert('尚未選擇站位');return;}
   callApi(
-    'action=judgeSignupByGames&games_with_position='+encodeURIComponent(sel.join(',')),
-    ()=>{alert('報名完成');loadGames();}
+    {
+      action: 'getSignableGames',
+      user_id: session.user_id
+    },
+    res => {
+      if (!res || res.result !== 'ok') {
+        alert(res && res.message ? res.message : '無法取得賽事資訊');
+        return;
+      }
+      allGames = res.games || [];
+      render();
+    }
   );
 }
 
-function logout(){
+/* ===== 畫面渲染 ===== */
+function render() {
+  const box = document.getElementById('content');
+  box.innerHTML = '';
+
+  if (allGames.length === 0) {
+    box.innerHTML = '<div class="panel">目前沒有可報名賽事</div>';
+    return;
+  }
+
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+
+  const table = document.createElement('table');
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>日期</th>
+        <th>時間</th>
+        <th>組別</th>
+        <th>客隊</th>
+        <th>主隊</th>
+        <th>場地</th>
+        <th>站位</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  `;
+
+  const tbody = table.querySelector('tbody');
+
+  allGames.forEach(g => {
+    const tr = document.createElement('tr');
+
+    let posHtml = '';
+    const roles = ['PU','U1','U2','U3'];
+
+    roles.forEach(r => {
+      if (g.need_count === 1 && r !== 'PU') return;
+      if (g.need_count === 2 && !['PU','U1'].includes(r)) return;
+      if (g.need_count === 3 && r === 'U2') return;
+
+      if (g.occupied_positions && g.occupied_positions[r]) {
+        const cls = g.my_position === r ? 'badge me' : 'badge';
+        posHtml += `<div class="${cls}">${r}:${g.occupied_positions[r]}</div>`;
+      } else if (g.my_position === r) {
+        posHtml += `<div class="badge me">${r}:我</div>`;
+      } else {
+        posHtml += `
+          <label>
+            <input type="radio" name="pos_${g.game_id}" value="${r}">
+            ${r}
+          </label><br>
+        `;
+      }
+    });
+
+    tr.innerHTML = `
+      <td>${g.date}</td>
+      <td>${g.time_range}</td>
+      <td>${g.category || ''}</td>
+      <td>${g.away_team || ''}</td>
+      <td>${g.home_team || ''}</td>
+      <td>${g.field || ''}</td>
+      <td>${posHtml}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  panel.appendChild(table);
+  box.appendChild(panel);
+}
+
+/* ===== 送出報名 ===== */
+function submitSignup() {
+  const sel = [];
+  document.querySelectorAll('input[type=radio]:checked')
+    .forEach(r => sel.push(r.name.replace('pos_','') + ':' + r.value));
+
+  if (!sel.length) {
+    alert('尚未選擇站位');
+    return;
+  }
+
+  callApi(
+    {
+      action: 'judgeSignupByGames',
+      games_with_position: sel.join(',')
+    },
+    res => {
+      if (res && res.result === 'ok') {
+        alert('報名完成');
+        loadGames();
+      } else {
+        alert(res && res.message ? res.message : '報名失敗');
+      }
+    }
+  );
+}
+
+/* ===== 登出 ===== */
+function logout() {
   localStorage.clear();
-  location.href='login.html';
+  location.replace('login.html');
 }
 </script>
+
 </body>
 </html>
