@@ -85,6 +85,15 @@ function doLogin() {
     return;
   }
 
+  let finished = false;
+
+  // ✅ 逾時保護：3 秒沒回應 = 系統連線問題
+  const timer = setTimeout(() => {
+    if (finished) return;
+    finished = true;
+    msg.textContent = '系統連線失敗，請稍後再試';
+  }, 3000);
+
   callApi(
     {
       action: 'login',
@@ -92,31 +101,45 @@ function doLogin() {
       password: p
     },
     res => {
+
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+
+      // ✅ 調試用（現在可以留著）
+      console.log('🧪 login response =', res);
+
       if (!res || !res.result) {
         msg.textContent = '系統錯誤';
         return;
       }
 
       if (res.result === 'ok') {
-        localStorage.setItem('session_user', JSON.stringify({
-          user_id: res.user_id,
-          username: res.username,
-          name: res.name,
-          role: res.role,
-          token: res.token
-        }));
+        localStorage.setItem(
+          'session_user',
+          JSON.stringify({
+            user_id: res.user_id,
+            username: res.username,
+            name: res.name,
+            role: res.role,
+            token: res.token
+          })
+        );
         location.replace('index.html');
         return;
       }
 
       if (res.result === 'must_change_password') {
-        localStorage.setItem('session_user', JSON.stringify({
-          user_id: res.user_id,
-          username: res.username,
-          name: res.name,
-          role: res.role,
-          token: res.token
-        }));
+        localStorage.setItem(
+          'session_user',
+          JSON.stringify({
+            user_id: res.user_id,
+            username: res.username,
+            name: res.name,
+            role: res.role,
+            token: res.token
+          })
+        );
         location.replace('change_password.html');
         return;
       }
@@ -126,6 +149,7 @@ function doLogin() {
         return;
       }
 
+      // ✅ 只有「後端真的說失敗」才走這裡
       msg.textContent = '登入失敗';
     }
   );
