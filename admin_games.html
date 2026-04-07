@@ -740,25 +740,31 @@ function confirmImport() {
 
   fetch(API_URL, {
     method: 'POST',
-    // ❌ 不要加 Content-Type
+    headers: {
+      // ✅ 注意：這一行一定要有
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
     body: JSON.stringify({
       action: 'importGames',
       rows: importRows
     })
   })
-  .then(res => res.text())   // ⚠️ 只能用 text（no-cors 本質）
+  .then(res => res.text())
   .then(t => {
     hideLoading();
-    console.log('POST raw response =', t);
+    console.log('POST response =', t);
 
-    // GAS 仍會成功寫入，就算這裡拿不到 JSON
-    alert(`✅ 匯入完成（已送出 ${importRows.length} 筆）`);
-    loadGames();
+    if (t === 'ok') {
+      alert(`✅ 匯入成功 ${importRows.length} 筆`);
+      loadGames();
+    } else {
+      alert('❌ 匯入失敗（後端回傳：' + t + '）');
+    }
   })
   .catch(err => {
     hideLoading();
     console.error(err);
-    alert('❌ 匯入失敗');
+    alert('❌ POST 發生錯誤');
   });
 }
 
