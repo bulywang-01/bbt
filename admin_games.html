@@ -1,68 +1,77 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>賽事管理</title>
-
-  <!-- 共用 CSS（一定要是單獨一行，必須有關閉 >） -->
-  <link rel="stylesheet" href="common.css">
-
-  <!-- 頁面內 CSS（一定只能在 <style> 裡） -->
+  <meta charset="UTF-8">
+  <title>賽事管理</title>
   <style>
-
-    .main{padding:20px}
-    .panel{
-      background:#fff;
-      padding:16px;
-      border-radius:6px;
-      box-shadow:0 1px 4px rgba(0,0,0,.08);
-      margin-bottom:24px
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont; background:#f5f6f8; }
+    .main { padding: 20px; }
+    .panel {
+      background: #fff;
+      padding: 14px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      margin-bottom: 16px;
     }
-    .month-title{
-      font-size:18px;
-      font-weight:700;
-      margin-bottom:12px
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
     }
-    .filter-bar{
-      display:flex;
-      flex-wrap:wrap;
-      gap:16px;
-      align-items:center
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
     }
-    table{width:100%;border-collapse:collapse;font-size:14px}
-    th,td{border:1px solid #e0e0e0;padding:6px 8px;text-align:center}
-    th{background:#eef2f6;font-weight:600}
-    tbody tr:nth-child(even){background:#fafafa}
-    tbody tr:hover{background:#f0f6ff}
-    input,select{width:100%;padding:4px;box-sizing:border-box}
-    button{padding:4px 10px;cursor:pointer}
-    .delete-btn{color:#c00}
-    .expired{background:#f3f3f3;color:#888}
-    .finished{font-weight:600;color:#999}
-
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 4px 6px;
+      text-align: center;
+    }
+    th {
+      background: #eef2f6;
+      font-weight: 600;
+    }
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      height: 28px;
+      padding: 2px 4px;
+      box-sizing: border-box;
+      font-size: 13px;
+    }
+    button {
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    .month-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .expired {
+      background: #f3f3f3;
+      color: #888;
+    }
     #loadingOverlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(255,255,255,0.65);
-      display: flex;
-      justify-content: center;
+      inset: 0;
+      background: rgba(255,255,255,.6);
+      display: none;
       align-items: center;
+      justify-content: center;
       z-index: 9999;
     }
-    
     .loading-box {
       background: #fff;
       padding: 24px 32px;
       border-radius: 8px;
       text-align: center;
       box-shadow: 0 4px 12px rgba(0,0,0,.15);
-      font-size: 16px;
-      color: #333;
     }
-    
     .spinner {
       width: 36px;
       height: 36px;
@@ -72,368 +81,195 @@
       margin: 0 auto 12px;
       animation: spin 1s linear infinite;
     }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    /* ===== 表格整體縮小 ===== */
-
-    
-    /* ===== 說明用表格：依內容自動寬度 ===== */
-    .table-auto {
-      width: auto;
-      display: inline-table;
-      table-layout: auto;
-    }
-    
-    /* 欄位不要被強制撐開 */
-    .table-auto th,
-    .table-auto td {
-      white-space: nowrap;
-    }
-
-    .styled-table {
-      font-size: 13px;
-    }
-    
-    .styled-table th,
-    .styled-table td {
-      padding: 4px 6px;
-      line-height: 1.4;
-    }
-    
-    /* ===== 表頭不用那麼厚 ===== */
-    .styled-table th {
-      font-weight: 600;
-    }
-    
-    /* ===== input / select 對齊表格高度 ===== */
-    .styled-table input,
-    .styled-table select {
-      height: 28px;
-      padding: 2px 4px;
-      font-size: 13px;
-      box-sizing: border-box;
-    }
-    
-    /* ===== checkbox / radio 不要撐高列 ===== */
-    .styled-table input[type="checkbox"],
-    .styled-table input[type="radio"] {
-      height: auto;
-    }
-    
-    /* ===== 月份標題縮小一點 ===== */
-    .month-title {
-      font-size: 16px;
-      margin-bottom: 8px;
-    }
-    
-    /* ===== panel 間距縮緊 ===== */
-    .panel {
-      padding: 12px;
-      margin-bottom: 16px;
-    }
-
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 
 <body>
 
-<div id="header-container"></div>
-
 <div class="main">
 
-<!-- 篩選 -->
-<div class="panel">
-  <div class="filter-bar">
+  <!-- 篩選 -->
+  <div class="panel">
+    <div class="filter-bar">
+      <label><input type="radio" name="range" value="all" checked> 全部</label>
+      <label><input type="radio" name="range" value="week"> 本週</label>
+      <label><input type="radio" name="range" value="month"> 本月</label>
+      <label><input type="checkbox" id="showExpired"> 顯示已完成</label>
+      <input id="searchInput" placeholder="搜尋賽事 / 場地 / 球隊">
+    </div>
+  </div>
 
-    <label>
-      <input type="radio" id="rangeAll" name="range" value="all" checked>
-      全部
-    </label>
-    
-    <label>
-      <input type="radio" id="rangeWeek" name="range" value="week">
-      本週
-    </label>
-    
-    <label>
-      <input type="radio" id="rangeMonth" name="range" value="month">
-      本月
-    </label>
+  <!-- 列表 -->
+  <div id="gamesContainer"></div>
 
-    <label>
-      <input type="checkbox" id="showExpired">
-      顯示已完成
-    </label>
+  <!-- 匯入 -->
+  <div class="panel">
+    <h3>📥 匯入賽事（Excel）</h3>
+    <input type="file" id="importFile" accept=".xlsx">
+    <button onclick="previewImport()">預覽</button>
+    <div id="importPreview"></div>
+    <button id="confirmImportBtn" style="display:none" onclick="confirmImport()">確認匯入</button>
+  </div>
 
-    <input
-      id="searchInput"
-      placeholder="搜尋賽事 / 場地 / 球隊"
-    >
+</div>
 
+<!-- Loading -->
+<div id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div id="loadingText">處理中...</div>
   </div>
 </div>
 
-</div>
-
-<div id="gamesContainer"></div>
-
-<!-- 匯入 -->
-<div class="panel">
-  <h3>📥 匯入賽事（Excel）</h3>
-  <input type="file" id="importFile" accept=".xlsx">
-  <button onclick="previewImport()">預覽</button>
-  <div id="importPreview"></div>
-  <button id="confirmImportBtn" style="display:none" onclick="confirmImport()">確認匯入</button>
-  <pre>
-    ✅ <a href="TestExportData.xlsx" download>下載範例檔（Excel）</a>
-    以下為範例說明，請利用 Excel 檔填入完整資料後再匯入，匯入前請先預覽內容，確認資料無誤後再執行匯入動作。
-    
-    date,time,duration,tournament,category,field,away_team,home_team,umpire_count,position_mode
-    2026-04-12,08:30,90,學齡盃,六年級,A球場,三峽,板橋,2,allow_select
-
-      <table class="styled-table table-auto">
-        <thead>
-          <tr>
-            <th>欄位名稱（英文）</th>
-            <th>欄位說明（中文）</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>date</code></td>
-            <td>比賽日期（格式：YYYY-MM-DD）</td>
-          </tr>
-          <tr>
-            <td><code>time</code></td>
-            <td>比賽時間（24 小時制，格式：HH:mm）</td>
-          </tr>
-          <tr>
-            <td><code>duration</code></td>
-            <td>比賽時間長度（單位：分鐘）</td>
-          </tr>
-          <tr>
-            <td><code>tournament</code></td>
-            <td>賽事名稱（例如：學齡盃）</td>
-          </tr>
-          <tr>
-            <td><code>category</code></td>
-            <td>組別（例如：U12／大聯盟）</td>
-          </tr>
-          <tr>
-            <td><code>field</code></td>
-            <td>比賽場地（例如：A 球場）</td>
-          </tr>
-          <tr>
-            <td><code>away_team</code></td>
-            <td>客隊（三壘）名稱</td>
-          </tr>
-          <tr>
-            <td><code>home_team</code></td>
-            <td>主隊（一壘）名稱</td>
-          </tr>
-          <tr>
-            <td><code>umpire_count</code></td>
-            <td>裁判人數（請填數字，如：2，不需要請填 0）</td>
-          </tr>
-          <tr>
-            <td><code>position_mode</code></td>
-            <td>
-              裁判站位方式(輸入英文名稱)：<br>
-              <code>allow_select</code>＝自行選（請直接填這項）<br>
-              <code>auto_only</code>＝系統排
-            </td>
-          </tr>
-        </tbody>
-      </table>
-  </pre>
-</div>
-
-</div>
-
-<form id="importForm" method="POST" target="hiddenFrame">
-  <input type="hidden" name="payload" id="importPayload">
-</form>
-<iframe name="hiddenFrame" style="display:none"></iframe>
-
-<!-- 外部 JS：一行一個 script，一定要成對 -->
+<!-- XLSX -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/config.js"></script>
 
 <script>
-/* ========= 基本工具 ========= */
-// const API_URL = API_URL_POST; // 你在 config.js 裡放的 Web App URL
-let loadingTimer=null;
-
-function showLoading(text){
-  document.getElementById('loadingText').textContent=text||'處理中...';
-  loadingTimer=setTimeout(()=>{document.getElementById('loadingOverlay').style.display='flex'},300);
-}
-function hideLoading(){
-  clearTimeout(loadingTimer);
-  document.getElementById('loadingOverlay').style.display='none';
-}
-
-function normalizeDate(d){
-  const x=new Date(d);return isNaN(x)?'':x.toISOString().slice(0,10)
-}
-function normalizeTime(t){
-  if(/^\d{1,2}:\d{2}$/.test(t)){
-    const [h,m]=t.split(':');return h.padStart(2,'0')+':'+m;
+  /* ===== Loading ===== */
+  let loadingTimer = null;
+  function showLoading(text) {
+    document.getElementById('loadingText').textContent = text || '處理中...';
+    loadingTimer = setTimeout(() => {
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    }, 300);
   }
-  const d=new Date(t);if(isNaN(d))return '';
-  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-}
+  function hideLoading() {
+    clearTimeout(loadingTimer);
+    document.getElementById('loadingOverlay').style.display = 'none';
+  }
 
-/* ========= API ========= */
-function callApiPost(payload) {
-  return fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/plain;charset=utf-8'
-    },
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.text());
-}
+  /* ===== 資料正規化 ===== */
+  function normalizeDate(d) {
+    const x = new Date(d);
+    return isNaN(x) ? '' : x.toISOString().slice(0,10);
+  }
+  function normalizeTime(t) {
+    if (/^\d{1,2}:\d{2}$/.test(t)) {
+      const [h,m] = t.split(':');
+      return h.padStart(2,'0') + ':' + m;
+    }
+    const d = new Date(t);
+    return isNaN(d) ? '' : String(d.getHours()).padStart(2,'0') + ':' +
+      String(d.getMinutes()).padStart(2,'0');
+  }
 
-/* ========= 載入賽事 ========= */
-// 裁入賽事資料
+  /* ===== 載入賽事（GAS 直呼） ===== */
+  function loadGames() {
+    showLoading('賽事資料載入中...');
+    google.script.run
+      .withSuccessHandler(res => {
+        hideLoading();
+        if (!res || res.result !== 'ok') {
+          document.getElementById('gamesContainer').innerHTML =
+            '<div class="panel">資料讀取失敗</div>';
+          return;
+        }
+        renderGames(res.games || []);
+      })
+      .withFailureHandler(err => {
+        hideLoading();
+        alert('載入失敗');
+        console.error(err);
+      })
+      .getGames();
+  }
 
-function loadGames() {
+  function renderGames(games) {
+    const container = document.getElementById('gamesContainer');
+    container.innerHTML = '';
 
-  showLoading('賽事資料載入中...');
-  callApiPost({ action:'getGames' })
-  .then(text => {
-
-    let res;
-    try {
-      res = JSON.parse(text);
-    } catch (e) {
-      console.error('後端回傳不是 JSON：', text);
-      document.getElementById('gamesContainer').innerHTML = '資料讀取失敗';
+    if (!games.length) {
+      container.innerHTML = '<div class="panel">目前沒有賽事</div>';
       return;
     }
 
-    if (!res || res.result !== 'ok') {
-      document.getElementById('gamesContainer').innerHTML = '資料讀取失敗';
-      return;
-    }
+    const range = document.querySelector('input[name="range"]:checked').value;
+    const showExpired = document.getElementById('showExpired').checked;
+    const keyword = document.getElementById('searchInput').value.toLowerCase();
 
-    renderGames(res.games || []);
-  })
-  .finally(hideLoading);
+    const groups = {};
+    games.map(g => ({
+      ...g,
+      _date: normalizeDate(g.date),
+      _time: normalizeTime(g.time)
+    })).forEach(g => {
 
-} //原本的結束點
+      if (keyword && ![g.tournament,g.field,g.home_team,g.away_team]
+        .some(v => (v||'').toLowerCase().includes(keyword))) return;
 
-function renderGames(games){
-  const container=document.getElementById('gamesContainer');
-  container.innerHTML='';
-  if(!games.length){
-    container.innerHTML='<div class="panel">目前沒有賽事</div>';
-    return;
-  }
+      const expired = new Date(g._date + 'T' + g._time) < new Date();
+      if (expired && !showExpired) return;
 
-  const range=document.querySelector('input[name="range"]:checked').value;
-  const showExpired=document.getElementById('showExpired').checked;
-  const keyword=document.getElementById('searchInput').value.toLowerCase();
-
-  const groups={};
-
-  games.map(g=>({...g,_date:normalizeDate(g.date),_time:normalizeTime(g.time)}))
-    .forEach(g=>{
-      if(keyword && ![g.tournament,g.field,g.home_team,g.away_team].some(v=>(v||'').toLowerCase().includes(keyword)))return;
-      const expired=new Date(g._date+'T'+g._time)<new Date();
-      if(expired&&!showExpired)return;
-      const ym=g._date.slice(0,7);
-      (groups[ym]=groups[ym]||[]).push({...g,expired});
+      const ym = g._date.slice(0,7);
+      (groups[ym] = groups[ym] || []).push({...g, expired});
     });
 
-  Object.keys(groups).sort().forEach(ym=>{
-    const [y,m]=ym.split('-');
-    let html=`<div class="panel"><div class="month-title">📅 ${y} 年 ${m} 月</div><table><thead><tr>
-      <th>日期</th><th>時間</th><th>賽事</th><th>場地</th><th>主隊</th><th>客隊</th><th>狀態</th>
-    </tr></thead><tbody>`;
-    groups[ym].forEach(g=>{
-      html+=`<tr class="${g.expired?'expired':''}">
-        <td>${g._date}</td><td>${g._time}</td>
-        <td>${g.tournament||''}</td><td>${g.field||''}</td>
-        <td>${g.home_team||''}</td><td>${g.away_team||''}</td>
-        <td>${g.expired?'已完賽':''}</td></tr>`;
-    });
-    html+='</tbody></table></div>';
-    container.insertAdjacentHTML('beforeend',html);
-  });
-}
+    Object.keys(groups).sort().forEach(ym => {
+      const [y,m] = ym.split('-');
+      let html = `<div class="panel">
+        <div class="month-title">📅 ${y} 年 ${m} 月</div>
+        <table><thead><tr>
+          <th>日期</th><th>時間</th><th>賽事</th><th>場地</th>
+          <th>主隊</th><th>客隊</th><th>狀態</th>
+        </tr></thead><tbody>`;
 
-/* ========= 匯入 ========= */
-let importRows=[];
-
-function previewImport(){
-  const f=document.getElementById('importFile').files[0];
-  if(!f){alert('請選擇檔案');return;}
-  showLoading('解析 Excel 中...');
-  const reader=new FileReader();
-  reader.onload = function (e) {
-
-  const data = new Uint8Array(e.target.result);
-  const wb = XLSX.read(data, { type: 'array' });
-
-  // ✅ 這一行你現在缺少
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-
-  const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-
-  importRows = [];
-
-  // Excel 日期轉換
-  function excelDateToISO(value) {
-    if (typeof value !== 'number') return value || '';
-    const excelEpoch = new Date(1899, 11, 30);
-    const d = new Date(excelEpoch.getTime() + value * 86400000);
-    return d.toISOString().slice(0, 10);
-  }
-
-  // Excel 時間轉換
-  function excelTimeToHHmm(value) {
-    if (typeof value !== 'number') return value || '';
-    const totalMinutes = Math.round(value * 24 * 60);
-    const hh = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
-    const mm = String(totalMinutes % 60).padStart(2, '0');
-    return `${hh}:${mm}`;
-  }
-
-  rawRows.forEach(row => {
-    importRows.push({
-      date: excelDateToISO(row.date),
-      time: excelTimeToHHmm(row.time),
-      duration: row.duration,
-      tournament: row.tournament,
-      category: row.category,
-      field: row.field,
-      away_team: row.away_team,
-      home_team: row.home_team,
-      umpire_count: row.umpire_count,
-      position_mode: row.position_mode
+      groups[ym].forEach(g => {
+        html += `<tr class="${g.expired?'expired':''}">
+          <td>${g._date}</td>
+          <td>${g._time}</td>
+          <td>${g.tournament||''}</td>
+          <td>${g.field||''}</td>
+          <td>${g.home_team||''}</td>
+          <td>${g.away_team||''}</td>
+          <td>${g.expired?'已完賽':''}</td>
+        </tr>`;
       });
-    });
-    
-    document.getElementById('importPreview').innerHTML =
-      '✅ 共 ' + importRows.length + ' 筆';
-    document.getElementById('confirmImportBtn').style.display = 'inline-block';
-    hideLoading();
-  };
-  reader.readAsArrayBuffer(f);
-}
 
-function confirmImport() {
-  if (!importRows.length) {
-    alert('沒有可匯入的資料');
-    return;
+      html += '</tbody></table></div>';
+      container.insertAdjacentHTML('beforeend', html);
+    });
   }
 
+  /* ===== 匯入 ===== */
+  let importRows = [];
+
+  function previewImport() {
+    const f = document.getElementById('importFile').files[0];
+    if (!f) { alert('請選擇檔案'); return; }
+
+    showLoading('解析 Excel 中...');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(sheet, { defval:'' });
+
+      importRows = [];
+      raw.forEach(r => {
+        importRows.push({
+          date: normalizeDate(r.date),
+          time: normalizeTime(r.time),
+          duration: r.duration,
+          tournament: r.tournament,
+          category: r.category,
+          field: r.field,
+          away_team: r.away_team,
+          home_team: r.home_team,
+          umpire_count: r.umpire_count,
+          position_mode: r.position_mode
+        });
+      });
+
+      document.getElementById('importPreview').innerHTML = '✅ 共 ' + importRows.length + ' 筆';
+      document.getElementById('confirmImportBtn').style.display = 'inline-block';
+      hideLoading();
+    };
+    reader.readAsArrayBuffer(f);
+  }
+
+  function confirmImport() {
+    if (!importRows.length) { alert('沒有資料'); return; }
 
     showLoading('賽事匯入中...');
     google.script.run
@@ -455,40 +291,12 @@ function confirmImport() {
         console.error(err);
       })
       .importGames(importRows);
+  }
 
-  input.value = JSON.stringify({
-    action: 'importGames',
-    rows: importRows
+  document.addEventListener('DOMContentLoaded', () => {
+    loadGames();
   });
-
-  form.action = API_URL;   // GAS Web App URL
-  form.submit();
-
-  setTimeout(() => {
-    hideLoading();
-    alert('✅ 匯入已送出，請重新整理確認結果');
-    loadGames();           // 再抓一次清單
-  }, 1500);
-}
-
-function loadHeader(){
-  fetch('header.html').then(r=>r.text()).then(h=>{
-    document.getElementById('header-container').innerHTML=h
-  })
-}
-
-document.addEventListener('DOMContentLoaded',()=>{
-  loadHeader();
-  loadGames();
-});
 </script>
-
-<div id="loadingOverlay">
-  <div class="loading-box">
-    <div class="spinner"></div>
-    <div id="loadingText">處理中...</div>
-  </div>
-</div>
 
 </body>
 </html>
