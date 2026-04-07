@@ -174,7 +174,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 function loadGames() {
   callApi({ action: 'getSignableGames' }, res => {
     if (!res || res.result !== 'ok') {
-      alert(res?.message || '無法取得比賽資料');
+      alert(res.message || '無法取得比賽資料');
+      //alert('無法取得比賽資料');
       return;
     }
     allGames = res.games || [];
