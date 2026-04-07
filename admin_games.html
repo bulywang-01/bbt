@@ -726,6 +726,65 @@ function confirmImport() {
 
 }
 
+// 用POST方式
+function importGamesPost(data) {
+
+  const rows = data.rows;
+  if (!rows || !rows.length) {
+    return outputJSON({
+      result: 'error',
+      msg: 'no data'
+    });
+  }
+
+  const ss = SpreadsheetApp.openById('1utTD1TbwBjiIfOpJhrcUkREztQrQlWoBQhSQb_eI8rk');
+  const sheet = ss.getSheetByName('Games');
+
+  const values = rows.map(r => [
+    Utilities.getUuid(),   // game_id
+    r.date,               // date
+    r.time,               // time
+    r.duration,           // duration
+    r.field,              // field
+    r.tournament,         // tournament
+    r.category,           // category
+    r.away_team,          // away_team
+    r.home_team,          // home_team
+    r.umpire_count,       // umpire_count
+    r.position_mode       // position_mode
+  ]);
+
+  sheet.getRange(
+    sheet.getLastRow() + 1,
+    1,
+    values.length,
+    values[0].length
+  ).setValues(values);
+
+  return outputJSON({
+    result: 'ok',
+    count: values.length
+  });
+}
+
+function getGamesPost() {
+  const ss = SpreadsheetApp.openById('1utTD1TbwBjiIfOpJhrcUkREztQrQlWoBQhSQb_eI8rk');
+  const sheet = ss.getSheetByName('Games');
+
+  const values = sheet.getDataRange().getValues();
+  const headers = values.shift();
+
+  const games = values.map(row => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = row[i]);
+    return obj;
+  });
+
+  return outputJSON({
+    result: 'ok',
+    games
+  });
+}
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadHeader()
