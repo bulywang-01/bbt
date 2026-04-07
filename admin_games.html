@@ -696,6 +696,7 @@ function previewImport(){
 // 匯入賽事資料
 
   //確認匯入資料
+/*
 function confirmImport() {
 
   if (!importRows || !importRows.length) {
@@ -725,16 +726,46 @@ function confirmImport() {
   });
 
 }
+*/
+
+// Test
+  function confirmImport() {
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({
+      action: 'importGames',
+      rows: importRows
+    })
+  })
+  .then(res => res.text())   // 👈 先用 text 看看回什麼
+  .then(t => {
+    console.log('POST 回傳內容 =', t);
+    const res = JSON.parse(t);
+
+    if (res.result === 'ok') {
+      alert(`✅ 匯入成功 ${res.count} 筆`);
+      loadGames();
+    } else {
+      alert('❌ 匯入失敗：' + res.msg);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('❌ POST 發生錯誤');
+  });
+}
 
 // 用POST方式
 function importGamesPost(data) {
 
-  const rows = data.rows;
-  if (!rows || !rows.length) {
-    return outputJSON({
-      result: 'error',
-      msg: 'no data'
-    });
+
+  const rows = data.rows || [];
+  if (!rows.length) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ result:'error', msg:'no data' })
+    ).setMimeType(ContentService.MimeType.JSON);
   }
 
   const ss = SpreadsheetApp.openById('1utTD1TbwBjiIfOpJhrcUkREztQrQlWoBQhSQb_eI8rk');
@@ -758,13 +789,13 @@ function importGamesPost(data) {
     sheet.getLastRow() + 1,
     1,
     values.length,
-    values[0].length
+    11
   ).setValues(values);
 
-  return outputJSON({
-    result: 'ok',
-    count: values.length
-  });
+  return ContentService.createTextOutput(
+    JSON.stringify({ result:'ok', count: values.length })
+  ).setMimeType(ContentService.MimeType.JSON);
+
 }
 
 function getGamesPost() {
