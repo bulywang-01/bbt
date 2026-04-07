@@ -512,6 +512,27 @@ function previewImport(){
       return;
     }
 
+    //日期轉換
+    function excelDateToISO(value) {
+    if (typeof value !== 'number') return value || '';
+  
+    // Excel 的 1 = 1899-12-31
+    const excelEpoch = new Date(1899, 11, 30);
+    const d = new Date(excelEpoch.getTime() + value * 86400000);
+  
+    return d.toISOString().slice(0, 10);
+  }
+    //時間轉換
+    function excelTimeToHHmm(value) {
+    if (typeof value !== 'number') return value || '';
+  
+    const totalMinutes = Math.round(value * 24 * 60);
+    const hh = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
+    const mm = String(totalMinutes % 60).padStart(2, '0');
+  
+    return `${hh}:${mm}`;
+  }
+
     // ✅ 正常：顯示完整預覽表格
     let html = '';
     html += '<div class="panel">';
@@ -529,11 +550,18 @@ function previewImport(){
       html += '<tr>';
       IMPORT_FIELDS.forEach(f => {
 
-        let v = r[f.key];
-
-        if (f.key === 'position_mode') {
-          v = positionModeText(v);
-        }
+    let v = r[f.key];
+    
+    // ✅ Excel 序列轉換
+    if (f.key === 'date') {
+      v = excelDateToISO(v);
+    }
+    if (f.key === 'time') {
+      v = excelTimeToHHmm(v);
+    }
+    if (f.key === 'position_mode') {
+      v = positionModeText(v);
+    }
 
         html += `<td>${v}</td>`;
       });
@@ -551,6 +579,8 @@ function previewImport(){
 }
 
 // 匯入賽事資料
+
+  //確認匯入資料
 function confirmImport() {
 
   showLoading('賽事匯入中，請稍候…');
