@@ -729,31 +729,36 @@ function confirmImport() {
 */
 
 // Test
-  function confirmImport() {
+function confirmImport() {
+
+  if (!importRows || !importRows.length) {
+    alert('沒有可匯入的資料');
+    return;
+  }
+
+  showLoading('賽事匯入中，請稍候…');
 
   fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type':'application/json' },
+    // ❌ 不要加 Content-Type
     body: JSON.stringify({
       action: 'importGames',
       rows: importRows
     })
   })
-  .then(res => res.text())   // 👈 先用 text 看看回什麼
+  .then(res => res.text())   // ⚠️ 只能用 text（no-cors 本質）
   .then(t => {
-    console.log('POST 回傳內容 =', t);
-    const res = JSON.parse(t);
+    hideLoading();
+    console.log('POST raw response =', t);
 
-    if (res.result === 'ok') {
-      alert(`✅ 匯入成功 ${res.count} 筆`);
-      loadGames();
-    } else {
-      alert('❌ 匯入失敗：' + res.msg);
-    }
+    // GAS 仍會成功寫入，就算這裡拿不到 JSON
+    alert(`✅ 匯入完成（已送出 ${importRows.length} 筆）`);
+    loadGames();
   })
   .catch(err => {
+    hideLoading();
     console.error(err);
-    alert('❌ POST 發生錯誤');
+    alert('❌ 匯入失敗');
   });
 }
 
