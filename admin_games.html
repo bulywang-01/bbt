@@ -253,6 +253,11 @@
 
 </div>
 
+<form id="importForm" method="POST" target="hiddenFrame">
+  <input type="hidden" name="payload" id="importPayload">
+</form>
+<iframe name="hiddenFrame" style="display:none"></iframe>
+
 <!-- 外部 JS：一行一個 script，一定要成對 -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="js/config.js"></script>
@@ -423,28 +428,30 @@ function previewImport(){
   reader.readAsArrayBuffer(f);
 }
 
-function confirmImport(){
-  if(!importRows.length){alert('沒有資料');return;}
+function confirmImport() {
+  if (!importRows.length) {
+    alert('沒有可匯入的資料');
+    return;
+  }
+
   showLoading('賽事匯入中...');
-  fetch(API_URL,{
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:'importGames',rows:importRows})
-  })
-  .then(r=>r.text())
-  .then(t=>{
+
+  const form = document.getElementById('importForm');
+  const input = document.getElementById('importPayload');
+
+  input.value = JSON.stringify({
+    action: 'importGames',
+    rows: importRows
+  });
+
+  form.action = API_URL;   // GAS Web App URL
+  form.submit();
+
+  setTimeout(() => {
     hideLoading();
-    if(t==='ok'){
-      alert('✅ 匯入成功');
-      importRows=[];
-      document.getElementById('importPreview').innerHTML='';
-      document.getElementById('confirmImportBtn').style.display='none';
-      loadGames();
-    }else{
-      alert('❌ 匯入失敗: '+t);
-    }
-  })
-  .catch(()=>{hideLoading();alert('匯入錯誤');});
+    alert('✅ 匯入已送出，請重新整理確認結果');
+    loadGames();           // 再抓一次清單
+  }, 1500);
 }
 
 function loadHeader(){
