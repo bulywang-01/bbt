@@ -75,62 +75,81 @@ button{
 /**
  * 執行登入
  */
-function doGet(e) {
-  const action = (e && e.parameter && e.parameter.action) || '';
-  let result;
+function doLogin() {
+  const u = username.value.trim();
+  const p = password.value.trim();
+  msg.textContent = '';
 
-  try {
-    switch (action) {
+  if (!u || !p) {
+    msg.textContent = '請輸入帳號與密碼';
+    return;
+  }
 
-      case 'login':
-        result = api_login(e);
-        break;
+  let finished = false;
 
-      case 'getSignableGames':
-        result = api_getSignableGames(e);
-        break;
+  const timer = setTimeout(() => {
+    if (finished) return;
+    finished = true;
+    msg.textContent = '系統連線失敗，請稍後再試';
+  }, 3000);
 
-      case 'judgeSignupByGames':
-        result = api_judgeSignupByGames(e);
-        break;
+  callApi(
+    {
+      action: 'login',
+      username: u,
+      password: p
+    },
+    res => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
 
-      case 'ping':
-        result = {
-          result: 'ok',
-          message: 'pong',
-          time: new Date().toISOString()
-        };
-        break;
+      console.log('🧪 login response =', res);
 
-      default:
-        result = {
-          result: 'error',
-          message: 'unknown_action'
-        };
+      if (!res || !res.result) {
+        msg.textContent = '系統錯誤';
+        return;
+      }
+
+      if (res.result === 'ok') {
+        localStorage.setItem(
+          'session_user',
+          JSON.stringify({
+            user_id: res.user_id,
+            username: res.username,
+            name: res.name,
+            role: res.role,
+            token: res.token
+          })
+        );
+        location.replace('index.html');
+        return;
+      }
+
+      if (res.result === 'must_change_password') {
+        localStorage.setItem(
+          'session_user',
+          JSON.stringify({
+            user_id: res.user_id,
+            username: res.username,
+            name: res.name,
+            role: res.role,
+            token: res.token
+          })
+        );
+        location.replace('change_password.html');
+        return;
+      }
+
+      if (res.result === 'inactive') {
+        msg.textContent = '帳號尚未啟用';
+        return;
+      }
+
+      msg.textContent = '登入失敗';
     }
-
-  } catch (err) {
-    result = {
-      result: 'error',
-      message: err.message,
-      stack: err.stack
-    };
-  }
-
-  // ✅ ⭐ 核心：JSONP 支援 ⭐
-  const cb = e && e.parameter && e.parameter.callback;
-  if (cb) {
-    return ContentService
-      .createTextOutput(`${cb}(${JSON.stringify(result)})`)
-      .setMimeType(ContentService.MimeType.JAVASCRIPT);
-  }
-
-  // ✅ 沒 callback 就回純 JSON
-  return ContentService
-    .createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
+  );
 }
-
 </script>
 
 </body>
