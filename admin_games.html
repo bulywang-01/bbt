@@ -55,6 +55,68 @@ button{padding:4px 10px;cursor:pointer}
   <button onclick="previewImport()">預覽</button>
   <div id="importPreview"></div>
   <button id="confirmImportBtn" style="display:none" onclick="confirmImport()">確認匯入</button>
+  <pre>
+    ✅ <a href="TestExportData.xlsx" download>下載範例檔（Excel）</a>
+    以下為範例說明，請利用 Excel 檔填入完整資料後再匯入，匯入前請先預覽內容，確認資料無誤後再執行匯入動作。
+    
+    date,time,duration,tournament,category,field,away_team,home_team,umpire_count,position_mode
+    2026-04-12,08:30,90,學齡盃,六年級,A球場,三峽,板橋,2,allow_select
+
+      <table class="styled-table table-auto">
+        <thead>
+          <tr>
+            <th>欄位名稱（英文）</th>
+            <th>欄位說明（中文）</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>date</code></td>
+            <td>比賽日期（格式：YYYY-MM-DD）</td>
+          </tr>
+          <tr>
+            <td><code>time</code></td>
+            <td>比賽時間（24 小時制，格式：HH:mm）</td>
+          </tr>
+          <tr>
+            <td><code>duration</code></td>
+            <td>比賽時間長度（單位：分鐘）</td>
+          </tr>
+          <tr>
+            <td><code>tournament</code></td>
+            <td>賽事名稱（例如：學齡盃）</td>
+          </tr>
+          <tr>
+            <td><code>category</code></td>
+            <td>組別（例如：U12／大聯盟）</td>
+          </tr>
+          <tr>
+            <td><code>field</code></td>
+            <td>比賽場地（例如：A 球場）</td>
+          </tr>
+          <tr>
+            <td><code>away_team</code></td>
+            <td>客隊（三壘）名稱</td>
+          </tr>
+          <tr>
+            <td><code>home_team</code></td>
+            <td>主隊（一壘）名稱</td>
+          </tr>
+          <tr>
+            <td><code>umpire_count</code></td>
+            <td>裁判人數（請填數字，如：2，不需要請填 0）</td>
+          </tr>
+          <tr>
+            <td><code>position_mode</code></td>
+            <td>
+              裁判站位方式(輸入英文名稱)：<br>
+              <code>allow_select</code>＝自行選（請直接填這項）<br>
+              <code>auto_only</code>＝系統排
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  </pre>
 </div>
 
 </div>
