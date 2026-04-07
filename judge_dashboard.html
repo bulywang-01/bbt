@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>裁判報名</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:#f5f6f8;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#ffffff;
+  border-bottom:1px solid #ddd;
+}
+.nav a{
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500;
+}
+
+.main{padding:20px}
+.panel{
+  background:#fff;
+  padding:16px;
+  border-radius:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+  margin-bottom:24px;
+}
+
+/* === 交錯底色（以日期群組為單位） === */
+tr.alt-date {
+  background-color: #fafafa;
+}
+
+/* === 額滿場次（整列） === */
+tr.full {
+  background-color: #ffecec !important;
+}
+
+/* === 不需要：黑底白字 === */
+.badge.na {
+  background: #000;
+  color: #fff;
+}
+
+h2{margin-top:0}
+h3{
+  margin:30px 0 10px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+  background:#fff;
+  position: relative;
+}
+
+/* === Sticky 表頭 === */
+table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;               /* 確保蓋在 td 上方 */
+  background: #eef2f6;      /* 必須指定，不然會透明 */
+}
+
+th,td{
+  border:1px solid #dcdcdc;
+  padding:6px 8px;
+  text-align:center;
+}
+th{background:#eef2f6}
+
+/* ===== 狀態樣式 ===== */
+tr.expired{
+  background:#f2f2f2;
+  color:#999;
+}
+
+.badge{
+  padding:2px 10px;
+  border-radius:999px;
+  font-size:13px;
+  background:#2c7be5;
+  color:#fff;
+  display:inline-block;
+}
+.badge.me{
+  background:#ffd6e5;
+  color:#0f3d5e;
+}
+.badge.gray{
+  background:#999;
+}
+
+label{
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.control{
+  margin-bottom:12px;
+}
+
+button{
+  padding:8px 16px;
+  margin-top:16px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== Header ===== -->
+<div class="header">
+  <div class="nav">
+    <a href="index.html">🏠 系統首頁</a>
+    <a href="judge_dashboard.html">📋 裁判報名</a>
+    <a href="files.html">📂 文件下載</a>
+    <a href="review_dashboard.html">✅ 報名審核</a>
+    <a href="admin_dashboard.html">⚙️ 後端管理</a>
+  </div>
+
+  <div class="user-box">
+    <span id="u_name" class="user-name"></span>
+    <a href="#" class="logout" onclick="logout()">登出</a>
+  </div>
+</div>
+
+<div class="main">
+<h2>裁判報名</h2>
+
+<div class="control">
+  <label>
+    <input type="checkbox" id="showPast" onchange="render()">
+    顯示已過期比賽
+  </label>
+</div>
+
+<div id="content"></div>
+
+<button onclick="submitSignup()">送出報名</button>
+</div>
+
+<!-- 共用 API -->
+<script src="js/config.js"></script>
+
+<script>
+const today = new Date();
+today.setHours(0,0,0,0);
+
+let allGames = [];
+
+/* ===== 初始化 ===== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if(!session.user_id){
+    location.replace('login.html');
+    return;
+  }
+  document.getElementById('u_name').textContent = session.name || '';
+  loadGames();
+});
+
+/* ===== 讀取賽事 ===== */
+function loadGames(){
+  callApi({ action: 'getSignableGames' }, res => {
+    if(!res || res.result!=='ok'){
+      alert('無法取得比賽資料');
+      return;
+    }
+    allGames = res.games || [];
+    render();
+  });
+}
+
+/* ===== 顯示邏輯 ===== */
+function render(){
+  const showPast = document.getElementById('showPast').checked;
+  const container = document.getElementById('content');
+  container.innerHTML = '';
+
+  // 先依月份分組
+  const byMonth = {};
+  allGames.forEach(g=>{
+    const d = parseDate(g.date);
+    if(!d) return;
+    g._dateObj = d;
+    const ym = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    if(!byMonth[ym]) byMonth[ym] = [];
+    byMonth[ym].push(g);
+  });
+
+  Object.keys(byMonth).sort().forEach(month=>{
+  const games = byMonth[month]
+    .filter(g => {
+      if (showPast) return true;
+      return g._dateObj >= today;
+    })
+    
+    .sort((a, b) => {
+      // ✅ 先依日期
+      if (a._dateObj.getTime() !== b._dateObj.getTime()) {
+        return a._dateObj - b._dateObj;
+      }
+    
+      // ✅ 同日期 → 依「實際時間」排序
+      return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
+    });
+
+    if(games.length === 0) return;
+
+    const title = document.createElement('h3');
+    title.textContent = month.replace('-', ' 年 ') + ' 月';
+    container.appendChild(title);
+
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+      <tr>
+        <th>日期</th>
+        <th>時間</th>
+        <th>組別</th>
+        <th>客隊</th>
+        <th>主隊</th>
+        <th>地點</th>
+        <th>裁判制</th>
+        <th>主審</th>
+        <th>一壘</th>
+        <th>二壘</th>
+        <th>三壘</th>
+      </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+
+    const tbody = table.querySelector('tbody');
+
+/** 新修正
+✅ 不混用 innerHTML
+✅ 正確 日期 rowspan + 地點 rowspan
+✅ 日期群組交錯底色
+✅ 額滿列加 class full
+*/
+    
+let lastDate = null;
+let lastField = null;
+
+let dateCell = null;
+let dateRowspan = 0;
+
+let fieldCell = null;
+let fieldRowspan = 0;
+
+let dateStripe = false; // 日期交錯底色控制
+
+games.forEach((g, idx) => {
+  const tr = document.createElement('tr');
+
+  const isExpired = g._dateObj < today;
+
+  // ✅ 額滿判斷
+  const filledCount = Object.keys(g.occupied_positions || {}).length;
+  const isFull = filledCount >= g.need_count;
+
+  if (isExpired) tr.classList.add('expired');
+  if (isFull) tr.classList.add('full');
+
+  /* ===== 日期合併 ===== */
+  if (g.date !== lastDate) {
+    // 結算上一個日期 rowspan
+    if (dateCell) dateCell.rowSpan = dateRowspan;
+    if (fieldCell) fieldCell.rowSpan = fieldRowspan;
+
+    dateStripe = !dateStripe; // 日期切換 → 交錯底色
+
+    dateCell = document.createElement('td');
+    dateCell.textContent = formatMonthDay(g._dateObj);
+    tr.appendChild(dateCell);
+
+    dateRowspan = 1;
+    lastDate = g.date;
+
+    // 新日期，地點重算
+    lastField = null;
+    fieldCell = null;
+  } else {
+    dateRowspan++;
+  }
+
+  if (dateStripe) tr.classList.add('alt-date');
+
+  /* ===== 時間 / 組別 / 客主隊 ===== */
+  tr.appendChild(td(g.time_range));
+  tr.appendChild(td(g.category || ''));
+  tr.appendChild(td(g.away_team || ''));
+  tr.appendChild(td(g.home_team || ''));
+
+  /* ===== 地點合併（同日期下） ===== */
+  if (g.field !== lastField) {
+    if (fieldCell) fieldCell.rowSpan = fieldRowspan;
+
+    fieldCell = document.createElement('td');
+    fieldCell.textContent = g.field || '';
+    tr.appendChild(fieldCell);
+
+    fieldRowspan = 1;
+    lastField = g.field;
+  } else {
+    fieldRowspan++;
+  }
+
+  /* ===== 裁判制 & 站位 ===== */
+  tr.appendChild(td(`${g.need_count}人制`));
+
+  tr.appendChild(tdHtml(renderCell(g,'PU',isExpired)));
+  tr.appendChild(tdHtml(renderCell(g,'U1',isExpired)));
+  tr.appendChild(tdHtml(renderCell(g,'U2',isExpired)));
+  tr.appendChild(tdHtml(renderCell(g,'U3',isExpired)));
+
+  tbody.appendChild(tr);
+});
+
+/* ✅ 補最後一天的 rowspan */
+if (dateCell) dateCell.rowSpan = dateRowspan;
+if (fieldCell) fieldCell.rowSpan = fieldRowspan;
+
+// 最後一個日期一定要補 rowspan
+if (dateCell) {
+  dateCell.rowSpan = dateRowspan;
+}
+
+function timeToMinutes(timeRange) {
+  // timeRange 例如 "08:30–10:00" 或 "8:30–10:00"
+  if (!timeRange) return 0;
+
+  const start = timeRange.split('–')[0].trim(); // 取開始時間
+  const parts = start.split(':');
+  if (parts.length !== 2) return 0;
+
+  const hour = parseInt(parts[0], 10);
+  const min  = parseInt(parts[1], 10);
+
+  return hour * 60 + min;
+}
+    
+function formatMonthDay(d) {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${m}/${day}`;
+}
+    
+function td(text) {
+  const cell = document.createElement('td');
+  cell.textContent = text;
+  return cell;
+}
+
+function tdHtml(html) {
+  const cell = document.createElement('td');
+  cell.innerHTML = html;
+  return cell;
+}
+
+    panel.appendChild(table);
+    container.appendChild(panel);
+  });
+}
+
+/* ===== 站位呈現 ===== */
+function renderCell(g, role, isExpired){
+  if(!needRole(g.need_count, role)){
+    // return '<span class="badge gray">不需要</span>';  // 原本的設計，圓槓黑底白字
+    return '<span class="badge na">不需要</span>';  // 欄位黑底白字
+  }
+
+  const name = (g.occupied_positions||{})[role];
+  if(name){
+    const cls = g.my_position === role ? 'badge me' : 'badge';
+    return `<span class="${cls}">${name}</span>`;
+  }
+
+  if(isExpired){
+    return '<span class="badge gray">已過期</span>';
+  }
+
+  return `
+    <label>
+      <input type="radio" name="pos_${g.game_id}" value="${role}">
+      ${role}
+    </label>
+  `;
+}
+
+/* ===== 工具 ===== */
+function needRole(n, r) {
+  if (n >= 4) return true;
+  if (n === 3) return r !== 'U2';
+  if (n === 2) return r === 'PU' || r === 'U1';
+  if (n === 1) return r === 'PU';
+  return false;
+}
+
+
+function parseDate(str){
+  const p = (str||'').split('/');
+  if(p.length!==3) return null;
+  return new Date(+p[0],+p[1]-1,+p[2]);
+}
+
+function submitSignup(){
+  const sel=[];
+  document.querySelectorAll('input[type=radio]:checked')
+    .forEach(r=>sel.push(r.name.replace('pos_','')+':'+r.value));
+
+  if(!sel.length){
+    alert('尚未選擇站位');
+    return;
+  }
+
+   callApi(
+     {
+       action: 'judgeSignupByGames',
+       games_with_position: sel.join(',')
+     },
+     res => {
+       if (res && res.result === 'ok') {
+         alert('報名完成');
+         loadGames();
+       } else {
+         alert('報名失敗');
+       }
+     }
+   );
+
+}
+
+function logout(){
+  localStorage.clear();
+  location.replace('login.html');
+}
+
+</script>
+
+</body>
+</html>
