@@ -137,6 +137,22 @@
     #importPanel {
       display: none;
     }
+    
+    /* 新增賽事列高亮 */
+    .new-game-row {
+      background-color: #fff7d6;
+    }
+    
+    /* 滑過時再亮一點 */
+    .new-game-row:hover {
+      background-color: #ffefb0;
+    }
+    
+    /* 讓輸入框更明顯 */
+    .new-game-row input,
+    .new-game-row select {
+      border: 1px solid #d6a300;
+    }
 
   </style>
 </head>
@@ -250,6 +266,20 @@
       </table>
   </pre>
 </div>
+</div>
+
+<div id="toast" style="
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #2e7d32;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 4px;
+  display: none;
+  z-index: 9999;
+  font-size: 14px;
+">
 </div>
 
 <div class="filter-bar">
@@ -698,7 +728,7 @@ function previewImport(){
 }
 
 // 新增賽事
-  function addNewGameRow() {
+function addNewGameRow() {
 
   const tbody = document.querySelector('.styled-table tbody');
   if (!tbody) {
@@ -706,26 +736,27 @@ function previewImport(){
     return;
   }
 
-  // 防止一次新增多筆
-  if (document.getElementById('newGameRow')) {
-    alert('請先儲存目前的新賽事');
+  const existing = document.querySelectorAll('.new-game-row').length;
+  if (existing >= MAX_NEW_ROWS) {
+    alert(`一次最多只能新增 ${MAX_NEW_ROWS} 筆賽事`);
     return;
   }
 
+  const idx = Date.now(); // 用時間戳確保唯一
   const tr = document.createElement('tr');
-  tr.id = 'newGameRow';
+  tr.className = 'new-game-row';
 
   tr.innerHTML = `
-    <td><input type="date" id="ng_date"></td>
-    <td><input type="time" id="ng_time"></td>
-    <td><input type="number" id="ng_duration" value="90"></td>
-    <td><input id="ng_tournament"></td>
-    <td><input id="ng_category"></td>
-    <td><input id="ng_field"></td>
-    <td><input id="ng_away"></td>
-    <td><input id="ng_home"></td>
+    <td><input type="date" id="ng_${idx}_date"></td>
+    <td><input type="time" id="ng_${idx}_time"></td>
+    <td><input type="number" id="ng_${idx}_duration" value="90"></td>
+    <td><input id="ng_${idx}_tournament"></td>
+    <td><input id="ng_${idx}_category"></td>
+    <td><input id="ng_${idx}_field"></td>
+    <td><input id="ng_${idx}_away"></td>
+    <td><input id="ng_${idx}_home"></td>
     <td>
-      <select id="ng_umpires">
+      <select id="ng_${idx}_umpires">
         <option value="0">0</option>
         <option value="1">1</option>
         <option value="2" selected>2</option>
@@ -733,19 +764,20 @@ function previewImport(){
       </select>
     </td>
     <td>
-      <select id="ng_position">
+      <select id="ng_${idx}_position">
         <option value="allow_select">自行選</option>
         <option value="auto_only">系統排</option>
       </select>
     </td>
     <td>
-      <button onclick="saveNewGame()">儲存</button>
-      <button onclick="cancelNewGame()">取消</button>
+      <button onclick="saveSingleNewGame(${idx})">儲存</button>
+      <button onclick="cancelSingleNewGame(this)">取消</button>
     </td>
   `;
 
   tbody.prepend(tr);
 }
+
 
 // 取消新增
 function cancelNewGame() {
@@ -753,7 +785,55 @@ function cancelNewGame() {
   if (tr) tr.remove();
 }
 
+function cancelSingleNewGame(btn) {
+  const tr = btn.closest('tr');
+  if (tr) tr.remove();
+}
+
 // 儲存
+function saveSingleNewGame(idx) {
+
+  const tr = document.getElementById(`ng_${idx}_date`)?.closest('tr');
+
+  const data = {
+    action: 'createGame',
+    date: document.getElementById(`ng_${idx}_date`).value,
+    time: document.getElementById(`ng_${idx}_time`).value,
+    duration: document.getElementById(`ng_${idx}_duration`).value,
+    tournament: document.getElementById(`ng_${idx}_tournament`).value,
+    category: document.getElementById(`ng_${idx}_category`).value,
+    field: document.getElementById(`ng_${idx}_field`).value,
+    away_team: document.getElementById(`ng_${idx}_away`).value,
+    home_team: document.getElementById(`ng_${idx}_home`).value,
+    umpire_count: document.getElementById(`ng_${idx}_umpires`).value,
+    position_mode: document.getElementById(`ng_${idx}_position`).value
+  };
+
+  // ✅ 最基本驗證
+  if (!data.date || !data.time || !data.field) {
+    alert('日期、時間、場地必填');
+    return;
+  }
+
+  callApi(data, function (res) {
+
+    if (res.result === 'ok') {
+
+      // ✅ 1. 顯示成功訊息
+      showToast('✅ 賽事已儲存');
+
+      // ✅ 2. 移除該新增列（避免「卡在新增模式」）
+      if (tr) tr.remove();
+
+      // ✅ 3. 重新載入正式列表（回到正常畫面）
+      loadGames();
+
+    } else {
+      alert('❌ 新增失敗');
+    }
+  });
+}
+
 function saveNewGame() {
 
   const data = {
@@ -950,6 +1030,16 @@ function callApiPost(payload) {
     body: JSON.stringify(payload)
   })
   .then(res => res.json());
+}
+
+function showToast(msg, duration = 2000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+
+  setTimeout(() => {
+    t.style.display = 'none';
+  }, duration);
 }
 
 </script>
