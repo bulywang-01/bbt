@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 /* ===== 讀取賽事 ===== */
 function loadGames(){
-  callApi('action=getSignableGames', res=>{
+  callApi({ action: 'getSignableGames' }, res => {
     if(!res || res.result!=='ok'){
       alert('無法取得比賽資料');
       return;
@@ -452,13 +452,14 @@ function renderCell(g, role, isExpired){
 }
 
 /* ===== 工具 ===== */
-function needRole(n,r){
-  if(n>=4) return true;
-  if(n===3) return r!=='U2';
-  if(n===2) return r==='PU'||r==='U1';
-  if(n===1) return r==='PU';
+function needRole(n, r) {
+  if (n >= 4) return true;
+  if (n === 3) return r !== 'U2';
+  if (n === 2) return r === 'PU' || r === 'U1';
+  if (n === 1) return r === 'PU';
   return false;
 }
+
 
 function parseDate(str){
   const p = (str||'').split('/');
@@ -476,14 +477,21 @@ function submitSignup(){
     return;
   }
 
-  callApi(
-    'action=judgeSignupByGames&games_with_position=' +
-    encodeURIComponent(sel.join(',')),
-    ()=>{
-      alert('報名完成');
-      loadGames();
-    }
-  );
+   callApi(
+     {
+       action: 'judgeSignupByGames',
+       games_with_position: sel.join(',')
+     },
+     res => {
+       if (res && res.result === 'ok') {
+         alert('報名完成');
+         loadGames();
+       } else {
+         alert('報名失敗');
+       }
+     }
+   );
+
 }
 
 function logout(){
