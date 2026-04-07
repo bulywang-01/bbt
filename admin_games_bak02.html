@@ -163,6 +163,22 @@
 
 <div class="main">
 
+<!-- 新增賽事 -->
+  <div class="filter-bar">
+  <button
+  style="margin-left:auto"
+  onclick="addNewGameRow()">
+  ＋ 新增賽事
+</button>
+</div>
+
+<!-- 儲存賽事 -->
+<div id="batchSaveBar" style="display:none; margin-top:12px; text-align:right;">
+  <button onclick="saveAllNewGames()">
+    ✅ 儲存全部新增賽事
+  </button>
+</div>
+  
 <!-- 篩選 -->
 <div class="panel">
   <div class="filter-bar">
@@ -288,7 +304,6 @@
   onclick="addNewGameRow()">
   ＋ 新增賽事
 </button>
-
 </div>
 
   <!-- 外部 JS：一行一個 script，一定要成對 -->
@@ -729,6 +744,7 @@ function previewImport(){
 
 // 新增賽事
 const MAX_NEW_ROWS = 10;  // 一次最多可新增的列數
+  
 function addNewGameRow() {
 
   const tbody = document.querySelector('.styled-table tbody');
@@ -771,12 +787,13 @@ function addNewGameRow() {
       </select>
     </td>
     <td>
-      <button onclick="saveSingleNewGame(${idx})">儲存</button>
+      // <button onclick="saveSingleNewGame(${idx})">儲存</button>
       <button onclick="cancelSingleNewGame(this)">取消</button>
     </td>
   `;
 
   tbody.prepend(tr);
+  document.getElementById('batchSaveBar').style.display = 'block';
 }
 
 
@@ -835,6 +852,67 @@ function saveSingleNewGame(idx) {
   });
 }
 
+// 儲存2筆以上
+function saveAllNewGames() {
+
+  const rows = Array.from(document.querySelectorAll('.new-game-row'));
+  if (rows.length === 0) {
+    alert('沒有可儲存的新增賽事');
+    return;
+  }
+
+  // 組成要送出的資料
+  const games = rows.map(tr => {
+    const get = id => tr.querySelector(id)?.value || '';
+
+    return {
+      action: 'createGame',
+      date: get('input[type="date"]'),
+      time: get('input[type="time"]'),
+      duration: get('input[type="number"]'),
+      tournament: get('input[id*="_tournament"]'),
+      category: get('input[id*="_category"]'),
+      field: get('input[id*="_field"]'),
+      away_team: get('input[id*="_away"]'),
+      home_team: get('input[id*="_home"]'),
+      umpire_count: get('select[id*="_umpires"]'),
+      position_mode: get('select[id*="_position"]')
+    };
+  });
+
+  // 最基本驗證（全部一起）
+  for (let i = 0; i < games.length; i++) {
+    if (!games[i].date || !games[i].time || !games[i].field) {
+      alert(`第 ${i + 1} 筆：日期 / 時間 / 場地 必填`);
+      return;
+    }
+  }
+
+  // 逐筆呼叫原本 API（穩定、不用新後端）
+  let success = 0;
+
+  function next() {
+    if (success >= games.length) {
+      showToast(`✅ 成功新增 ${success} 筆賽事`);
+      document.getElementById('batchSaveBar').style.display = 'none';
+      loadGames();
+      return;
+    }
+
+    callApi(games[success], function (res) {
+      if (res.result === 'ok') {
+        success++;
+        next();
+      } else {
+        alert(`❌ 第 ${success + 1} 筆新增失敗`);
+      }
+    });
+  }
+
+  next();
+}
+
+// 儲存....我忘了
 function saveNewGame() {
 
   const data = {
@@ -977,6 +1055,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadGames()
 })
 
+//當所有新增列都被取消時，自動隱藏儲存區
+function cancelSingleNewGame(btn) {
+  const tr = btn.closest('tr');
+  if (tr) tr.remove();
+
+  if (document.querySelectorAll('.new-game-row').length === 0) {
+    document.getElementById('batchSaveBar').style.display = 'none';
+  }
+}
 
 function logout() {
   // 清掉登入資訊
