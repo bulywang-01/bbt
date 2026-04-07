@@ -131,7 +131,7 @@ function loadGames() {
   callApi(
     {
       action: 'getSignableGames',
-      user_id: session.user_id
+      ser_id: session.user_id || ''   // ✅ 關鍵
     },
     res => {
       if (!res || res.result !== 'ok') {
