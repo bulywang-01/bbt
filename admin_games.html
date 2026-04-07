@@ -134,6 +134,61 @@
     以下為範例說明，請利用 Excel 檔填入完整資料後再匯入。<br>
     匯入前請先預覽內容，確認資料無誤後再執行匯入動作。
 
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>欄位名稱（英文）</th>
+            <th>說明（中文）</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>date</code></td>
+            <td>比賽日期（格式：YYYY-MM-DD）</td>
+          </tr>
+          <tr>
+            <td><code>time</code></td>
+            <td>比賽時間（24 小時制，格式：HH:mm）</td>
+          </tr>
+          <tr>
+            <td><code>duration</code></td>
+            <td>比賽時間長度（單位：分鐘）</td>
+          </tr>
+          <tr>
+            <td><code>tournament</code></td>
+            <td>賽事名稱（例如：學齡盃）</td>
+          </tr>
+          <tr>
+            <td><code>category</code></td>
+            <td>組別（例如：六年級）</td>
+          </tr>
+          <tr>
+            <td><code>field</code></td>
+            <td>比賽場地（例如：A 球場）</td>
+          </tr>
+          <tr>
+            <td><code>away_team</code></td>
+            <td>客隊名稱</td>
+          </tr>
+          <tr>
+            <td><code>home_team</code></td>
+            <td>主隊名稱</td>
+          </tr>
+          <tr>
+            <td><code>umpire_count</code></td>
+            <td>裁判人數（請填數字，如：2）</td>
+          </tr>
+          <tr>
+            <td><code>position_mode</code></td>
+            <td>
+              裁判站位方式：<br>
+              <code>allow_select</code>＝自行選<br>
+              <code>auto_only</code>＝系統排
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
     date,time,duration,tournament,category,field,away_team,home_team,umpire_count,position_mode
     2026-04-12,08:30,90,學齡盃,六年級,A球場,三峽,板橋,2,allow_select
   </pre>
