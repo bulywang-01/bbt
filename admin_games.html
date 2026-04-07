@@ -830,6 +830,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+function outputJSON(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
  
 </script>
 
