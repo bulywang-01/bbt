@@ -143,6 +143,9 @@ date,time,duration,tournament,category,field,away_team,home_team,umpire_count,po
   <script src="js/config.js"></script>
 
 <script>
+
+let loadingTimer = null;
+
 function loadHeader(){
   fetch('header.html').then(r=>r.text()).then(h=>{
     document.getElementById('header-container').innerHTML=h
@@ -150,14 +153,20 @@ function loadHeader(){
 }
 
 function showLoading(text) {
+  // 設定顯示文字（C 的核心）
   document.getElementById('loadingText').textContent = text || '處理中...';
-  document.getElementById('loadingOverlay').style.display = 'flex';
+
+  // 超過 300ms 才顯示，避免閃一下
+  loadingTimer = setTimeout(() => {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+  }, 300);
 }
 
 function hideLoading() {
+  clearTimeout(loadingTimer);
+  loadingTimer = null;
   document.getElementById('loadingOverlay').style.display = 'none';
 }
-
   
 function gameDT(g){return new Date(g.date+'T'+g.time)}
 function isExpired(g){return gameDT(g)<new Date()}
@@ -238,6 +247,7 @@ function isInThisWeekByDateStr(dateStr) {
   return d >= start && d < end;
 }
 
+// 裁入賽事資料
 
 function loadGames() {
 
@@ -441,8 +451,11 @@ const IMPORT_FIELDS = [
   { key:'position_mode',label:'站位方式' }
 ];
 
+// 匯入自建賽事資料
 function previewImport(){
-
+  
+  showLoading('解析 Excel 中…');
+  
   const file = document.getElementById('importFile').files[0];
   if (!file) {
     alert('請先選擇 Excel 檔案');
@@ -534,11 +547,32 @@ function previewImport(){
   };
 
   reader.readAsArrayBuffer(file);
+  hideLoading();
 }
 
-function confirmImport(){
-  callApi({action:'importGames',rows:JSON.stringify(importRows)},()=>loadGames())
+// 匯入賽事資料
+function confirmImport() {
+
+  showLoading('賽事匯入中，請稍候…');
+
+  callApi({
+    action: 'importGames',
+    rows: JSON.stringify(importRows)
+  }, function (res) {
+
+    hideLoading();
+
+    if (res && res.result === 'ok') {
+      alert(`✅ 成功匯入 ${res.count} 筆賽事`);
+      loadGames();
+    } else {
+      alert('❌ 匯入失敗');
+    }
+
+  });
+
 }
+
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadHeader()
