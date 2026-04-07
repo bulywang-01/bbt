@@ -172,7 +172,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 /* ===== 讀取賽事 ===== */
 function loadGames() {
-  callApi({ action: 'getSignableGames' }, res => {
+  const session = JSON.parse(localStorage.getItem('session_user') || {});
+  callApi(
+    {
+      action: 'getSignableGames',
+      user_id: session.user_id
+    },
+  // callApi({ action: 'getSignableGames' }, res => {
+    res => {
     if (!res || res.result !== 'ok') {
       alert(res.message || '無法取得比賽資料');
       //alert('無法取得比賽資料');
