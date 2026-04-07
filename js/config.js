@@ -32,3 +32,12 @@ function callApi(params, callback) {
 
   document.body.appendChild(script);
 }
+
+function jsonOutput(obj, callback) {
+
+  const cb = callback || 'callback';
+
+  return ContentService
+    .createTextOutput(`${cb}(${JSON.stringify(obj)})`)
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
