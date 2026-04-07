@@ -27,8 +27,10 @@ function callApi(params, callback) {
   script.src = API_URL + '?' + qs.toString();
 
   script.onerror = function () {
-    console.error('JSONP load failed:', script.src);
+    // ✅ 不要干擾其他流程
+    console.warn('JSONP load warning:', script.src);
   };
+
 
   document.body.appendChild(script);
 }
