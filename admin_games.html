@@ -367,7 +367,16 @@ function isInThisWeekByDateStr(dateStr) {
 function loadGames() {
 
   showLoading('賽事資料載入中...');
-  callApi({ action: 'getGames' }, function (res) {
+  // callApi({ action: 'getGames' }, function (res) 
+  
+  callApiPost({ action: 'getGames' })
+    .then(res => {
+      if (!res || res.result !== 'ok') {
+        document.getElementById('gamesContainer').innerHTML = '資料讀取失敗';
+        return;
+      }
+
+  {
 
     try {
         const container = document.getElementById('gamesContainer');
@@ -881,7 +890,18 @@ function outputJSON(obj) {
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }
- 
+
+function callApiPost(payload) {
+  return fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json());
+}
+
 </script>
 
 <!-- Loading Overlay -->
