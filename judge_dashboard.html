@@ -171,24 +171,59 @@ document.addEventListener('DOMContentLoaded', ()=>{
 });
 
 /* ===== 讀取賽事 ===== */
-function loadGames() {
-  const session = JSON.parse(localStorage.getItem('session_user') || {});
-  callApi(
-    {
-      action: 'getSignableGames',
-      user_id: session.user_id
-    },
-  // callApi({ action: 'getSignableGames' }, res => {
-    res => {
-    if (!res || res.result !== 'ok') {
-      alert(res.message || '無法取得比賽資料');
-      //alert('無法取得比賽資料');
-      return;
-    }
-    allGames = res.games || [];
-    render();
-  });
-}
+  function allowedPositions(n) {
+    n = Number(n);
+    if (n === 2) return ['auto','PU','U1'];
+    if (n === 3) return ['auto','PU','U1','U3'];
+    return ['auto'];
+  }
+
+  function loadGames() {
+    gameBody.innerHTML = '<tr><td colspan="7">載入中…</td></tr>';
+
+    callApi('action=getSignableGames', function (res) {
+      gameBody.innerHTML = '';
+      if (!res || !Array.isArray(res.games)) {
+        gameBody.innerHTML = '<tr><td colspan="7">讀取失敗</td></tr>';
+        return;
+      }
+
+      res.games.forEach(function (g) {
+        const tr = document.createElement('tr');
+        if (g.past || g.full) tr.classList.add('locked');
+
+        const s = statusInfo(g.date);
+        const posList = g.position_mode !== 'allow_select'
+          ? ['auto']
+          : allowedPositions(g.need_count);
+
+        const options = posList.map(function (p) {
+          const name = (g.occupied_positions || {})[p];
+          if (name) {
+            return '<label class="occupied">' + posText[p] + '：<b>' + name + '</b></label>';
+          }
+          return (
+            '<label>' +
+              '<input type="radio" name="pos_' + g.game_id + '" value="' + p + '"' +
+              (g.past || g.full ? ' disabled' : '') +
+              '> ' + posText[p] +
+            '</label>'
+          );
+        }).join(' ');
+
+        tr.innerHTML =
+          '<td class="' + s.c + '">' + s.t + '</td>' +
+          '<td>' + g.date + '</td>' +
+          '<td>' + g.time_range + '</td>' +
+          '<td>' + (g.category || '') + '</td>' +
+          '<td>' + (g.away_team || '') + ' vs ' + (g.home_team || '') + '</td>' +
+          '<td>' + (g.field || '') + '</td>' +
+          '<td>' + options + '</td>';
+
+        gameBody.appendChild(tr);
+      });
+    });
+  }
 
 
 /* ===== 顯示邏輯 ===== */
