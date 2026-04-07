@@ -179,7 +179,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (n === 3) return ['auto','PU','U1','U3'];
     return ['auto'];
   }
-
+  
+  const gameBody = document.getElementById('gameBody');
+  
   function loadGames() {
     gameBody.innerHTML = '<tr><td colspan="7">載入中…</td></tr>';
 
