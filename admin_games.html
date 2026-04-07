@@ -520,23 +520,23 @@ function loadGames() {
                   </td>
                 </tr>`;
             }
-    
           });
     
           html += '</tbody></table></div>';
           container.insertAdjacentHTML('beforeend', html);
         });
-
+      
+        if (Object.keys(groups).length === 0) {
+          container.innerHTML = '<div class="panel">本範圍沒有賽事</div>';
+          return;
+        }
+      
     } finally {
       hideLoading();
     }
 
   }); //callAPI
-  
-if (Object.keys(groups).length === 0) {
-  container.innerHTML = '<div class="panel">本範圍沒有賽事</div>';
-  return;
-}
+
 
 } //原本的結束點
 
