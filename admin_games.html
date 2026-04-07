@@ -557,6 +557,12 @@ function confirmImport(){
   .catch(()=>{hideLoading();alert('匯入錯誤');});
 }
 
+function loadHeader(){
+  fetch('header.html').then(r=>r.text()).then(h=>{
+    document.getElementById('header-container').innerHTML=h
+  })
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   loadHeader();
   loadGames();
