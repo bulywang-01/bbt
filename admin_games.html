@@ -300,7 +300,7 @@ function callApiPost(payload) {
 function loadGames() {
 
   showLoading('賽事資料載入中...');
-callApiPost({ action:'getGames' })
+  callApiPost({ action:'getGames' })
   .then(text => {
 
     let res;
@@ -371,41 +371,47 @@ function previewImport(){
   if(!f){alert('請選擇檔案');return;}
   showLoading('解析 Excel 中...');
   const reader=new FileReader();
-  reader.onload=e=>{
-    const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+  reader.onload = function (e) {
 
-    const rawRows = XLSX.utils.sheet_to_json(sheet, { defval:'' });
-    importRows = [];
-    
-    // Excel 日期轉換
-    function excelDateToISO(value) {
-      if (typeof value !== 'number') return value || '';
-      const excelEpoch = new Date(1899, 11, 30);
-      const d = new Date(excelEpoch.getTime() + value * 86400000);
-      return d.toISOString().slice(0, 10);
-    }
-    
-    // Excel 時間轉換
-    function excelTimeToHHmm(value) {
-      if (typeof value !== 'number') return value || '';
-      const totalMinutes = Math.round(value * 24 * 60);
-      const hh = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
-      const mm = String(totalMinutes % 60).padStart(2, '0');
-      return `${hh}:${mm}`;
-    }
-    
-    rawRows.forEach(row => {
-      importRows.push({
-        date:        excelDateToISO(row.date),
-        time:        excelTimeToHHmm(row.time),
-        duration:    row.duration,
-        tournament:  row.tournament,
-        category:    row.category,
-        field:       row.field,
-        away_team:   row.away_team,
-        home_team:   row.home_team,
-        umpire_count:row.umpire_count,
-        position_mode:row.position_mode
+  const data = new Uint8Array(e.target.result);
+  const wb = XLSX.read(data, { type: 'array' });
+
+  // ✅ 這一行你現在缺少
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+
+  const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+  importRows = [];
+
+  // Excel 日期轉換
+  function excelDateToISO(value) {
+    if (typeof value !== 'number') return value || '';
+    const excelEpoch = new Date(1899, 11, 30);
+    const d = new Date(excelEpoch.getTime() + value * 86400000);
+    return d.toISOString().slice(0, 10);
+  }
+
+  // Excel 時間轉換
+  function excelTimeToHHmm(value) {
+    if (typeof value !== 'number') return value || '';
+    const totalMinutes = Math.round(value * 24 * 60);
+    const hh = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
+    const mm = String(totalMinutes % 60).padStart(2, '0');
+    return `${hh}:${mm}`;
+  }
+
+  rawRows.forEach(row => {
+    importRows.push({
+      date: excelDateToISO(row.date),
+      time: excelTimeToHHmm(row.time),
+      duration: row.duration,
+      tournament: row.tournament,
+      category: row.category,
+      field: row.field,
+      away_team: row.away_team,
+      home_team: row.home_team,
+      umpire_count: row.umpire_count,
+      position_mode: row.position_mode
       });
     });
     
