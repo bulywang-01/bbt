@@ -78,6 +78,21 @@
     }
     
     /* ===== 表格整體縮小 ===== */
+
+    
+    /* ===== 說明用表格：依內容自動寬度 ===== */
+    .table-auto {
+      width: auto;
+      display: inline-table;
+      table-layout: auto;
+    }
+    
+    /* 欄位不要被強制撐開 */
+    .table-auto th,
+    .table-auto td {
+      white-space: nowrap;
+    }
+
     .styled-table {
       font-size: 13px;
     }
@@ -174,11 +189,11 @@
   <button id="confirmImportBtn" style="display:none" onclick="confirmImport()">確認匯入</button>
   <pre>
     ✅ <a href="TestExportData.xlsx" download>下載範例檔（Excel）</a>
-    以下為範例說明，請利用 Excel 檔填入完整資料後再匯入。<br>
-    匯入前請先預覽內容，確認資料無誤後再執行匯入動作。
+    以下為範例說明，請利用 Excel 檔填入完整資料後再匯入，匯入前請先預覽內容，確認資料無誤後再執行匯入動作。
+    
     date,time,duration,tournament,category,field,away_team,home_team,umpire_count,position_mode
     2026-04-12,08:30,90,學齡盃,六年級,A球場,三峽,板橋,2,allow_select
-      <table class="styled-table">
+      <table class="styled-table table-auto">
         <thead>
           <tr>
             <th>欄位名稱（英文）</th>
