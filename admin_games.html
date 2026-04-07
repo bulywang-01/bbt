@@ -434,10 +434,27 @@ function confirmImport() {
     return;
   }
 
-  showLoading('賽事匯入中...');
 
-  const form = document.getElementById('importForm');
-  const input = document.getElementById('importPayload');
+    showLoading('賽事匯入中...');
+    google.script.run
+      .withSuccessHandler(res => {
+        hideLoading();
+        if (res.result === 'ok') {
+          alert(`✅ 匯入成功 ${res.count} 筆`);
+          importRows = [];
+          document.getElementById('importPreview').innerHTML = '';
+          document.getElementById('confirmImportBtn').style.display = 'none';
+          loadGames();
+        } else {
+          alert('❌ 匯入失敗：' + res.msg);
+        }
+      })
+      .withFailureHandler(err => {
+        hideLoading();
+        alert('❌ 匯入失敗');
+        console.error(err);
+      })
+      .importGames(importRows);
 
   input.value = JSON.stringify({
     action: 'importGames',
