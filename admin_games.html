@@ -28,6 +28,30 @@ button{padding:4px 10px;cursor:pointer}
 .loading-box{background:#fff;padding:24px 32px;border-radius:8px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.15)}
 .spinner{width:36px;height:36px;border:4px solid #ddd;border-top:4px solid #2c7be5;border-radius:50%;margin:0 auto 12px;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ===== 說明用表格：依內容自動寬度 ===== */
+    .table-auto {
+      width: auto;
+      display: inline-table;
+      table-layout: auto;
+    }
+    
+    /* 欄位不要被強制撐開 */
+    .table-auto th,
+    .table-auto td {
+      white-space: nowrap;
+    }
+
+    .styled-table {
+      font-size: 13px;
+    }
+    
+    .styled-table th,
+    .styled-table td {
+      padding: 4px 6px;
+      line-height: 1.4;
+    }
+  
 </style>
 </head>
 
@@ -126,7 +150,7 @@ button{padding:4px 10px;cursor:pointer}
 
 <script>
 /* ========= 基本工具 ========= */
-const API_URL = API_URL_POST; // 你在 config.js 裡放的 Web App URL
+// const API_URL = API_URL_POST; // 你在 config.js 裡放的 Web App URL
 let loadingTimer=null;
 
 function showLoading(text){
