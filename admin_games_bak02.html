@@ -333,7 +333,7 @@
 
 function callApiAdminBatch(params, callback) {
 
-  const cbname = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  const cbname = 'cb_admin_' + Date.now() + '_' + Math.random().toString(36).slice(2);
   const qs = new URLSearchParams(params);
   qs.set('callback', cbname);
 
@@ -349,11 +349,11 @@ function callApiAdminBatch(params, callback) {
     }
   };
 
-  // ✅ 關鍵：不要再用全域 script.onerror
+  // ✅ 專用錯誤處理，不影響全站
   script.onerror = function () {
     delete window[cbname];
     script.remove();
-    callback({ result: 'error', message: 'jsonpload_failed' });
+    callback({ result: 'error', message: 'jsonpload_failed_admin' });
   };
 
   document.head.appendChild(script);
