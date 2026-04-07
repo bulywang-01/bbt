@@ -4,35 +4,43 @@ const API_URL =
 
 // ===== JSONP helper（唯一安全版）=====
 function callApi(params, callback) {
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  const token = session.token || '';
 
-  // ✅ 一律用 URLSearchParams（避免 &amp;）
+  const cbname = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
   const qs = new URLSearchParams(params);
-  qs.set('token', token);
-
-  const cbName = 'cb_' + Date.now();
-  qs.set('callback', cbName);
-
-  window[cbName] = function (res) {
-    try {
-      callback(res);
-    } finally {
-      delete window[cbName];
-      script.remove();
-    }
-  };
+  qs.set('callback', cbname);
 
   const script = document.createElement('script');
   script.src = API_URL + '?' + qs.toString();
 
-  script.onerror = function () {
-    // ✅ 不要干擾其他流程
-    console.warn('JSONP load warning:', script.src);
+  let called = false;
+
+  window[cbname] = function (res) {
+    called = true;
+    try {
+      callback(res);
+    } finally {
+      delete window[cbname];
+      script.remove();
+    }
   };
 
+  script.onerror = function () {
+    console.warn('JSONP load warning:', script.src);
 
-  document.body.appendChild(script);
+    // ✅ 核心：一定要呼叫 callback
+    if (!called) {
+      called = true;
+      callback({
+        result: 'error',
+        message: 'jsonp_load_failed'
+      });
+    }
+
+    delete window[cbname];
+    script.remove();
+  };
+
+  document.head.appendChild(script);
 }
 
 function jsonOutput(obj, callback) {
