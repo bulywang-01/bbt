@@ -810,7 +810,8 @@ function importGamesPost(data) {
 }
 
 function getGamesPost() {
-  const ss = SpreadsheetApp.openById('1utTD1TbwBjiIfOpJhrcUkREztQrQlWoBQhSQb_eI8rk');
+
+  const ss = SpreadsheetApp.openById('你的SheetID');
   const sheet = ss.getSheetByName('Games');
 
   const values = sheet.getDataRange().getValues();
@@ -822,11 +823,14 @@ function getGamesPost() {
     return obj;
   });
 
-  return outputJSON({
-    result: 'ok',
-    games
-  });
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      result: 'ok',
+      games
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
+
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadHeader()
