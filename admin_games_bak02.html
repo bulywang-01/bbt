@@ -284,6 +284,25 @@
 </div>
 </div>
 
+<div id="savingOverlay" style="
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.65);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+">
+  <div style="
+    background:#fff;
+    padding:20px 28px;
+    border-radius:6px;
+    box-shadow:0 2px 10px rgba(0,0,0,.15);
+  ">
+    <div id="savingText">儲存中…</div>
+  </div>
+</div>
+
 <div id="toast" style="
   position: fixed;
   bottom: 24px;
@@ -312,6 +331,35 @@
 
 <script>
 
+function callApiAdminBatch(params, callback) {
+
+  const cbname = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  const qs = new URLSearchParams(params);
+  qs.set('callback', cbname);
+
+  const script = document.createElement('script');
+  script.src = API_URL + '?' + qs.toString();
+
+  window[cbname] = function (res) {
+    try {
+      callback(res);
+    } finally {
+      delete window[cbname];
+      script.remove();
+    }
+  };
+
+  // ✅ 關鍵：不要再用全域 script.onerror
+  script.onerror = function () {
+    delete window[cbname];
+    script.remove();
+    callback({ result: 'error', message: 'jsonpload_failed' });
+  };
+
+  document.head.appendChild(script);
+}
+
+//
 let loadingTimer = null;
 
 function loadHeader(){
@@ -861,26 +909,24 @@ function saveAllNewGames() {
     return;
   }
 
-  // 組成要送出的資料
   const games = rows.map(tr => {
-    const get = id => tr.querySelector(id)?.value || '';
-
+    const q = s => tr.querySelector(s)?.value || '';
     return {
       action: 'createGame',
-      date: get('input[type="date"]'),
-      time: get('input[type="time"]'),
-      duration: get('input[type="number"]'),
-      tournament: get('input[id*="_tournament"]'),
-      category: get('input[id*="_category"]'),
-      field: get('input[id*="_field"]'),
-      away_team: get('input[id*="_away"]'),
-      home_team: get('input[id*="_home"]'),
-      umpire_count: get('select[id*="_umpires"]'),
-      position_mode: get('select[id*="_position"]')
+      date: q('input[type="date"]'),
+      time: q('input[type="time"]'),
+      duration: q('input[type="number"]'),
+      tournament: q('input[id*="_tournament"]'),
+      category: q('input[id*="_category"]'),
+      field: q('input[id*="_field"]'),
+      away_team: q('input[id*="_away"]'),
+      home_team: q('input[id*="_home"]'),
+      umpire_count: q('select[id*="_umpires"]'),
+      position_mode: q('select[id*="_position"]')
     };
   });
 
-  // 最基本驗證（全部一起）
+  // 基本驗證
   for (let i = 0; i < games.length; i++) {
     if (!games[i].date || !games[i].time || !games[i].field) {
       alert(`第 ${i + 1} 筆：日期 / 時間 / 場地 必填`);
@@ -888,28 +934,36 @@ function saveAllNewGames() {
     }
   }
 
-  // 逐筆呼叫原本 API（穩定、不用新後端）
+  showSaving(`儲存中（0 / ${games.length}）`);
+
+  let index = 0;
   let success = 0;
 
-  function next() {
-    if (success >= games.length) {
+  function saveNext() {
+
+    if (index >= games.length) {
+      hideSaving();
       showToast(`✅ 成功新增 ${success} 筆賽事`);
       document.getElementById('batchSaveBar').style.display = 'none';
       loadGames();
       return;
     }
 
-    callApi(games[success], function (res) {
-      if (res.result === 'ok') {
+    showSaving(`儲存中（${index + 1} / ${games.length}）`);
+
+    callApiAdminBatch(games[index], function (res) {
+      if (res && res.result === 'ok') {
         success++;
-        next();
+        index++;
+        saveNext();   // ✅ 下一筆一定在 callback completion 之後
       } else {
-        alert(`❌ 第 ${success + 1} 筆新增失敗`);
+        hideSaving();
+        alert(`❌ 第 ${index + 1} 筆儲存失敗`);
       }
     });
   }
 
-  next();
+  saveNext();
 }
 
 // 儲存....我忘了
@@ -1130,6 +1184,14 @@ function showToast(msg, duration = 2000) {
   }, duration);
 }
 
+function showSaving(text) {
+  document.getElementById('savingText').textContent = text || '儲存中…';
+  document.getElementById('savingOverlay').style.display = 'flex';
+}
+
+function hideSaving() {
+  document.getElementById('savingOverlay').style.display = 'none';
+}
 </script>
 
 <!-- Loading Overlay -->
