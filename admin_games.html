@@ -566,7 +566,7 @@ function loadGames() {
                 html += `<div class="month-title">📅 ${year} 年 ${month} 月</div>`;
                 html += '<table class="styled-table">';
                 html += '<thead><tr>';
-          
+                html += '<th>場次</th>';
                 html += '<th>日期</th>';
                 html += '<th>時間</th>';
                 html += '<th>比賽時間長度</th>';
@@ -585,6 +585,7 @@ function loadGames() {
                   if (g.expired) {
                     html += `
                       <tr class="expired">
+                        <td>${g.game_code || ''}</td>
                         <td>${g._date}</td>
                         <td>${g._time}</td>
                         <td>${g.duration || ''}</td>
@@ -601,6 +602,7 @@ function loadGames() {
                   else {
                     html += `
                       <tr>
+                        <td><input value="${g.game_code || ''}" onchange="updateGame('${g.game_id}','game_code',this.value)"></td>
                         <td><input type="date" value="${g._date}" onchange="updateGame('${g.game_id}','date',this.value)"></td>
                         <td><input type="time" value="${g._time}" onchange="updateGame('${g.game_id}','time',this.value)"></td>
                         <td><input type="number" value="${g.duration || ''}" onchange="updateGame('${g.game_id}','duration',this.value)"></td>
