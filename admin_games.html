@@ -886,7 +886,12 @@ function saveSingleNewGame(idx) {
     alert('日期、時間、場地必填');
     return;
   }
-
+  
+  if (!data.game_code) {
+    alert('請填寫場次');
+    return;
+  }
+  
   callApi(data, function (res) {
 
     if (res.result === 'ok') {
@@ -906,10 +911,6 @@ function saveSingleNewGame(idx) {
   });
 }
 
-if (!data.game_code) {
-  alert('請填寫場次');
-  return;
-}
 
 // 儲存2筆以上
 function saveAllNewGames() {
