@@ -85,6 +85,11 @@ button{ padding:8px 16px; margin-top:16px }
 .pos-cell {
   min-width: 70px;
 }
+
+td.cell-na {
+  background: #000;
+  color: #000;
+}
   
 </style>
 </head>
@@ -178,6 +183,12 @@ function rememberSelection(gameId, role){
 
 /* ===== 產置出表格及內容 ===== */
 function render() {
+
+  function timeToMinutes(t){
+  const d = new Date(t);
+  return d.getHours() * 60 + d.getMinutes();
+  }
+
   const box = document.getElementById('content');
   box.innerHTML = '';
 
@@ -277,11 +288,15 @@ function render() {
     let zebra = false;
 
     groups[month]
-      .sort((a,b)=>{
-        const da = new Date(a.date.replace(/\//g,'-') + ' ' + a.time_range);
-        const db = new Date(b.date.replace(/\//g,'-') + ' ' + b.time_range);
-        return da - db;
+      .sort((a, b) => {
+        // 先比日期
+        if (a.date !== b.date) {
+          return a.date.localeCompare(b.date);
+        }
+        // 同一天再比時間
+        return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
       })
+
       .forEach(g => {
 
         const tr = document.createElement('tr');
@@ -311,7 +326,8 @@ function render() {
             (g.need_count === 2 && ['U2','U3'].includes(role)) ||
             (g.need_count === 3 && role === 'U2')
           ) {
-            return '<div class="cell-na">&nbsp;</div>';
+            // return '<div class="cell-na">&nbsp;</div>';
+            return '__NA__';
           }
 
           if (g.occupied_positions && g.occupied_positions[role]) {
@@ -344,11 +360,27 @@ function render() {
           <td>${g.home_team || ''}</td>
           <td>${g.field || ''}</td>
           <td>${g.duration || ''}</td>
-          <td>${g.need_count}</td>
-          <td class="pos-cell">${renderPos('PU')}</td>
-          <td class="pos-cell">${renderPos('U1')}</td>
-          <td class="pos-cell">${renderPos('U2')}</td>
-          <td class="pos-cell">${renderPos('U3')}</td>
+          <td>${g.need_count}</td>${(() => {
+          const v = renderPos('PU');
+          if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
+          return `<td class="pos-cell">${v}</td>`;
+        })()}
+        ${(() => {
+          const v = renderPos('U1');
+          if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
+          return `<td class="pos-cell">${v}</td>`;
+        })()}
+        ${(() => {
+          const v = renderPos('U2');
+          if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
+          return `<td class="pos-cell">${v}</td>`;
+        })()}
+        ${(() => {
+          const v = renderPos('U3');
+          if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
+          return `<td class="pos-cell">${v}</td>`;
+        })()}
+
         `;
 
         tbody.appendChild(tr);
