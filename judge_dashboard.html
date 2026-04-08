@@ -82,6 +82,11 @@ button{
   padding:8px 16px;
   margin-top:16px;
 }
+  
+tr.full {
+  background:#ffecec;
+}
+  
 </style>
 </head>
 
@@ -155,7 +160,9 @@ function render() {
     box.innerHTML = '<div class="panel">目前沒有可報名賽事</div>';
     return;
   }
-
+  
+  if (isFull) tr.style.backgroundColor = '#ffecec';
+  
   const panel = document.createElement('div');
   panel.className = 'panel';
 
