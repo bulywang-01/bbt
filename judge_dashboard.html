@@ -388,8 +388,6 @@ function render() {
             const isMe = g.my_position === role;
             const cls = isMe ? 'judge-name me' : 'judge-name';
             //return `<div class="${cls}">${g.occupied_positions[role]}</div>`;
-            const isMe = g.my_position === role;
-            
             if (isMe) {
               return `
                 <div class="judge-name me">
@@ -397,7 +395,6 @@ function render() {
                 </div>
               `;
             }
-            
             return `
               <div class="judge-name">
                 ${g.occupied_positions[role]}
