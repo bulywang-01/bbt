@@ -238,6 +238,7 @@ let allGames = [];
 let selectedPositions = {}; // game_id -> role
 
 /* ===== 初始化 ===== */
+/*
 document.addEventListener('DOMContentLoaded', () => {
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
   if (!session.user_id) {
@@ -247,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('u_name').textContent = session.name || '';
   loadGames();
 });
+*/
 
 /* ===== API ===== */
 function loadGames() {
