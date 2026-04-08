@@ -102,13 +102,14 @@ td.cell-na {
 .judge-name.me {
   font-weight: 900;
   color: #2e7d32;  /* 深綠色 */
+}
 
 /* 星星（自己） */
 .judge-star {
   margin-right: 4px;
-  color: #2e7d32;      /* 跟名字同色 */
-  opacity: 0.85;       /* 稍微淡一點，不搶戲 */
-} 
+  color: #2e7d32;
+  opacity: 0.85;
+}
 
 /* 上方篩選列 */
 .filter-bar {
@@ -171,8 +172,6 @@ td.cell-na {
 -->
   
 <div class="main">
-  <h2>裁判報名</h2>
-
   <!-- 篩選 -->
   <div class="filter-bar">
     <select id="filterRange" onchange="render()">
@@ -181,7 +180,7 @@ td.cell-na {
       <option value="week">本週</option>
     </select>
 
-    <label style="margin-left:8px;">
+    <label style="margin-left:10px;">
       <input type="checkbox" id="showPast" onchange="render()"> 顯示過期賽事
     </label>
 
@@ -209,26 +208,30 @@ td.cell-na {
 
 <script>
 /* ===== 給共用header.html使用 ===== */
+
 document.addEventListener('DOMContentLoaded', () => {
   fetch('header.html')
     .then(res => res.text())
     .then(html => {
       document.getElementById('header').innerHTML = html;
+
+      // 設定頁面標題
+      const title = document.body.dataset.pageTitle;
+      if (title) {
+        const el = document.querySelector('.page-title');
+        if (el) el.textContent = title;
+      }
     });
+
+  // 原本的初始化
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!session.user_id) {
+    location.replace('login.html');
+    return;
+  }
+  document.getElementById('u_name').textContent = session.name || '';
+  loadGames();
 });
-
-fetch('header.html')
-  .then(res => res.text())
-  .then(html => {
-    document.getElementById('header').innerHTML = html;
-
-    const title = document.body.dataset.pageTitle;
-    if (title) {
-      const el = document.querySelector('.page-title');
-      if (el) el.textContent = title;
-    }
-  });
-
 
 /* ===== 狀態 ===== */
 let allGames = [];
@@ -446,67 +449,44 @@ function render() {
 
         /* ===== 站位格 ===== */
         function renderPos(role) {
-          // 依裁判數決定是否不需要
+          // 不需裁判 → 整格黑
           if (
             g.need_count === 0 ||
             (g.need_count === 1 && role !== 'PU') ||
             (g.need_count === 2 && ['U2','U3'].includes(role)) ||
             (g.need_count === 3 && role === 'U2')
           ) {
-            // return '<div class="cell-na">&nbsp;</div>';
             return '__NA__';
           }
-
-          //if () {
-          //  const cls = g.my_position === role ? 'badge me' : 'badge';
-          //  return `<div class="${cls}">${g.occupied_positions[role]}</div>`;
-          //}
-          
-          // 已被他人或已送出佔位 → 只顯示姓名
+        
+          // 已佔用（approved）
           if (g.occupied_positions && g.occupied_positions[role]) {
             const isMe = g.my_position === role;
-            const cls = isMe ? 'judge-name me' : 'judge-name';
-            return `<div class="${cls}">${g.occupied_positions[role]}</div>`;
+            if (isMe) {
+              return `
+                <div class="judge-name me">
+                  <span class="judge-star">★</span>${g.occupied_positions[role]}
+                </div>`;
+            }
+            return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
           }
-          
-          // 尚未送出、是我選的 → 顯示 radio + 取消鍵
+        
+          // 尚未送出，且是我選的
           if (selectedPositions[g.game_id] === role) {
             return `
               <label>
-                <input type="radio"
-                       name="pos_${g.game_id}"
-                       value="${role}"
-                       checked>
+                <input type="radio" checked>
                 ${role}
               </label>
               <span class="cancel-btn"
-                    title="取消此選擇"
                     onclick="cancelSelected('${g.game_id}')">✖</span>
             `;
           }
-          
-          // 尚未選 → 顯示正常 radio
+        
+          // 尚未選
           return `
             <label>
               <input type="radio"
-                     name="pos_${g.game_id}"
-                     value="${role}"
-                     onchange="rememberSelection('${g.game_id}','${role}')">
-              ${role}
-            </label>
-          `;
-          
-          if (isPast || filled >= g.need_count) {
-            return '&nbsp;';
-          }
-
-          const ck = selectedPositions[g.game_id] === role ? 'checked' : '';
-          return `
-            <label>
-              <input type="radio"
-                     name="pos_${g.game_id}"
-                     value="${role}"
-                     ${ck}
                      onchange="rememberSelection('${g.game_id}','${role}')">
               ${role}
             </label>
