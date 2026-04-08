@@ -140,12 +140,11 @@ function login() {
     localStorage.setItem('session_user', JSON.stringify(res.user));
 
     // ✅ 關鍵：強制改密碼判斷
-    if (res.user.must_change_pwd === 'Y') {
+    if (res.must_change_pwd === 'Y') {
       location.href = 'change_password.html';
     } else {
       location.href = 'index.html';
     }
-
   });
 }
 </script>
