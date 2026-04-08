@@ -814,6 +814,7 @@ function addNewGameRow() {
   tr.className = 'new-game-row';
 
   tr.innerHTML = `
+    <td><input value="${g.game_code || ''}" onchange="updateGame('${g.game_id}','game_code',this.value)"></td>
     <td><input type="date" id="ng_${idx}_date"></td>
     <td><input type="time" id="ng_${idx}_time"></td>
     <td><input type="number" id="ng_${idx}_duration" value="90"></td>
