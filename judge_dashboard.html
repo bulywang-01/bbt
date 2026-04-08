@@ -281,8 +281,20 @@ function render() {
         const db = new Date(b.date.replace(/\//g,'-')+' '+b.time_range);
         return da - db;
       })
+      
+      let lastTime = null;
+      let zebra = false;
+
       .forEach(g => {
 
+        if (g.time_range !== lastTime) {
+          zebra = !zebra;
+          lastTime = g.time_range;
+        }
+        
+        if (zebra) {
+          tr.style.backgroundColor = '#fafafa';
+        }
         const tr = document.createElement('tr');
 
         const gameDate = new Date(g.date.replace(/\//g,'-'));
