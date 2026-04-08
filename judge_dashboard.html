@@ -153,6 +153,9 @@ function loadGames() {
 
 /* ===== 畫面渲染 ===== */
 function render() {
+  
+  const filled = Object.keys(g.occupied_positions || {}).length;
+  const isFull = filled >= g.need_count;
   const box = document.getElementById('content');
   box.innerHTML = '';
 
