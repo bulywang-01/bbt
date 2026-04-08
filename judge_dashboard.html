@@ -149,28 +149,54 @@ td.cell-na {
   opacity: 0.7;
 }
 
+/* 共用遮罩 */
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#overlay-box {
+  background: #fff;
+  padding: 24px 32px;
+  border-radius: 8px;
+  min-width: 280px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+#overlay-text {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+#overlay-ok {
+  padding: 6px 20px;
+}
+
 </style>
 </head>
 
-<!-- <body> -->
-  
+<!-- 畫面中間呈現訊息 -->
+<!-- Loading / Message Overlay -->
+<div id="overlay" style="display:none;">
+  <div id="overlay-box">
+    <div id="overlay-text">處理中...</div>
+    <button id="overlay-ok" style="display:none;">確定</button>
+  </div>
+</div>
+
 <!-- 共用 Header -->
 <body data-page-title="裁判報名">
 <div id="header"></div>
 
-<!--
-<div class="header">
-  <div class="nav">
-    <a href="index.html">🏠 系統首頁</a>
-    <a href="judge_dashboard.html">📋 裁判報名</a>
-  </div>
-  <div class="user-box">
-    <span id="u_name"></span>
-    <a href="#" onclick="logout()">登出</a>
-  </div>
-</div>
--->
-  
 <div class="main">
   <!-- 篩選 -->
   <div class="filter-bar">
@@ -245,29 +271,22 @@ document.addEventListener('DOMContentLoaded', () => {
 let allGames = [];
 let selectedPositions = {}; // game_id -> role
 
-/* ===== 初始化 ===== */
-/*
-document.addEventListener('DOMContentLoaded', () => {
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  if (!session.user_id) {
-    location.replace('login.html');
-    return;
-  }
-  document.getElementById('u_name').textContent = session.name || '';
-  loadGames();
-});
-*/
-
 /* ===== API ===== */
 function loadGames() {
   const session = JSON.parse(localStorage.getItem('session_user') || {});
+
+  showLoading('載入賽事資料中...');
+
   callApi(
-    { action:'getSignableGames', user_id: session.user_id || '' },
+    { action: 'getSignableGames', user_id: session.user_id || '' },
     res => {
+      hideOverlay();
+
       if (!res || res.result !== 'ok') {
-        alert(res?.message || '無法取得賽事資訊');
+        showMessage(res?.message || '無法取得賽事資料');
         return;
       }
+
       allGames = res.games || [];
       render();
     }
@@ -548,14 +567,13 @@ function render() {
 function submitSignup(){
   const entries = Object.keys(selectedPositions);
   if (!entries.length){
-    alert('尚未選擇站位');
+    showMessage('尚未選擇站位', false);
     return;
   }
 
   const session = JSON.parse(localStorage.getItem('session_user') || {});
   if (!session.user_id) {
-    alert('登入狀態已失效，請重新登入');
-    location.replace('login.html');
+    showMessage('登入狀態已失效，請重新登入');
     return;
   }
 
@@ -563,38 +581,50 @@ function submitSignup(){
     id => `${id}:${selectedPositions[id]}`
   );
 
- /* 
- callApi(
+  showLoading('送出報名中...');
+
+  callApi(
     {
       action: 'judgeSignupByGames',
-      user_id: session.user_id,                // ✅ 關鍵補這行
+      user_id: session.user_id,
       games_with_position: payload.join(',')
     },
     res => {
+      hideOverlay();
+
       if (res && res.result === 'ok') {
-        alert(res.message || '報名已送出，等待系統確認');
-        selectedPositions = {}; // 清空暫存選擇
-        loadGames();
+        showMessage(res.message || '報名成功');
       } else {
-        alert(res?.message || '報名失敗');
+        showMessage(res?.message || '報名失敗', false);
       }
     }
   );
-*/
-
-  callApi(
-  {
-    action: 'judgeSignupByGames',
-    user_id: session.user_id,
-    games_with_position: payload.join(',')
-  },
-  res => {
-    console.log('Signup API raw response:', res);
-    alert(JSON.stringify(res));
-  }
-);
 }
-  
+
+function showLoading(msg = '處理中...') {
+  document.getElementById('overlay-text').textContent = msg;
+  document.getElementById('overlay-ok').style.display = 'none';
+  document.getElementById('overlay').style.display = 'flex';
+}
+
+function showMessage(msg, reload = true) {
+  document.getElementById('overlay-text').textContent = msg;
+  const ok = document.getElementById('overlay-ok');
+  ok.style.display = 'inline-block';
+
+  ok.onclick = () => {
+    document.getElementById('overlay').style.display = 'none';
+    if (reload) {
+      // ✅ 重整畫面（或改成 loadGames()）
+      location.reload();
+    }
+  };
+}
+
+function hideOverlay() {
+  document.getElementById('overlay').style.display = 'none';
+}
+
 function logout(){
   localStorage.clear();
   location.replace('login.html');
