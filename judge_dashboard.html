@@ -154,8 +154,6 @@ function loadGames() {
 /* ===== 畫面渲染 ===== */
 function render() {
   
-  const filled = Object.keys(g.occupied_positions || {}).length;
-  const isFull = filled >= g.need_count;
   const box = document.getElementById('content');
   box.innerHTML = '';
 
@@ -163,8 +161,6 @@ function render() {
     box.innerHTML = '<div class="panel">目前沒有可報名賽事</div>';
     return;
   }
-  
-  if (isFull) tr.style.backgroundColor = '#ffecec';
   
   const panel = document.createElement('div');
   panel.className = 'panel';
@@ -187,44 +183,53 @@ function render() {
 
   const tbody = table.querySelector('tbody');
 
-  allGames.forEach(g => {
-    const tr = document.createElement('tr');
+allGames.forEach(g => {
+  const tr = document.createElement('tr');
 
-    let posHtml = '';
-    const roles = ['PU','U1','U2','U3'];
+  // ✅ 判斷是否滿額（這一場）
+  const filled = Object.keys(g.occupied_positions || {}).length;
+  const isFull = filled >= g.need_count;
 
-    roles.forEach(r => {
-      if (g.need_count === 1 && r !== 'PU') return;
-      if (g.need_count === 2 && !['PU','U1'].includes(r)) return;
-      if (g.need_count === 3 && r === 'U2') return;
+  if (isFull) {
+    tr.classList.add('full'); // 你 CSS 已經有 tr.full
+  }
 
-      if (g.occupied_positions && g.occupied_positions[r]) {
-        const cls = g.my_position === r ? 'badge me' : 'badge';
-        posHtml += `<div class="${cls}">${r}:${g.occupied_positions[r]}</div>`;
-      } else if (g.my_position === r) {
-        posHtml += `<div class="badge me">${r}:我</div>`;
-      } else {
-        posHtml += `
-          <label>
-            <input type="radio" name="pos_${g.game_id}" value="${r}">
-            ${r}
-          </label><br>
-        `;
-      }
-    });
+  let posHtml = '';
+  const roles = ['PU','U1','U2','U3'];
 
-    tr.innerHTML = `
-      <td>${g.date}</td>
-      <td>${g.time_range}</td>
-      <td>${g.category || ''}</td>
-      <td>${g.away_team || ''}</td>
-      <td>${g.home_team || ''}</td>
-      <td>${g.field || ''}</td>
-      <td>${posHtml}</td>
-    `;
+  roles.forEach(r => {
+    if (g.need_count === 1 && r !== 'PU') return;
+    if (g.need_count === 2 && !['PU','U1'].includes(r)) return;
+    if (g.need_count === 3 && r === 'U2') return;
 
-    tbody.appendChild(tr);
+    if (g.occupied_positions && g.occupied_positions[r]) {
+      const cls = g.my_position === r ? 'badge me' : 'badge';
+      posHtml += `<div class="${cls}">${r}:${g.occupied_positions[r]}</div>`;
+    } else if (g.my_position === r) {
+      posHtml += `<div class="badge me">${r}:我</div>`;
+    } else {
+      posHtml += `
+        <label>
+          <input type="radio" name="pos_${g.game_id}" value="${r}">
+          ${r}
+        </label><br>
+      `;
+    }
   });
+
+  tr.innerHTML = `
+    <td>${g.date}</td>
+    <td>${g.time_range}</td>
+    <td>${g.category || ''}</td>
+    <td>${g.away_team || ''}</td>
+    <td>${g.home_team || ''}</td>
+    <td>${g.field || ''}</td>
+    <td>${posHtml}</td>
+  `;
+
+  tbody.appendChild(tr);
+});
+
 
   panel.appendChild(table);
   box.appendChild(panel);
