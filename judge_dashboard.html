@@ -151,8 +151,13 @@ td.cell-na {
 </style>
 </head>
 
-<body>
+<!-- <body> -->
+  
+<!-- 共用 Header -->
+<body data-page-title="裁判報名">
+<div id="header"></div>
 
+<!--
 <div class="header">
   <div class="nav">
     <a href="index.html">🏠 系統首頁</a>
@@ -163,7 +168,8 @@ td.cell-na {
     <a href="#" onclick="logout()">登出</a>
   </div>
 </div>
-
+-->
+  
 <div class="main">
   <h2>裁判報名</h2>
 
@@ -202,6 +208,28 @@ td.cell-na {
 <script src="js/config.js"></script>
 
 <script>
+/* ===== 給共用header.html使用 ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header').innerHTML = html;
+    });
+});
+
+fetch('header.html')
+  .then(res => res.text())
+  .then(html => {
+    document.getElementById('header').innerHTML = html;
+
+    const title = document.body.dataset.pageTitle;
+    if (title) {
+      const el = document.querySelector('.page-title');
+      if (el) el.textContent = title;
+    }
+  });
+
+
 /* ===== 狀態 ===== */
 let allGames = [];
 let selectedPositions = {}; // game_id -> role
