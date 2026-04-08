@@ -510,6 +510,16 @@ function render() {
 
         /* ===== 站位格 ===== */
         function renderPos(role) {
+        
+          /* === 新增重點 ===
+             如果「我已經報名這一場」
+             而且這個 role 不是我的站位
+             → 直接留空白
+          */
+          if (g.my_position && role !== g.my_position) {
+            return '';
+          }
+        
           // 不需裁判 → 整格黑
           if (
             g.need_count === 0 ||
@@ -523,17 +533,19 @@ function render() {
           // 已佔用（approved）
           if (g.occupied_positions && g.occupied_positions[role]) {
             const isMe = g.my_position === role;
+        
             if (isMe) {
               return `
                 <div class="judge-name me">
                   <span class="judge-star">★</span>${g.occupied_positions[role]}
-                </div>`;
+                </div>
+              `;
             }
+        
             return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
           }
         
-          // 尚未送出，且是我選的
-          // 尚未送出、是我選的 → radio + X
+          // 尚未送出、而且是我選的 → radio + X
           if (selectedPositions[g.game_id] === role) {
             return `
               <label>
@@ -546,7 +558,7 @@ function render() {
             `;
           }
         
-          // 尚未選
+          // 尚未選 → 一般 radio
           return `
             <label>
               <input type="radio"
@@ -555,6 +567,7 @@ function render() {
             </label>
           `;
         }
+
 
         // 已報名人數
         //const filled = Object.keys(g.occupied_positions || {}).length;
