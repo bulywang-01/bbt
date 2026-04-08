@@ -97,6 +97,11 @@ td.cell-na {
   font-weight: bold;
   color: #0b3c8a; /* 深藍色 */
 }
+
+/* 自己報名的裁判姓名 */
+.judge-name.me {
+  color: #2e7d32;  /* 深綠色 */
+} 
   
 </style>
 </head>
@@ -348,7 +353,9 @@ function render() {
           //}
           
           if (g.occupied_positions && g.occupied_positions[role]) {
-            return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
+            const isMe = g.my_position === role;
+            const cls = isMe ? 'judge-name me' : 'judge-name';
+            return `<div class="${cls}">${g.occupied_positions[role]}</div>`;
           }
           
           if (isPast || filled >= g.need_count) {
