@@ -177,7 +177,7 @@ function loadGames() {
   );
 }
 
-/* ===== 先分組
+/* ===== 先分組 ===== */
 
 /* ===== 畫面渲染 ===== */
 function render() {
@@ -189,18 +189,23 @@ function render() {
     return;
   }
 
-  const range = document.getElementById('filterRange').value;
-  const showPast = document.getElementById('showPast').checked;
-  const keyword = document.getElementById('keyword').value.trim();
+  const range = document.getElementById('filterRange')?.value || 'all';
+  const showPast = document.getElementById('showPast')?.checked || false;
+  const keyword = document.getElementById('keyword')?.value.trim() || '';
 
   const today = new Date();
   today.setHours(0,0,0,0);
 
-  /* ===== 工具 ===== */
   function formatTime(timeStr) {
     const d = new Date(timeStr);
     return d.getHours().toString().padStart(2,'0') + ':' +
            d.getMinutes().toString().padStart(2,'0');
+  }
+
+  function inThisMonth(dateStr) {
+    const d = new Date(dateStr.replace(/\//g,'-'));
+    return d.getFullYear() === today.getFullYear() &&
+           d.getMonth() === today.getMonth();
   }
 
   function inThisWeek(dateStr) {
@@ -212,21 +217,13 @@ function render() {
     return d >= start && d <= end;
   }
 
-  function inThisMonth(dateStr) {
-    const d = new Date(dateStr.replace(/\//g,'-'));
-    return d.getFullYear() === today.getFullYear() &&
-           d.getMonth() === today.getMonth();
-  }
-
-  /* ===== 前置篩選 ===== */
+  // ===== 前置篩選 =====
   const filtered = allGames.filter(g => {
     const gDate = new Date(g.date.replace(/\//g,'-'));
     const isPast = gDate < today;
     if (isPast && !showPast) return false;
-
     if (range === 'month' && !inThisMonth(g.date)) return false;
     if (range === 'week' && !inThisWeek(g.date)) return false;
-
     if (keyword) {
       const text = `${g.away_team} ${g.home_team} ${g.field} ${g.category}`;
       if (!text.includes(keyword)) return false;
@@ -239,15 +236,14 @@ function render() {
     return;
   }
 
-  /* ===== 依 年/月 分組 ===== */
+  // ===== 依 年/月 分組 =====
   const groups = {};
   filtered.forEach(g => {
-    const monthKey = g.date.slice(0,7); // yyyy/MM
+    const monthKey = g.date.slice(0,7);
     if (!groups[monthKey]) groups[monthKey] = [];
     groups[monthKey].push(g);
   });
 
-  /* ===== 逐月輸出 ===== */
   Object.keys(groups).sort().forEach(month => {
 
     const h3 = document.createElement('h3');
@@ -272,36 +268,35 @@ function render() {
       </thead>
       <tbody></tbody>
     `;
-
     const tbody = table.querySelector('tbody');
+
+    // ✅ 同月時間 zebra 控制
+    let lastTime = null;
+    let zebra = false;
 
     groups[month]
       .sort((a,b) => {
-        const da = new Date(a.date.replace(/\//g,'-')+' '+a.time_range);
-        const db = new Date(b.date.replace(/\//g,'-')+' '+b.time_range);
+        const da = new Date(a.date.replace(/\//g,'-') + ' ' + a.time_range);
+        const db = new Date(b.date.replace(/\//g,'-') + ' ' + b.time_range);
         return da - db;
       })
-      
-      let lastTime = null;
-      let zebra = false;
-
       .forEach(g => {
 
+        const tr = document.createElement('tr');
+
+        // 判斷是否過期
+        const gameDate = new Date(g.date.replace(/\//g,'-'));
+        const isPast = gameDate < today;
+        if (isPast) tr.classList.add('expired');
+
+        // ✅ zebra：同月不同時間
         if (g.time_range !== lastTime) {
           zebra = !zebra;
           lastTime = g.time_range;
         }
-        
-        if (zebra) {
-          tr.style.backgroundColor = '#fafafa';
-        }
-        const tr = document.createElement('tr');
+        if (zebra) tr.style.backgroundColor = '#fafafa';
 
-        const gameDate = new Date(g.date.replace(/\//g,'-'));
-        const isPast = gameDate < today;
-
-        if (isPast) tr.classList.add('expired');
-
+        // ✅ 滿額覆蓋
         const filled = Object.keys(g.occupied_positions || {}).length;
         if (filled >= g.need_count) tr.classList.add('full');
 
