@@ -168,7 +168,6 @@ td.cell-na {
   <h2>裁判報名</h2>
 
   <!-- 篩選 -->
-  <!-- <div style="margin-bottom:12px;"> -->
   <div class="filter-bar">
     <select id="filterRange" onchange="render()">
       <option value="all">全部</option>
@@ -191,10 +190,12 @@ td.cell-na {
 
   <div id="content"></div>
 
+  <!--
   <button onclick="cancelSelectedByDate()">取消當日選擇</button>
   <button onclick="cancelAllSelected()" style="margin-left:8px;">
   全部取消
   </button>
+  -->
   <button onclick="submitSignup()">送出報名</button>
 </div>
 
@@ -525,6 +526,7 @@ function render() {
 
 
 /* ===== 送出 ===== */
+
 function submitSignup(){
   const entries = Object.keys(selectedPositions);
   if (!entries.length){
@@ -543,7 +545,8 @@ function submitSignup(){
     id => `${id}:${selectedPositions[id]}`
   );
 
-  callApi(
+ /* 
+ callApi(
     {
       action: 'judgeSignupByGames',
       user_id: session.user_id,                // ✅ 關鍵補這行
@@ -559,8 +562,21 @@ function submitSignup(){
       }
     }
   );
-}
+*/
 
+  callApi(
+  {
+    action: 'judgeSignupByGames',
+    user_id: session.user_id,
+    games_with_position: payload.join(',')
+  },
+  res => {
+    console.log('Signup API raw response:', res);
+    alert(JSON.stringify(res));
+  }
+);
+}
+  
 function logout(){
   localStorage.clear();
   location.replace('login.html');
