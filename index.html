@@ -112,18 +112,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
     location.replace('login.html');
     return;
   }
-  try{
-    const s = JSON.parse(raw);
-    if(!s.user_id){
-      location.replace('login.html');
-      return;
-    }
-  }catch(e){
+try {
+  const s = JSON.parse(raw);
+
+  // ✅ 未登入
+  if (!s.user_id) {
     location.replace('login.html');
     return;
   }
 
-  loadHeader();
+  // ✅ 必須先改密碼的使用者，只能進 change_password.html
+  if (s.must_change_pwd === 'Y') {
+    location.replace('change_password.html');
+    return;
+  }
+
+} catch (e) {
+  location.replace('login.html');
+  return;
+}
+
+loadHeader();
 });
 </script>
 
