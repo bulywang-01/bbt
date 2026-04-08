@@ -644,11 +644,13 @@ function loadGames() {
 function updateGame(id,f,v){
   callApi({action:'updateGame',game_id:id,field_name:f,value:v})
 }
+
+/*
 function deleteGame(id){
   if(!confirm('確定刪除？'))return
   callApi({action:'deleteGame',game_id:id},loadGames)
 }
-
+*/
 let importRows=[]
 
 // 預覽
@@ -814,7 +816,7 @@ function addNewGameRow() {
   tr.className = 'new-game-row';
 
   tr.innerHTML = `
-    <td><input value="${g.game_code || ''}" onchange="updateGame('${g.game_id}','game_code',this.value)"></td>
+    <td><input id="ng_${idx}_code" placeholder="場次"></td>
     <td><input type="date" id="ng_${idx}_date"></td>
     <td><input type="time" id="ng_${idx}_time"></td>
     <td><input type="number" id="ng_${idx}_duration" value="90"></td>
@@ -866,6 +868,7 @@ function saveSingleNewGame(idx) {
 
   const data = {
     action: 'createGame',
+    game_code: document.getElementById(`ng_${idx}_code`).value, // ✅ 加這行
     date: document.getElementById(`ng_${idx}_date`).value,
     time: document.getElementById(`ng_${idx}_time`).value,
     duration: document.getElementById(`ng_${idx}_duration`).value,
@@ -903,6 +906,11 @@ function saveSingleNewGame(idx) {
   });
 }
 
+if (!data.game_code) {
+  alert('請填寫場次');
+  return;
+}
+
 // 儲存2筆以上
 function saveAllNewGames() {
 
@@ -916,6 +924,7 @@ function saveAllNewGames() {
     const q = s => tr.querySelector(s)?.value || '';
     return {
       action: 'createGame',
+      game_code: q('input[id*="_code"]'),
       date: q('input[type="date"]'),
       time: q('input[type="time"]'),
       duration: q('input[type="number"]'),
@@ -933,6 +942,10 @@ function saveAllNewGames() {
   for (let i = 0; i < games.length; i++) {
     if (!games[i].date || !games[i].time || !games[i].field) {
       alert(`第 ${i + 1} 筆：日期 / 時間 / 場地 必填`);
+      return;
+    }
+    if (!games[i].game_code) {
+      alert(`第 ${i + 1} 筆：場次必填`);
       return;
     }
   }
@@ -1044,6 +1057,7 @@ function confirmImport() {
 }
 
 // 用POST方式
+/*
 function importGamesPost(data) {
 
 
@@ -1083,7 +1097,8 @@ function importGamesPost(data) {
   ).setMimeType(ContentService.MimeType.JSON);
 
 }
-
+*/
+  
 function getGamesPost() {
 
   const ss = SpreadsheetApp.openById('你的SheetID');
