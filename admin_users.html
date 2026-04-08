@@ -179,6 +179,7 @@ button{
 <thead>
 <tr>
   <th>帳號</th>
+  <th>背號</th>
   <th>新密碼</th>
   <th>姓名</th>
   <th>電話</th>
@@ -295,6 +296,7 @@ function loadUsers(){
 
       tr.innerHTML=`
         <td><input name="username" value="${u.username||''}"></td>
+        <td><input name="note" value="${u.note || ''}" placeholder="背號"></td>
         <td><input name="password" type="password" placeholder="留空不修改"></td>
         <td><input name="name" value="${u.name||''}"></td>
         <td><input name="phone" value="${u.phone||''}"></td>
