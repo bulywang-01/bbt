@@ -134,6 +134,20 @@ td.cell-na {
 .filter-bar input[type="text"] {
   padding: 4px 6px;
 }
+
+/* 取消選擇按鈕 */
+.cancel-btn {
+  margin-left: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #c00;
+  font-size: 14px;
+}
+
+.cancel-btn:hover {
+  opacity: 0.7;
+}
+
 </style>
 </head>
 
@@ -219,6 +233,11 @@ function loadGames() {
 }
 
 /* ===== 工具 ===== */
+function cancelSelected(gameId) {
+  delete selectedPositions[gameId];
+  render();
+}
+  
 function cancelSelectedByDate() {
   if (!Object.keys(selectedPositions).length) {
     alert('目前沒有已選擇的站位');
@@ -409,28 +428,44 @@ function render() {
             return '__NA__';
           }
 
-          //if (g.occupied_positions && g.occupied_positions[role]) {
+          //if () {
           //  const cls = g.my_position === role ? 'badge me' : 'badge';
           //  return `<div class="${cls}">${g.occupied_positions[role]}</div>`;
           //}
           
+          // 已被他人或已送出佔位 → 只顯示姓名
           if (g.occupied_positions && g.occupied_positions[role]) {
             const isMe = g.my_position === role;
             const cls = isMe ? 'judge-name me' : 'judge-name';
-            //return `<div class="${cls}">${g.occupied_positions[role]}</div>`;
-            if (isMe) {
-              return `
-                <div class="judge-name me">
-                  <span class="judge-star">★</span>${g.occupied_positions[role]}
-                </div>
-              `;
-            }
+            return `<div class="${cls}">${g.occupied_positions[role]}</div>`;
+          }
+          
+          // 尚未送出、是我選的 → 顯示 radio + 取消鍵
+          if (selectedPositions[g.game_id] === role) {
             return `
-              <div class="judge-name">
-                ${g.occupied_positions[role]}
-              </div>
+              <label>
+                <input type="radio"
+                       name="pos_${g.game_id}"
+                       value="${role}"
+                       checked>
+                ${role}
+              </label>
+              <span class="cancel-btn"
+                    title="取消此選擇"
+                    onclick="cancelSelected('${g.game_id}')">✖</span>
             `;
           }
+          
+          // 尚未選 → 顯示正常 radio
+          return `
+            <label>
+              <input type="radio"
+                     name="pos_${g.game_id}"
+                     value="${role}"
+                     onchange="rememberSelection('${g.game_id}','${role}')">
+              ${role}
+            </label>
+          `;
           
           if (isPast || filled >= g.need_count) {
             return '&nbsp;';
