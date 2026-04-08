@@ -42,6 +42,7 @@ body{
 }
 
 h2{ margin-top:0 }
+h3{ margin:24px 0 8px }
 
 table{
   width:100%;
@@ -54,9 +55,7 @@ th,td{
   padding:6px 8px;
   text-align:center;
 }
-th{
-  background:#eef2f6;
-}
+th{ background:#eef2f6 }
 
 .badge{
   padding:2px 8px;
@@ -70,34 +69,16 @@ th{
   background:#ffd6e5;
   color:#0f3d5e;
 }
-.badge.gray{
-  background:#999;
-}
-.badge.na{
-  background:#000;
-  color:#fff;
-}
 
-button{
-  padding:8px 16px;
-  margin-top:16px;
-}
-  
-tr.full {
-  background:#ffecec;
-}
+tr.full{ background:#ffecec }
+tr.expired{ background:#f2f2f2; color:#999 }
 
-tr.expired {
-  background:#f2f2f2;
-  color:#999;
-}
-
+button{ padding:8px 16px; margin-top:16px }
 </style>
 </head>
 
 <body>
 
-<!-- ===== Header（先 inline，確保穩定） ===== -->
 <div class="header">
   <div class="nav">
     <a href="index.html">🏠 系統首頁</a>
@@ -111,39 +92,39 @@ tr.expired {
 
 <div class="main">
   <h2>裁判報名</h2>
-  
-<div style="margin-bottom:12px;">
-  <select id="filterRange" onchange="render()">
-    <option value="all">全部</option>
-    <option value="month">本月</option>
-    <option value="week">本週</option>
-  </select>
 
-  <label style="margin-left:8px;">
-    <input type="checkbox" id="showPast" onchange="render()">
-    顯示過期賽事
-  </label>
+  <!-- 篩選 -->
+  <div style="margin-bottom:12px;">
+    <select id="filterRange" onchange="render()">
+      <option value="all">全部</option>
+      <option value="month">本月</option>
+      <option value="week">本週</option>
+    </select>
 
-  <input
-    type="text"
-    id="keyword"
-    placeholder="搜尋球隊 / 場地 / 組別"
-    style="margin-left:8px;"
-    oninput="render()"
-  >
-</div>
- 
+    <label style="margin-left:8px;">
+      <input type="checkbox" id="showPast" onchange="render()"> 顯示過期賽事
+    </label>
+
+    <input
+      type="text"
+      id="keyword"
+      placeholder="搜尋球隊 / 場地 / 組別"
+      style="margin-left:8px;"
+      oninput="render()"
+    >
+  </div>
+
   <div id="content"></div>
 
   <button onclick="submitSignup()">送出報名</button>
 </div>
 
-<!-- 共用 API -->
 <script src="js/config.js"></script>
 
 <script>
+/* ===== 狀態 ===== */
 let allGames = [];
-const MAX_SIGNUP_PER_TIMESLOT = 0; // 限定一天可以報名幾場，0 = 不限（預設）
+let selectedPositions = {}; // game_id -> role
 
 /* ===== 初始化 ===== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -156,19 +137,14 @@ document.addEventListener('DOMContentLoaded', () => {
   loadGames();
 });
 
-/* ===== 讀取可報名賽事 ===== */
+/* ===== API ===== */
 function loadGames() {
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-
+  const session = JSON.parse(localStorage.getItem('session_user') || {});
   callApi(
-    {
-      action: 'getSignableGames',
-      // ser_id: session.user_id || ''   // ✅ Test用
-      user_id: session.user_id || ''   // ✅ 原程式
-    },
+    { action:'getSignableGames', user_id: session.user_id || '' },
     res => {
       if (!res || res.result !== 'ok') {
-        alert(res && res.message ? res.message : '無法取得賽事資訊');
+        alert(res?.message || '無法取得賽事資訊');
         return;
       }
       allGames = res.games || [];
@@ -177,160 +153,120 @@ function loadGames() {
   );
 }
 
-/* ===== 先分組 ===== */
+/* ===== 工具 ===== */
+function formatTime(t){
+  const d = new Date(t);
+  return d.getHours().toString().padStart(2,'0') + ':' +
+         d.getMinutes().toString().padStart(2,'0');
+}
 
-/* ===== 畫面渲染 ===== */
+function rememberSelection(gameId, role){
+  selectedPositions[gameId] = role;
+}
+
+/* ===== 繪製 ===== */
 function render() {
   const box = document.getElementById('content');
   box.innerHTML = '';
 
-  if (!allGames || allGames.length === 0) {
+  if (!allGames.length) {
     box.innerHTML = '<div class="panel">目前沒有可報名賽事</div>';
     return;
   }
 
-  const range = document.getElementById('filterRange')?.value || 'all';
-  const showPast = document.getElementById('showPast')?.checked || false;
-  const keyword = document.getElementById('keyword')?.value.trim() || '';
+  const range = filterRange.value;
+  const showPastChecked = showPast.checked;
+  const kw = keyword.value.trim();
+  const today = new Date(); today.setHours(0,0,0,0);
 
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  function formatTime(timeStr) {
-    const d = new Date(timeStr);
-    return d.getHours().toString().padStart(2,'0') + ':' +
-           d.getMinutes().toString().padStart(2,'0');
-  }
-
-  function inThisMonth(dateStr) {
-    const d = new Date(dateStr.replace(/\//g,'-'));
-    return d.getFullYear() === today.getFullYear() &&
-           d.getMonth() === today.getMonth();
-  }
-
-  function inThisWeek(dateStr) {
-    const d = new Date(dateStr.replace(/\//g,'-'));
-    const start = new Date(today);
-    start.setDate(today.getDate() - today.getDay());
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    return d >= start && d <= end;
-  }
-
-  // ===== 前置篩選 =====
   const filtered = allGames.filter(g => {
-    const gDate = new Date(g.date.replace(/\//g,'-'));
-    const isPast = gDate < today;
-    if (isPast && !showPast) return false;
-    if (range === 'month' && !inThisMonth(g.date)) return false;
-    if (range === 'week' && !inThisWeek(g.date)) return false;
-    if (keyword) {
-      const text = `${g.away_team} ${g.home_team} ${g.field} ${g.category}`;
-      if (!text.includes(keyword)) return false;
+    const gd = new Date(g.date.replace(/\//g,'-'));
+    if (gd < today && !showPastChecked) return false;
+    if (range === 'month' && gd.getMonth() !== today.getMonth()) return false;
+    if (range === 'week') {
+      const s = new Date(today); s.setDate(today.getDate()-today.getDay());
+      const e = new Date(s); e.setDate(s.getDate()+6);
+      if (gd < s || gd > e) return false;
+    }
+    if (kw) {
+      const txt = `${g.away_team} ${g.home_team} ${g.field} ${g.category}`;
+      if (!txt.includes(kw)) return false;
     }
     return true;
   });
 
-  if (filtered.length === 0) {
-    box.innerHTML = '<div class="panel">沒有符合條件的賽事</div>';
-    return;
-  }
-
-  // ===== 依 年/月 分組 =====
   const groups = {};
-  filtered.forEach(g => {
-    const monthKey = g.date.slice(0,7);
-    if (!groups[monthKey]) groups[monthKey] = [];
-    groups[monthKey].push(g);
+  filtered.forEach(g=>{
+    const m = g.date.slice(0,7);
+    if(!groups[m]) groups[m]=[];
+    groups[m].push(g);
   });
 
-  Object.keys(groups).sort().forEach(month => {
-
+  Object.keys(groups).sort().forEach(month=>{
     const h3 = document.createElement('h3');
     h3.textContent = `${month} 月`;
     box.appendChild(h3);
 
     const panel = document.createElement('div');
-    panel.className = 'panel';
+    panel.className='panel';
 
     const table = document.createElement('table');
     table.innerHTML = `
       <thead>
         <tr>
-          <th>日期</th>
-          <th>時間</th>
-          <th>組別</th>
-          <th>客隊</th>
-          <th>主隊</th>
-          <th>場地</th>
-          <th>站位</th>
+          <th>日期</th><th>時間</th><th>組別</th>
+          <th>客隊</th><th>主隊</th><th>場地</th><th>站位</th>
         </tr>
       </thead>
-      <tbody></tbody>
-    `;
+      <tbody></tbody>`;
     const tbody = table.querySelector('tbody');
 
-    // ✅ 同月時間 zebra 控制
-    let lastTime = null;
-    let zebra = false;
+    let lastTime=null, zebra=false;
 
     groups[month]
-      .sort((a,b) => {
-        const da = new Date(a.date.replace(/\//g,'-') + ' ' + a.time_range);
-        const db = new Date(b.date.replace(/\//g,'-') + ' ' + b.time_range);
-        return da - db;
-      })
-      .forEach(g => {
+      .sort((a,b)=> new Date(a.date+' '+a.time_range)-new Date(b.date+' '+b.time_range))
+      .forEach(g=>{
+        const tr=document.createElement('tr');
 
-        const tr = document.createElement('tr');
+        const gd=new Date(g.date.replace(/\//g,'-'));
+        const isPast = gd<today;
+        if(isPast) tr.classList.add('expired');
 
-        // 判斷是否過期
-        const gameDate = new Date(g.date.replace(/\//g,'-'));
-        const isPast = gameDate < today;
-        if (isPast) tr.classList.add('expired');
+        if(g.time_range!==lastTime){ zebra=!zebra; lastTime=g.time_range; }
+        if(zebra) tr.style.backgroundColor='#fafafa';
 
-        // ✅ zebra：同月不同時間
-        if (g.time_range !== lastTime) {
-          zebra = !zebra;
-          lastTime = g.time_range;
-        }
-        if (zebra) tr.style.backgroundColor = '#fafafa';
+        const filled=Object.keys(g.occupied_positions||{}).length;
+        if(filled>=g.need_count) tr.classList.add('full');
 
-        // ✅ 滿額覆蓋
-        const filled = Object.keys(g.occupied_positions || {}).length;
-        if (filled >= g.need_count) tr.classList.add('full');
+        let posHtml='';
+        ['PU','U1','U2','U3'].forEach(r=>{
+          if(g.need_count===1 && r!=='PU')return;
+          if(g.need_count===2 && !['PU','U1'].includes(r))return;
+          if(g.need_count===3 && r==='U2')return;
 
-        let posHtml = '';
-        const roles = ['PU','U1','U2','U3'];
-
-        roles.forEach(r => {
-          if (g.need_count === 1 && r !== 'PU') return;
-          if (g.need_count === 2 && !['PU','U1'].includes(r)) return;
-          if (g.need_count === 3 && r === 'U2') return;
-
-          if (g.occupied_positions && g.occupied_positions[r]) {
-            const cls = g.my_position === r ? 'badge me' : 'badge';
-            posHtml += `<div class="${cls}">${r}:${g.occupied_positions[r]}</div>`;
-          } else if (!isPast && filled < g.need_count) {
-            posHtml += `
+          if(g.occupied_positions && g.occupied_positions[r]){
+            const cls = g.my_position===r?'badge me':'badge';
+            posHtml+=`<div class="${cls}">${r}:${g.occupied_positions[r]}</div>`;
+          }else if(!isPast && filled<g.need_count){
+            const ck = selectedPositions[g.game_id]===r?'checked':'';
+            posHtml+=`
               <label>
-                <input type="radio" name="pos_${g.game_id}" value="${r}">
+                <input type="radio" name="pos_${g.game_id}" value="${r}"
+                  ${ck}
+                  onchange="rememberSelection('${g.game_id}','${r}')">
                 ${r}
-              </label><br>
-            `;
+              </label><br>`;
           }
         });
 
-        tr.innerHTML = `
+        tr.innerHTML=`
           <td>${g.date}</td>
           <td>${formatTime(g.time_range)}</td>
-          <td>${g.category || ''}</td>
-          <td>${g.away_team || ''}</td>
-          <td>${g.home_team || ''}</td>
-          <td>${g.field || ''}</td>
-          <td>${posHtml}</td>
-        `;
-
+          <td>${g.category||''}</td>
+          <td>${g.away_team||''}</td>
+          <td>${g.home_team||''}</td>
+          <td>${g.field||''}</td>
+          <td>${posHtml}</td>`;
         tbody.appendChild(tr);
       });
 
@@ -339,42 +275,30 @@ function render() {
   });
 }
 
+/* ===== 送出 ===== */
+function submitSignup(){
+  const entries = Object.keys(selectedPositions);
+  if(!entries.length){ alert('尚未選擇站位'); return; }
 
-/* ===== 送出報名 ===== */
-function submitSignup() {
-  const sel = [];
-  document.querySelectorAll('input[type=radio]:checked')
-    .forEach(r => sel.push(r.name.replace('pos_','') + ':' + r.value));
-
-  if (!sel.length) {
-    alert('尚未選擇站位');
-    return;
-  }
-
+  const payload = entries.map(id=>`${id}:${selectedPositions[id]}`);
   callApi(
-    {
-      action: 'judgeSignupByGames',
-      games_with_position: sel.join(',')
-    },
-    res => {
-      if (res && res.result === 'ok') {
+    { action:'judgeSignupByGames', games_with_position: payload.join(',') },
+    res=>{
+      if(res && res.result==='ok'){
         alert('報名完成');
+        selectedPositions={};
         loadGames();
-      } else {
-        alert(res && res.message ? res.message : '報名失敗');
+      }else{
+        alert(res?.message||'報名失敗');
       }
     }
   );
 }
 
-/* ===== 登出 ===== */
-function logout() {
+function logout(){
   localStorage.clear();
   location.replace('login.html');
 }
-
-console.log('session_user =', localStorage.getItem('session_user'));
-
 </script>
 
 </body>
