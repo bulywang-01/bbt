@@ -284,7 +284,8 @@ function render() {
     `;
     const tbody = table.querySelector('tbody');
 
-    let lastTime = null;
+    // let lastTime = null;
+    let lastDate = null;
     let zebra = false;
 
     groups[month]
@@ -307,9 +308,13 @@ function render() {
         if (isPast) tr.classList.add('expired');
 
         /* zebra（同月不同時間） */
-        if (g.time_range !== lastTime) {
+        //if (g.time_range !== lastTime) {
+        //  zebra = !zebra;
+        //  lastTime = g.time_range;
+        //}
+        if (g.date !== lastDate) {
           zebra = !zebra;
-          lastTime = g.time_range;
+          lastDate = g.date;
         }
         if (zebra) tr.style.backgroundColor = '#fafafa';
 
