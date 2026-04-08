@@ -385,7 +385,7 @@ function createUser() {
     console.log('createUser response:', res);
 
     if (res && res.result === 'ok') {
-      showToast('✅ 帳號已建立，預設密碼為 00000000');
+      showToast('✅ 帳號已建立，預設密碼為 12345678');
       loadUsers();
     } else {
       alert(res?.message || '新增失敗');
