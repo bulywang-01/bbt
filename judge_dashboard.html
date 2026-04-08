@@ -107,6 +107,28 @@ tr.full {
 <div class="main">
   <h2>裁判報名</h2>
 
+  <div style="margin-bottom:12px;">
+  <select id="filterRange">
+    <option value="all">全部</option>
+    <option value="month">本月</option>
+    <option value="week">本週</option>
+  </select>
+
+  <input
+    type="text"
+    id="keyword"
+    placeholder="搜尋球隊 / 場地 / 組別"
+    style="margin-left:8px;"
+  >
+</div>
+  
+  <div style="margin-bottom:12px;">
+    <label>
+      <input type="checkbox" id="showPast">
+      顯示已過期賽事
+    </label>
+  </div>
+  
   <div id="content"></div>
 
   <button onclick="submitSignup()">送出報名</button>
@@ -151,88 +173,111 @@ function loadGames() {
   );
 }
 
+/* ===== 先分組
+
 /* ===== 畫面渲染 ===== */
 function render() {
-  
   const box = document.getElementById('content');
   box.innerHTML = '';
 
-  if (allGames.length === 0) {
+  if (!allGames || allGames.length === 0) {
     box.innerHTML = '<div class="panel">目前沒有可報名賽事</div>';
     return;
   }
-  
-  const panel = document.createElement('div');
-  panel.className = 'panel';
 
-  const table = document.createElement('table');
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>日期</th>
-        <th>時間</th>
-        <th>組別</th>
-        <th>客隊</th>
-        <th>主隊</th>
-        <th>場地</th>
-        <th>站位</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  `;
-
-  const tbody = table.querySelector('tbody');
-
-allGames.forEach(g => {
-  const tr = document.createElement('tr');
-
-  // ✅ 判斷是否滿額（這一場）
-  const filled = Object.keys(g.occupied_positions || {}).length;
-  const isFull = filled >= g.need_count;
-
-  if (isFull) {
-    tr.classList.add('full'); // 你 CSS 已經有 tr.full
-  }
-
-  let posHtml = '';
-  const roles = ['PU','U1','U2','U3'];
-
-  roles.forEach(r => {
-    if (g.need_count === 1 && r !== 'PU') return;
-    if (g.need_count === 2 && !['PU','U1'].includes(r)) return;
-    if (g.need_count === 3 && r === 'U2') return;
-
-    if (g.occupied_positions && g.occupied_positions[r]) {
-      const cls = g.my_position === r ? 'badge me' : 'badge';
-      posHtml += `<div class="${cls}">${r}:${g.occupied_positions[r]}</div>`;
-    } else if (g.my_position === r) {
-      posHtml += `<div class="badge me">${r}:我</div>`;
-    } else {
-      posHtml += `
-        <label>
-          <input type="radio" name="pos_${g.game_id}" value="${r}">
-          ${r}
-        </label><br>
-      `;
-    }
+  /* ===== 第一步：依 年/月 分組 ===== */
+  const groups = {};
+  allGames.forEach(g => {
+    // g.date = '2026/04/25'
+    const monthKey = g.date.slice(0, 7); // '2026/04'
+    if (!groups[monthKey]) groups[monthKey] = [];
+    groups[monthKey].push(g);
   });
 
-  tr.innerHTML = `
-    <td>${g.date}</td>
-    <td>${g.time_range}</td>
-    <td>${g.category || ''}</td>
-    <td>${g.away_team || ''}</td>
-    <td>${g.home_team || ''}</td>
-    <td>${g.field || ''}</td>
-    <td>${posHtml}</td>
-  `;
+  /* ===== 第二步：依月份排序後逐月產生表格 ===== */
+  Object.keys(groups)
+    .sort() // 依 yyyy/MM 排序
+    .forEach(month => {
 
-  tbody.appendChild(tr);
-});
+      /* 月標題 */
+      const h3 = document.createElement('h3');
+      h3.textContent = `${month} 月`;
+      box.appendChild(h3);
 
+      const panel = document.createElement('div');
+      panel.className = 'panel';
 
-  panel.appendChild(table);
-  box.appendChild(panel);
+      const table = document.createElement('table');
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>時間</th>
+            <th>組別</th>
+            <th>客隊</th>
+            <th>主隊</th>
+            <th>場地</th>
+            <th>站位</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      `;
+
+      const tbody = table.querySelector('tbody');
+
+      /* ===== 第三步：該月份賽事依時間排序後畫列 ===== */
+      groups[month]
+        .sort((a, b) => a.time_range.localeCompare(b.time_range))
+        .forEach(g => {
+
+          const tr = document.createElement('tr');
+
+          /* ✅ 滿額整列加底色 */
+          const filled = Object.keys(g.occupied_positions || {}).length;
+          if (filled >= g.need_count) {
+            tr.classList.add('full'); // 你的 CSS 已定義
+          }
+
+          let posHtml = '';
+          const roles = ['PU', 'U1', 'U2', 'U3'];
+
+          roles.forEach(r => {
+            if (g.need_count === 1 && r !== 'PU') return;
+            if (g.need_count === 2 && !['PU','U1'].includes(r)) return;
+            if (g.need_count === 3 && r === 'U2') return;
+
+            if (g.occupied_positions && g.occupied_positions[r]) {
+              // ✅ 顯示姓名（自己 / 別人顏色不同）
+              const cls = g.my_position === r ? 'badge me' : 'badge';
+              posHtml += `<div class="${cls}">${r}:${g.occupied_positions[r]}</div>`;
+            } else if (g.my_position === r) {
+              posHtml += `<div class="badge me">${r}:我</div>`;
+            } else {
+              posHtml += `
+                <label>
+                  <input type="radio" name="pos_${g.game_id}" value="${r}">
+                  ${r}
+                </label><br>
+              `;
+            }
+          });
+
+          tr.innerHTML = `
+            <td>${g.date}</td>
+            <td>${g.time_range}</td>
+            <td>${g.category || ''}</td>
+            <td>${g.away_team || ''}</td>
+            <td>${g.home_team || ''}</td>
+            <td>${g.field || ''}</td>
+            <td>${posHtml}</td>
+          `;
+
+          tbody.appendChild(tr);
+        });
+
+      panel.appendChild(table);
+      box.appendChild(panel);
+    });
 }
 
 /* ===== 送出報名 ===== */
