@@ -341,8 +341,15 @@ function formatTime(t){
          d.getMinutes().toString().padStart(2,'0');
 }
 
-function rememberSelection(gameId, role){
+function rememberSelection(gameId, role) {
+  // ✅ 保險起見，先清掉該場所有舊選擇
+  delete selectedPositions[gameId];
+
+  // ✅ 再設定新的選擇
   selectedPositions[gameId] = role;
+
+  // ✅ 立刻重畫，確保畫面與 state 一致
+  render();
 }
 
 /* ===== 產置出表格及內容 ===== */
@@ -511,6 +518,7 @@ function render() {
           }
         
           // 尚未送出，且是我選的
+          // 尚未送出、是我選的 → radio + X
           if (selectedPositions[g.game_id] === role) {
             return `
               <label>
@@ -518,6 +526,7 @@ function render() {
                 ${role}
               </label>
               <span class="cancel-btn"
+                    title="取消此選擇"
                     onclick="cancelSelected('${g.game_id}')">✖</span>
             `;
           }
