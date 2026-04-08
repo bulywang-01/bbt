@@ -91,6 +91,17 @@ td.cell-na {
   color: #000;
 }
 
+/* 裁判數狀態顯示 */
+.umpire-full {
+  color: #c00;          /* 紅色 */
+  font-weight: bold;
+}
+
+.umpire-na {
+  color: #000;          /* 黑色 */
+  font-weight: bold;
+}
+
 /* 裁判姓名顯示（取代 badge） */
 .judge-name {
   font-size: 16px;
@@ -521,6 +532,18 @@ function render() {
           `;
         }
 
+        // 已報名人數
+        const filled = Object.keys(g.occupied_positions || {}).length;
+        
+        // 裁判數欄位顯示內容
+        let umpireCell = g.need_count;
+        
+        if (g.need_count === 0) {
+          umpireCell = '<span class="umpire-na">不需裁判</span>';
+        } else if (filled >= g.need_count) {
+          umpireCell = '<span class="umpire-full">已額滿</span>';
+        }
+
         tr.innerHTML = `
           <td>${g.date}</td>
           <td>${formatTime(g.time_range)}</td>
@@ -529,11 +552,12 @@ function render() {
           <td>${g.home_team || ''}</td>
           <td>${g.field || ''}</td>
           <td>${g.duration || ''}</td>
-          <td>${g.need_count}</td>${(() => {
-          const v = renderPos('PU');
-          if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
-          return `<td class="pos-cell">${v}</td>`;
-        })()}
+          <td>${umpireCell}</td>${(() => {
+            const v = renderPos('PU');
+            if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
+            return `<td class="pos-cell">${v}</td>`;
+          })()}
+
         ${(() => {
           const v = renderPos('U1');
           if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
