@@ -5,150 +5,148 @@
 <title>系統登入</title>
 
 <style>
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,BlinkMacSystemFont;
-  background:#f5f6f8;
+* {
+  box-sizing: border-box;
 }
-.login-box{
-  width:360px;
-  margin:120px auto;
-  background:#fff;
-  padding:24px;
-  border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
+
+body {
+  margin: 0;
+  height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI";
+  background: linear-gradient(135deg, #e9f0fb, #f7f9fc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-h2{
-  margin-top:0;
-  text-align:center;
+
+/* 登入卡片 */
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  background: #ffffff;
+  padding: 28px 32px 32px;
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.1);
 }
-input{
-  width:100%;
-  padding:10px;
-  margin-bottom:12px;
-  font-size:14px;
-  box-sizing:border-box;
+
+/* 標題 */
+.login-card h2 {
+  margin: 0 0 20px;
+  text-align: center;
+  font-size: 22px;
+  color: #2c3e50;
 }
-button{
-  width:100%;
-  padding:10px;
-  font-size:15px;
-  cursor:pointer;
+
+/* 欄位 */
+.form-group {
+  margin-bottom: 16px;
 }
-.message{
-  margin-top:10px;
-  color:#c00;
-  font-size:14px;
-  text-align:center;
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 9px 10px;
+  font-size: 14px;
+  border: 1px solid #ccd3dc;
+  border-radius: 5px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #2c7be5;
+  box-shadow: 0 0 0 2px rgba(44,123,229,.15);
+}
+
+/* 登入按鈕 */
+.login-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  background: #2c7be5;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.login-btn:hover {
+  background: #1a68d1;
+}
+
+/* 提示訊息 */
+.msg {
+  margin-top: 14px;
+  font-size: 13px;
+  text-align: center;
+  color: #c0392b;
+  min-height: 18px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="login-box">
-  <h2>裁判出勤系統</h2>
+<div class="login-card">
+  <h2>系統登入</h2>
 
-  <input
-    id="username"
-    placeholder="帳號"
-    autocomplete="username"
-  >
+  <div class="form-group">
+    <label for="username">帳號</label>
+    <input id="username" autocomplete="username">
+  </div>
 
-  <input
-    id="password"
-    type="password"
-    placeholder="密碼"
-    autocomplete="current-password"
-  >
+  <div class="form-group">
+    <label for="password">密碼</label>
+    <input id="password" type="password" autocomplete="current-password">
+  </div>
 
-  <button type="button" onclick="doLogin()">登入</button>
+  <button class="login-btn" onclick="login()">登入</button>
 
-  <div id="msg" class="message"></div>
+  <div id="msg" class="msg"></div>
 </div>
 
-<!-- ✅ 共用 API 設定 -->
 <script src="js/config.js"></script>
-
 <script>
+function login() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const msg = document.getElementById('msg');
 
-/**
- * 執行登入
- */
-function doLogin() {
-  const u = username.value.trim();
-  const p = password.value.trim();
   msg.textContent = '';
 
-  if (!u || !p) {
+  if (!username || !password) {
     msg.textContent = '請輸入帳號與密碼';
     return;
   }
 
-  let finished = false;
+  callApi({
+    action: 'login',
+    username: username,
+    password: password
+  }, res => {
 
-  const timer = setTimeout(() => {
-    if (finished) return;
-    finished = true;
-    msg.textContent = '系統連線失敗，請稍後再試';
-  }, 3000);
-
-  callApi(
-    {
-      action: 'login',
-      username: u,
-      password: p
-    },
-    res => {
-      if (finished) return;
-      finished = true;
-      clearTimeout(timer);
-
-      console.log('🧪 login response =', res);
-
-      if (!res || !res.result) {
-        msg.textContent = '系統錯誤';
-        return;
-      }
-
-      if (res.result === 'ok') {
-        localStorage.setItem(
-          'session_user',
-          JSON.stringify({
-            user_id: res.user_id,
-            username: res.username,
-            name: res.name,
-            role: res.role,
-            token: res.token
-          })
-        );
-        location.replace('index.html');
-        return;
-      }
-
-      if (res.result === 'must_change_password') {
-        localStorage.setItem(
-          'session_user',
-          JSON.stringify({
-            user_id: res.user_id,
-            username: res.username,
-            name: res.name,
-            role: res.role,
-            token: res.token
-          })
-        );
-        location.replace('change_password.html');
-        return;
-      }
-
-      if (res.result === 'inactive') {
-        msg.textContent = '帳號尚未啟用';
-        return;
-      }
-
-      msg.textContent = '登入失敗';
+    if (!res || res.result !== 'ok') {
+      msg.textContent = res?.message || '登入失敗';
+      return;
     }
-  );
+
+    // ✅ 儲存 session
+    localStorage.setItem('session_user', JSON.stringify(res.user));
+
+    // ✅ 關鍵：強制改密碼判斷
+    if (res.user.must_change_pwd === 'Y') {
+      location.href = 'change_password.html';
+    } else {
+      location.href = 'index.html';
+    }
+
+  });
 }
 </script>
 
