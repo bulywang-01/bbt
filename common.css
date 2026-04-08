@@ -48,6 +48,22 @@
   font-size:13px;
 }
 
+.user-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-box .change-pwd {
+  font-size: 13px;
+  color: #2c7be5;
+  text-decoration: none;
+}
+
+.user-box .change-pwd:hover {
+  text-decoration: underline;
+}
+
 .logout:hover{
   text-decoration:underline;
 }
