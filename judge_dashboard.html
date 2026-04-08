@@ -208,29 +208,37 @@ td.cell-na {
 
 <script>
 /* ===== 給共用header.html使用 ===== */
-
+/* ===== 初始化（含共用 header） ===== */
 document.addEventListener('DOMContentLoaded', () => {
+
+  // 1️⃣ 先載入共用 header
   fetch('header.html')
     .then(res => res.text())
     .then(html => {
       document.getElementById('header').innerHTML = html;
 
-      // 設定頁面標題
+      // 2️⃣ 設定頁面標題（從 body data-page-title）
       const title = document.body.dataset.pageTitle;
       if (title) {
         const el = document.querySelector('.page-title');
         if (el) el.textContent = title;
       }
-    });
 
-  // 原本的初始化
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  if (!session.user_id) {
-    location.replace('login.html');
-    return;
-  }
-  document.getElementById('u_name').textContent = session.name || '';
-  loadGames();
+      // 3️⃣ 設定使用者名稱（現在 header 已經存在）
+      const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (!session.user_id) {
+        location.replace('login.html');
+        return;
+      }
+
+      const userEl = document.getElementById('u_name');
+      if (userEl) {
+        userEl.textContent = session.name || '';
+      }
+
+      // 4️⃣ 載入頁面主要資料
+      loadGames();
+    });
 });
 
 /* ===== 狀態 ===== */
