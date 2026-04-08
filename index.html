@@ -105,15 +105,21 @@ function logout(){
 }
 
 /* ===== 初始化 ===== */
-document.addEventListener('DOMContentLoaded', ()=>{
-  // 必須先確保登入
+document.addEventListener('DOMContentLoaded', () => {
+
   const raw = localStorage.getItem('session_user');
-  if(!raw){
+  if (!raw) {
     location.replace('login.html');
     return;
   }
-try {
-  const s = JSON.parse(raw);
+
+  let s;
+  try {
+    s = JSON.parse(raw);
+  } catch (e) {
+    location.replace('login.html');
+    return;
+  }
 
   // ✅ 未登入
   if (!s.user_id) {
@@ -121,19 +127,16 @@ try {
     return;
   }
 
-  // ✅ 必須先改密碼的使用者，只能進 change_password.html
+  // ✅ 必須改密碼的使用者，不能進 index
   if (s.must_change_pwd === 'Y') {
     location.replace('change_password.html');
     return;
   }
 
-} catch (e) {
-  location.replace('login.html');
-  return;
-}
-
-loadHeader();
+  // ✅ 正常使用者
+  loadHeader();
 });
+
 </script>
 
 </body>
