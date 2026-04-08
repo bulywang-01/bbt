@@ -90,6 +90,13 @@ td.cell-na {
   background: #000;
   color: #000;
 }
+
+/* 裁判姓名顯示（取代 badge） */
+.judge-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0b3c8a; /* 深藍色 */
+}
   
 </style>
 </head>
@@ -335,11 +342,15 @@ function render() {
             return '__NA__';
           }
 
+          //if (g.occupied_positions && g.occupied_positions[role]) {
+          //  const cls = g.my_position === role ? 'badge me' : 'badge';
+          //  return `<div class="${cls}">${g.occupied_positions[role]}</div>`;
+          //}
+          
           if (g.occupied_positions && g.occupied_positions[role]) {
-            const cls = g.my_position === role ? 'badge me' : 'badge';
-            return `<div class="${cls}">${g.occupied_positions[role]}</div>`;
+            return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
           }
-
+          
           if (isPast || filled >= g.need_count) {
             return '&nbsp;';
           }
