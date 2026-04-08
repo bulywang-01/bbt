@@ -136,8 +136,8 @@ function login() {
       return;
     }
 
-    // ✅ 儲存 session
-    localStorage.setItem('session_user', JSON.stringify(res.user));
+    // ✅ 直接存整個 res（不要用 res.user）
+    localStorage.setItem('session_user', JSON.stringify(res));
 
     // ✅ 關鍵：強制改密碼判斷
     if (res.must_change_pwd === 'Y') {
