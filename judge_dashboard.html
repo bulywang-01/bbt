@@ -112,6 +112,7 @@ button{
 
 <script>
 let allGames = [];
+const MAX_SIGNUP_PER_TIMESLOT = 0; // 限定一天可以報名幾場，0 = 不限（預設）
 
 /* ===== 初始化 ===== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -131,7 +132,8 @@ function loadGames() {
   callApi(
     {
       action: 'getSignableGames',
-      ser_id: session.user_id || ''   // ✅ 關鍵
+      // ser_id: session.user_id || ''   // ✅ Test用
+      user_id: session.user_id || ''   // ✅ 原程式
     },
     res => {
       if (!res || res.result !== 'ok') {
