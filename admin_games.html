@@ -1194,6 +1194,22 @@ function showSaving(text) {
 function hideSaving() {
   document.getElementById('savingOverlay').style.display = 'none';
 }
+
+function deleteGame(id){
+  if (!confirm('⚠️ 此動作將刪除賽事並清除所有裁判報名，確定？')) return;
+
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  callApi({
+    action: 'deleteGame',
+    game_id: id,
+    user_id: session.user_id   // ✅ 一定要傳，給後端驗 admin
+  }, function(res){
+    alert(res.message || '刪除完成');
+    loadGames();
+  });
+}
+
 </script>
 
 <!-- Loading Overlay -->
