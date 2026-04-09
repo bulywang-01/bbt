@@ -46,15 +46,22 @@
       font-style: italic;
     }
 
-    /* ✅ 未來比賽清單樣式（現在先保留） */
-    .upcoming-list {
-      list-style: none;
-      padding-left: 0;
-    }
+    /* ✅ 比賽清單樣式 */
     .upcoming-list li {
       padding: 8px 6px;
       border-bottom: 1px dashed #ddd;
       font-size: 14px;
+    }
+
+    .monthly-list {
+      list-style: none;
+      padding-left: 0;
+      font-size: 14px;
+    }
+    
+    .monthly-empty {
+      color: #666;
+      font-style: italic;
     }
   </style>
 </head>
@@ -204,6 +211,64 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* 近期站場資訊 */
+function loadMonthlyGames() {
+
+  const panel = document.getElementById('monthly-games-panel');
+  if (!panel) return;
+
+  callApi(
+    { action: 'getGames' },
+    res => {
+
+      // 清舊內容
+      panel.querySelectorAll('.monthly-list, .monthly-empty')
+        .forEach(el => el.remove());
+
+      if (!res || res.result !== 'ok' || !res.games) {
+        panel.insertAdjacentHTML(
+          'beforeend',
+          `<p class="monthly-empty">讀取賽事失敗。</p>`
+        );
+        return;
+      }
+
+      const now = new Date();
+      const thisYear = now.getFullYear();
+      const thisMonth = now.getMonth(); // 0-based
+
+      // ✅ 只取本月賽事
+      const list = res.games.filter(g => {
+        if (!g.date) return false;
+        const d = new Date(g.date + 'T00:00:00'); // 僅用於比對月份
+        return d.getFullYear() === thisYear && d.getMonth() === thisMonth;
+      });
+
+      if (list.length === 0) {
+        panel.insertAdjacentHTML(
+          'beforeend',
+          `<p class="monthly-empty">本月尚無賽事。</p>`
+        );
+        return;
+      }
+
+      let html = `<ul class="monthly-list">`;
+
+      list.forEach(g => {
+        html += `
+          <li>
+            ${g.date}　${g.time || ''}　
+            <b>${g.game_code || ''}</b>　
+            ${g.field || ''}
+          </li>
+        `;
+      });
+
+      html += `</ul>`;
+      panel.insertAdjacentHTML('beforeend', html);
+    }
+  );
+}
+  
 function loadUpcomingGames() {
 
   const s = JSON.parse(localStorage.getItem('session_user') || '{}');
@@ -249,8 +314,11 @@ function loadUpcomingGames() {
   );
 }
 
+
 loadHeader();
-loadUpcomingGames();
+loadUpcomingGames(); // 我將執勤的比賽
+loadMonthlyGames();  // ✅ 本月賽事
+
 
 </script>
 
