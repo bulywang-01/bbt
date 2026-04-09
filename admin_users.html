@@ -283,109 +283,104 @@ function loadUsers() {
   const tbody = document.getElementById('userBody');
   if (!tbody) return;
 
-  tbody.innerHTML = '<tr><td ="10">載入中...</td></tr>';
+  tbody.innerHTML =
+    `<tr><td colspan="10">載入中...</td></tr>`;
 
-  callApi(
-    { action: 'getUsers' },
-    res => {
+  callApi({ action: 'getUsers' }, res => {
 
-      console.log('getUsers response =', res);
+    console.log('getUsers response =', res);
 
-      // ✅ JSONP 錯誤（callback 有被呼叫，但後端回 error）
-      if (!res || res.result !== 'ok') {
-        tbody.innerHTML =
-          `<tr><td ="10">${res?.message || '讀取失敗'}</td></tr>`;
-        return;
-      }
-
-      // ✅ 關鍵修正：同時支援 users / data
-      const list = res.users || res.data || [];
-
-      if (!Array.isArray(list) || list.length === 0) {
-        tbody.innerHTML =
-          `<tr><td ="10">尚無使用者資料</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = '';
-
-      list.forEach(u => {
-        const tr = document.createElement('tr');
-      
-        tr.innerHTML = `
-          <!-- 帳號（username，不是 user_id） -->
-          <td>${u.username || ''}</td>
-      
-          <!-- 背號 -->
-          <td>
-            <input type="text" value="${u.note || ''}"
-              onchange="updateUserField('${u.user_id}','note',this.value)">
-          </td>
-      
-          <!-- 新密碼 -->
-          <td>
-            <input type="password" placeholder="留空不修改"
-              onchange="updateUserField('${u.user_id}','password',this.value)">
-          </td>
-      
-          <!-- 姓名 -->
-          <td>
-            <input type="text" value="${u.name || ''}"
-              onchange="updateUserField('${u.user_id}','name',this.value)">
-          </td>
-      
-          <!-- 電話 -->
-          <td>
-            <input type="text" value="${u.phone || ''}"
-              onchange="updateUserField('${u.user_id}','phone',this.value)">
-          </td>
-      
-          <!-- Email -->
-          <td>
-            <input type="email" value="${u.email || ''}"
-              onchange="updateUserField('${u.user_id}','email',this.value)">
-          </td>
-      
-          <!-- 裁判證等級 -->
-          <td>
-            <select onchange="updateUserField('${u.user_id}','level',this.value)">
-              <option value="A" ${u.level==='A'?'selected':''}>A</option>
-              <option value="B" ${u.level==='B'?'selected':''}>B</option>
-              <option value="C" ${u.level==='C'?'selected':''}>C</option>
-            </select>
-          </td>
-      
-          <!-- 角色 -->
-          <td>
-            <select onchange="updateUserField('${u.user_id}','role',this.value)">
-              <option value="judge" ${u.role==='judge'?'selected':''}>裁判</option>
-              <option value="chief_judge" ${u.role==='chief_judge'?'selected':''}>裁判長</option>
-              <option value="admin" ${u.role==='admin'?'selected':''}>管理員</option>
-            </select>
-          </td>
-      
-          <!-- 狀態 -->
-          <td>
-            <select onchange="updateUserField('${u.user_id}','active',this.value)">
-              <option value="Y" ${u.active==='Y'?'selected':''}>啟用</option>
-              <option value="N" ${u.active==='N'?'selected':''}>停用</option>
-            </select>
-          </td>
-      
-          <!-- ✅ 操作 -->
-          <td>
-            <button class="btn-save"
-              onclick="saveUser('${u.user_id}', this)">
-              儲存
-            </button>
-          </td>
-        `;
-      
-        tbody.appendChild(tr);
-      });
+    if (!res || res.result !== 'ok') {
+      tbody.innerHTML =
+        `<tr><td colspan="10">${res?.message || '讀取失敗'}</td></tr>`;
+      return;
     }
-  );
+
+    const list = res.users || [];
+    if (list.length === 0) {
+      tbody.innerHTML =
+        `<tr><td colspan="10">尚無使用者資料</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = '';
+
+    list.forEach(u => {
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <!-- 帳號 -->
+        <td>${u.username || ''}</td>
+
+        <!-- 背號 -->
+        <td>
+          <input type="text" value="${u.note || ''}"
+            onchange="updateUserField('${u.user_id}','note',this.value)">
+        </td>
+
+        <!-- 新密碼 -->
+        <td>
+          <input type="password" placeholder="留空不修改"
+            onchange="updateUserField('${u.user_id}','password',this.value)">
+        </td>
+
+        <!-- 姓名 -->
+        <td>
+          <input type="text" value="${u.name || ''}"
+            onchange="updateUserField('${u.user_id}','name',this.value)">
+        </td>
+
+        <!-- 電話 -->
+        <td>
+          <input type="text" value="${u.phone || ''}"
+            onchange="updateUserField('${u.user_id}','phone',this.value)">
+        </td>
+
+        <!-- Email -->
+        <td>
+          <input type="email" value="${u.email || ''}"
+            onchange="updateUserField('${u.user_id}','email',this.value)">
+        </td>
+
+        <!-- 裁判證等級 -->
+        <td>
+          <select onchange="updateUserField('${u.user_id}','level',this.value)">
+            <option value="A" ${u.level==='A'?'selected':''}>A</option>
+            <option value="B" ${u.level==='B'?'selected':''}>B</option>
+            <option value="C" ${u.level==='C'?'selected':''}>C</option>
+          </select>
+        </td>
+
+        <!-- 角色 -->
+        <td>
+          <select onchange="updateUserField('${u.user_id}','role',this.value)">
+            <option value="judge" ${u.role==='judge'?'selected':''}>裁判</option>
+            <option value="chief_judge" ${u.role==='chief_judge'?'selected':''}>裁判長</option>
+            <option value="admin" ${u.role==='admin'?'selected':''}>管理員</option>
+          </select>
+        </td>
+
+        <!-- 狀態 -->
+        <td>
+          <select onchange="updateUserField('${u.user_id}','active',this.value)">
+            <option value="Y" ${u.active==='Y'?'selected':''}>啟用</option>
+            <option value="N" ${u.active==='N'?'selected':''}>停用</option>
+          </select>
+        </td>
+
+        <!-- 操作 -->
+        <td>
+          <button onclick="saveUser('${u.user_id}')">
+            儲存
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+  });
 }
+
 
 /* ===== 頁面初始化 ===== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -393,54 +388,48 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ===== Save One User ===== */
-function saveUser(btn) {
-  const tr = btn.closest('tr');
-  const uid = tr.dataset.userId;
 
-  // ✅ 改成「物件型」資料
-  const data = {
-    action: 'updateUser',
-    user_id: uid
-  };
+function saveUser(userId) {
 
-  tr.querySelectorAll('input, select').forEach(el => {
-    // ✅ 密碼留空＝不更新
-    // if (el.name === 'password' && !el.value) return;
-      if (el.name === 'password') {
-      const v = String(el.value).trim();
-      if (v === '' || v === '0') return;  // ✅ 空或 0 都不更新
+  const updates = pendingUserUpdates[userId];
+  if (!updates || Object.keys(updates).length === 0) {
+    alert('沒有變更任何資料');
+    return;
+  }
+
+  callApi(
+    {
+      action: 'updateUser',
+      user_id: userId,
+      ...updates
+    },
+    res => {
+      if (!res || res.result !== 'ok') {
+        alert(res?.message || '更新失敗');
+        return;
+      }
+
+      alert('更新成功');
+
+      delete pendingUserUpdates[userId];
+      loadUsers();
     }
-
-    data[el.name] = el.value.trim();
-  });
-
-  console.log('updateUser payload:', data);
-
-  callApi(data, res => {
-    console.log('updateUser response:', res);
-
-    if (res && res.result === 'ok') {
-      showToast('✅ 儲存成功');
-      loadUsers();               // ✅ 重新載入以確保一致
-    } else {
-      showToast('❌ 儲存失敗');
-      alert(res?.message || '儲存失敗，請查看 Console');
-    }
-  });
+  );
 }
   
 /* ===== 新增使用者 ===== */
+
 function createUser() {
 
-  const username = document.getElementById('new_username')?.value.trim();
-  const name     = document.getElementById('new_name')?.value.trim();
-  const phone    = document.getElementById('new_phone')?.value.trim();
-  const email    = document.getElementById('new_email')?.value.trim();
-  const level    = document.getElementById('new_level')?.value;
-  const role     = document.getElementById('new_role')?.value;
+  const username = document.getElementById('new_username').value.trim();
+  const name     = document.getElementById('new_name').value.trim();
+  const phone    = document.getElementById('new_phone').value.trim();
+  const email    = document.getElementById('new_email').value.trim();
+  const level    = document.getElementById('new_level').value;
+  const role     = document.getElementById('new_role').value;
 
   if (!username || !name) {
-    alert('請至少填寫「帳號」與「姓名」');
+    alert('請填寫帳號與姓名');
     return;
   }
 
@@ -461,18 +450,17 @@ function createUser() {
       }
 
       alert('新增帳號成功');
-      
-      // ✅ 清空輸入欄位
+
       document.getElementById('new_username').value = '';
       document.getElementById('new_name').value = '';
       document.getElementById('new_phone').value = '';
       document.getElementById('new_email').value = '';
 
-      // ✅ 重新載入清單
       loadUsers();
     }
   );
 }
+
 
 const ROLE_LABEL = {
   admin: '系統管理員',
@@ -481,6 +469,17 @@ const ROLE_LABEL = {
   match_admin: '賽事管理者',
   judge: '一般裁判'
 };
+
+// 先暫存 updateUserField()
+const pendingUserUpdates = {};
+
+function updateUserField(userId, field, value) {
+  if (!pendingUserUpdates[userId]) {
+    pendingUserUpdates[userId] = {};
+  }
+  pendingUserUpdates[userId][field] = value;
+}
+
   
 /* ===== Helpers ===== */
 function renderRoleOptions(role){
