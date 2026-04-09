@@ -251,11 +251,12 @@ button{
 
     <div class="create-user-field">
       <label>裁判證等級</label>
-          <select id="new_level">
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-          </select>
+        <select id="new_level">
+          <option value="NONE">目前無證照</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+        </select>
     </div>
 
     <div class="create-user-field">
@@ -399,6 +400,9 @@ function loadUsers() {
         <!-- 裁判證等級 -->
         <td>
           <select onchange="updateUserField('${u.user_id}','level',this.value)">
+            <option value="NONE" ${!u.level || u.level==='NONE'?'selected':''}>
+              目前無證照
+            </option>
             <option value="A" ${u.level==='A'?'selected':''}>A</option>
             <option value="B" ${u.level==='B'?'selected':''}>B</option>
             <option value="C" ${u.level==='C'?'selected':''}>C</option>
