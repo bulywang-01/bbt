@@ -260,7 +260,8 @@ button{
     </div>
 
     <div class="create-user-actions">
-      <button class="btn-primary" onclick="createUser()">新增帳號</button>
+      <!-- <button type="button" class="btn-primary" onclick="createUser()">新增帳號</button> -->
+      <button type="button" onclick="createUser()"></button>
     </div>
 
   </div>
@@ -469,9 +470,7 @@ function saveUser(userId) {
 }
   
 /* ===== 新增使用者 ===== */
-
 function createUser() {
-
   const username = document.getElementById('new_username').value.trim();
   const name     = document.getElementById('new_name').value.trim();
   const phone    = document.getElementById('new_phone').value.trim();
@@ -521,7 +520,8 @@ function createUser() {
     }
   );
 }
-
+document.getElementById('btnCreateUser')
+  ?.addEventListener('click', createUser);
 
 const ROLE_LABEL = {
   admin: '系統管理員',
