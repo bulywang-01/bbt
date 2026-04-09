@@ -275,7 +275,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   loadUsers();
 });
   
-  console.log('getUsers response =', res);
 
 /* ===== Load Users ===== */
 function loadUsers(){
@@ -283,6 +282,7 @@ function loadUsers(){
   callApi(
     { action: 'getUsers' },
     res => {
+      console.log('getUsers response =', res);
       const body = document.getElementById('userBody');
       body.innerHTML = '';
 
@@ -290,6 +290,7 @@ function loadUsers(){
         body.innerHTML = '<tr><td colspan="9">讀取失敗</td></tr>';
         return;
       }
+      
 
     res.users.forEach(u=>{
       const tr=document.createElement('tr');
