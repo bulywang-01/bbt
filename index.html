@@ -76,15 +76,13 @@
     </p>
   </div>
 
-  <!-- ✅ 我即將執勤的比賽（預留） -->
-  <div class="panel">
-    <h3>🗓 我將執勤的比賽</h3>
+<!-- ✅ 我即將執勤的比賽 -->
+<div class="panel" id="upcoming-panel">
+  <h3>🗓 我將執勤的比賽</h3>
 
-    <!-- ⚠️ 目前先顯示提示，未來可用 API 取代 -->
-    <p class="upcoming-empty">
-      建置中
-    </p>
-
+  <p class="upcoming-empty">
+    建置中
+  </p>
     <!--
     ✅ 未來預計渲染格式（先註解）
     <ul class="upcoming-list">
@@ -206,10 +204,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* 近期站場資訊 */
-  
 function loadUpcomingGames() {
+
   const s = JSON.parse(localStorage.getItem('session_user') || '{}');
   if (!s.user_id) return;
+
+  const panel = document.getElementById('upcoming-panel');
+  if (!panel) return;
 
   callApi(
     {
@@ -217,15 +218,11 @@ function loadUpcomingGames() {
       user_id: s.user_id
     },
     res => {
-      const panel = document.querySelector('.panel h3')
-        ?.parentElement;
 
-      if (!panel) return;
+      // 清掉舊內容
+      panel.querySelectorAll('.upcoming-empty, .upcoming-list').forEach(el => el.remove());
 
-      const empty = panel.querySelector('.upcoming-empty');
-      if (empty) empty.remove();
-
-      if (!res || res.result !== 'ok' || res.games.length === 0) {
+      if (!res || res.result !== 'ok' || !res.games || res.games.length === 0) {
         panel.insertAdjacentHTML(
           'beforeend',
           `<p class="upcoming-empty">本月尚未安排執勤賽事。</p>`
@@ -241,7 +238,7 @@ function loadUpcomingGames() {
             ${g.date}　${g.time}　
             <b>${g.game_code}</b>　
             ${g.position}　
-            ${g.field}
+            ${g.field || ''}
           </li>
         `;
       });
@@ -253,7 +250,7 @@ function loadUpcomingGames() {
 }
 
 loadHeader();
-loadUpcoming();
+loadUpcomingGames();
 
 </script>
 
