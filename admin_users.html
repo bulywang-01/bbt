@@ -277,53 +277,63 @@ document.addEventListener('DOMContentLoaded',()=>{
   
 
 /* ===== Load Users ===== */
-function loadUsers(){
+/* ===== 載入使用者清單 ===== */
+function loadUsers() {
+
+  const tbody = document.getElementById('userBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="9">載入中...</td></tr>';
 
   callApi(
     { action: 'getUsers' },
     res => {
-      console.log('getUsers response =', res);
-      const body = document.getElementById('userBody');
-      body.innerHTML = '';
 
+      console.log('getUsers response =', res);
+
+      // ✅ JSONP 錯誤（callback 有被呼叫，但後端回 error）
       if (!res || res.result !== 'ok') {
-        body.innerHTML = '<tr><td colspan="9">讀取失敗</td></tr>';
+        tbody.innerHTML =
+          `<tr><td colspan="9">${res?.message || '讀取失敗'}</td></tr>`;
         return;
       }
-      
 
-    res.users.forEach(u=>{
-      const tr=document.createElement('tr');
-      tr.dataset.userId=u.user_id;
-      if(u.active!=='Y') tr.classList.add('inactive');
+      // ✅ 關鍵修正：同時支援 users / data
+      const list = res.users || res.data || [];
 
-      tr.innerHTML=`
-        <td><input name="username" value="${u.username||''}"></td>
-        <td><input name="note" value="${u.note || ''}" placeholder="背號"></td>
-        <td><input name="password" type="password" placeholder="留空不修改"></td>
-        <td><input name="name" value="${u.name||''}"></td>
-        <td><input name="phone" value="${u.phone||''}"></td>
-        <td><input name="email" value="${u.email||''}"></td>
-        <td><input name="level" value="${u.level||''}"></td>
-        <td>
-          <select name="role">
-            ${renderRoleOptions(u.role)}
-          </select>
-        </td>
-        <td>
-          <select name="active">
-            <option value="Y" ${u.active==='Y'?'selected':''}>啟用</option>
-            <option value="N" ${u.active!=='Y'?'selected':''}>停用</option>
-          </select>
-        </td>
-        <td>
-          <button onclick="saveUser(this)">儲存</button>
-        </td>
-      `;
-      body.appendChild(tr);
-    });
-  });
+      if (!Array.isArray(list) || list.length === 0) {
+        tbody.innerHTML =
+          `<tr><td colspan="9">尚無使用者資料</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = '';
+
+      list.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${u.user_id || ''}</td>
+          <td>${u.username || ''}</td>
+          <td>${u.name || ''}</td>
+          <td>${u.phone || ''}</td>
+          <td>${u.email || ''}</td>
+          <td>${u.level || ''}</td>
+          <td>${u.role || ''}</td>
+          <td>${u.active || ''}</td>
+          <td>
+            <button onclick="editUser('${u.user_id}')">編輯</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  );
 }
+
+/* ===== 頁面初始化 ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  loadUsers();
+});
 
 /* ===== Save One User ===== */
 function saveUser(btn) {
