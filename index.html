@@ -181,6 +181,35 @@ function logout(){
 }
 
 /* ===== 初始化 ===== */
+// ✅ 將各種 time 型別統一轉成 HH:mm
+function formatTime(t) {
+  if (!t) return '';
+
+  // ISO / Date 字串
+  if (typeof t === 'string' && t.includes('T')) {
+    const d = new Date(t);
+    return d.toISOString().slice(11, 16); // HH:mm
+  }
+
+  // 已經是 HH:mm
+  if (typeof t === 'string') {
+    return t.slice(0, 5);
+  }
+
+  return '';
+}
+
+// ✅ 站位中文化
+function positionText(pos) {
+  const map = {
+    PU: '主審',
+    U1: '一壘審',
+    U2: '二壘審',
+    U3: '三壘審'
+  };
+  return map[pos] || pos || '';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   const raw = localStorage.getItem('session_user');
@@ -303,9 +332,10 @@ function loadUpcomingGames() {
       res.games.forEach(g => {
         html += `
           <li>
-            ${g.date}　${g.time}　
             <b>${g.game_code}</b>　
-            ${g.position}　
+            ${g.date}　
+            ${formatTime(g.time)}　
+            ${positionText(g.position)}　
             ${g.field || ''}
           </li>
         `;
