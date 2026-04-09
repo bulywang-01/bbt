@@ -151,6 +151,32 @@ button{
   transition:opacity .3s;
   z-index:9999;
 }
+
+/* ===== Toast 提示訊息 ===== */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: -400px;
+  min-width: 260px;
+  max-width: 360px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  opacity: 0;
+  transition: all .4s ease;
+  z-index: 9999;
+}
+
+.toast.show {
+  right: 20px;
+  opacity: 1;
+}
+
+.toast.success { background: #2e7d32; }
+.toast.error   { background: #c62828; }
+.toast.warn    { background: #ed6c02; }
 </style>
 </head>
 
@@ -274,7 +300,25 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   loadUsers();
 });
-  
+
+function showToast(message, type = 'success') {
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+
+  document.body.appendChild(toast);
+
+  // 觸發動畫
+  setTimeout(() => toast.classList.add('show'), 50);
+
+  // 自動消失
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+}
+
 
 /* ===== Load Users ===== */
 /* ===== 載入使用者清單 ===== */
@@ -393,7 +437,8 @@ function saveUser(userId) {
 
   const updates = pendingUserUpdates[userId];
   if (!updates || Object.keys(updates).length === 0) {
-    alert('沒有變更任何資料');
+    // alert('沒有變更任何資料');
+    showToast('⚠ 尚未修改任何欄位', 'warn');
     return;
   }
 
@@ -404,13 +449,19 @@ function saveUser(userId) {
       ...updates
     },
     res => {
+    /*
       if (!res || res.result !== 'ok') {
         alert(res?.message || '更新失敗');
         return;
       }
-
       alert('更新成功');
-
+    */
+      
+      if (!res || res.result !== 'ok') {
+        showToast(res?.message || '更新失敗，請稍後再試', 'error');
+        return;
+      }
+      showToast('✅ 使用者資料更新成功', 'success');
       delete pendingUserUpdates[userId];
       loadUsers();
     }
@@ -444,12 +495,19 @@ function createUser() {
       role
     },
     res => {
+    /*
       if (!res || res.result !== 'ok') {
         alert(res?.message || '新增失敗');
         return;
       }
-
       alert('新增帳號成功');
+    */
+
+      if (!res || res.result !== 'ok') {
+        showToast(res?.message || '新增帳號失敗，可能帳號重複', 'error');
+        return;
+        }
+      showToast('✅ 新增帳號成功', 'success');
 
       document.getElementById('new_username').value = '';
       document.getElementById('new_name').value = '';
