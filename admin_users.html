@@ -274,10 +274,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   loadUsers();
 });
+  
+  console.log('getUsers response =', res);
 
 /* ===== Load Users ===== */
 function loadUsers(){
-  console.log('getUsers response =', res);
 
   callApi(
     { action: 'getUsers' },
