@@ -6,6 +6,57 @@
 
   <!-- ✅ 共用樣式 -->
   <link rel="stylesheet" href="common.css">
+
+  <!-- ✅ 首頁專屬微調 -->
+  <style>
+    .main {
+      padding: 24px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .panel {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .panel h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 18px;
+      border-left: 4px solid #4a7ef5;
+      padding-left: 10px;
+    }
+
+    .welcome {
+      font-size: 16px;
+      line-height: 1.6;
+      background: linear-gradient(135deg,#f5f8ff,#ffffff);
+    }
+
+    .download-list li {
+      margin-bottom: 6px;
+    }
+
+    .upcoming-empty {
+      color: #666;
+      font-style: italic;
+    }
+
+    /* ✅ 未來比賽清單樣式（現在先保留） */
+    .upcoming-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .upcoming-list li {
+      padding: 8px 6px;
+      border-bottom: 1px dashed #ddd;
+      font-size: 14px;
+    }
+  </style>
 </head>
 
 <body>
@@ -13,25 +64,41 @@
 <!-- ✅ 共用 Header -->
 <div id="header-container"></div>
 
-<!-- ================= Main ================= -->
 <div class="main">
 
   <h2>系統首頁</h2>
 
   <!-- ✅ 歡迎區塊 -->
-  <div class="panel">
+  <div class="panel welcome">
     <p>
-      歡迎使用　<b>裁判出勤管理系統</b>　，請由上方功能選單進行操作。
+      歡迎使用 <b>裁判出勤管理系統</b>。<br>
+      請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
     </p>
   </div>
 
-<!-- ✅ 系統公告 -->
-<div class="panel">
-  <h3>📢 系統公告</h3>
-    <p>
-      目前尚無公告。
+  <!-- ✅ 我即將執勤的比賽（預留） -->
+  <div class="panel">
+    <h3>🗓 我將執勤的比賽</h3>
+
+    <!-- ⚠️ 目前先顯示提示，未來可用 API 取代 -->
+    <p class="upcoming-empty">
+      功能準備中。
     </p>
-</div>
+
+    <!--
+    ✅ 未來預計渲染格式（先註解）
+    <ul class="upcoming-list">
+      <li>2026-04-20　08:30　G012　主審</li>
+      <li>2026-04-22　13:50　G018　一壘審</li>
+    </ul>
+    -->
+  </div>
+
+  <!-- ✅ 系統公告 -->
+  <div class="panel">
+    <h3>📢 系統公告</h3>
+    <p>目前尚無公告。</p>
+  </div>
 
   <!-- ✅ 文件下載 -->
   <div class="panel">
@@ -42,53 +109,31 @@
           BBT 軟式棒球大聯盟賽事規章
         </a>
       </li>
-  
       <li>
         <a href="https://bbtls.com/" target="_blank">
           BBT 軟式棒球大聯盟官網
         </a>
       </li>
-  
       <li>
         <a href="cpba_rules.pdf" target="_blank">
-          📘 中華民國棒球規則(2024年)
+          📘 中華民國棒球規則（2024）
         </a>
       </li>
-  
       <li>
         <a href="umpire_2man_rotation.pdf" target="_blank">
-          🧑‍⚖️ 兩人制裁判移補位（WSBC英文版）
+          🧑‍⚖️ 兩人制裁判移補位（WBSC 英文版）
         </a>
       </li>
-  
       <li>
         <a href="umpire_3man_rotation.pdf" target="_blank">
-          🧑‍⚖️ 三人制裁判移補位（CTBA中文版）
+          🧑‍⚖️ 三人制裁判移補位（CTBA 中文版）
         </a>
       </li>
-  
       <li>
         <a href="umpire_4man_rotation.pdf" target="_blank">
-          🧑‍⚖️ 四人制裁判移補位（WSBC英文版）
+          🧑‍⚖️ 四人制裁判移補位（WBSC 英文版）
         </a>
       </li>
-      <!--
-      <li>
-        <a href="files/referee_notice.pdf" target="_blank">
-          裁判執勤注意事項（PDF）
-        </a>
-      </li>
-      <li>
-        <a href="files/referee_rules.docx" target="_blank">
-          裁判出勤規範（Word）
-        </a>
-      </li>
-      <li>
-        <a href="files/game_day_flow.xlsx" target="_blank">
-          比賽日流程表（Excel）
-        </a>
-      </li>
-      -->
     </ul>
   </div>
 
@@ -97,6 +142,7 @@
 <!-- ================= Script ================= -->
 <script src="js/config.js"></script>
 <script>
+
 /* ===== 載入共用 Header ===== */
 function loadHeader(){
   fetch('header.html')
@@ -104,18 +150,15 @@ function loadHeader(){
     .then(html => {
       document.getElementById('header-container').innerHTML = html;
 
-      // 使用者名稱
       const s = JSON.parse(localStorage.getItem('session_user') || '{}');
-      if(s.name){
+      if (s.name) {
         const u = document.getElementById('u_name');
-        if(u) u.textContent = s.name;
+        if (u) u.textContent = s.name;
       }
 
-      // 頁面標題
       const t = document.getElementById('pageTitle');
-      if(t) t.textContent = '系統首頁';
+      if (t) t.textContent = '系統首頁';
 
-      // Nav active
       const page = location.pathname.split('/').pop();
       document.querySelectorAll('.nav a').forEach(a=>{
         if(a.getAttribute('href') === page){
@@ -149,19 +192,16 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // ✅ 未登入
   if (!s.user_id) {
     location.replace('login.html');
     return;
   }
 
-  // ✅ 必須改密碼的使用者，不能進 index
   if (s.must_change_pwd === 'Y') {
     location.replace('change_password.html');
     return;
   }
 
-  // ✅ 正常使用者
   loadHeader();
 });
 
