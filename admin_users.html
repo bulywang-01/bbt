@@ -277,6 +277,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* ===== Load Users ===== */
 function loadUsers(){
+  console.log('getUsers response =', res);
 
   callApi(
     { action: 'getUsers' },
@@ -320,7 +321,6 @@ function loadUsers(){
       body.appendChild(tr);
     });
   });
-  console.log('getUsers response =', res);
 }
 
 /* ===== Save One User ===== */
