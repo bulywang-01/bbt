@@ -268,6 +268,7 @@ function loadMonthlyGames() {
     }
   );
 }
+
   
 function loadUpcomingGames() {
 
@@ -283,6 +284,8 @@ function loadUpcomingGames() {
       user_id: s.user_id
     },
     res => {
+      
+    console.log('getMyUpcomingGames response =', res);
 
       // 清掉舊內容
       panel.querySelectorAll('.upcoming-empty, .upcoming-list').forEach(el => el.remove());
