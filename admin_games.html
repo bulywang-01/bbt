@@ -331,6 +331,12 @@
 
 <script>
 
+// ✅ 專門給 <input type="date"> 用
+function normalizeDateValue(d) {
+  if (!d) return '';
+  return String(d).replace(/\//g, '-'); // yyyy/MM/dd → yyyy-MM-dd
+}
+  
 function callApiAdminBatch(params, callback) {
 
   const cbname = 'cb_admin_' + Date.now() + '_' + Math.random().toString(36).slice(2);
@@ -608,8 +614,9 @@ function loadGames() {
                         <!-- 
                         <td><input type="date" value="${g._date}" onchange="updateGame('${g.game_id}','date',this.value)"></td>
                         <td><input type="date" value="${g.date}"></td>
-                        -->
                         <td><input type="date" value="${dateValue}"></td>
+                        -->
+                        <td><input type="date" value="${normalizeDateValue(g.date)}"></td>
                         <td><input type="time" value="${g._time}" onchange="updateGame('${g.game_id}','time',this.value)"></td>
                         <td><input type="number" value="${g.duration || ''}" onchange="updateGame('${g.game_id}','duration',this.value)"></td>
                         <td><input value="${g.tournament || ''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
