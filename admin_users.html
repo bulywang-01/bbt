@@ -311,19 +311,63 @@ function loadUsers() {
 
       list.forEach(u => {
         const tr = document.createElement('tr');
+      
         tr.innerHTML = `
           <td>${u.user_id || ''}</td>
-          <td>${u.username || ''}</td>
-          <td>${u.name || ''}</td>
-          <td>${u.phone || ''}</td>
-          <td>${u.email || ''}</td>
-          <td>${u.level || ''}</td>
-          <td>${u.role || ''}</td>
-          <td>${u.active || ''}</td>
+      
+          <!-- ✅ 背號 -->
           <td>
-            <button onclick="editUser('${u.user_id}')">編輯</button>
+            <input type="text" value="${u.note || ''}"
+                   onchange="updateUserField('${u.user_id}','note',this.value)">
           </td>
+      
+          <!-- ✅ 新密碼（永遠空白，輸入才會更新） -->
+          <td>
+            <input type="password" placeholder="留空不修改"
+                   onchange="updateUserField('${u.user_id}','password',this.value)">
+          </td>
+      
+          <td>
+            <input type="text" value="${u.name || ''}"
+                   onchange="updateUserField('${u.user_id}','name',this.value)">
+          </td>
+      
+          <td>
+            <input type="text" value="${u.phone || ''}"
+                   onchange="updateUserField('${u.user_id}','phone',this.value)">
+          </td>
+      
+          <td>
+            <input type="email" value="${u.email || ''}"
+                   onchange="updateUserField('${u.user_id}','email',this.value)">
+          </td>
+      
+          <td>
+            <select onchange="updateUserField('${u.user_id}','level',this.value)">
+              <option value="A" ${u.level==='A'?'selected':''}>A</option>
+              <option value="B" ${u.level==='B'?'selected':''}>B</option>
+              <option value="C" ${u.level==='C'?'selected':''}>C</option>
+            </select>
+          </td>
+      
+          <td>
+            <select onchange="updateUserField('${u.user_id}','role',this.value)">
+              <option value="judge" ${u.role==='judge'?'selected':''}>judge</option>
+              <option value="chief_judge" ${u.role==='chief_judge'?'selected':''}>chief_judge</option>
+              <option value="admin" ${u.role==='admin'?'selected':''}>admin</option>
+            </select>
+          </td>
+      
+          <td>
+            <select onchange="updateUserField('${u.user_id}','active',this.value)">
+              <option value="Y" ${u.active==='Y'?'selected':''}>啟用</option>
+              <option value="N" ${u.active==='N'?'selected':''}>停用</option>
+            </select>
+          </td>
+      
+          <td>—</td>
         `;
+      
         tbody.appendChild(tr);
       });
     }
