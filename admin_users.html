@@ -283,7 +283,7 @@ function loadUsers() {
   const tbody = document.getElementById('userBody');
   if (!tbody) return;
 
-  tbody.innerHTML = '<tr><td colspan="9">載入中...</td></tr>';
+  tbody.innerHTML = '<tr><td ="10">載入中...</td></tr>';
 
   callApi(
     { action: 'getUsers' },
@@ -294,7 +294,7 @@ function loadUsers() {
       // ✅ JSONP 錯誤（callback 有被呼叫，但後端回 error）
       if (!res || res.result !== 'ok') {
         tbody.innerHTML =
-          `<tr><td colspan="9">${res?.message || '讀取失敗'}</td></tr>`;
+          `<tr><td ="10">${res?.message || '讀取失敗'}</td></tr>`;
         return;
       }
 
@@ -303,7 +303,7 @@ function loadUsers() {
 
       if (!Array.isArray(list) || list.length === 0) {
         tbody.innerHTML =
-          `<tr><td colspan="9">尚無使用者資料</td></tr>`;
+          `<tr><td ="10">尚無使用者資料</td></tr>`;
         return;
       }
 
