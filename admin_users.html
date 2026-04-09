@@ -251,7 +251,11 @@ button{
 
     <div class="create-user-field">
       <label>裁判證等級</label>
-      <input id="new_level" placeholder="A / B / C">
+          <select id="new_level">
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
     </div>
 
     <div class="create-user-field">
@@ -398,9 +402,7 @@ function loadUsers() {
         <!-- 角色 -->
         <td>
           <select onchange="updateUserField('${u.user_id}','role',this.value)">
-            <option value="judge" ${u.role==='judge'?'selected':''}>裁判</option>
-            <option value="chief_judge" ${u.role==='chief_judge'?'selected':''}>裁判長</option>
-            <option value="admin" ${u.role==='admin'?'selected':''}>管理員</option>
+            ${renderRoleOptions(u.role)}
           </select>
         </td>
 
@@ -535,8 +537,6 @@ const ROLE_LABEL = {
 };
 
 // 先暫存 updateUserField()
-const pendingUserUpdates = {};
-
 function updateUserField(userId, field, value) {
   if (!pendingUserUpdates[userId]) {
     pendingUserUpdates[userId] = {};
@@ -553,13 +553,6 @@ function renderRoleOptions(role){
       ${ROLE_LABEL[r]}
     </option>`
   ).join('');
-}
-
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
- t.style.opacity='1';
-  setTimeout(()=>t.style.opacity='0',2000);
 }
 
 function logout(){
