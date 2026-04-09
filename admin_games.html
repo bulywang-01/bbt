@@ -223,7 +223,7 @@
     ✅ <a href="TestExportData.xlsx" download>下載範例檔（Excel）</a>
     以下為範例說明，請利用 Excel 檔填入完整資料後再匯入，匯入前請先預覽內容，確認資料無誤後再執行匯入動作。
     
-    date,time,duration,tournament,category,field,away_team,home_team,umpire_count,position_mode
+    ,time,duration,tournament,category,field,away_team,home_team,umpire_count,position_mode
     2026-04-12,08:30,90,學齡盃,六年級,A球場,三峽,板橋,2,allow_select
 
       <table class="styled-table table-auto">
@@ -235,7 +235,7 @@
         </thead>
         <tbody>
           <tr>
-            <td><code>date</code></td>
+            <td><code></code></td>
             <td>比賽日期（格式：YYYY-MM-DD）</td>
           </tr>
           <tr>
@@ -603,7 +603,8 @@ function loadGames() {
                     html += `
                       <tr>
                         <td><input value="${g.game_code || ''}" onchange="updateGame('${g.game_id}','game_code',this.value)"></td>
-                        <td><input type="date" value="${g._date}" onchange="updateGame('${g.game_id}','date',this.value)"></td>
+                        <!-- <td><input type="date" value="${g._date}" onchange="updateGame('${g.game_id}','date',this.value)"></td> -->
+                        <td><input type="date" value="${game.date}"></td>
                         <td><input type="time" value="${g._time}" onchange="updateGame('${g.game_id}','time',this.value)"></td>
                         <td><input type="number" value="${g.duration || ''}" onchange="updateGame('${g.game_id}','duration',this.value)"></td>
                         <td><input value="${g.tournament || ''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
