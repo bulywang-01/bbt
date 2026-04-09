@@ -611,7 +611,10 @@ function loadGames() {
                     html += `
                       <tr>
                         <td><input value="${g.game_code || ''}" onchange="updateGame('${g.game_id}','game_code',this.value)"></td>
-                        <td><input type="date" value="${normalizeDateValue(g.date)}"></td>
+                        <td><input type="date"
+                             value="${normalizeDateValue(g.date)}"
+                             onchange="updateGame('${g.game_id}','date',this.value)">
+                        </td>
                         <td><input type="time" value="${g._time}" onchange="updateGame('${g.game_id}','time',this.value)"></td>
                         <td><input type="number" value="${g.duration || ''}" onchange="updateGame('${g.game_id}','duration',this.value)"></td>
                         <td><input value="${g.tournament || ''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
