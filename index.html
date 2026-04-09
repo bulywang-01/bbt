@@ -205,6 +205,56 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHeader();
 });
 
+/* 近期站場資訊 */
+  
+function loadUpcomingGames() {
+  const s = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!s.user_id) return;
+
+  callApi(
+    {
+      action: 'getMyUpcomingGames',
+      user_id: s.user_id
+    },
+    res => {
+      const panel = document.querySelector('.panel h3')
+        ?.parentElement;
+
+      if (!panel) return;
+
+      const empty = panel.querySelector('.upcoming-empty');
+      if (empty) empty.remove();
+
+      if (!res || res.result !== 'ok' || res.games.length === 0) {
+        panel.insertAdjacentHTML(
+          'beforeend',
+          `<p class="upcoming-empty">本月尚未安排執勤賽事。</p>`
+        );
+        return;
+      }
+
+      let html = `<ul class="upcoming-list">`;
+
+      res.games.forEach(g => {
+        html += `
+          <li>
+            ${g.date}　${g.time}　
+            <b>${g.game_code}</b>　
+            ${g.position}　
+            ${g.field}
+          </li>
+        `;
+      });
+
+      html += `</ul>`;
+      panel.insertAdjacentHTML('beforeend', html);
+    }
+  );
+}
+
+loadHeader();
+loadUpcoming();
+
 </script>
 
 </body>
