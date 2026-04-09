@@ -429,42 +429,49 @@ function saveUser(btn) {
   });
 }
   
+/* ===== 新增使用者 ===== */
 function createUser() {
-  const username = new_username.value.trim();
-  const name = new_name.value.trim();
-  const phone = new_phone.value.trim();
-  const email = new_email.value.trim();
-  const level = new_level.value.trim();
-  const role = new_role.value;
+
+  const username = document.getElementById('new_username')?.value.trim();
+  const name     = document.getElementById('new_name')?.value.trim();
+  const phone    = document.getElementById('new_phone')?.value.trim();
+  const email    = document.getElementById('new_email')?.value.trim();
+  const level    = document.getElementById('new_level')?.value;
+  const role     = document.getElementById('new_role')?.value;
 
   if (!username || !name) {
-    alert('帳號與姓名為必填');
+    alert('請至少填寫「帳號」與「姓名」');
     return;
   }
 
-  // ✅ 改成物件模式（符合 config.js）
-  const data = {
-    action: 'createUser',
-    username: username,
-    name: name,
-    phone: phone,
-    email: email,
-    level: level,
-    role: role
-  };
+  callApi(
+    {
+      action: 'createUser',
+      username,
+      name,
+      phone,
+      email,
+      level,
+      role
+    },
+    res => {
+      if (!res || res.result !== 'ok') {
+        alert(res?.message || '新增失敗');
+        return;
+      }
 
-  console.log('createUser payload:', data);
+      alert('新增帳號成功');
+      
+      // ✅ 清空輸入欄位
+      document.getElementById('new_username').value = '';
+      document.getElementById('new_name').value = '';
+      document.getElementById('new_phone').value = '';
+      document.getElementById('new_email').value = '';
 
-  callApi(data, res => {
-    console.log('createUser response:', res);
-
-    if (res && res.result === 'ok') {
-      showToast('✅ 帳號已建立，預設密碼為 12345678');
+      // ✅ 重新載入清單
       loadUsers();
-    } else {
-      alert(res?.message || '新增失敗');
     }
-  });
+  );
 }
 
 const ROLE_LABEL = {
