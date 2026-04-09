@@ -261,7 +261,7 @@ button{
 
     <div class="create-user-actions">
       <!-- <button type="button" class="btn-primary" onclick="createUser()">新增帳號</button> -->
-      <button type="button" onclick="createUser()"></button>
+      <button type="button" class="btn-primary" id="btnCreateUser">新增帳號</button>
     </div>
 
   </div>
@@ -520,8 +520,21 @@ function createUser() {
     }
   );
 }
+/**
 document.getElementById('btnCreateUser')
   ?.addEventListener('click', createUser);
+*/
+  
+document.addEventListener('DOMContentLoaded', () => {
+
+  const btn = document.getElementById('btnCreateUser');
+  if (!btn) {
+    console.error('btnCreateUser not found');
+    return;
+  }
+
+  btn.addEventListener('click', createUser);
+});
 
 const ROLE_LABEL = {
   admin: '系統管理員',
