@@ -27,6 +27,9 @@ function callApi(params, callback) {
   // ✅ 登入 / 裁判頁：錯誤只清理，不 callback 假結果
   script.onerror = function () {
     console.warn('JSONP load warning:', script.src);
+    if (callback) {
+      callback({ result: 'error', message: 'JSONP load failed' });
+    }
     delete window[cbname];
     script.remove();
   };
