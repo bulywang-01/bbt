@@ -106,7 +106,7 @@
 
 <!-- ✅ 我即將執勤的比賽 -->
 <div class="panel" id="upcoming-panel">
-  <h3>🗓 我將執勤的比賽</h3>
+  <h3>🗓 我的班表</h3>
   <div id="upcoming-container"></div>
 </div>
 
@@ -406,7 +406,7 @@ function loadUpcomingGames() {
       }
       
       if (monthGames.length) {
-        html += '<h4>🗓 本月賽事</h4><ul class="upcoming-list">';
+        html += '<h4>🗓 本月其它賽事</h4><ul class="upcoming-list">';
         monthGames.forEach(e => {
           html += `
             <li>
