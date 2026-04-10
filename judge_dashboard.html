@@ -645,6 +645,7 @@ function submitSignup(){
       user_id: session.user_id,
       games_with_position: payload.join(',')
     },
+    console.log('judgeSignup response =', res);
     res => {
       // ❌ 這裡「不要」先 hideOverlay
 
@@ -656,7 +657,6 @@ function submitSignup(){
         showMessage(res?.message || '報名失敗', false);
       }
     }
-    console.log('judgeSignup response =', res);
   );
 }
 
