@@ -172,6 +172,37 @@ function loadHeader(){
       });
     });
 }
+  
+function isToday(dateStr) {
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth() + 1).padStart(2, '0');
+  const d = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${y}-${m}-${d}`;
+  return dateStr === todayStr;
+}
+
+function isThisWeek(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = new Date();
+
+  const start = new Date(today);
+  start.setDate(today.getDate() - today.getDay()); // 週日
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6); // 週六
+
+  return d >= start && d <= end;
+}
+
+function isThisMonth(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth()
+  );
+}
 
 /* ===== 登出 ===== */
 function logout(){
@@ -282,7 +313,12 @@ function loadMonthlyGames() {
 
       res.games.forEach(g => {
       
+        const todayTag = isToday(g.date)
+          ? '<span style="color:#d32f2f;font-weight:bold;">【今日】</span> '
+          : '';
+        
         const line = [
+          g.todayTag,
           g.position,
           g.date,
           g.time,
@@ -332,20 +368,30 @@ function loadUpcomingGames() {
         return;
       }
 
-      let html = `<ul class="upcoming-list">`;
-
-      res.games.forEach(g => {
-        html += `
-          <li>
-            ${positionText(g.position)}　
-            ${g.date}　
-            ${formatTime(g.time)}　
-            ${g.category || ''}　
-            <b>${g.game_code}</b>　
-            ${g.matchup || ''}　
-          </li>
-        `;
-      });
+      const weekGames = res.games.filter(g => isThisWeek(g.date));
+      const monthGames = res.games.filter(
+        g => isThisMonth(g.date) && !isThisWeek(g.date)
+      );
+      
+      let html = '';
+      
+      if (weekGames.length) {
+        html += '<h4>📅 本週賽事</h4><ul>';
+        weekGames.forEach(g => {
+          html += `${positionText(g.position)}　<li>${g.date}　${formatTime(g.time)}　${g.category}　<b>${g.game_code}</b>　${g.matchup}</li>`;
+        });
+        html += '</ul>';
+      }
+      
+      if (monthGames.length) {
+        html += '<h4>🗓 本月賽事</h4><ul>';
+        monthGames.forEach(g => {
+          html += `${positionText(g.position)}　<li>${g.date}　${formatTime(g.time)}　${g.category}　<b>${g.game_code}</b>　${g.matchup}</li>`;
+        });
+        html += '</ul>';
+      }
+      
+      container.innerHTML = html;
       
       html += `</ul>`;
       panel.insertAdjacentHTML('beforeend', html);
