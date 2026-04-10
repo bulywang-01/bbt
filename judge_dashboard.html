@@ -638,6 +638,7 @@ function submitSignup(){
 
   // ✅ 顯示 loading
   showLoading('送出報名中...');
+  console.log('judgeSignup response =', res);
 
   callApi(
     {
@@ -645,7 +646,6 @@ function submitSignup(){
       user_id: session.user_id,
       games_with_position: payload.join(',')
     },
-    console.log('judgeSignup response =', res);
     res => {
       // ❌ 這裡「不要」先 hideOverlay
 
