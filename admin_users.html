@@ -361,12 +361,12 @@ function loadUsers() {
       const tr = document.createElement('tr');
 
       tr.innerHTML = `
-        <!-- 先mark起來，delete
-            <!-- 刪除功能 -->
+        <!-- 先mark起來，刪除功能
             <td>
             <input type="checkbox" class="user-check" value="${u.user_id}">
             </td>
         -->
+        
         <!-- 帳號 -->
         <td>${u.username || ''}</td>
 
