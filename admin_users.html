@@ -187,9 +187,11 @@ button{
 <div class="panel">
 
 <table>
-  <th>
+<!-- 先 mark 起來 for delete
+<th>
   <input type="checkbox" id="checkAll" onclick="toggleAllUsers(this)">
 </th>
+-->
 <thead>
 <tr>
   <th>帳號</th>
@@ -211,11 +213,13 @@ button{
 
 </div>
 </div>
+
+<!-- 先 mark 起來 for delete 
 <button onclick="deleteSelectedUsers()"
         style="margin-bottom:10px;background:#c62828;color:#fff;">
   🗑 刪除選取帳號
 </button>
-
+-->
 <div class="create-user-card">
   <h3>➕ 新增裁判帳號</h3>
 
@@ -425,8 +429,11 @@ function loadUsers() {
 
         <!-- 操作 -->
         <td>
-          <button onclick="saveUser('${u.user_id}')">
-            儲存
+          <button onclick="saveUser('${u.user_id}')">儲存</button>
+          <button
+            style="margin-left:6px;background:#c62828;color:#fff;"
+            onclick="deleteSingleUser('${u.user_id}','${u.username}')">
+            刪除
           </button>
         </td>
       `;
@@ -571,7 +578,7 @@ function toggleAllUsers(master) {
   });
 }
 
-// 刪除使用者
+// 刪除使用者(可複選)
   
 function deleteSelectedUsers() {
 
@@ -605,7 +612,34 @@ function deleteSelectedUsers() {
     }
   );
 }
-  
+
+// 刪除使用者(單筆)
+function deleteSingleUser(userId, username) {
+
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  if (!confirm(`確定要刪除帳號「${username}」？此動作無法復原`)) {
+    return;
+  }
+
+  callApi(
+    {
+      action: 'deleteUsers',
+      user_ids: userId,
+      current_user_id: session.user_id
+    },
+    res => {
+      if (!res || res.result !== 'ok') {
+        showToast(res?.message || '刪除失敗', 'error');
+        return;
+      }
+
+      showToast(res.message || '刪除完成', 'success');
+      loadUsers();
+    }
+  );
+}
+
 /* ===== Helpers ===== */
 function renderRoleOptions(role){
   const roles = ['admin','match_admin','judge_admin','chief_judge','judge'];
