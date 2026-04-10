@@ -372,6 +372,7 @@ function loadUpcomingGames() {
       const monthGames = res.games.filter(
         g => isThisMonth(g.date) && !isThisWeek(g.date)
       );
+      const container = document.getElementById('upcoming-container');
       
       let html = '';
       
@@ -392,9 +393,6 @@ function loadUpcomingGames() {
       }
       
       container.innerHTML = html;
-      
-      html += `</ul>`;
-      panel.insertAdjacentHTML('beforeend', html);
     }
   );
 }
