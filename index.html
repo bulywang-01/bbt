@@ -280,16 +280,21 @@ function loadMonthlyGames() {
         return;
       }
 
-      let html = `<ul class="monthly-list">`;
-
-      list.forEach(g => {
-        html += `
-          <li>
-            ${g.date}　${g.time || ''}　
-            <b>${g.game_code || ''}</b>　
-            ${g.field || ''}
-          </li>
-        `;
+      res.games.forEach(g => {
+      
+        const line = [
+          g.date,
+          g.time,
+          g.category,
+          g.game_code,
+          g.matchup,
+          g.position
+        ].filter(Boolean).join('／');
+      
+        const li = document.createElement('li');
+        li.textContent = line;
+      
+        list.appendChild(li);
       });
 
       html += `</ul>`;
