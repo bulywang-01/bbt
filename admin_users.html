@@ -591,15 +591,16 @@ function deleteSelectedUsers() {
   callApi(
     {
       action: 'deleteUsers',
-      user_ids: checked.join(',')
+      user_ids: checked.join(','),
+      current_user_id: session.user_id   // ✅ 不能漏
     },
     res => {
       if (!res || res.result !== 'ok') {
         showToast(res?.message || '刪除失敗', 'error');
         return;
       }
-
-      showToast(`✅ 已刪除 ${res.deleted} 個帳號`, 'success');
+  
+      showToast(res.message, 'success');
       loadUsers();
     }
   );
