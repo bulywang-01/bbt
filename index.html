@@ -63,6 +63,27 @@
       color: #666;
       font-style: italic;
     }
+
+    /* 執勤賽事列表：緊湊版 */
+    .upcoming-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 6px 0 12px;
+      font-size: 13px;        /* ✅ 字體縮小 */
+      line-height: 1.6;       /* ✅ 行距緊一點 */
+    }
+    
+    .upcoming-list li {
+      padding: 2px 0;
+      white-space: nowrap;    /* ✅ 一場一行 */
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .upcoming-position {
+      font-weight: bold;
+      margin-right: 6px;
+    }
   </style>
 </head>
 
@@ -367,22 +388,42 @@ function loadUpcomingGames() {
       let html = '';
       
       if (weekGames.length) {
-        html += '<h4>📅 本週賽事</h4><ul>';
-        weekGames.forEach(g => {
-          html += `${positionText(g.position)}　<li>${g.date}　${formatTime(g.time)}　${g.category}　<b>${g.game_code}</b>　${g.matchup}</li>`;
+        html += '<h4>📅 本週賽事</h4><ul class="upcoming-list">';
+        weekGames.forEach(e => {
+          html += `
+            <li>
+              <span class="upcoming-position">
+                【${positionText(e.position)}】
+              </span>
+              ${e.date} ${formatTime(e.time)}
+              ${e.category}
+              <b>${e.game_code}</b>
+              ${e.matchup}
+            </li>
+          `;
         });
         html += '</ul>';
       }
       
       if (monthGames.length) {
-        html += '<h4>🗓 本月賽事</h4><ul>';
-        monthGames.forEach(g => {
-          html += `${positionText(g.position)}　<li>${g.date}　${formatTime(g.time)}　${g.category}　<b>${g.game_code}</b>　${g.matchup}</li>`;
+        html += '<h4>🗓 本月賽事</h4><ul class="upcoming-list">';
+        monthGames.forEach(e => {
+          html += `
+            <li>
+              <span class="upcoming-position">
+                【${positionText(e.position)}】
+              </span>
+              ${e.date} ${formatTime(e.time)}
+              ${e.category}
+              <b>${e.game_code}</b>
+              ${e.matchup}
+            </li>
+          `;
         });
         html += '</ul>';
       }
       
-      container.innerHTML = html;
+      container.innerHTML = html || '<p class="upcoming-empty">目前尚無執勤賽事</p>';
     }
   );
 }
