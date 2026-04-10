@@ -494,10 +494,6 @@ function render() {
         if (isPast) tr.classList.add('expired');
 
         /* zebra（同月不同時間） */
-        //if (g.time_range !== lastTime) {
-        //  zebra = !zebra;
-        //  lastTime = g.time_range;
-        //}
         if (g.date !== lastDate) {
           zebra = !zebra;
           lastDate = g.date;
