@@ -280,12 +280,11 @@ button{
   </div>
 </div>
 
-
 <hr>
-
-
+<!--
 <div id="toast">✅ 已更新</div>
-
+-->
+  
 <script src="js/config.js"></script>
 
 <script>
@@ -430,11 +429,17 @@ function loadUsers() {
         <!-- 操作 -->
         <td>
           <button onclick="saveUser('${u.user_id}')">儲存</button>
-          <button
-            style="margin-left:6px;background:#c62828;color:#fff;"
-            onclick="deleteSingleUser('${u.user_id}','${u.username}')">
-            刪除
-          </button>
+          ${
+            u.username === 'admin'
+              ? `<span style="margin-left:6px;color:#999;">不可刪</span>`
+              : `
+                <button
+                  style="margin-left:6px;background:#c62828;color:#fff;"
+                  onclick="deleteSingleUser('${u.user_id}','${u.username}')">
+                  刪除
+                </button>
+              `
+          }
         </td>
       `;
 
