@@ -273,7 +273,6 @@ button{
     </div>
 
     <div class="create-user-actions">
-      <!-- <button type="button" class="btn-primary" onclick="createUser()">新增帳號</button> -->
       <button type="button" class="btn-primary" id="btnCreateUser">新增帳號</button>
     </div>
 
@@ -362,10 +361,12 @@ function loadUsers() {
       const tr = document.createElement('tr');
 
       tr.innerHTML = `
-        <!-- 刪除功能 -->
-        <td>
-        <input type="checkbox" class="user-check" value="${u.user_id}">
-        </td>
+        <!-- 先mark起來，delete
+            <!-- 刪除功能 -->
+            <td>
+            <input type="checkbox" class="user-check" value="${u.user_id}">
+            </td>
+        -->
         <!-- 帳號 -->
         <td>${u.username || ''}</td>
 
