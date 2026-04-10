@@ -253,6 +253,12 @@ td.cell-na {
 <script src="js/config.js"></script>
 
 <script>
+
+function hideLoading() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) overlay.remove();
+}
+
 /* ===== 給共用header.html使用 ===== */
 /* ===== 初始化（含共用 header） ===== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -678,11 +684,6 @@ function showMessage(msg, reload = true) {
     }
   };
 
-function hideLoading() {
-  const overlay = document.getElementById('loadingOverlay');
-  if (overlay) overlay.remove();
-}
-  
   // ✅ 重點：這裡一定要顯示 overlay
   document.getElementById('overlay').style.display = 'flex';
 }
@@ -690,7 +691,6 @@ function hideLoading() {
 function hideOverlay() {
   document.getElementById('overlay').style.display = 'none';
 }
-
 
 function logout(){
   localStorage.clear();
