@@ -233,7 +233,7 @@ td.cell-na {
     </select>
 
     <label style="margin-left:10px;">
-      <input type="checkbox" id="showPast" onchange="render()"> 顯示過期賽事　　　
+      <input type="checkbox" id="showExpired" onchange="render()"> 顯示過期賽事　　　
     </label>
     關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninput="render()">
 
@@ -282,7 +282,7 @@ function showMessage(msg, reload = true) {
 /* =========================================================
    全域狀態
 ========================================================= */
-let allGames = [];
+let  = [];
 let selectedPositions = {};   // game_id -> role
 let gamesMap = {};            // game_id -> game object
 
@@ -358,7 +358,7 @@ function loadGames() {
         return;
       }
 
-      allGames = res.games || [];
+       = res.games || [];
       render();
     }
   );
@@ -385,7 +385,7 @@ function render() {
   const box = document.getElementById('content');
   box.innerHTML = '';
 
-  if (!allGames.length) {
+  if (!.length) {
     box.innerHTML = '<div class="panel">目前沒有可報名賽事</div>';
     return;
   }
@@ -395,11 +395,36 @@ function render() {
   const today = todayDate();
 
   gamesMap = {};
-  allGames.forEach(g => gamesMap[g.game_id] = g);
+  
+  // allGames.forEach(g => gamesMap[g.game_id] = g);
+  // allGames --> visibleGames
+
+  const session = JSON.parse(localStorage.getItem('session_user') || {});
+  const isAdmin = ['admin','judge_admin'].includes(session.role);
+  
+  // ✅ 預設只顯示「未過期」賽事
+  const visibleGames = visibleGames.filter(g => {
+    const status = getSignupLockStatus(g.date);
+    return !status.locked || isAdmin;
+  });
+  
+  visibleGames.forEach(g => {
+    gamesMap[g.game_id] = g;
+  });
+
+  // 顯示過期賽事(有勾選)
+  const showExpired = document.getElementById('showExpired')?.checked;
+  const visibleGames = allGames.filter(g => {
+    const status = getSignupLockStatus(g.date);
+    if (!status.locked) return true;
+    if (showExpired) return true;
+    return isAdmin;
+  });
+
 
   /* ===== 依月份分組 ===== */
   const groups = {};
-  allGames.forEach(g => {
+  visibleGames.forEach(g => {
     const m = g.date.slice(0,7); // yyyy-MM
     if (!groups[m]) groups[m] = [];
     groups[m].push(g);
