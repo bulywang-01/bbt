@@ -187,6 +187,9 @@ button{
 <div class="panel">
 
 <table>
+  <th>
+  <input type="checkbox" id="checkAll" onclick="toggleAllUsers(this)">
+</th>
 <thead>
 <tr>
   <th>帳號</th>
@@ -208,6 +211,10 @@ button{
 
 </div>
 </div>
+<button onclick="deleteSelectedUsers()"
+        style="margin-bottom:10px;background:#c62828;color:#fff;">
+  🗑 刪除選取帳號
+</button>
 
 <div class="create-user-card">
   <h3>➕ 新增裁判帳號</h3>
@@ -352,6 +359,10 @@ function loadUsers() {
       const tr = document.createElement('tr');
 
       tr.innerHTML = `
+        <!-- 刪除功能 -->
+        <td>
+        <input type="checkbox" class="user-check" value="${u.user_id}">
+        </td>
         <!-- 帳號 -->
         <td>${u.username || ''}</td>
 
@@ -554,6 +565,45 @@ function updateUserField(userId, field, value) {
   pendingUserUpdates[userId][field] = value;
 }
 
+function toggleAllUsers(master) {
+  document.querySelectorAll('.user-check').forEach(cb => {
+    cb.checked = master.checked;
+  });
+}
+
+// 刪除使用者
+  
+function deleteSelectedUsers() {
+
+  const checked = Array.from(
+    document.querySelectorAll('.user-check:checked')
+  ).map(cb => cb.value);
+
+  if (checked.length === 0) {
+    showToast('⚠ 請先選擇要刪除的帳號', 'warn');
+    return;
+  }
+
+  if (!confirm(`確定要刪除 ${checked.length} 個帳號？此動作無法復原`)) {
+    return;
+  }
+
+  callApi(
+    {
+      action: 'deleteUsers',
+      user_ids: checked.join(',')
+    },
+    res => {
+      if (!res || res.result !== 'ok') {
+        showToast(res?.message || '刪除失敗', 'error');
+        return;
+      }
+
+      showToast(`✅ 已刪除 ${res.deleted} 個帳號`, 'success');
+      loadUsers();
+    }
+  );
+}
   
 /* ===== Helpers ===== */
 function renderRoleOptions(role){
