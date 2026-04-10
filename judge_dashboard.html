@@ -636,7 +636,6 @@ function submitSignup(){
     id => `${id}:${selectedPositions[id]}`
   );
 
-  // ✅ 顯示 loading
   showLoading('送出報名中...');
 
   callApi(
@@ -647,17 +646,14 @@ function submitSignup(){
     },
     res => {
 
-      // ✅ 現在 res 才存在，可以安全使用
       console.log('judgeSignup response =', res);
 
-      // ✅ 關閉 loading（不論成功或失敗）
+      // ✅ 關閉 loading（一定要有對應 function）
       hideLoading();
 
       if (res && res.result === 'ok') {
-        // ✅ 成功：顯示訊息，按確定後 reload
         showMessage(res.message || '報名成功', true);
       } else {
-        // ✅ 防呆 / 錯誤：顯示後端回傳訊息
         showMessage(res?.message || '報名失敗', false);
       }
     }
@@ -682,6 +678,11 @@ function showMessage(msg, reload = true) {
     }
   };
 
+function hideLoading() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) overlay.remove();
+}
+  
   // ✅ 重點：這裡一定要顯示 overlay
   document.getElementById('overlay').style.display = 'flex';
 }
