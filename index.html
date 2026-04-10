@@ -283,12 +283,12 @@ function loadMonthlyGames() {
       res.games.forEach(g => {
       
         const line = [
-          g.position
+          g.position,
           g.date,
           g.time,
           g.category,
           g.game_code,
-          g.matchup,
+          g.matchup
         ].filter(Boolean).join('　');
       
         const li = document.createElement('li');
