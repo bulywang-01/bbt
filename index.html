@@ -337,15 +337,16 @@ function loadUpcomingGames() {
       res.games.forEach(g => {
         html += `
           <li>
-            <b>${g.game_code}</b>　
             ${g.date}　
             ${formatTime(g.time)}　
-            ${positionText(g.position)}　
-            ${g.field || ''}
+            ${g.category || ''}　
+            <b>${g.game_code}</b>　
+            ${g.matchup || ''}　
+            ${positionText(g.position)}
           </li>
         `;
       });
-
+      
       html += `</ul>`;
       panel.insertAdjacentHTML('beforeend', html);
     }
