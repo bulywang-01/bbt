@@ -176,7 +176,6 @@ td.cell-na {
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  pointer-events: none;
 }
 
 #overlay-box {
@@ -186,7 +185,6 @@ td.cell-na {
   min-width: 280px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  pointer-events: auto;
 }
 
 #overlay-text {
@@ -198,10 +196,6 @@ td.cell-na {
   padding: 6px 20px;
 }
 
-#overlay button {
-  pointer-events: auto;
-}
-
 /* 場次欄位（不要影響整列） */
 .col-game-id {
   font-weight: 700;
@@ -209,43 +203,6 @@ td.cell-na {
   background-color: #f5f5f5;
   text-align: center;
   white-space: nowrap;
-}
-
-/* ===== 手機版優化 ===== */
-@media (max-width: 768px) {
-
-  table, thead {
-    display: none;
-  }
-
-  .panel {
-    padding: 8px;
-  }
-
-  .game-card {
-    background: #fff;
-    border-radius: 10px;
-    margin-bottom: 12px;
-    padding: 12px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.12);
-    font-size: 16px;
-  }
-
-  .game-card .row {
-    margin-bottom: 6px;
-  }
-
-  .game-card .title {
-    font-weight: bold;
-    font-size: 17px;
-    margin-bottom: 8px;
-  }
-
-  .cancel-btn {
-    display: inline-block;
-    margin-left: 6px;
-    font-size: 15px;
-  }
 }
 
 </style>
@@ -295,17 +252,11 @@ td.cell-na {
 <script src="js/config.js"></script>
 
 <script>
+
 function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
   if (overlay) overlay.remove();
 }
-
-/* ===================================================
- *  🔥 全域 bridge：給 inline onclick 用（必要）
- * =================================================== */
-window.cancelJudgeSignup = function (signupId) {
-  return cancelMySignup(signupId);
-};
 
 /* ===== 給共用header.html使用 ===== */
 /* ===== 初始化（含共用 header） ===== */
@@ -356,12 +307,7 @@ function loadGames() {
       hideOverlay();
 
       if (!res || res.result !== 'ok') {
-        // showMessage(res?.message || '無法取得賽事資料');
-        showMessage(
-        (res?.message || '未知錯誤') +
-        (res?.stack ? '\n\n' + res.stack : ''),
-        false
-          );
+        showMessage(res?.message || '無法取得賽事資料');
         return;
       }
 
@@ -422,15 +368,6 @@ function rememberSelection(gameId, role) {
 
 /* ===== 產置出表格及內容 ===== */
 function render() {
-
-  // ✅ 每次重畫畫面前，一定要確保 overlay 關閉
-  const overlay = document.getElementById('overlay');
-  if (overlay) overlay.style.display = 'none';
-
-  // ✅ 也順便把訊息文字清掉（保險）
-  const txt = document.getElementById('overlay-text');
-  if (txt) txt.textContent = '';
-
 
   function timeToMinutes(t){
   const d = new Date(t);
@@ -581,7 +518,6 @@ function render() {
           }
         
           // 1️⃣ 已佔用（approved）→ 一定顯示姓名（不管是否過期）
-/*
           if (g.occupied_positions && g.occupied_positions[role]) {
             const isMe = g.my_position === role;
             if (isMe) {
@@ -593,27 +529,7 @@ function render() {
             }
             return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
           }
-  */      
-
-          // 新增裁判本人可以取消自已的站位
-          if (g.occupied_positions && g.occupied_positions[role]) {
-              const isMe = g.my_position === role;
-            
-              if (isMe) {
-                return `
-                  <div class="judge-name me">
-                    <span class="judge-star">★</span>${g.occupied_positions[role]}
-                    <span class="cancel-btn"
-                          title="取消此站位"
-                          data-signup-id="${g.my_signup_id}">
-                      ［取消］
-                    </span>
-                  </div>
-                `;
-              }
-            
-              return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
-            }
+        
           // 2️⃣ ✅ 新規則：過期賽事 & 尚未報名 → 留空白
           if (isPast) {
             return '';
@@ -775,119 +691,6 @@ function logout(){
   localStorage.clear();
   location.replace('login.html');
 }
-
-// 取消站位
-function cancelMySignup(signupId) {
-  if (!signupId) return;
-
-  if (!confirm('確定要取消這個站位嗎？')) return;
-
-  const session = JSON.parse(localStorage.getItem('session_user') || {});
-  if (!session.user_id) {
-    showMessage('登入狀態已失效', false);
-    return;
-  }
-
-  showLoading('取消站位中...');
-
-  callApi(
-    {
-      action: 'cancelJudgeSignup',
-      user_id: session.user_id,
-      signup_id: signupId
-    },
-    res => {
-      hideOverlay();
-      if (res && res.result === 'ok') {
-        showMessage('已取消站位', true);
-      } else {
-        showMessage(res?.message || '取消失敗', false);
-      }
-    }
-  );
-}
-
-// 取消後通知管理員及裁判長
-function notifyCancelJudgeSignup_(info) {
-  const ss = SpreadsheetApp.openById(MAIN_SHEET_ID);
-  const userSheet = ss.getSheetByName('Users');
-  const users = userSheet.getDataRange().getValues();
-  const header = users[0];
-
-  const IDX = {};
-  header.forEach((h, i) => IDX[h] = i);
-
-  // ✅ 收件者（管理員 + 裁判長）
-  const recipients = [];
-
-  for (let i = 1; i < users.length; i++) {
-    const row = users[i];
-    const role = row[IDX.role];
-    const email = row[IDX.email];
-
-    if (!email) continue;
-
-    if (role === 'admin' || role === 'chief_judge') {
-      recipients.push(email);
-    }
-  }
-
-  if (!recipients.length) return;
-
-  const subject = `【裁判取消出勤通知】${info.game_date} ${info.position}`;
-  const body = `
-裁判出勤異動通知：
-
-裁判姓名：${info.judge_name}
-聯絡方式：${info.judge_email || '未提供'}
-
-場次資訊：
-比賽日期：${info.game_date}
-比賽時間：${info.game_time}
-比賽組別：${info.category}
-對戰組合：${info.away_team} vs ${info.home_team}
-場地：${info.field}
-
-原報名站位：${info.position}
-目前狀態：已由裁判本人取消
-
-取消時間：${new Date().toLocaleString('zh-TW')}
-
-※ 本信件由系統自動發送，請勿回覆
-`.trim();
-
-  GmailApp.sendEmail(
-    recipients.join(','),
-    subject,
-    body
-  );
-}
-  
-// 🔧 與畫面 onclick 對應用（別刪）
-function cancelJudgeSignup(signupId) {
-  return cancelMySignup(signupId);
-}
-
-/* =========================================
- * ✅ 取消站位：事件代理（除錯版）
- * ========================================= */
-document.addEventListener('click', function (e) {
-  console.log('document click fired');
-
-  const btn = e.target.closest('.cancel-btn');
-  console.log('clicked element =', e.target);
-  console.log('found cancel-btn =', btn);
-
-  if (!btn) return;
-
-  const signupId = btn.dataset.signupId;
-  console.log('signupId =', signupId);
-
-  if (!signupId) return;
-
-  cancelMySignup(signupId);
-});
-
 </script>
 
 </body>
