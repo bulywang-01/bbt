@@ -289,15 +289,17 @@ td.cell-na {
 <script src="js/config.js"></script>
 
 <script>
-/* ===== 讓 inline onclick 一定找得到 ===== */
-window.cancelJudgeSignup = function (signupId) {
-  return cancelMySignup(signupId);
-};
-
 function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
   if (overlay) overlay.remove();
 }
+
+/* ===================================================
+ *  🔥 全域 bridge：給 inline onclick 用（必要）
+ * =================================================== */
+window.cancelJudgeSignup = function (signupId) {
+  return cancelMySignup(signupId);
+};
 
 /* ===== 給共用header.html使用 ===== */
 /* ===== 初始化（含共用 header） ===== */
