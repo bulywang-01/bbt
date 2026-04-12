@@ -176,6 +176,7 @@ td.cell-na {
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  pointer-events: none;
 }
 
 #overlay-box {
@@ -241,7 +242,7 @@ td.cell-na {
     font-size: 15px;
   }
 }
-  
+
 </style>
 </head>
 
@@ -411,6 +412,11 @@ function rememberSelection(gameId, role) {
 
 /* ===== 產置出表格及內容 ===== */
 function render() {
+
+  
+  // ✅ 確保 overlay 不會擋住畫面
+  const overlay = document.getElementById('overlay');
+  if (overlay) overlay.style.display = 'none';
 
   function timeToMinutes(t){
   const d = new Date(t);
