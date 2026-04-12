@@ -785,7 +785,12 @@ function cancelMySignup(signupId) {
 function cancelJudgeSignup(signupId) {
   return cancelMySignup(signupId);
 }
-  
+
+/* ===== 強制暴露給 inline onclick（必要） ===== */
+window.cancelJudgeSignup = function (signupId) {
+  return cancelMySignup(signupId);
+};
+
 </script>
 
 </body>
