@@ -585,7 +585,7 @@ function render() {
                     <span class="judge-star">★</span>${g.occupied_positions[role]}
                     <span class="cancel-btn"
                           title="取消此站位"
-                          onclick="cancelMySignup('${g.my_signup_id}')">
+                          data-signup-id="${g.my_signup_id}">
                       ［取消］
                     </span>
                   </div>
@@ -847,6 +847,19 @@ function notifyCancelJudgeSignup_(info) {
 function cancelJudgeSignup(signupId) {
   return cancelMySignup(signupId);
 }
+
+/* =========================================
+ * ✅ 取消站位：事件代理（不再用 inline onclick）
+ * ========================================= */
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.cancel-btn');
+  if (!btn) return;
+
+  const signupId = btn.dataset.signupId;
+  if (!signupId) return;
+
+  cancelMySignup(signupId);
+});
 
 </script>
 
