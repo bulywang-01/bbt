@@ -289,6 +289,10 @@ td.cell-na {
 <script src="js/config.js"></script>
 
 <script>
+/* ===== 讓 inline onclick 一定找得到 ===== */
+window.cancelJudgeSignup = function (signupId) {
+  return cancelMySignup(signupId);
+};
 
 function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
@@ -785,11 +789,6 @@ function cancelMySignup(signupId) {
 function cancelJudgeSignup(signupId) {
   return cancelMySignup(signupId);
 }
-
-/* ===== 強制暴露給 inline onclick（必要） ===== */
-window.cancelJudgeSignup = function (signupId) {
-  return cancelMySignup(signupId);
-};
 
 </script>
 
