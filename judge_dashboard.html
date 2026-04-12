@@ -413,10 +413,14 @@ function rememberSelection(gameId, role) {
 /* ===== 產置出表格及內容 ===== */
 function render() {
 
-  
-  // ✅ 確保 overlay 不會擋住畫面
+  // ✅ 每次重畫畫面前，一定要確保 overlay 關閉
   const overlay = document.getElementById('overlay');
   if (overlay) overlay.style.display = 'none';
+
+  // ✅ 也順便把訊息文字清掉（保險）
+  const txt = document.getElementById('overlay-text');
+  if (txt) txt.textContent = '';
+
 
   function timeToMinutes(t){
   const d = new Date(t);
