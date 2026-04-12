@@ -784,6 +784,62 @@ function cancelMySignup(signupId) {
     }
   );
 }
+
+// 取消後通知管理員及裁判長
+function notifyCancelJudgeSignup_(info) {
+  const ss = SpreadsheetApp.openById(MAIN_SHEET_ID);
+  const userSheet = ss.getSheetByName('Users');
+  const users = userSheet.getDataRange().getValues();
+  const header = users[0];
+
+  const IDX = {};
+  header.forEach((h, i) => IDX[h] = i);
+
+  // ✅ 收件者（管理員 + 裁判長）
+  const recipients = [];
+
+  for (let i = 1; i < users.length; i++) {
+    const row = users[i];
+    const role = row[IDX.role];
+    const email = row[IDX.email];
+
+    if (!email) continue;
+
+    if (role === 'admin' || role === 'chief_judge') {
+      recipients.push(email);
+    }
+  }
+
+  if (!recipients.length) return;
+
+  const subject = `【裁判取消出勤通知】${info.game_date} ${info.position}`;
+  const body = `
+裁判出勤異動通知：
+
+裁判姓名：${info.judge_name}
+聯絡方式：${info.judge_email || '未提供'}
+
+場次資訊：
+比賽日期：${info.game_date}
+比賽時間：${info.game_time}
+比賽組別：${info.category}
+對戰組合：${info.away_team} vs ${info.home_team}
+場地：${info.field}
+
+原報名站位：${info.position}
+目前狀態：已由裁判本人取消
+
+取消時間：${new Date().toLocaleString('zh-TW')}
+
+※ 本信件由系統自動發送，請勿回覆
+`.trim();
+
+  GmailApp.sendEmail(
+    recipients.join(','),
+    subject,
+    body
+  );
+}
   
 // 🔧 與畫面 onclick 對應用（別刪）
 function cancelJudgeSignup(signupId) {
