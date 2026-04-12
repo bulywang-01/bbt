@@ -356,7 +356,12 @@ function loadGames() {
       hideOverlay();
 
       if (!res || res.result !== 'ok') {
-        showMessage(res?.message || '無法取得賽事資料');
+        // showMessage(res?.message || '無法取得賽事資料');
+        showMessage(
+        (res?.message || '未知錯誤') +
+        (res?.stack ? '\n\n' + res.stack : ''),
+        false
+          );
         return;
       }
 
