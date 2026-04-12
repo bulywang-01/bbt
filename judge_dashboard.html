@@ -205,6 +205,43 @@ td.cell-na {
   white-space: nowrap;
 }
 
+/* ===== 手機版優化 ===== */
+@media (max-width: 768px) {
+
+  table, thead {
+    display: none;
+  }
+
+  .panel {
+    padding: 8px;
+  }
+
+  .game-card {
+    background: #fff;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    padding: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.12);
+    font-size: 16px;
+  }
+
+  .game-card .row {
+    margin-bottom: 6px;
+  }
+
+  .game-card .title {
+    font-weight: bold;
+    font-size: 17px;
+    margin-bottom: 8px;
+  }
+
+  .cancel-btn {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 15px;
+  }
+}
+  
 </style>
 </head>
 
@@ -518,6 +555,7 @@ function render() {
           }
         
           // 1️⃣ 已佔用（approved）→ 一定顯示姓名（不管是否過期）
+/*
           if (g.occupied_positions && g.occupied_positions[role]) {
             const isMe = g.my_position === role;
             if (isMe) {
@@ -529,7 +567,27 @@ function render() {
             }
             return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
           }
-        
+  */      
+
+          // 新增裁判本人可以取消自已的站位
+          if (g.occupied_positions && g.occupied_positions[role]) {
+              const isMe = g.my_position === role;
+            
+              if (isMe) {
+                return `
+                  <div class="judge-name me">
+                    <span class="judge-star">★</span>${g.occupied_positions[role]}
+                    <span class="cancel-btn"
+                          title="取消此站位"
+                          onclick="cancelMySignup('${g.my_signup_id}')">
+                      ［取消］
+                    </span>
+                  </div>
+                `;
+              }
+            
+              return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
+            }
           // 2️⃣ ✅ 新規則：過期賽事 & 尚未報名 → 留空白
           if (isPast) {
             return '';
@@ -691,6 +749,38 @@ function logout(){
   localStorage.clear();
   location.replace('login.html');
 }
+
+// 取消站位
+function cancelMySignup(signupId) {
+  if (!signupId) return;
+
+  if (!confirm('確定要取消這個站位嗎？')) return;
+
+  const session = JSON.parse(localStorage.getItem('session_user') || {});
+  if (!session.user_id) {
+    showMessage('登入狀態已失效', false);
+    return;
+  }
+
+  showLoading('取消站位中...');
+
+  callApi(
+    {
+      action: 'cancelJudgeSignup',
+      user_id: session.user_id,
+      signup_id: signupId
+    },
+    res => {
+      hideOverlay();
+      if (res && res.result === 'ok') {
+        showMessage('已取消站位', true);
+      } else {
+        showMessage(res?.message || '取消失敗', false);
+      }
+    }
+  );
+}
+
 </script>
 
 </body>
