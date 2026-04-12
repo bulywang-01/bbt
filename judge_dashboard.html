@@ -849,13 +849,20 @@ function cancelJudgeSignup(signupId) {
 }
 
 /* =========================================
- * ✅ 取消站位：事件代理（不再用 inline onclick）
+ * ✅ 取消站位：事件代理（除錯版）
  * ========================================= */
 document.addEventListener('click', function (e) {
+  console.log('document click fired');
+
   const btn = e.target.closest('.cancel-btn');
+  console.log('clicked element =', e.target);
+  console.log('found cancel-btn =', btn);
+
   if (!btn) return;
 
   const signupId = btn.dataset.signupId;
+  console.log('signupId =', signupId);
+
   if (!signupId) return;
 
   cancelMySignup(signupId);
