@@ -2,6 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>裁判報名</title>
  
 <style>
@@ -211,6 +212,57 @@ td.cell-na {
   margin-top: 4px;
 }
 
+/* ===== 手機版 ===== */
+@media (max-width: 768px) {
+
+  #desktopView {
+    display: none;
+  }
+
+  #mobileView {
+    display: block;
+    padding: 12px;
+  }
+
+  .game-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.1);
+  }
+
+  .game-card h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+  }
+
+  .game-meta {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 4px;
+  }
+
+  .position-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-top: 1px solid #eee;
+  }
+
+  .position-row:first-child {
+    border-top: none;
+  }
+
+  .signup-btn,
+  .cancel-btn {
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+}
+ 
 </style>
 </head>
 
@@ -228,6 +280,18 @@ td.cell-na {
 <div id="header"></div>
 
 <div class="main">
+
+  <!-- 桌機版 -->
+  <div id="desktopView">
+    <div id="content"></div>
+  </div>
+
+  <!-- 手機版 -->
+  <div id="mobileView"></div>
+
+  <button onclick="submitSignup()">送出報名</button>
+</div>
+
   <!-- 篩選 -->
   <div class="filter-bar">
     目前顯示的資料是：
@@ -321,6 +385,8 @@ function loadGames() {
 
       allGames = res.games || [];
       render();
+      renderMobile();
+
     }
   );
 }
@@ -329,6 +395,8 @@ function loadGames() {
 function cancelSelected(gameId) {
   delete selectedPositions[gameId];
   render();
+  renderMobile();
+
 }
   
 function cancelSelectedByDate() {
@@ -354,6 +422,8 @@ function cancelSelectedByDate() {
   } else {
     alert(`已取消 ${date} 的 ${removed} 筆選擇`);
     render();
+    renderMobile();
+
   }
 }
 
@@ -372,6 +442,8 @@ function rememberSelection(gameId, role) {
 
   // ✅ 立刻重畫，確保畫面與 state 一致
   render();
+  renderMobile();
+
 }
 
 /* ===== 產置出表格及內容 ===== */
@@ -638,6 +710,7 @@ function render() {
     box.appendChild(panel);
   });
 
+ /*
   // 取消站位
     function cancelMySignup(signupId) {
       if (!signupId) {
@@ -671,9 +744,60 @@ function render() {
         }
       );
     }
+ */
 }
 
+function renderMobile() {
+  const box = document.getElementById('mobileView');
+  if (!box) return;
+  box.innerHTML = '';
 
+  allGames.forEach(g => {
+    const card = document.createElement('div');
+    card.className = 'game-card';
+
+    card.innerHTML = `
+      <h3>${g.game_code}</h3>
+      <div class="game-meta">📅 ${g.date}</div>
+      <div class="game-meta">📍 ${g.field}</div>
+
+      ${renderMobilePositions(g)}
+    `;
+    box.appendChild(card);
+  });
+}
+
+// 手機版
+function renderMobilePositions(g) {
+  const roles = ['PU', 'U1', 'U2', 'U3'];
+
+  return roles.map(role => {
+    const occupied = g.occupied_positions?.[role];
+    const isMe = g.my_position === role;
+
+    if (occupied) {
+      return `
+        <div class="position-row">
+          <span>${role}</span>
+          <span>${occupied}${isMe ? '（你）' : ''}</span>
+        </div>
+      `;
+    }
+
+    if (g.my_position) return '';
+
+    return `
+      <div class="position-row">
+        <span>${role}</span>
+        <button class="signup-btn"
+          onclick="rememberSelection('${g.game_id}','${role}')">
+          報名
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+ 
 /* ===== 送出 ===== */
 
 function submitSignup(){
