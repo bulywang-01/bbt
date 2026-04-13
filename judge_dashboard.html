@@ -631,6 +631,40 @@ function render() {
     panel.appendChild(table);
     box.appendChild(panel);
   });
+
+  // 取消站位
+    function cancelMySignup(signupId) {
+      if (!signupId) {
+        alert('找不到報名資料');
+        return;
+      }
+    
+      if (!confirm('確定要取消這個站位嗎？')) {
+        return;
+      }
+    
+      const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (!session.user_id) {
+        alert('登入狀態已失效');
+        return;
+      }
+    
+      callApi(
+        {
+          action: 'cancelJudgeSignup',
+          user_id: session.user_id,
+          signup_id: signupId
+        },
+        res => {
+          if (res && res.result === 'ok') {
+            alert('已取消站位');
+            location.reload(); // ✅ 最簡單，先這樣就好
+          } else {
+            alert(res?.message || '取消失敗');
+          }
+        }
+      );
+    }
 }
 
 
