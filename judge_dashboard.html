@@ -248,7 +248,13 @@ td.cell-na {
   -->
   <button onclick="submitSignup()">送出報名</button>
 </div>
-
+  
+<span class="cancel-btn"
+      data-signup-id="${g.my_signup_id}"
+      onclick="cancelMySignup('${g.my_signup_id}')">
+  [取消]
+</span>
+  
 <script src="js/config.js"></script>
 
 <script>
@@ -678,6 +684,36 @@ function showMessage(msg, reload = true) {
       location.reload();
     }
   };
+
+
+// 取消自已報名的賽事
+function cancelMySignup(signupId) {
+  if (!signupId) return;
+
+  if (!confirm('確定要取消這個站位嗎？')) return;
+
+  const session = JSON.parse(localStorage.getItem('session_user') || {});
+  if (!session.user_id) {
+    alert('登入狀態已失效');
+    return;
+  }
+
+  callApi(
+    {
+      action: 'cancelJudgeSignup',
+      user_id: session.user_id,
+      signup_id: signupId
+    },
+    res => {
+      if (res && res.result === 'ok') {
+        alert('已取消站位');
+        location.reload();
+      } else {
+        alert(res?.message || '取消失敗');
+      }
+    }
+  );
+}
 
   // ✅ 重點：這裡一定要顯示 overlay
   document.getElementById('overlay').style.display = 'flex';
