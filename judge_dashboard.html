@@ -730,6 +730,22 @@ function showMessage(msg, reload = true) {
   };
 
 
+
+  // ✅ 重點：這裡一定要顯示 overlay
+  document.getElementById('overlay').style.display = 'flex';
+}
+
+function hideOverlay() {
+  document.getElementById('overlay').style.display = 'none';
+}
+
+function logout(){
+  localStorage.clear();
+  location.replace('login.html');
+}
+</script>
+  
+<script>
 // 取消自已報名的賽事
 function cancelMySignup(signupId) {
   if (!signupId) return;
@@ -758,20 +774,7 @@ function cancelMySignup(signupId) {
     }
   );
 }
-
-  // ✅ 重點：這裡一定要顯示 overlay
-  document.getElementById('overlay').style.display = 'flex';
-}
-
-function hideOverlay() {
-  document.getElementById('overlay').style.display = 'none';
-}
-
-function logout(){
-  localStorage.clear();
-  location.replace('login.html');
-}
+  
 </script>
-
 </body>
 </html>
