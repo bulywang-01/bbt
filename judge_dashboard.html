@@ -275,6 +275,72 @@ td.cell-na {
 
 }
 
+ @media (max-width: 768px) {
+
+  .game-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  }
+
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 6px;
+  }
+
+  .game-main {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .game-main .teams {
+    color: #1a237e;
+  }
+
+  .positions-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 4px;
+  }
+
+  .position-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 16px;        /* ✅ 站位字體放大 */
+    border-bottom: 1px dashed #eee;
+  }
+
+  .position-row:last-child {
+    border-bottom: none;
+  }
+
+  .signup-btn {
+    padding: 6px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+  }
+
+  .mobile-cancel {
+    background: #c62828;
+    color: #fff;
+    border: none;
+    border-radius: 18px;
+    padding: 6px 14px;
+    font-size: 14px;
+  }
+}
 </style>
 </head>
 
@@ -725,42 +791,6 @@ function render() {
     panel.appendChild(table);
     box.appendChild(panel);
   });
-
- /*
-  // 取消站位
-    function cancelMySignup(signupId) {
-      if (!signupId) {
-        alert('找不到報名資料');
-        return;
-      }
-    
-      if (!confirm('確定要取消這個站位嗎？')) {
-        return;
-      }
-    
-      const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-      if (!session.user_id) {
-        alert('登入狀態已失效');
-        return;
-      }
-    
-      callApi(
-        {
-          action: 'cancelJudgeSignup',
-          user_id: session.user_id,
-          signup_id: signupId
-        },
-        res => {
-          if (res && res.result === 'ok') {
-            alert('已取消站位');
-            location.reload(); // ✅ 最簡單，先這樣就好
-          } else {
-            alert(res?.message || '取消失敗');
-          }
-        }
-      );
-    }
- */
 }
 
 function renderMobile() {
@@ -774,9 +804,17 @@ function renderMobile() {
     card.className = 'game-card';
 
     card.innerHTML = `
-      <h3>${g.game_code}</h3>
-      <div>📅 ${g.date}</div>
-      <div>📍 ${g.field}</div>
+      <div class="game-header">
+        <div>📅 ${g.date}</div>
+        <div>📍 ${g.field}</div>
+      </div>
+
+      <div class="game-main">
+        <div>⏰ ${g.time_range}</div>
+        <div class="teams">${g.away_team} vs ${g.home_team}</div>
+      </div>
+
+      <div class="positions-title">裁判站位</div>
       ${renderMobilePositions(g)}
     `;
 
@@ -793,29 +831,19 @@ function renderMobilePositions(g) {
     U3: '三壘審'
   };
 
-  // ✅ 依 need_count 決定要顯示哪些站位（與 PC 版一致）
   let roles = [];
-
   switch (Number(g.need_count)) {
     case 0:
-      return `
-        <div class="position-row">
-          <span>本場次不需要裁判</span>
-        </div>
-      `;
-
+      return `<div class="position-row">本場次不需要裁判</div>`;
     case 1:
       roles = ['PU'];
       break;
-
     case 2:
       roles = ['PU', 'U1'];
       break;
-
     case 3:
       roles = ['PU', 'U1', 'U3'];
       break;
-
     default:
       roles = ['PU', 'U1', 'U2', 'U3'];
   }
@@ -825,9 +853,7 @@ function renderMobilePositions(g) {
     const occupied = g.occupied_positions?.[role];
     const isMe = g.my_position === role;
 
-    // ✅ 已有人佔位
     if (occupied) {
-      // ✅ 自己的站位 → 顯示取消
       if (isMe) {
         return `
           <div class="position-row">
@@ -839,8 +865,6 @@ function renderMobilePositions(g) {
           </div>
         `;
       }
-
-      // ✅ 別人的站位 → 只能看
       return `
         <div class="position-row">
           <span>${roleName}：${occupied}</span>
@@ -848,7 +872,6 @@ function renderMobilePositions(g) {
       `;
     }
 
-    // ✅ 我已經報名其他站位 → 不顯示可選
     if (g.my_position) {
       return `
         <div class="position-row">
@@ -858,7 +881,6 @@ function renderMobilePositions(g) {
       `;
     }
 
-    // ✅ 尚未報名 → 顯示報名
     return `
       <div class="position-row">
         <span>${roleName}</span>
