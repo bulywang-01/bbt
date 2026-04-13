@@ -793,7 +793,7 @@ function render() {
   });
 }
 
-// 手機版
+// 手機版 ${renderTimeHHmm(g.time_range)}
  
 function renderMobile() {
   const box = document.getElementById('mobileView');
@@ -812,7 +812,7 @@ function renderMobile() {
       </div>
 
       <div class="game-main">
-        <div>⏰ ${renderTimeHHmm(g.time_range)}</div>
+        <div>⏰ ${formatTime(g.time_range)}</div>
         <div class="teams">${g.away_team} vs ${g.home_team}</div>
       </div>
 
