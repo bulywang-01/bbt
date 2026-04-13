@@ -848,32 +848,6 @@ function renderMobilePositions(g) {
     default:
       roles = ['PU', 'U1', 'U2', 'U3'];
   }
- 
-function renderTimeHHmm(t) {
-  if (!t) return '';
-
-  // ✅ 已經是字串（08:30）
-  if (typeof t === 'string') {
-    // 保險：如果已經是 HH:mm，直接回傳
-    if (/^\d{1,2}:\d{2}$/.test(t)) {
-      return t;
-    }
-    // 其他字串就原樣回
-    return t;
-  }
-
-  // ✅ 是 Date 物件（1899-12-30）
-  if (t instanceof Date) {
-    return (
-      t.getHours().toString().padStart(2, '0') +
-      ':' +
-      t.getMinutes().toString().padStart(2, '0')
-    );
-  }
-
-  // 其他型別（保險）
-  return String(t);
-}
 
   return roles.map(role => {
     const roleName = ROLE_NAME_MAP[role];
@@ -919,7 +893,32 @@ function renderTimeHHmm(t) {
     `;
   }).join('');
 }
+ 
+function renderTimeHHmm(t) {
+  if (!t) return '';
 
+  // ✅ 已經是字串（08:30）
+  if (typeof t === 'string') {
+    // 保險：如果已經是 HH:mm，直接回傳
+    if (/^\d{1,2}:\d{2}$/.test(t)) {
+      return t;
+    }
+    // 其他字串就原樣回
+    return t;
+  }
+
+  // ✅ 是 Date 物件（1899-12-30）
+  if (t instanceof Date) {
+    return (
+      t.getHours().toString().padStart(2, '0') +
+      ':' +
+      t.getMinutes().toString().padStart(2, '0')
+    );
+  }
+
+  // 其他型別（保險）
+  return String(t);
+}
  
 /* ===== 送出 ===== */
 
@@ -941,29 +940,6 @@ function submitSignup(){
   );
 
   showLoading('送出報名中...');
-
- /* 舊程式區，沒有曾經取消的提示
-  callApi(
-    {
-      action: 'judgeSignupByGames',
-      user_id: session.user_id,
-      games_with_position: payload.join(',')
-    },
-    res => {
-
-      console.log('judgeSignup response =', res);
-
-      // ✅ 關閉 loading（一定要有對應 function）
-      hideLoading();
-
-      if (res && res.result === 'ok') {
-        showMessage(res.message || '報名成功', true);
-      } else {
-        showMessage(res?.message || '報名失敗', false);
-      }
-    }
-  );
- */
  
   callApi(
    {
