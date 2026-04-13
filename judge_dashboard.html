@@ -515,14 +515,6 @@ function render() {
         /* ===== 站位格 ===== */
         function renderPos(role) {
 
-        if (g.has_cancelled_before && !g.my_position) {
-          return `
-            <div class="hint cancelled-hint">
-              ⚠️ 你曾取消過此場，重新報名請確認時間
-            </div>
-          `;
-        }
-
           // 0️⃣ 不需裁判 → 黑格（永遠最高優先）
           if (
             g.need_count === 0 ||
@@ -703,6 +695,7 @@ function submitSignup(){
 
   showLoading('送出報名中...');
 
+ /* 舊程式區，沒有曾經取消的提示
   callApi(
     {
       action: 'judgeSignupByGames',
@@ -723,6 +716,30 @@ function submitSignup(){
       }
     }
   );
+ */
+ 
+  callApi(
+   {
+     action: 'judgeSignupByGames',
+     user_id: session.user_id,
+     games_with_position: payload.join(',')
+   },
+   res => {
+     if (res && res.result === 'ok') {
+ 
+       // ✅ 新增：顯示「曾取消過」提醒
+       if (res.has_cancelled_before) {
+         alert('⚠️ 提醒：你曾取消過此場，已成功重新報名，請務必確認可出勤。');
+       } else {
+         alert('報名成功');
+       }
+ 
+       location.reload();
+     } else {
+       alert(res?.message || '報名失敗');
+     }
+   }
+ );
 }
 
 function showLoading(msg = '處理中...') {
