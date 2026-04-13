@@ -766,6 +766,7 @@ function render() {
 function renderMobile() {
   const box = document.getElementById('mobileView');
   if (!box) return;
+
   box.innerHTML = '';
 
   allGames.forEach(g => {
@@ -774,37 +775,65 @@ function renderMobile() {
 
     card.innerHTML = `
       <h3>${g.game_code}</h3>
-      <div class="game-meta">📅 ${g.date}</div>
-      <div class="game-meta">📍 ${g.field}</div>
-
+      <div>📅 ${g.date}</div>
+      <div>📍 ${g.field}</div>
       ${renderMobilePositions(g)}
     `;
+
     box.appendChild(card);
   });
 }
 
 // 手機版
 function renderMobilePositions(g) {
+  const ROLE_MAP = {
+    PU: '主審',
+    U1: '一壘審',
+    U2: '二壘審',
+    U3: '三壘審'
+  };
+
   const roles = ['PU', 'U1', 'U2', 'U3'];
 
   return roles.map(role => {
+    const roleName = ROLE_MAP[role];
     const occupied = g.occupied_positions?.[role];
     const isMe = g.my_position === role;
 
+    /* ✅ 已有人佔位 */
     if (occupied) {
+      if (isMe) {
+        return `
+          <div class="position-row">
+            <span>${roleName}：${occupied}（你）</span>
+            <button class="mobile-cancel"
+              onclick="cancelMySignup('${g.my_signup_id}')">
+              取消
+            </button>
+          </div>
+        `;
+      }
       return `
         <div class="position-row">
-          <span>${role}</span>
-          <span>${occupied}${isMe ? '（你）' : ''}</span>
+          <span>${roleName}：${occupied}</span>
         </div>
       `;
     }
 
-    if (g.my_position) return '';
+    /* ✅ 已經報名其他站位，這格不給選 */
+    if (g.my_position) {
+      return `
+        <div class="position-row">
+          <span>${roleName}</span>
+          <span>—</span>
+        </div>
+      `;
+    }
 
+    /* ✅ 尚未報名 → 顯示報名 */
     return `
       <div class="position-row">
-        <span>${role}</span>
+        <span>${roleName}</span>
         <button class="signup-btn"
           onclick="rememberSelection('${g.game_id}','${role}')">
           報名
@@ -813,6 +842,7 @@ function renderMobilePositions(g) {
     `;
   }).join('');
 }
+
  
 /* ===== 送出 ===== */
 
