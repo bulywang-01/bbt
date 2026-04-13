@@ -84,6 +84,76 @@
       font-weight: bold;
       margin-right: 6px;
     }
+
+    /* =========================
+   📱 首頁手機版調整
+   ========================= */
+@media (max-width: 768px) {
+
+  /* 主內容區縮小邊距 */
+  .main {
+    padding: 14px;
+  }
+
+  /* 系統首頁標題 */
+  .main h2 {
+    font-size: 20px;
+    line-height: 1.4;
+    margin-bottom: 16px;
+  }
+
+  /* Panel 改成手機卡片感 */
+  .panel {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .panel h3 {
+    font-size: 17px;
+    margin-bottom: 10px;
+  }
+
+  /* 歡迎區塊文字放大 */
+  .welcome {
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ===== 我的班表 ===== */
+  .upcoming-list {
+    font-size: 15px;       /* ✅ 手機閱讀主體字 */
+    line-height: 1.8;
+  }
+
+  .upcoming-list li {
+    padding: 6px 0;
+    white-space: normal;  /* ✅ 手機允許換行 */
+  }
+
+  .upcoming-position {
+    display: inline-block;
+    margin-bottom: 2px;
+  }
+
+  /* 本週 / 本月小標題 */
+  #upcoming-panel h4 {
+    font-size: 16px;
+    margin: 10px 0 6px;
+  }
+
+  /* 尚無資料提示 */
+  .upcoming-empty,
+  .monthly-empty {
+    font-size: 14px;
+    margin: 6px 0;
+  }
+
+  /* 文件下載清單 */
+  .download-list li {
+    font-size: 15px;
+    line-height: 1.7;
+  }
+}
   </style>
 </head>
 
