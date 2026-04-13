@@ -249,11 +249,7 @@ td.cell-na {
   <button onclick="submitSignup()">送出報名</button>
 </div>
   
-<span class="cancel-btn"
-      data-signup-id="${g.my_signup_id}"
-      onclick="cancelMySignup('${g.my_signup_id}')">
-  [取消]
-</span>
+
   
 <script src="js/config.js"></script>
 
@@ -526,14 +522,28 @@ function render() {
           // 1️⃣ 已佔用（approved）→ 一定顯示姓名（不管是否過期）
           if (g.occupied_positions && g.occupied_positions[role]) {
             const isMe = g.my_position === role;
+          
+            // ✅ 自己的站位：顯示姓名 + 取消
             if (isMe) {
               return `
                 <div class="judge-name me">
-                  <span class="judge-star">★</span>${g.occupied_positions[role]}
+                  <span class="judge-star">★</span>
+                  ${g.occupied_positions[role]}
+                  <span class="cancel-btn"
+                        data-signup-id="${g.my_signup_id}"
+                        onclick="cancelMySignup('${g.my_signup_id}')">
+                    [取消]
+                  </span>
                 </div>
               `;
             }
-            return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
+          
+            // ✅ 別人的站位：只顯示姓名
+            return `
+              <div class="judge-name">
+                ${g.occupied_positions[role]}
+              </div>
+            `;
           }
         
           // 2️⃣ ✅ 新規則：過期賽事 & 尚未報名 → 留空白
