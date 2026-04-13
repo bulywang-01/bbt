@@ -205,6 +205,12 @@ td.cell-na {
   white-space: nowrap;
 }
 
+.cancelled-hint {
+  font-size: 13px;
+  color: #c00;
+  margin-top: 4px;
+}
+
 </style>
 </head>
 
@@ -508,7 +514,15 @@ function render() {
 
         /* ===== 站位格 ===== */
         function renderPos(role) {
-        
+
+        if (g.has_cancelled_before && !g.my_position) {
+          return `
+            <div class="hint cancelled-hint">
+              ⚠️ 你曾取消過此場，重新報名請確認時間
+            </div>
+          `;
+        }
+
           // 0️⃣ 不需裁判 → 黑格（永遠最高優先）
           if (
             g.need_count === 0 ||
@@ -773,6 +787,44 @@ function cancelMySignup(signupId) {
       }
     }
   );
+}
+</script>
+
+<script>
+// 取消通知mail給管理員及裁判長
+function notifyCancelSignup_(info) {
+  const ss = SpreadsheetApp.openById(MAIN_SHEET_ID);
+  const userSheet = ss.getSheetByName('Users');
+  const uData = userSheet.getDataRange().getValues();
+  const uIdx = head(uData[0]);
+
+  const recipients = [];
+
+  for (let i = 1; i < uData.length; i++) {
+    const role = String(uData[i][uIdx.role]);
+    const email = String(uData[i][uIdx.email]);
+
+    if ((role === 'admin' || role === 'chief_judge') && email) {
+      recipients.push(email);
+    }
+  }
+
+  if (!recipients.length) return;
+
+  const subject = `【裁判取消站位通知】${info.game_id}`;
+
+  const body = `
+裁判已取消站位：
+
+裁判：${info.judge_name}（user_id=${info.user_id}）
+場次：${info.game_id}
+站位：${info.position}
+時間：${new Date().toLocaleString('zh-TW')}
+
+此為系統自動通知。
+`;
+
+  GmailApp.sendEmail(recipients.join(','), subject, body);
 }
   
 </script>
