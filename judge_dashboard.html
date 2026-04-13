@@ -797,7 +797,7 @@ function cancelMySignup(signupId) {
     },
     res => {
       if (res && res.result === 'ok') {
-        alert('已取消站位');
+        alert('已取消站位，請於Line群組告知取消原因，謝謝。');
         location.reload();
       } else {
         alert(res?.message || '取消失敗');
