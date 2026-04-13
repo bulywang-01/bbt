@@ -812,7 +812,7 @@ function renderMobile() {
       </div>
 
       <div class="game-main">
-        <div>⏰ ${g.time_range}</div>
+        <div>⏰ ${renderTimeHHmm(g.time_range)}</div>
         <div class="teams">${g.away_team} vs ${g.home_team}</div>
       </div>
 
@@ -848,6 +848,32 @@ function renderMobilePositions(g) {
     default:
       roles = ['PU', 'U1', 'U2', 'U3'];
   }
+ 
+function renderTimeHHmm(t) {
+  if (!t) return '';
+
+  // ✅ 已經是字串（08:30）
+  if (typeof t === 'string') {
+    // 保險：如果已經是 HH:mm，直接回傳
+    if (/^\d{1,2}:\d{2}$/.test(t)) {
+      return t;
+    }
+    // 其他字串就原樣回
+    return t;
+  }
+
+  // ✅ 是 Date 物件（1899-12-30）
+  if (t instanceof Date) {
+    return (
+      t.getHours().toString().padStart(2, '0') +
+      ':' +
+      t.getMinutes().toString().padStart(2, '0')
+    );
+  }
+
+  // 其他型別（保險）
+  return String(t);
+}
 
   return roles.map(role => {
     const roleName = ROLE_NAME_MAP[role];
