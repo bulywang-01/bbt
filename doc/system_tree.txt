@@ -1,0 +1,18 @@
+裁判報名系統
+├─ 前端
+│  ├─ index.html
+│  ├─ judge_dashboard.html
+│  ├─ login.html
+│  └─ header.html
+│
+├─ 後端（GAS）
+│  ├─ doGet
+│  ├─ getSignableGames
+│  ├─ judgeSignupByGames
+│  ├─ cancelJudgeSignup
+│  └─ notifyCancelSignup
+│
+└─ 資料表
+   ├─ Users
+   ├─ Games
+   └─ Judge_Signup
