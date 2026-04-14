@@ -1,19 +1,34 @@
-docs/
+狀態流程圖
+【尚未報名】
+     │
+     ▼
+【送出報名】
+     │
+     ▼
+【approved（有效報名）】
+     │
+     ├─（取消站位）
+     │        │
+     │        ▼
+     │   【cancelled（已取消）】
+     │        │
+     │        └─ 可重新報名（新增一筆）
+     │
+     └─（比賽結束）
+              │
+              ▼
+        【歷史紀錄（唯讀）】
+
+正式專案文件目錄
+doc/
 │
 ├─ README.md                ⭐ 專案總覽（入口文件）
-│
-├─ technical/
-│   └─ README_tech.md       技術文件（工程 / 維護用）
-│
-├─ user/
-│   └─ README_user.md       使用者操作手冊（裁判 / 管理者）
-│
-├─ roadmap/
-│   └─ README_v2.md         v2 擴充藍圖（管理後台規劃）
-│
-└─ diagrams/
-    ├─ system_tree.txt      系統結構樹狀圖（文字版）
-    └─ state_flow.txt       狀態流程圖（文字版）
+├─ README_tech.md       技術文件（工程 / 維護用）
+├─ README_user.md       使用者操作手冊（裁判 / 管理者）
+├─ README_v2.md         v2 擴充藍圖（管理後台規劃）
+├─ system_tree.txt      系統結構樹狀圖（文字版）
+└─ state_flow.txt       狀態流程圖（文字版）
+
 
 裁判報名系統（Umpire Management System）
 │
