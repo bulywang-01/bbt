@@ -13,12 +13,16 @@
 
   <!-- ✅ 首頁專屬微調 -->
   <style>
+    /* =========================
+       Layout / Container
+       ========================= */
+    
     .main {
       padding: 24px;
       max-width: 1100px;
       margin: auto;
     }
-
+    
     .panel {
       background: #ffffff;
       border-radius: 10px;
@@ -26,7 +30,12 @@
       margin-bottom: 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,.08);
     }
-
+    
+    
+    /* =========================
+       Headings & Typography
+       ========================= */
+    
     .panel h3 {
       margin-top: 0;
       margin-bottom: 12px;
@@ -34,130 +43,138 @@
       border-left: 4px solid #4a7ef5;
       padding-left: 10px;
     }
-
+    
     .welcome {
       font-size: 16px;
       line-height: 1.6;
       background: linear-gradient(135deg,#f5f8ff,#ffffff);
     }
-
-    .download-list li {
-      margin-bottom: 6px;
-    }
-
-    .upcoming-empty {
-      color: #666;
-      font-style: italic;
-    }
-
-    /* ✅ 比賽清單樣式 */
-    .upcoming-list li {
-      padding: 8px 6px;
-      border-bottom: 1px dashed #ddd;
-      font-size: 14px;
-    }
-
-    .monthly-list {
-      list-style: none;
-      padding-left: 0;
-      font-size: 14px;
-    }
     
-    .monthly-empty {
-      color: #666;
-      font-style: italic;
-    }
-
-    /* 執勤賽事列表：緊湊版 */
-    .upcoming-list {
+    
+    /* =========================
+       Lists (Upcoming / Monthly / Download)
+       ========================= */
+    
+    /* 共用 list reset */
+    .upcoming-list,
+    .monthly-list,
+    .download-list {
       list-style: none;
       padding-left: 0;
       margin: 6px 0 12px;
-      font-size: 13px;        /* ✅ 字體縮小 */
-      line-height: 1.6;       /* ✅ 行距緊一點 */
+    }
+    
+    /* Upcoming（執勤賽事，緊湊版） */
+    .upcoming-list {
+      font-size: 13px;
+      line-height: 1.6;
     }
     
     .upcoming-list li {
       padding: 2px 0;
-      white-space: nowrap;    /* ✅ 一場一行 */
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     
+    /* Upcoming 站位 */
     .upcoming-position {
       font-weight: bold;
       margin-right: 6px;
     }
-
+    
+    /* Monthly */
+    .monthly-list {
+      font-size: 14px;
+    }
+    
+    /* Download */
+    .download-list li {
+      margin-bottom: 6px;
+    }
+    
+    
     /* =========================
-   📱 首頁手機版調整
-   ========================= */
-@media (max-width: 768px) {
-
-  /* 主內容區縮小邊距 */
-  .main {
-    padding: 14px;
-  }
-
-  /* 系統首頁標題 */
-  .main h2 {
-    font-size: 20px;
-    line-height: 1.4;
-    margin-bottom: 16px;
-  }
-
-  /* Panel 改成手機卡片感 */
-  .panel {
-    padding: 16px;
-    border-radius: 14px;
-  }
-
-  .panel h3 {
-    font-size: 17px;
-    margin-bottom: 10px;
-  }
-
-  /* 歡迎區塊文字放大 */
-  .welcome {
-    font-size: 15px;
-    line-height: 1.7;
-  }
-
-  /* ===== 我的班表 ===== */
-  .upcoming-list {
-    font-size: 15px;       /* ✅ 手機閱讀主體字 */
-    line-height: 1.8;
-  }
-
-  .upcoming-list li {
-    padding: 6px 0;
-    white-space: normal;  /* ✅ 手機允許換行 */
-  }
-
-  .upcoming-position {
-    display: inline-block;
-    margin-bottom: 2px;
-  }
-
-  /* 本週 / 本月小標題 */
-  #upcoming-panel h4 {
-    font-size: 16px;
-    margin: 10px 0 6px;
-  }
-
-  /* 尚無資料提示 */
-  .upcoming-empty,
-  .monthly-empty {
-    font-size: 14px;
-    margin: 6px 0;
-  }
-
-  /* 文件下載清單 */
-  .download-list li {
-    font-size: 15px;
-    line-height: 1.5;
-  }
-}
+       Empty / State text
+       ========================= */
+    
+    .upcoming-empty,
+    .monthly-empty {
+      color: #666;
+      font-style: italic;
+    }
+    
+    
+    /* =========================
+       📱 Mobile overrides
+       ========================= */
+    
+    @media (max-width: 768px) {
+    
+      /* Layout */
+      .main {
+        padding: 14px;
+      }
+    
+      /* Page title */
+      .main h2 {
+        font-size: 20px;
+        line-height: 1.4;
+        margin-bottom: 16px;
+      }
+    
+      /* Panel card feel */
+      .panel {
+        padding: 16px;
+        border-radius: 14px;
+      }
+    
+      .panel h3 {
+        font-size: 17px;
+        margin-bottom: 10px;
+      }
+    
+      /* Welcome text */
+      .welcome {
+        font-size: 15px;
+        line-height: 1.7;
+      }
+    
+      /* Upcoming list – mobile readable */
+      .upcoming-list {
+        font-size: 15px;
+        line-height: 1.8;
+      }
+    
+      .upcoming-list li {
+        padding: 6px 0;
+        white-space: normal;
+      }
+    
+      .upcoming-position {
+        display: inline-block;
+        margin-bottom: 2px;
+      }
+    
+      /* Section sub-title */
+      #upcoming-panel h4 {
+        font-size: 16px;
+        margin: 10px 0 6px;
+      }
+    
+      /* Empty states */
+      .upcoming-empty,
+      .monthly-empty {
+        font-size: 14px;
+        margin: 6px 0;
+      }
+    
+      /* Download list */
+      .download-list li {
+        font-size: 15px;
+        line-height: 1.5;
+      }
+    }
   </style>
 </head>
 
