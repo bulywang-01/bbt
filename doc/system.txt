@@ -1,0 +1,93 @@
+docs/
+│
+├─ README.md                ⭐ 專案總覽（入口文件）
+│
+├─ technical/
+│   └─ README_tech.md       技術文件（工程 / 維護用）
+│
+├─ user/
+│   └─ README_user.md       使用者操作手冊（裁判 / 管理者）
+│
+├─ roadmap/
+│   └─ README_v2.md         v2 擴充藍圖（管理後台規劃）
+│
+└─ diagrams/
+    ├─ system_tree.txt      系統結構樹狀圖（文字版）
+    └─ state_flow.txt       狀態流程圖（文字版）
+
+裁判報名系統（Umpire Management System）
+│
+├─ 前端 Frontend（HTML / JS）
+│
+│  ├─ index.html                     ✅ 已開發
+│  │   └─ 系統首頁
+│  │      ├─ 公告區塊（賽制 / 季後賽 / 迴避原則）
+│  │      ├─ 我的近期執勤賽事
+│  │      └─ 文件下載 / 公告顯示
+│  │
+│  ├─ judge_dashboard.html            ✅ 已開發（核心功能）
+│  │   └─ 裁判報名頁
+│  │      ├─ 桌機版（表格呈現）
+│  │      ├─ 手機版（卡片呈現）
+│  │      ├─ 站位顯示（PU / U1 / U2 / U3）
+│  │      ├─ 依 need_count 動態顯示站位
+│  │      ├─ 報名 / 取消站位
+│  │      ├─ 取消時間限制（前一天 / 過期）
+│  │      └─ 重新報名提醒（曾取消過）
+│  │
+│  ├─ login.html                      ✅ 已開發
+│  │   └─ 使用者登入
+│  │
+│  ├─ header.html                     ✅ 已開發
+│  │   └─ 共用頁首 / 使用者資訊 / 登出
+│  │
+│  └─ （未來規劃）
+│      ├─ judge_profile.html          ⏳ 規劃中
+│      │   └─ 裁判個人資料 / 偏好設定
+│      │
+│      └─ admin_dashboard.html        ⏳ 規劃中
+│          └─ 管理者後台
+│
+├─ 後端 Backend（Google Apps Script）
+│
+│  ├─ doGet(e)                        ✅ 已開發
+│  │   └─ API Router（JSONP）
+│  │
+│  ├─ getSignableGames(e)             ✅ 已開發
+│  │   └─ 取得可報名賽事清單
+│  │      ├─ Games（賽事）
+│  │      ├─ Judge_Signup（站位佔用）
+│  │      ├─ my_position / my_signup_id
+│  │      └─ need_count 規則處理
+│  │
+│  ├─ judgeSignupByGames(e)           ✅ 已開發
+│  │   └─ 裁判送出報名
+│  │      ├─ 防止重複報名（approved）
+│  │      ├─ 允許重新報名（cancelled）
+│  │      └─ 回傳曾取消過旗標
+│  │
+│  ├─ cancelJudgeSignup(e)            ✅ 已開發（封版）
+│  │   └─ 取消站位
+│  │      ├─ 僅本人可取消
+│  │      ├─ 過期 / 前一天不可取消
+│  │      ├─ status → cancelled
+│  │      └─ 觸發 Email 通知
+│  │
+│  ├─ notifyCancelSignup_(info)       ✅ 已開發
+│  │   └─ Email 通知模組
+│  │      ├─ 裁判姓名（Users）
+│  │      ├─ 場次代碼（Games）
+│  │      ├─ 比賽日期 / 場地
+│  │      └─ 站位中文化
+│  │
+│  └─ forceGmailAuth()                ✅ 已開發
+│      └─ Gmail 權限授權用
+│
+├─ 資料表（Google Sheets）
+│
+│  ├─ Users                           ✅ 已使用
+│  ├─ Games                           ✅ 已使用
+│  └─ Judge_Signup                    ✅ 已使用
+│
+└─ 共用設定
+   └─ js/config.js                    ✅ 已使用（API_URL）
