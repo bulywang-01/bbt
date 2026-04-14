@@ -176,65 +176,93 @@
       }
     }
     
-    /* =========================
-       首頁公告區塊 Announcement
-      ========================= */
+      /* =========================
+         公告區塊 Announcement
+         ========================= */
       
       .announcement {
         font-size: 15px;
         line-height: 1.7;
       }
       
-      .announcement-title {
-        margin: 18px 0 10px;
+      /* 每一個公告段落 */
+      .announce-block {
+        margin-bottom: 22px;
+      }
+      
+      /* 標題列 */
+      .announce-title {
+        display: flex;
+        align-items: center;
         font-size: 17px;
         font-weight: 700;
-        border-left: 4px solid #4a7ef5;
-        padding-left: 10px;
+        margin: 0 0 10px;
       }
       
-      .announcement-list {
+      /* 藍色直條 */
+      .announce-bar {
+        width: 4px;
+        height: 20px;
+        background: #4a7ef5;
+        margin-right: 10px;
+        border-radius: 2px;
+      }
+      
+      /* 圖示 */
+      .announce-icon {
+        margin-right: 6px;
+      }
+      
+      /* 內容整體縮排 */
+      .announce-content {
+        padding-left: 24px;      /* ✅ 你要的「往內縮」 */
+      }
+      
+      /* 清單樣式 */
+      .announce-list {
         list-style: disc;
         padding-left: 20px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
       }
       
-      .announcement-rules {
+      .announce-rules {
         padding-left: 22px;
-        margin-bottom: 14px;
+        line-height: 1.5;
       }
       
-      .announcement-rules li {
+      .announce-rules li {
         margin-bottom: 8px;
       }
       
+      /* 子說明 */
       .sub-rule {
         margin-top: 4px;
         font-size: 14px;
         color: #555;
       }
       
-      /* ✅ 你指定的顏色規則 */
+      /* 指定顏色 */
       .text-danger {
-        color: #c62828;   /* 紅色：重要限制 */
+        color: #c62828;
         font-weight: 700;
       }
       
       .text-info {
-        color: #1565c0;   /* 藍色：開放項目 */
+        color: #1565c0;
         font-weight: 700;
       }
       
       /* 📱 手機微調 */
       @media (max-width: 768px) {
-        .announcement {
-          font-size: 15px;
-        }
-      
-        .announcement-title {
+        .announce-title {
           font-size: 16px;
         }
+      
+        .announce-content {
+          padding-left: 18px;
+        }
       }
+
   </style>
 </head>
 
@@ -265,82 +293,102 @@
   <div class="panel">
     <h3>📢 系統公告</h3>
     <!-- <p>目前尚無公告。</p> -->
-      <div id="upcoming-container" class="announcement">
-      
-        <h3 class="announcement-title">📢 賽制規定 Rules</h3>
-      
-        <ul class="announcement-list">
-          <li>
-            本賽季採分：
-            大聯盟組 8 隊＋小聯盟組 8 隊，雙循環制，
-            合計 112 場賽事，每隊各有 14 場例行賽。
-          </li>
-        </ul>
-      
-        <ol class="announcement-rules">
-          <li>
-            比賽用球：KENKO BALL（全日本軟式野球聯盟公認球），
-            賽後將回收重複使用。
-          </li>
-          <li>
-            正規七局制或 2.5 小時制，依裁判認定。
-            若時間已達比賽前 15 分鐘且平手，下局進入突破僵局制。
-            <div class="sub-rule">
-              【突破僵局制】0 出局，進攻方自二壘放置跑者（前一局最後出局者）。
+        <div id="upcoming-container" class="announcement">
+        
+          <!-- 📢 賽制規定 -->
+          <div class="announce-block">
+            <h3 class="announce-title">
+              <span class="announce-bar"></span>
+              <span class="announce-icon">📢</span>
+              賽制規定 Rules
+            </h3>
+        
+            <div class="announce-content">
+              <ul class="announce-list">
+                <li>
+                  本賽季採分：大聯盟組 8 隊＋小聯盟組 8 隊，雙循環制，
+                  合計 112 場賽事，每隊各有 14 場例行賽。
+                </li>
+              </ul>
+        
+              <ol class="announce-rules">
+                <li>
+                  比賽用球：KENKO BALL（全日本軟式野球聯盟公認球），
+                  賽後將回收重複使用。
+                </li>
+                <li>
+                  正規七局制或 2.5 小時制，依裁判認定。
+                  若時間已達賽前 15 分鐘且平手，下局進入突破僵局制。
+                  <div class="sub-rule">
+                    【突破僵局制】0 出局，進攻方自二壘放置跑者（前一局最後出局者）。
+                  </div>
+                </li>
+                <li class="text-danger">
+                  例行賽、季後賽、冠軍賽，雙方分數差 10 分（含）以上，
+                  判定提早結束比賽。
+                </li>
+                <li>
+                  比賽遇雨：
+                  未滿 3 局另行補賽；滿 3 局視同裁定比賽。
+                </li>
+                <li>
+                  大聯盟組部分賽事採三人制裁判；
+                  小聯盟組固定為兩人制裁判。
+                </li>
+              </ol>
             </div>
-          </li>
-          <li>
-            <span class="text-danger">
-              例行賽、季後賽、冠軍賽，雙方分數差 10 分（含）以上，
-              判定提早結束比賽。
-            </span>
-          </li>
-          <li>
-            比賽中若遇雨勢影響，
-            未滿 3 局另行補賽；滿 3 局視同裁定比賽。
-          </li>
-          <li>
-            大聯盟組部分賽事採三人制裁判；
-            小聯盟組固定為兩人制裁判。
-          </li>
-        </ol>
-      
-        <h3 class="announcement-title">🏆 Postseason 季後系列戰</h3>
-      
-        <ul class="announcement-list">
-          <li>
-            季後賽：單賽制，例行賽戰績前四名晉級，
-            對戰組合由各隊派員抽籤決定。
-          </li>
-          <li>
-            冠軍賽：單場決勝制，
-            季後賽勝隊比較得失分高者為主場。
-          </li>
-        </ul>
-      
-        <h3 class="announcement-title">⚠️ 迴避原則（母隊限制）</h3>
-      
-        <ul class="announcement-list">
-          <li>
-            <strong class="text-danger">
-              嚴格禁止：
-            </strong>
-            例行賽、季後賽、冠軍賽，
-            裁判不得執法所屬母隊之賽事。
-          </li>
-          <li>
-            <strong class="text-info">
-              開放範圍：
-            </strong>
-            僅限
-            <span class="text-info">「隊內交流賽」</span>、
-            <span class="text-info">「熱身賽」</span>、
-            <span class="text-info">「冬季聯盟」</span>
-            可安排母隊裁判站崗。
-          </li>
-        </ul>
-      
-      </div>
+          </div>
+        
+          <!-- 🏆 季後賽 -->
+          <div class="announce-block">
+            <h3 class="announce-title">
+              <span class="announce-bar"></span>
+              <span class="announce-icon">🏆</span>
+              Postseason 季後系列戰
+            </h3>
+        
+            <div class="announce-content">
+              <ul class="announce-list">
+                <li>
+                  季後賽：單賽制，例行賽戰績前四名晉級，
+                  對戰組合由各隊派員抽籤決定。
+                </li>
+                <li>
+                  冠軍賽：單場決勝制，
+                  季後賽勝隊比較得失分高者為主場。
+                </li>
+              </ul>
+            </div>
+          </div>
+        
+          <!-- ⚠️ 迴避原則 -->
+          <div class="announce-block">
+            <h3 class="announce-title">
+              <span class="announce-bar"></span>
+              <span class="announce-icon">⚠️</span>
+              迴避原則（母隊限制）
+            </h3>
+        
+            <div class="announce-content">
+              <ul class="announce-list">
+                <li>
+                  <span class="text-danger">
+                    嚴格禁止：例行賽、季後賽、冠軍賽，
+                    裁判不得執法所屬母隊之賽事。
+                  </span>
+                </li>
+                <li>
+                  <span class="text-info">
+                    開放範圍：
+                    「隊內交流賽」、「熱身賽」、「冬季聯盟」
+                  </span>
+                  可安排母隊裁判站崗。
+                </li>
+              </ul>
+            </div>
+          </div>
+        
+        </div>
   </div>
 
   <!-- ✅ 文件下載 -->
