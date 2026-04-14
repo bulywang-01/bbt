@@ -279,15 +279,31 @@
 
   <h2>BBT軟式棒球大聯盟　裁判組　系統首頁</h2>
 
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  
+    if (session.name) {
+      const el = document.getElementById('welcome-text');
+      el.innerHTML = `
+        裁判員 ${session.name} 您好
+        歡迎使用 裁判出勤管理系統。<br>
+        請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
+      `;
+    }
+  });
+</script>
+
   <!-- ✅ 歡迎區塊 -->
   <div class="panel welcome">
-    <p>
-      裁判員 ${session.name} 您好
-      歡迎使用 <b>裁判出勤管理系統</b>。<br>
+
+    <p id="welcome-text">
+      歡迎使用 裁判出勤管理系統。<br>
       請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
     </p>
-  </div>
 
+  </div>
+  
 <!-- ✅ 我即將執勤的比賽 -->
 <div class="panel" id="upcoming-panel">
   <h3>🗓 我的班表</h3>
