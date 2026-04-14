@@ -266,8 +266,111 @@
           padding-left: 18px;
         }
       }
+    
+      /* =========================
+         首頁歡迎區 Welcome
+         ========================= */
+      
+      .welcome-box {
+        position: relative;
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 26px 28px;
+        overflow: hidden;
+      }
+      
+      .welcome-main {
+        position: relative;
+        z-index: 2;
+      }
+      
+      /* 身份（裁判員 / 系統管理員） */
+      .welcome-role {
+        font-size: 22px;          /* ✅ 放大 */
+        font-weight: 800;
+        color: #1a237e;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      
+      .welcome-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      
+      .welcome-line {
+        font-size: 16px;
+        color: #333;
+      }
+      
+      /* =========================
+         證照等級背景（A / B / C）
+         ========================= */
+      
+      .welcome-bg {
+        position: absolute;
+        right: 18px;
+        bottom: 8px;
+        font-size: 120px;       /* ✅ 大大的字 */
+        font-weight: 900;
+        color: rgba(0,0,0,0.06);
+        line-height: 1;
+        z-index: 1;
+        opacity: 0.08;          /* ✅ 淡淡的，不干擾 */
+        pointer-events: none;
+      }
+      
+      /* 📱 手機微調 */
+      @media (max-width: 768px) {
+        .welcome-role {
+          font-size: 20px;
+        }
+        .welcome-bg {
+          font-size: 90px;
+        }
+      }
+    
+      /* =========================
+         身份徽章
+         ========================= */
+       .role-icon {
+        font-size: 20px;
+        line-height: 1;
+        }
+        
+      /* =========================
+         證照等級背景（水印）
+         ========================= */
 
+      /* 不同等級顏色 */
+      .welcome-bg.level-A {
+        color: #1a237e;         /* 深藍 */
+      }
+      
+      .welcome-bg.level-B {
+        color: #2e7d32;         /* 綠 */
+      }
+      
+      .welcome-bg.level-C {
+        color: #ef6c00;         /* 橘 */
+      }
+      
+      /* 📱 手機微調 */
+      @media (max-width: 768px) {
+        .welcome-role {
+          font-size: 20px;
+        }
+      
+        .welcome-bg {
+          font-size: 90px;
+          right: 10px;
+        }
+      }
   </style>
+  
 </head>
 
 <body>
@@ -293,16 +396,58 @@
     }
   });
 </script>
-
+  
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  
+    /* ===== 身份 role → 中文 + icon ===== */
+    const roleMap = {
+      judge:      { text: '裁判員', icon: '' },
+      admin:      { text: '系統管理員', icon: '🛡️' },
+      chief_judge:{ text: '裁判長', icon: '🎖️' }
+    };
+  
+    const roleInfo = roleMap[session.role] || {};
+    const roleEl  = document.getElementById('welcome-role');
+    const nameEl  = document.getElementById('welcome-name');
+  
+    if (roleEl && roleInfo.text) {
+      roleEl.innerHTML =
+        roleInfo.icon
+          ? `<span class="role-icon">${roleInfo.icon}</span> ${roleInfo.text}`
+          : roleInfo.text;
+    }
+  
+    if (nameEl && session.name) {
+      nameEl.textContent = `${session.name} 您好`;
+    }
+  
+    /* ===== 證照等級背景（A / B / C） ===== */
+    const level = session.level; // 'A' | 'B' | 'C'
+    const bgEl  = document.getElementById('license-bg');
+  
+    if (bgEl && /^[ABC]$/.test(level)) {
+      bgEl.textContent = level;
+      bgEl.classList.add(`level-${level}`);
+    }
+  });
+</script>
+  
   <!-- ✅ 歡迎區塊 -->
-  <div class="panel welcome">
-
-    <p id="welcome-text">
-      歡迎使用 裁判出勤管理系統。<br>
-      請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
-    </p>
-
-  </div>
+    <div class="welcome-box">
+      <div class="welcome-bg" id="license-bg"></div>
+    
+      <div class="welcome-main">
+        <div class="welcome-role" id="welcome-role"></div>
+        <div class="welcome-name" id="welcome-name"></div>
+        <div class="welcome-bg" id="license-bg"></div>
+            
+        <div class="welcome-line">
+          歡迎使用 <strong>裁判出勤管理系統</strong>
+        </div>
+      </div>
+    </div>
   
 <!-- ✅ 我即將執勤的比賽 -->
 <div class="panel" id="upcoming-panel">
