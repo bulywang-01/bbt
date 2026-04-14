@@ -175,6 +175,66 @@
         line-height: 1.5;
       }
     }
+    
+    /* =========================
+       首頁公告區塊 Announcement
+      ========================= */
+      
+      .announcement {
+        font-size: 15px;
+        line-height: 1.7;
+      }
+      
+      .announcement-title {
+        margin: 18px 0 10px;
+        font-size: 17px;
+        font-weight: 700;
+        border-left: 4px solid #4a7ef5;
+        padding-left: 10px;
+      }
+      
+      .announcement-list {
+        list-style: disc;
+        padding-left: 20px;
+        margin-bottom: 12px;
+      }
+      
+      .announcement-rules {
+        padding-left: 22px;
+        margin-bottom: 14px;
+      }
+      
+      .announcement-rules li {
+        margin-bottom: 8px;
+      }
+      
+      .sub-rule {
+        margin-top: 4px;
+        font-size: 14px;
+        color: #555;
+      }
+      
+      /* ✅ 你指定的顏色規則 */
+      .text-danger {
+        color: #c62828;   /* 紅色：重要限制 */
+        font-weight: 700;
+      }
+      
+      .text-info {
+        color: #1565c0;   /* 藍色：開放項目 */
+        font-weight: 700;
+      }
+      
+      /* 📱 手機微調 */
+      @media (max-width: 768px) {
+        .announcement {
+          font-size: 15px;
+        }
+      
+        .announcement-title {
+          font-size: 16px;
+        }
+      }
   </style>
 </head>
 
@@ -205,30 +265,82 @@
   <div class="panel">
     <h3>📢 系統公告</h3>
     <!-- <p>目前尚無公告。</p> -->
-    <div id="upcoming-container">
-        <p>【賽制規定 Rules】</p>
-        <ul class="download-list">
-          <li>本賽季採分 大聯盟組8隊+小聯盟組8隊，雙循環制，合計112場賽事，分別每隊有14場例行賽事</li>
+      <div id="upcoming-container" class="announcement">
+      
+        <h3 class="announcement-title">📢 賽制規定 Rules</h3>
+      
+        <ul class="announcement-list">
+          <li>
+            本賽季採分：
+            大聯盟組 8 隊＋小聯盟組 8 隊，雙循環制，
+            合計 112 場賽事，每隊各有 14 場例行賽。
+          </li>
         </ul>
-          <ul class="download-list">
-            <p>1、比賽用球：KENKO BALL 全日本軟式野球聯盟公認球，賽後將回收重複使用。</p>
-            <p>2、正規七局制 or 2.5 小時制，依照裁判認定，若時間已達比賽前15分鐘且平手，下局則進入突破僵局制。</p>
-            <p>　　【突破僵局制】0出局，進攻方從二壘有跑者（前一局最後出局者）開始。</p>
-            <p>3、第五局起，雙方分數差10分(含)以上，則判定提早結束比賽。</p>
-            <p>4、比賽中若遇到下雨， 未滿3局，另行補賽； 打滿3局視同裁定比賽。</p>
-            <p>5、大聯盟組部分賽事之裁判會安排三人制，小聯盟組均為兩人制。</p>
-          </ul>
-        <p>【Postseason季後系列戰】</p>
-        <ul class="download-list">
-          <li>季後賽：單賽制、例行賽戰績取前四名、對戰組合由各隊派一名進行抽籤</li>
-          <li>冠軍賽：單場決勝制、季後賽勝隊比較得失分高為主場</li>
+      
+        <ol class="announcement-rules">
+          <li>
+            比賽用球：KENKO BALL（全日本軟式野球聯盟公認球），
+            賽後將回收重複使用。
+          </li>
+          <li>
+            正規七局制或 2.5 小時制，依裁判認定。
+            若時間已達比賽前 15 分鐘且平手，下局進入突破僵局制。
+            <div class="sub-rule">
+              【突破僵局制】0 出局，進攻方自二壘放置跑者（前一局最後出局者）。
+            </div>
+          </li>
+          <li>
+            <span class="text-danger">
+              例行賽、季後賽、冠軍賽，雙方分數差 10 分（含）以上，
+              判定提早結束比賽。
+            </span>
+          </li>
+          <li>
+            比賽中若遇雨勢影響，
+            未滿 3 局另行補賽；滿 3 局視同裁定比賽。
+          </li>
+          <li>
+            大聯盟組部分賽事採三人制裁判；
+            小聯盟組固定為兩人制裁判。
+          </li>
+        </ol>
+      
+        <h3 class="announcement-title">🏆 Postseason 季後系列戰</h3>
+      
+        <ul class="announcement-list">
+          <li>
+            季後賽：單賽制，例行賽戰績前四名晉級，
+            對戰組合由各隊派員抽籤決定。
+          </li>
+          <li>
+            冠軍賽：單場決勝制，
+            季後賽勝隊比較得失分高者為主場。
+          </li>
         </ul>
-        <p>【迴避原則（母隊限制）】</p>
-        <ul class="download-list">
-          <li>嚴格禁制： 凡 例行賽、季後賽、冠軍賽，裁判均不得執法所屬母隊之賽事。</li>
-          <li>開放範圍： 僅限「隊內交流賽」、「熱身賽」、「冬季聯盟」可安排母隊裁判站崗。</li>
+      
+        <h3 class="announcement-title">⚠️ 迴避原則（母隊限制）</h3>
+      
+        <ul class="announcement-list">
+          <li>
+            <strong class="text-danger">
+              嚴格禁止：
+            </strong>
+            例行賽、季後賽、冠軍賽，
+            裁判不得執法所屬母隊之賽事。
+          </li>
+          <li>
+            <strong class="text-info">
+              開放範圍：
+            </strong>
+            僅限
+            <span class="text-info">「隊內交流賽」</span>、
+            <span class="text-info">「熱身賽」</span>、
+            <span class="text-info">「冬季聯盟」</span>
+            可安排母隊裁判站崗。
+          </li>
         </ul>
-    </div>
+      
+      </div>
   </div>
 
   <!-- ✅ 文件下載 -->
