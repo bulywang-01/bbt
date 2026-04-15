@@ -237,7 +237,7 @@ td.cell-na {
     padding: 12px;
   }
 
-  /* ✅ 手機底部送出列（正確版本） */
+  /* ✅ 手機底部送出列（正確版本） 
   .submit-bar {
     position: sticky;
     bottom: 0;
@@ -245,6 +245,13 @@ td.cell-na {
     padding: 12px;
     border-top: 1px solid #ddd;
     z-index: 100;         /* ✅ 壓在 card 上面就好 */
+  }
+  */
+  
+  .submit-bar {
+    position: relative !important;
+    bottom: auto !important;
+    z-index: auto !important;
   }
 
   .submit-bar button {
@@ -379,6 +386,18 @@ td.cell-na {
 /* ✅ 點擊瞬間的回饋（手機很重要） */
 .signup-btn:active {
   opacity: 0.85;
+}
+
+/* ========= 🔥 強制解除整頁觸控鎖定（手機驗證用） ========= */
+html, body,
+.main,
+#mobileView,
+.game-card,
+.position-row,
+.signup-btn,
+.submit-bar,
+button {
+  pointer-events: auto !important;
 }
 
 </style>
