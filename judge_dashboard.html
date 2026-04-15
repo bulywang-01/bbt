@@ -725,7 +725,8 @@ function render() {
           zebra = !zebra;
           lastDate = g.date;
         }
-        if (zebra) tr.style.backgroundColor = '#fafafa';
+        //if (zebra) tr.style.backgroundColor = '#fafafa';
+        if (zebra) tr.style.backgroundColor = '#dafdfd';
 
         /* 滿額覆蓋 */
         const filled = Object.keys(g.occupied_positions || {}).length;
