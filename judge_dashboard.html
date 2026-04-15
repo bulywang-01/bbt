@@ -945,15 +945,17 @@ function renderMobilePositions(g) {
       `;
     }
 
+    const isSelected = selectedPositions[g.game_id] === role;
+
     return `
-      <div class="position-row">
-        <span>${roleName}</span>
-        <button class="signup-btn"
-          data-game="${g.game_id}"
-          onclick="rememberSelection('${g.game_id}','${role}', this)">
-          報名
-        </button>
-      </div>
+    <div class="position-row">
+      <span>${roleName}</span>
+      <button class="signup-btn ${isSelected ? 'selected' : ''}"
+        data-game="${g.game_id}"
+        onclick="rememberSelection('${g.game_id}','${role}')">
+        ${isSelected ? '已選' : '報名'}
+      </button>
+    </div>
     `;
   }).join('');
 }
