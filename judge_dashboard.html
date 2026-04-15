@@ -167,7 +167,7 @@ td.cell-na {
 
 /* 共用遮罩 */
 #overlay {
-  position: fixed;
+  /* position: fixed; */
   top: 0;
   left: 0;
   width: 100%;
@@ -200,6 +200,7 @@ td.cell-na {
 
 /* ✅ 只有顯示時才攔截 */
 #overlay.show {
+  display: flex;
   pointer-events: auto;
 }
 
@@ -237,22 +238,23 @@ td.cell-na {
     padding: 12px;
   }
 
-  /* ✅ 手機底部送出列（正確版本） 
-  .submit-bar {
-    position: sticky;
-    bottom: 0;
-    background: #fff;
-    padding: 12px;
-    border-top: 1px solid #ddd;
-    z-index: 100;         /* ✅ 壓在 card 上面就好 */
-  }
-  */
+  /* ✅ 手機底部送出列（正確版本） */
+    .submit-bar {
+      position: sticky;
+      bottom: 0;
+      background: #fff;
+      padding: 12px;
+      border-top: 1px solid #ddd;
+      z-index: 10;
+    }
   
+  /* Test
   .submit-bar {
     position: relative !important;
     bottom: auto !important;
     z-index: auto !important;
   }
+  */
 
   .submit-bar button {
     width: 100%;
