@@ -349,6 +349,30 @@ td.cell-na {
     display: none;
   }
 }
+
+/* 手機版報名按鈕 */
+.signup-btn {
+  background: #ffffff;
+  border: 1px solid #4a7ef5;
+  color: #4a7ef5;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+
+}
+
+/* ✅ 已選狀態（重點） */
+.signup-btn.selected {
+  background: #4a7ef5;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ✅ 點擊瞬間的回饋（手機很重要） */
+.signup-btn:active {
+  opacity: 0.85;
+}
+
 </style>
 </head>
 
@@ -523,12 +547,20 @@ function formatTime(t){
          d.getMinutes().toString().padStart(2,'0');
 }
 
-function rememberSelection(gameId, role) {
+function rememberSelection(gameId, role, btn) {
   // ✅ 保險起見，先清掉該場所有舊選擇
   delete selectedPositions[gameId];
 
   // ✅ 再設定新的選擇
   selectedPositions[gameId] = role;
+  
+  // ✅ 新增：視覺回饋
+  document
+    .querySelectorAll(`.signup-btn[data-game="${gameId}"]`)
+    .forEach(b => b.classList.remove('selected'));
+
+  if (btn) {
+    btn.classList.add('selected');
 
   // ✅ 立刻重畫，確保畫面與 state 一致
   render();
@@ -892,7 +924,8 @@ function renderMobilePositions(g) {
       <div class="position-row">
         <span>${roleName}</span>
         <button class="signup-btn"
-          onclick="rememberSelection('${g.game_id}','${role}')">
+          data-game="${g.game_id}"
+          onclick="rememberSelection('${g.game_id}','${role}', this)">
           報名
         </button>
       </div>
