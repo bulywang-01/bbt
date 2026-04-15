@@ -548,20 +548,21 @@ function rememberSelection(gameId, role, btn) {
   delete selectedPositions[gameId];
   selectedPositions[gameId] = role;
 
-  // 清掉同場的視覺選取
+  // 清除同場所有已選外觀
   document
     .querySelectorAll(`.signup-btn[data-game="${gameId}"]`)
     .forEach(b => b.classList.remove('selected'));
 
-  // 標記目前選取
+  // 標記目前按下的按鈕
   if (btn) {
     btn.classList.add('selected');
   }
 
-  // ✅ 這兩行一定要在 if 外
+  // ✅ 一定要在 if 外
   render();
   renderMobile();
 }
+
 
 /* ===== 產置出表格及內容 ===== */
 function render() {
