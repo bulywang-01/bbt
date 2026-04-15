@@ -402,6 +402,50 @@ html, body,
 button {
   pointer-events: auto !important;
 }
+  
+/* 站位區塊 */
+.position-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* 站位按鈕（預設） */
+.pos-btn {
+  padding: 10px 0;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #4a7ef5;
+  background: #ffffff;
+  color: #4a7ef5;
+  font-weight: 600;
+}
+
+/* ✅ 已選 */
+.pos-btn.selected {
+  background: #4a7ef5;
+  color: #fff;
+}
+
+/* ✅ 已被佔用 */
+.pos-btn.occupied {
+  background: #eee;
+  color: #666;
+  border-color: #ccc;
+}
+
+/* ✅ 自己的站位 */
+.pos-btn.me {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+/* 手機點擊回饋 */
+.pos-btn:active {
+  opacity: 0.85;
+}
 
 </style>
 </head>
