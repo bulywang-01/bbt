@@ -230,14 +230,14 @@ td.cell-na {
     padding: 12px;
   }
 
+  /* ✅ 手機底部送出列（正確版本） */
   .submit-bar {
-    display: sticky;
-    align-items: center;
+    position: sticky;     /* ✅ 不是 display */
     bottom: 0;
     background: #fff;
     padding: 12px;
     border-top: 1px solid #ddd;
-    pointer-events: none;
+    z-index: 100;         /* ✅ 壓在 card 上面就好 */
   }
 
   .submit-bar button {
@@ -331,6 +331,7 @@ td.cell-na {
     padding: 6px 14px;
     border-radius: 18px;
     font-size: 14px;
+    pointer-events: auto;
   }
 
   .mobile-cancel {
@@ -376,6 +377,9 @@ td.cell-na {
 </style>
 </head>
 
+
+<!-- 共用 Header -->
+<body data-page-title="裁判報名">
 <!-- 畫面中間呈現訊息 -->
 <!-- Loading / Message Overlay -->
 <div id="overlay" style="display:none;">
@@ -384,9 +388,7 @@ td.cell-na {
     <button id="overlay-ok" style="display:none;">確定</button>
   </div>
 </div>
-
-<!-- 共用 Header -->
-<body data-page-title="裁判報名">
+  
 <div id="header"></div>
 
 <div class="main">
