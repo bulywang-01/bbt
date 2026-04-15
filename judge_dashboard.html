@@ -922,12 +922,12 @@ function renderMobile() {
     card.innerHTML = `
       <div class="game-header">
         <div>📅 ${g.date}</div>
-        <div>📍 ${g.field}</div>
+        <div>⏰ ${formatTime(g.time_range)}</div>
       </div>
 
       <div class="game-main">
-        <div>⏰ ${formatTime(g.time_range)}</div>
         <div class="teams">${g.away_team} vs ${g.home_team}</div>
+        <div>📍 ${g.field}</div>
       </div>
       ${renderMobilePositions(g)}
     `;
