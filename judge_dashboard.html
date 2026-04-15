@@ -177,6 +177,7 @@ td.cell-na {
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  pointer-events: none;
 }
 
 #overlay-box {
@@ -196,6 +197,12 @@ td.cell-na {
 #overlay-ok {
   padding: 6px 20px;
 }
+
+/* ✅ 只有顯示時才攔截 */
+#overlay.show {
+  pointer-events: auto;
+}
+
 
 /* 場次欄位（不要影響整列） */
 .col-game-id {
@@ -232,7 +239,7 @@ td.cell-na {
 
   /* ✅ 手機底部送出列（正確版本） */
   .submit-bar {
-    position: sticky;     /* ✅ 不是 display */
+    position: sticky;
     bottom: 0;
     background: #fff;
     padding: 12px;
@@ -1001,11 +1008,35 @@ function submitSignup(){
    }
  );
 }
-
-function showLoading(msg = '處理中...') {
-  document.getElementById('overlay-text').textContent = msg;
-  document.getElementById('overlay-ok').style.display = 'none';
-  document.getElementById('overlay').style.display = 'flex';
+    function showLoading(msg = '處理中...') {
+      document.getElementById('overlay-text').textContent = msg;
+      //document.getElementById('overlay-ok').style.display = 'none';
+      //document.getElementById('overlay').style.display = 'flex';
+      
+      function showLoading(msg = '處理中...') {
+      const overlay = document.getElementById('overlay');
+      document.getElementById('overlay-text').textContent = msg;
+      document.getElementById('overlay-ok').style.display = 'none';
+      overlay.classList.add('show');
+    }
+    
+    function showMessage(msg, reload = true) {
+      const overlay = document.getElementById('overlay');
+      document.getElementById('overlay-text').textContent = msg;
+    
+      const ok = document.getElementById('overlay-ok');
+      ok.style.display = 'inline-block';
+      ok.onclick = () => {
+        overlay.classList.remove('show');
+        if (reload) location.reload();
+      };
+    
+      overlay.classList.add('show');
+    }
+    
+    function hideOverlay() {
+      document.getElementById('overlay').classList.remove('show');
+    }
 }
 
 function showMessage(msg, reload = true) {
