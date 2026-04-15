@@ -777,7 +777,10 @@ function render() {
           }
         
           // 3️⃣ 我已報名這場，但此站位沒人 → 留空白
-          if (g.my_position) {
+          //if (g.my_position) {
+          
+          // 3️⃣ 我已報名此場，「但不是這個站位」 → 留空
+          if (g.my_position && g.my_position !== role) {
             return '';
           }
         
