@@ -985,14 +985,27 @@ function render() {
               <td>${g.field || ''}</td>
               <td>${g.duration || ''}</td>
               <td>${umpireCell}</td>
-              
-              ['PU','U1','U2','U3'].forEach(role => {
-                const td = document.createElement('td');
-                td.className = 'pos-cell';
-                td.innerHTML = renderPos(g, role);
-                tr.appendChild(td);
-               }
-            `;
+          <td>${umpireCell}</td>${(() => {
+                  const v = renderPos('PU');
+                  if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
+                  return `<td class="pos-cell">${v}</td>`;
+                })()}
+      
+              ${(() => {
+                const v = renderPos('U1');
+                if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
+                return `<td class="pos-cell">${v}</td>`;
+              })()}
+              ${(() => {
+                const v = renderPos('U2');
+                if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
+                return `<td class="pos-cell">${v}</td>`;
+              })()}
+              ${(() => {
+                const v = renderPos('U3');
+                if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
+                return `<td class="pos-cell">${v}</td>`;
+              })()}
 
             tbody.appendChild(tr);
           });
