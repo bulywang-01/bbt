@@ -136,7 +136,19 @@ tr.expired { color: #999; }
   font-size: 18px;
   line-height: 1;
 }
+  
+/* 取消操作樣式 */
+.cancel-btn {
+  margin-left: 6px;
+  color: #c00;
+  font-weight: 700;
+  cursor: pointer;
+}
 
+.cancel-btn:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
 </style>
 </head>
 
@@ -683,9 +695,11 @@ function cancelMySignup(signupId) {
 
   const session = JSON.parse(localStorage.getItem('session_user') || {});
   if (!session.user_id) {
-    alert('登入狀態已失效');
+    alert('登入狀態已失效，請重新登入');
     return;
   }
+
+  showLoading('取消站位中...');
 
   callApi(
     {
@@ -694,8 +708,10 @@ function cancelMySignup(signupId) {
       signup_id: signupId
     },
     res => {
+      hideOverlay();
+
       if (res && res.result === 'ok') {
-        alert('已取消站位，請於Line群組告知取消原因，謝謝。');
+        alert('已取消站位，請於 Line 群組告知取消原因，謝謝。');
         location.reload();
       } else {
         alert(res?.message || '取消失敗');
