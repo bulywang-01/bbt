@@ -434,6 +434,12 @@ button {
   border-color: #2e7d32;
 }
 
+ /* 桌機 / 手機共用：待位中 */
+.pos-pending {
+  color: #999;
+  font-style: italic;
+}
+  
 /* 手機點擊回饋 */
 .pos-btn:active {
   opacity: 0.85;
@@ -489,11 +495,46 @@ button {
 /* tournament 顯示 */
 .mobile-tournament {
   margin-top: 6px;
-  font-size: 14px;
+  font-size: 16px;
   color: #666;
   text-align: center;
 }
+/* ===== 手機版裁判橫排格子 ===== */
+.mobile-pos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
 
+.mobile-pos {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 14px;
+  background: #fff;
+}
+
+/* 未安排（待位中） */
+.mobile-pos.pending {
+  color: #999;
+}
+
+/* 已報名（他人） */
+.mobile-pos.occupied {
+  color: #333;
+  font-weight: 600;
+}
+
+/* 自己 */
+.mobile-pos.me {
+  color: #2e7d32;
+  font-weight: 800;
+  border-color: #2e7d32;
+  background: #e8f5e9;
+}
+``
 </style>
 </head>
 
@@ -557,65 +598,56 @@ button {
 <script>
 /* ===== 共用工具（桌機 render 專用）===== */
 
-function renderPos(g, role, isPast) {
+function renderPos(g, role) {
 
-  // 0️⃣ 不需裁判 → 黑格
+  /* 0️⃣ 不需裁判 → 紅色 X */
   if (
     g.need_count === 0 ||
     (g.need_count === 1 && role !== 'PU') ||
     (g.need_count === 2 && ['U2','U3'].includes(role)) ||
     (g.need_count === 3 && role === 'U2')
   ) {
-    return '__NA__';
+    return '<div class="pos-na">X</div>';
   }
 
-  // 1️⃣ 已佔用
-  if (g.occupied_positions && g.occupied_positions[role]) {
-    const isMe = g.my_position === role;
+  const occupiedName = g.occupied_positions?.[role];
+  const isMe = occupiedName === CURRENT_USER_NAME;
 
-    if (isMe) {
-      return `
-        <div class="judge-name me">
-          <span class="judge-star">★</span>
-          ${g.occupied_positions[role]}
-          <span class="cancel-btn"
-                onclick="cancelMySignup('${g.my_signup_id}')">
-            [取消]
-          </span>
-        </div>
-      `;
-    }
-
-    return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
-  }
-
-  // 2️⃣ 過期但未報名 → 空白
-  if (isPast) return '';
-
-  // 3️⃣ 已在此場但不是這個站位 → 空白
-  if (g.my_position && g.my_position !== role) return '';
-
-  // 4️⃣ 尚未送出且是我選的
-  if (selectedPositions[g.game_id] === role) {
+  /* 1️⃣ 已報名（自己） */
+  if (isMe) {
     return `
-      <label>
-        <input type="radio" checked>
-        ${role}
-      </label>
-      <span class="cancel-btn"
-            onclick="cancelSelected('${g.game_id}')">Ｘ</span>
+      <div class="pos-me">
+        <span class="judge-star">★</span>
+        ${occupiedName}
+        <span class="cancel-btn"
+              onclick="cancelMySignup('${g.my_signup_id}')">
+          [取消]
+        </span>
+      </div>
     `;
   }
 
-  // 5️⃣ 尚未選
-  return `
-    <label>
-      <input type="radio"
-             onchange="rememberSelection('${g.game_id}','${role}')">
-      ${role}
-    </label>
-  `;
+  /* 2️⃣ 已報名（他人） */
+  if (occupiedName) {
+    return `
+      <div class="pos-occupied">
+        ${occupiedName}
+      </div>
+    `;
+  }
+
+  /* 3️⃣ 我已在這場有報名（其他站位）→ 待位中 */
+  const iAmInThisGame = Object.values(g.occupied_positions || {})
+    .includes(CURRENT_USER_NAME);
+
+  if (iAmInThisGame) {
+    return '<span class="pos-pending">待位中</span>';
+  }
+
+  /* 4️⃣ 尚未報名任何站位 → 待位中 */
+  return '<span class="pos-pending">待位中</span>';
 }
+
 
 function renderPosCell(g, role, isPast) {
   const v = renderPos(g, role, isPast);
@@ -980,7 +1012,7 @@ function renderMobile() {
       ${renderMobilePositions(g)}
 
       <div class="mobile-tournament">
-        ${g.tournament}
+        <strong>${g.tournament}</strong>
       </div>
     `;
 
