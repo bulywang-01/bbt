@@ -189,6 +189,9 @@ const ROLE_NAME_MAP = {
   U3: '三壘'
 };
 
+const CURRENT_USER_NAME =
+  JSON.parse(localStorage.getItem('session_user') || {}).name;
+  
 /* ======================
    全域狀態
    ====================== */
@@ -352,42 +355,46 @@ function renderPos(g, role) {
     return '<div class="pos-na">X</div>';
   }
 
-  /* ✅ 1️⃣【最優先】自己已正式報名這一場 */
-  if (g.my_position) {
+  const occupiedName = g.occupied_positions?.[role];
+  const isMe = occupiedName && occupiedName === CURRENT_USER_NAME;
 
-    // ✅ 自己報名的那一格（不要主審：）
-    if (g.my_position === role) {
-      return `
-        <div class="pos-me">
-          <span class="judge-star">★</span>
-          ${g.occupied_positions?.[role] || ''}
-          <span class="cancel-btn"
-                onclick="cancelMySignup('${g.my_signup_id}')">
-            [取消]
-          </span>
-        </div>
-      `;
-    }
-
-    // ✅ 其它站位 → 一律顯示「待位中」
-    return '<span style="color:#999;">待位中</span>';
-  }
-
-  /* 2️⃣ 已被別人佔用 */
-  if (g.occupied_positions && g.occupied_positions[role]) {
+  /* ✅ 1️⃣ 自己已正式報名這一場 */
+  if (isMe) {
     return `
-      <div class="pos-occupied">
-        ${g.occupied_positions[role]}
+      <div class="pos-me">
+        <span class="judge-star">★</span>
+        ${occupiedName}
+        <span class="cancel-btn"
+              onclick="cancelMySignup('${g.my_signup_id}')">
+          [取消]
+        </span>
       </div>
     `;
   }
 
-  /* 3️⃣ 尚未送出，但我選了這個站位 */
+  /* ✅ 2️⃣ 其他已被佔用（他人） */
+  if (occupiedName) {
+    return `
+      <div class="pos-occupied">
+        ${occupiedName}
+      </div>
+    `;
+  }
+
+  /* ✅ 3️⃣ 我已在這場報名其他站位 → 待位中 */
+  const iAmInThisGame = Object.values(g.occupied_positions || {})
+    .includes(CURRENT_USER_NAME);
+
+  if (iAmInThisGame) {
+    return '<span style="color:#999;">待位中</span>';
+  }
+
+  /* 4️⃣ 尚未送出，但我選了這個站位 */
   if (selectedPositions[g.game_id] === role) {
     return '<span class="pos-selected">待位中</span>';
   }
 
-  /* 4️⃣ 尚未選 → 可報名 */
+  /* 5️⃣ 尚未選 → 可報名 */
   return `
     <label class="pos-available">
       <input type="radio"
