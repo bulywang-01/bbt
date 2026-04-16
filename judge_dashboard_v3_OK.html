@@ -829,68 +829,85 @@ function render() {
         dateGroups[g.date].push(g);
       });
       
-      Object.keys(dateGroups)
-        .sort()
-        .forEach(date => {
-      
-          const games = dateGroups[date].sort(
-            (a, b) => timeToMinutes(a.time_range) - timeToMinutes(b.time_range)
-          );
-      
-          games.forEach((g, index) => {
-      
-            const tr = document.createElement('tr');
-      
-            const gd = new Date(g.date.replace(/\//g,'-'));
-            const isPast = gd < today;
-            if (isPast) tr.classList.add('expired');
-      
-            // ✅ zebra（同日期同底色）
-            if (index === 0) {
-              zebra = !zebra;
-            }
-            if (zebra) tr.style.backgroundColor = '#dafdfd';
-      
-            const filled = Object.keys(g.occupied_positions || {}).length;
-            if (filled >= g.need_count) tr.classList.add('full');
-      
-            // ✅ 日期欄位（只在第一筆輸出）
-            let dateTd = '';
-            if (index === 0) {
-              dateTd = `
-                <td rowspan="${games.length}">
-                  ${g.date}
-                </td>
-              `;
-            }
-      
-            let umpireCell = g.need_count;
-            if (g.need_count === 0) {
-              umpireCell = '<span class="umpire-na">不需裁判</span>';
-            } else if (filled >= g.need_count) {
-              umpireCell = '<span class="umpire-full">已額滿</span>';
-            }
-      
-            tr.innerHTML = `
-              ${dateTd}
-              <td class="col-game-id">${g.game_code}</td>
-              <td>${formatTime(g.time_range)}</td>
-              <td>${g.category || ''}</td>
-              <td>${g.away_team || ''}</td>
-              <td>${g.home_team || ''}</td>
-              <td>${g.field || ''}</td>
-              <td>${g.duration || ''}</td>
-              <td>${umpireCell}</td>
-      
-              ${renderPosCell(g,'PU', isPast)}
-              ${renderPosCell(g,'U1', isPast)}
-              ${renderPosCell(g,'U2', isPast)}
-              ${renderPosCell(g,'U3', isPast)}
-            `;
-      
-            tbody.appendChild(tr);
-          });
-      });
+Object.keys(dateGroups)
+  .sort()
+  .forEach(date => {
+
+    // ✅ 日期標題
+    const hDate = document.createElement('h3');
+    hDate.textContent = date;
+    box.appendChild(hDate);
+
+    // ✅ 日期 panel
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+
+    // ✅ 每個日期一張 table
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th class="col-game-id">場次</th>
+          <th>時間</th>
+          <th>組別</th>
+          <th>客隊</th>
+          <th>主隊</th>
+          <th>場地</th>
+          <th>時長</th>
+          <th>裁判數</th>
+          <th class="pos-cell">主審</th>
+          <th class="pos-cell">一壘</th>
+          <th class="pos-cell">二壘</th>
+          <th class="pos-cell">三壘</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const tbody = table.querySelector('tbody');
+
+    const games = dateGroups[date].sort(
+      (a, b) => timeToMinutes(a.time_range) - timeToMinutes(b.time_range)
+    );
+
+    games.forEach(g => {
+      const tr = document.createElement('tr');
+
+      const gd = new Date(g.date.replace(/\//g,'-'));
+      const isPast = gd < today;
+
+      if (isPast) tr.classList.add('expired');
+
+      const filled = Object.keys(g.occupied_positions || {}).length;
+      if (filled >= g.need_count) tr.classList.add('full');
+
+      let umpireCell = g.need_count;
+      if (g.need_count === 0) {
+        umpireCell = '<span class="umpire-na">不需裁判</span>';
+      } else if (filled >= g.need_count) {
+        umpireCell = '<span class="umpire-full">已額滿</span>';
+      }
+
+      tr.innerHTML = `
+        <td class="col-game-id">${g.game_code}</td>
+        <td>${formatTime(g.time_range)}</td>
+        <td>${g.category || ''}</td>
+        <td>${g.away_team || ''}</td>
+        <td>${g.home_team || ''}</td>
+        <td>${g.field || ''}</td>
+        <td>${g.duration || ''}</td>
+        <td>${umpireCell}</td>
+        ${renderPosCell(g,'PU',isPast)}
+        ${renderPosCell(g,'U1',isPast)}
+        ${renderPosCell(g,'U2',isPast)}
+        ${renderPosCell(g,'U3',isPast)}
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+    panel.appendChild(table);
+    box.appendChild(panel);
+});
     //------
 
     panel.appendChild(table);
