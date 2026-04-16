@@ -654,6 +654,13 @@ function render() {
   const today = new Date();
   today.setHours(0,0,0,0);
 
+  /* ===== 工具 ===== 
+  function formatTime(t){
+    const d = new Date(t);
+    return d.getHours().toString().padStart(2,'0') + ':' +
+           d.getMinutes().toString().padStart(2,'0');
+  }
+*/
   function inThisMonth(dateStr) {
     const d = new Date(dateStr.replace(/\//g,'-'));
     return d.getFullYear() === today.getFullYear() &&
@@ -688,43 +695,18 @@ function render() {
   }
 
   /* ===== 依年月分組 ===== */
-  /*
   const groups = {};
   filtered.forEach(g => {
     const m = g.date.slice(0,7); // yyyy/MM
     if (!groups[m]) groups[m] = [];
     groups[m].push(g);
   });
-  */
-  
-    // ✅ 改成「依日期分組」
-    const dateGroups = {};
-    filtered.forEach(g => {
-      if (!dateGroups[g.date]) dateGroups[g.date] = [];
-      dateGroups[g.date].push(g);
-    });
 
-    /* ===== 逐日輸出 ===== */
-    Object.keys(dateGroups)
-      .sort()
-      .forEach(date => {
-    
-        // ✅ 同一天內排序：組別 → 時間
-        dateGroups[date].sort((a, b) => {
-          if (a.category !== b.category) {
-            return a.category.localeCompare(b.category);
-          }
-          return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
-        });
+  /* ===== 逐月輸出 ===== */
+  Object.keys(groups).sort().forEach(month => {
 
-/*
     const h3 = document.createElement('h3');
     h3.textContent = `${month} 月`;
-    box.appendChild(h3);
-*/
-    
-    const h3 = document.createElement('h3');
-    h3.textContent = date;
     box.appendChild(h3);
 
     const panel = document.createElement('div');
@@ -757,7 +739,6 @@ function render() {
     let lastDate = null;
     let zebra = false;
 
-    /*
     groups[month]
       .sort((a, b) => {
         // 先比日期
@@ -767,25 +748,7 @@ function render() {
         // 同一天再比時間
         return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
       })
-      */
-        
-      Object.keys(dateGroups)
-        .sort()
-        .forEach(date => {
-      
-          // ✅ 同一天內排序：組別 → 時間
-          dateGroups[date].sort((a, b) => {
-            if (a.category !== b.category) {
-              return a.category.localeCompare(b.category);
-            }
-            return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
-          });
-      
-          dateGroups[date].forEach(g => {
-            const tr = document.createElement('tr');
-            });
-        });
-        
+
       .forEach(g => {
 
         const tr = document.createElement('tr');
