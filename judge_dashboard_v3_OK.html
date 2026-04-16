@@ -600,10 +600,18 @@ button {
 /* ===== 狀態 ===== */
 let allGames = [];
 let selectedPositions = {}; // game_id -> role
+
 // ✅ 目前登入者姓名（用來判斷是不是自己）
 const CURRENT_USER_NAME =
   JSON.parse(localStorage.getItem('session_user') || '{}').name || '';
 
+// ✅ 站位名稱對照（桌機 / 手機共用）
+const ROLE_NAME_MAP = {
+  PU: '主審',
+  U1: '一壘',
+  U2: '二壘',
+  U3: '三壘'
+};
   
 /* ===== 共用工具（桌機 render 專用）===== */
 
