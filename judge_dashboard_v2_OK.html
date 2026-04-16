@@ -721,6 +721,82 @@ function renderDesktopTable(filteredGames) {
       <tbody></tbody>
     `;
 
+        /* ===== 站位格 ===== */
+        function renderPos(role) {
+
+          // 0️⃣ 不需裁判 → 黑格（永遠最高優先）
+          if (
+            g.need_count === 0 ||
+            (g.need_count === 1 && role !== 'PU') ||
+            (g.need_count === 2 && ['U2','U3'].includes(role)) ||
+            (g.need_count === 3 && role === 'U2')
+          ) {
+            return '__NA__';
+          }
+        
+          // 1️⃣ 已佔用（approved）→ 一定顯示姓名（不管是否過期）
+          if (g.occupied_positions && g.occupied_positions[role]) {
+            const isMe = g.my_position === role;
+          
+            // ✅ 自己的站位：顯示姓名 + 取消
+            if (isMe) {
+              return `
+                <div class="judge-name me">
+                  <span class="judge-star">★</span>
+                  ${g.occupied_positions[role]}
+                  <span class="cancel-btn"
+                        data-signup-id="${g.my_signup_id}"
+                        onclick="cancelMySignup('${g.my_signup_id}')">
+                    [取消]
+                  </span>
+                </div>
+              `;
+            }
+          
+            // ✅ 別人的站位：只顯示姓名
+            return `
+              <div class="judge-name">
+                ${g.occupied_positions[role]}
+              </div>
+            `;
+          }
+        
+          // 2️⃣ ✅ 新規則：過期賽事 & 尚未報名 → 留空白
+          if (isPast) {
+            return '';
+          }
+        
+          // 3️⃣ 我已報名這場，但此站位沒人 → 留空白
+          //if (g.my_position) {
+          
+          // 3️⃣ 我已報名此場，「但不是這個站位」 → 留空
+          if (g.my_position && g.my_position !== role) {
+            return '';
+          }
+        
+          // 4️⃣ 尚未送出，且是我選的 → radio + X
+          if (selectedPositions[g.game_id] === role) {
+            return `
+              <label>
+                <input type="radio" checked>
+                ${role}
+              </label>
+              <span class="cancel-btn"
+                    title="取消此選擇"
+                    onclick="cancelSelected('${g.game_id}')">✖</span>
+            `;
+          }
+        
+          // 5️⃣ 尚未選 → 顯示 radio
+          return `
+            <label>
+              <input type="radio"
+                     onchange="rememberSelection('${g.game_id}','${role}')">
+              ${role}
+            </label>
+          `;
+        }
+    
     const tbody = table.querySelector('tbody');
     const dateRowspan = gamesOfDate.length;
     let dateRendered = false;
