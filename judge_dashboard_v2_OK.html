@@ -398,12 +398,12 @@ function renderPos(g, role) {
     .includes(CURRENT_USER_NAME);
 
   if (iAmInThisGame) {
-    return '<span style="color:#999;">選定</span>';
+    return '<span style="color:#999;">待位中</span>';
   }
 
   /* 4️⃣ 尚未送出，但我選了這個站位 */
   if (selectedPositions[g.game_id] === role) {
-    return '<span class="pos-selected">待位中</span>';
+    return '<span class="pos-selected">選定</span>';
   }
 
   /* 5️⃣ 尚未選 → 可報名 */
