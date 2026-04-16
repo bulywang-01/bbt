@@ -703,18 +703,20 @@ function render() {
       if (!dateGroups[g.date]) dateGroups[g.date] = [];
       dateGroups[g.date].push(g);
     });
+
+    /* ===== 逐日輸出 ===== */
+    Object.keys(dateGroups)
+      .sort()
+      .forEach(date => {
     
-    // ✅ 同一天內排序：組別 → 時間
-    dateGroups[date].sort((a,b) => {
-      if (a.category !== b.category) {
-        return a.category.localeCompare(b.category);
-      }
-      return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
-    });
+        // ✅ 同一天內排序：組別 → 時間
+        dateGroups[date].sort((a, b) => {
+          if (a.category !== b.category) {
+            return a.category.localeCompare(b.category);
+          }
+          return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
+        });
 
-
-  /* ===== 逐月輸出 ===== */
-  Object.keys(groups).sort().forEach(month => {
 
     const h3 = document.createElement('h3');
     h3.textContent = `${month} 月`;
