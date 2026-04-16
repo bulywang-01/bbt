@@ -166,17 +166,17 @@ td.cell-na {
 
 /* 共用遮罩 */
 #overlay {
-  /* position: fixed; */
+  position: fixed;       /* ✅ 一定要 fixed */
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0,0,0,0.35);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  pointer-events: none;
+  pointer-events: auto;  /* ✅ 不再切換 */
 }
 
 #overlay-box {
@@ -1001,9 +1001,13 @@ function render() {
                const input = document.createElement('input');
                input.type = 'radio';
                input.name = `signup_${g.game_id}`;
-               input.addEventListener('change', () => {
-                 rememberSelection(g.game_id, role);
-               });
+            //   input.addEventListener('change', () => {
+            //     rememberSelection(g.game_id, role);
+            //   });
+              input.addEventListener('click', () => {
+                console.log('✅ radio clicked', g.game_id, role);
+              });
+
              
                label.appendChild(input);
                label.appendChild(document.createTextNode(` ${ROLE_NAME_MAP[role]}`));
