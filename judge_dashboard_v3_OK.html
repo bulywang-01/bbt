@@ -620,10 +620,13 @@ function renderPos(g, role) {
   }
 
   const occupiedName = g.occupied_positions?.[role];
-  const isMe = occupiedName === CURRENT_USER_NAME;
 
-  /* 1️⃣ 已報名（自己） */
-  if (isMe) {
+  // ✅ 我是否在這一場已有報名
+  const iAmInThisGame = Object.values(g.occupied_positions || {})
+    .includes(CURRENT_USER_NAME);
+
+  /* 1️⃣ 這一格是我 */
+  if (occupiedName === CURRENT_USER_NAME) {
     return `
       <div class="pos-me">
         <span class="judge-star">★</span>
@@ -636,7 +639,7 @@ function renderPos(g, role) {
     `;
   }
 
-  /* 2️⃣ 已報名（他人） */
+  /* 2️⃣ 這一格被別人佔用 */
   if (occupiedName) {
     return `
       <div class="pos-occupied">
@@ -645,16 +648,19 @@ function renderPos(g, role) {
     `;
   }
 
-  /* 3️⃣ 我已在這場有報名（其他站位）→ 待位中 */
-  const iAmInThisGame = Object.values(g.occupied_positions || {})
-    .includes(CURRENT_USER_NAME);
-
+  /* 3️⃣ 我已經報名這一場（但不是這一格）→ 待位中 */
   if (iAmInThisGame) {
     return '<span class="pos-pending">待位中</span>';
   }
 
-  /* 4️⃣ 尚未報名任何站位 → 待位中 */
-  return '<span class="pos-pending">待位中</span>';
+  /* 4️⃣ 我還沒報名這一場 → 顯示可選 radio */
+  return `
+    <label class="pos-available">
+      <input type="radio"
+             onchange="rememberSelection('${g.game_id}','${role}')">
+      ${ROLE_NAME_MAP[role]}
+    </label>
+  `;
 }
 
 
