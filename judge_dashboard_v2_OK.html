@@ -722,7 +722,7 @@ function renderDesktopTable(filteredGames) {
     `;
 
         /* ===== 站位格 ===== */
-        function renderPos(role) {
+        function renderPos(g, role) {
 
           // 0️⃣ 不需裁判 → 黑格（永遠最高優先）
           if (
@@ -835,7 +835,7 @@ function renderDesktopTable(filteredGames) {
           <td>${g.away_team || ''}</td>
           <td>${g.home_team || ''}</td>
           <td>${g.field || ''}</td>
-          <td>${renderPos('PU')}</td>
+          <td>${renderPos(g, 'PU')}</td>
         `;
 
         tbody.appendChild(tr);
