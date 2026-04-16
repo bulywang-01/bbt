@@ -121,10 +121,20 @@ tr.expired { color: #999; }
   font-weight: 800;
 }
 
-/* 不需裁判 */
+/* 不需裁判：黑底 */
+/*
 .pos-na {
   background: #000;
   color: #000;
+}
+*/
+  
+/* 不需裁判：紅色 X */
+.pos-na {
+  color: #c00;
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
 }
 
 </style>
@@ -250,7 +260,8 @@ function renderPos(g, role) {
     (g.need_count === 2 && ['U2', 'U3'].includes(role)) ||
     (g.need_count === 3 && role === 'U2')
   ) {
-    return '<div class="pos-na">&nbsp;</div>';
+    // return '<div class="pos-na">&nbsp;</div>';  // 不需裁判：黑底
+    return '<div class="pos-na">—</div>';  // 不需裁判：紅X
   }
 
   /* =====================================
