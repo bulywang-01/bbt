@@ -985,12 +985,6 @@ function render() {
               <td>${g.field || ''}</td>
               <td>${g.duration || ''}</td>
               <td>${umpireCell}</td>
-              /*
-              ${renderPosCell(g,'PU',isPast)}
-              ${renderPosCell(g,'U1',isPast)}
-              ${renderPosCell(g,'U2',isPast)}
-              ${renderPosCell(g,'U3',isPast)}
-              */
               
               ['PU','U1','U2','U3'].forEach(role => {
                 const td = document.createElement('td');
