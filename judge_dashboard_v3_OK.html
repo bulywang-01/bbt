@@ -556,7 +556,7 @@ function loadGames() {
       hideOverlay();
 
       if (!res || res.result !== 'ok') {
-        showMessage(resobj && obj[key]message || '無法取得賽事資料');
+        showMessage(res?.message || '無法取得賽事資料');
         return;
       }
 
@@ -632,12 +632,6 @@ function rememberSelection(gameId, role, btn) {
 
 
 /* ===== 產置出表格及內容 ===== */
-function renderPosCell(g, role) {
-  const v = renderPos(role);
-  if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
-  return `<td class="pos-cell">${v}</td>`;
-}
-  
 function render() {
 
   function timeToMinutes(t){
@@ -745,7 +739,7 @@ function render() {
     let lastDate = null;
     let zebra = false;
 
-    // ✅ 依 日期 再分組（yyyy/MM/dd）
+      // ✅ 依 日期 再分組（yyyy/MM/dd）
       const dateGroups = {};
       groups[month].forEach(g => {
         if (!dateGroups[g.date]) dateGroups[g.date] = [];
@@ -814,152 +808,7 @@ function render() {
             tbody.appendChild(tr);
           });
       });
-
-      .forEach(g => {
-
-        const tr = document.createElement('tr');
-
-        const gd = new Date(g.date.replace(/\//g,'-'));
-        const isPast = gd < today;
-
-        if (isPast) tr.classList.add('expired');
-
-        /* zebra（同月不同時間） */
-        if (g.date !== lastDate) {
-          zebra = !zebra;
-          lastDate = g.date;
-        }
-        //if (zebra) tr.style.backgroundColor = '#fafafa';
-        if (zebra) tr.style.backgroundColor = '#dafdfd';
-
-        /* 滿額覆蓋 */
-        const filled = Object.keys(g.occupied_positions || {}).length;
-        if (filled >= g.need_count) tr.classList.add('full');
-
-        /* ===== 站位格 ===== */
-        function renderPos(role) {
-
-          // 0️⃣ 不需裁判 → 黑格（永遠最高優先）
-          if (
-            g.need_count === 0 ||
-            (g.need_count === 1 && role !== 'PU') ||
-            (g.need_count === 2 && ['U2','U3'].includes(role)) ||
-            (g.need_count === 3 && role === 'U2')
-          ) {
-            return '__NA__';
-          }
-        
-          // 1️⃣ 已佔用（approved）→ 一定顯示姓名（不管是否過期）
-          if (g.occupied_positions && g.occupied_positions[role]) {
-            const isMe = g.my_position === role;
-          
-            // ✅ 自己的站位：顯示姓名 + 取消
-            if (isMe) {
-              return `
-                <div class="judge-name me">
-                  <span class="judge-star">★</span>
-                  ${g.occupied_positions[role]}
-                  <span class="cancel-btn"
-                        data-signup-id="${g.my_signup_id}"
-                        onclick="cancelMySignup('${g.my_signup_id}')">
-                    [取消]
-                  </span>
-                </div>
-              `;
-            }
-          
-            // ✅ 別人的站位：只顯示姓名
-            return `
-              <div class="judge-name">
-                ${g.occupied_positions[role]}
-              </div>
-            `;
-          }
-        
-          // 2️⃣ ✅ 新規則：過期賽事 & 尚未報名 → 留空白
-          if (isPast) {
-            return '';
-          }
-        
-          // 3️⃣ 我已報名這場，但此站位沒人 → 留空白
-          //if (g.my_position) {
-          
-          // 3️⃣ 我已報名此場，「但不是這個站位」 → 留空
-          if (g.my_position && g.my_position !== role) {
-            return '';
-          }
-        
-          // 4️⃣ 尚未送出，且是我選的 → radio + X
-          if (selectedPositions[g.game_id] === role) {
-            return `
-              <label>
-                <input type="radio" checked>
-                ${role}
-              </label>
-              <span class="cancel-btn"
-                    title="取消此選擇"
-                    onclick="cancelSelected('${g.game_id}')">✖</span>
-            `;
-          }
-        
-          // 5️⃣ 尚未選 → 顯示 radio
-          return `
-            <label>
-              <input type="radio"
-                     onchange="rememberSelection('${g.game_id}','${role}')">
-              ${role}
-            </label>
-          `;
-        }
-
-
-        // 已報名人數
-        //const filled = Object.keys(g.occupied_positions || {}).length;
-        
-        // 裁判數欄位顯示內容
-        let umpireCell = g.need_count;
-        
-        if (g.need_count === 0) {
-          umpireCell = '<span class="umpire-na">不需裁判</span>';
-        } else if (filled >= g.need_count) {
-          umpireCell = '<span class="umpire-full">已額滿</span>';
-        }
-
-        tr.innerHTML = `
-          <td class="col-game-id">${g.game_code}</td>
-          <td>${g.date}</td>
-          <td>${formatTime(g.time_range)}</td>
-          <td>${g.category || ''}</td>
-          <td>${g.away_team || ''}</td>
-          <td>${g.home_team || ''}</td>
-          <td>${g.field || ''}</td>
-          <td>${g.duration || ''}</td>
-          <td>${umpireCell}</td>${(() => {
-            const v = renderPos('PU');
-            if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
-            return `<td class="pos-cell">${v}</td>`;
-          })()}
-
-        ${(() => {
-          const v = renderPos('U1');
-          if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
-          return `<td class="pos-cell">${v}</td>`;
-        })()}
-        ${(() => {
-          const v = renderPos('U2');
-          if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
-          return `<td class="pos-cell">${v}</td>`;
-        })()}
-        ${(() => {
-          const v = renderPos('U3');
-          if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
-          return `<td class="pos-cell">${v}</td>`;
-        })()}
-
-        `;
-
-        tbody.appendChild(tr);
-      });
+    //------
 
     panel.appendChild(table);
     box.appendChild(panel);
@@ -1022,8 +871,7 @@ function renderMobilePositions(g) {
 
   return roles.map(role => {
     const roleName = ROLE_NAME_MAP[role];
-    // const occupied = g.occupied_positionsobj && obj[key][role];
-    const occupied = g.occupied_positions && g.occupied_positions[role];
+    const occupied = g.occupied_positions?.[role];
     const isMe = g.my_position === role;
 
     if (occupied) {
@@ -1134,7 +982,7 @@ function submitSignup(){
  
        location.reload();
      } else {
-       alert(resobj && obj[key]message || '報名失敗');
+       alert(res?.message || '報名失敗');
      }
    }
  );
@@ -1217,7 +1065,7 @@ function cancelMySignup(signupId) {
         alert('已取消站位，請於Line群組告知取消原因，謝謝。');
         location.reload();
       } else {
-        alert(resobj && obj[key]message || '取消失敗');
+        alert(res?.message || '取消失敗');
       }
     }
   );
