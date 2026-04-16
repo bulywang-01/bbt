@@ -658,6 +658,26 @@ function rememberSelection(gameId, role, btn) {
 
 // 新增「桌機專用 render 函式」
 function renderDesktopTable(filteredGames) {
+
+  function timeToMinutes(t) {
+    if (!t) return 0;
+  
+    // 如果是 Date 物件
+    if (t instanceof Date) {
+      return t.getHours() * 60 + t.getMinutes();
+    }
+  
+    // 如果是字串（HH:mm）
+    if (typeof t === 'string') {
+      const parts = t.split(':');
+      if (parts.length === 2) {
+        return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+      }
+    }
+  
+    return 0;
+  }
+  
   const box = document.getElementById('content');
   box.innerHTML = '';
 
@@ -754,25 +774,6 @@ function renderDesktopTable(filteredGames) {
 
 /* ===== 產置出表格及內容 ===== */
 function render() {
-
-  function timeToMinutes(t) {
-  if (!t) return 0;
-
-  // 如果是 Date 物件
-  if (t instanceof Date) {
-    return t.getHours() * 60 + t.getMinutes();
-  }
-
-  // 如果是字串（HH:mm）
-  if (typeof t === 'string') {
-    const parts = t.split(':');
-    if (parts.length === 2) {
-      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-    }
-  }
-
-  return 0;
-}
 
   const box = document.getElementById('content');
   box.innerHTML = '';
