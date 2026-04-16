@@ -84,6 +84,49 @@ tr.expired { color: #999; }
   #desktopView { display: none; }
   #mobileView { display: block; }
 }
+
+/* =====================
+   裁判站位 - 統一樣式
+   ===================== */
+
+/* 共用文字 */
+.pos-label {
+  font-weight: 600;
+}
+
+/* 可報名 */
+.pos-available {
+  color: #4a7ef5;
+}
+
+/* 已選（未送出） */
+.pos-selected {
+  background: #4a7ef5;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* 已佔用（他人） */
+.pos-occupied {
+  color: #999;
+  font-weight: 600;
+}
+
+/* 自己已報名 */
+.pos-me {
+  color: #2e7d32;
+  font-weight: 800;
+}
+
+/* 不需裁判 */
+.pos-na {
+  background: #000;
+  color: #000;
+}
+
 </style>
 </head>
 
@@ -125,10 +168,27 @@ tr.expired { color: #999; }
 <script src="js/config.js"></script>
 
 <script>
+
+/* ======================
+   全域常數 / 設定
+   ====================== */
+const ROLE_NAME_MAP = {
+  PU: '主審',
+  U1: '一壘',
+  U2: '二壘',
+  U3: '三壘'
+};
+
+/* ======================
+   全域狀態
+   ====================== */
 let allGames = [];
 let selectedPositions = {};
 
-/* ===== utils ===== */
+
+/* ======================
+   共用工具
+   ====================== */
 function formatTime(t) {
   const d = new Date(t);
   return d.getHours().toString().padStart(2,'0') + ':' +
@@ -139,7 +199,10 @@ function timeToMinutes(t) {
   return d.getHours()*60 + d.getMinutes();
 }
 
-/* ===== API ===== */
+
+/* ======================
+   render / API / 行為
+   ====================== */
 function loadGames() {
   showOverlay('載入賽事中...');
   callApi(
@@ -178,26 +241,32 @@ function render() {
 /* 裁判站位 render 函式 */
 function renderPos(g, role) {
 
-  /* 0️⃣ 不需裁判 → 黑格 */
+  /* =====================================
+   * 0️⃣ 不需裁判 → 黑格（最高優先）
+   * ===================================== */
   if (
     g.need_count === 0 ||
     (g.need_count === 1 && role !== 'PU') ||
-    (g.need_count === 2 && ['U2','U3'].includes(role)) ||
+    (g.need_count === 2 && ['U2', 'U3'].includes(role)) ||
     (g.need_count === 3 && role === 'U2')
   ) {
-    return '<div class="cell-na">&nbsp;</div>';
+    return '<div class="pos-na">&nbsp;</div>';
   }
 
-  /* 1️⃣ 已佔用（approved） */
+  /* =====================================
+   * 1️⃣ 已佔用（approved）
+   *    - 自己：綠字 + 取消
+   *    - 他人：灰字
+   * ===================================== */
   if (g.occupied_positions && g.occupied_positions[role]) {
     const isMe = g.my_position === role;
 
-    // ✅ 自己的站位
+    // ✅ 自己已報名
     if (isMe) {
       return `
-        <div class="judge-name me">
+        <div class="pos-me">
           <span class="judge-star">★</span>
-          ${g.occupied_positions[role]}
+          ${ROLE_NAME_MAP[role]}：${g.occupied_positions[role]}
           <span class="cancel-btn"
                 onclick="cancelMySignup('${g.my_signup_id}')">
             [取消]
@@ -206,37 +275,46 @@ function renderPos(g, role) {
       `;
     }
 
-    // ✅ 別人的站位
+    // ✅ 別人已佔用
     return `
-      <div class="judge-name">
-        ${g.occupied_positions[role]}
+      <div class="pos-occupied">
+        ${ROLE_NAME_MAP[role]}：${g.occupied_positions[role]}
       </div>
     `;
   }
 
-  /* 2️⃣ 我已報名此場其他站位 → 留空 */
+  /* =====================================
+   * 2️⃣ 我已報名此場其他站位
+   *    → 這個格子留白
+   * ===================================== */
   if (g.my_position && g.my_position !== role) {
     return '';
   }
 
-  /* 3️⃣ 尚未送出，且是我選的 */
+  /* =====================================
+   * 3️⃣ 尚未送出，但我已選這個站位
+   *    → 藍底「已選」＋ X
+   * ===================================== */
   if (selectedPositions[g.game_id] === role) {
     return `
-      <label>
-        <input type="radio" checked>
-        ${role}
-      </label>
+      <span class="pos-selected">
+        ${ROLE_NAME_MAP[role]}
+      </span>
       <span class="cancel-btn"
-            onclick="cancelSelected('${g.game_id}')">✖</span>
+            onclick="cancelSelected('${g.game_id}')">
+        ✖
+      </span>
     `;
   }
 
-  /* 4️⃣ 尚未選 → 可報名 */
+  /* =====================================
+   * 4️⃣ 尚未選 → 可報名
+   * ===================================== */
   return `
-    <label>
+    <label class="pos-available">
       <input type="radio"
              onchange="rememberSelection('${g.game_id}','${role}')">
-      ${role}
+      ${ROLE_NAME_MAP[role]}
     </label>
   `;
 }
