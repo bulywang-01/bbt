@@ -677,6 +677,19 @@ function renderDesktopTable(filteredGames) {
   
     return 0;
   }
+
+  /* ===== 前置篩選 ===== */
+  const filtered = allGames.filter(g => {
+    const gd = new Date(g.date.replace(/\//g,'-'));
+    if (gd < today && !showPastChecked) return false;
+    if (range === 'month' && !inThisMonth(g.date)) return false;
+    if (range === 'week' && !inThisWeek(g.date)) return false;
+    if (kw) {
+      const txt = `${g.away_team} ${g.home_team} ${g.field} ${g.category}`;
+      if (!txt.includes(kw)) return false;
+    }
+    return true;
+  });
   
   const box = document.getElementById('content');
   box.innerHTML = '';
