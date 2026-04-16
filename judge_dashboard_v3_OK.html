@@ -810,11 +810,6 @@ function rememberSelection(gameId, role, btn) {
 /* ===== 產置出表格及內容 ===== */
 function render() {
 
-  function timeToMinutes(t){
-    const d = new Date(t);
-    return d.getHours() * 60 + d.getMinutes();
-  }
-
   const box = document.getElementById('content');
   box.innerHTML = '';
 
@@ -823,12 +818,18 @@ function render() {
     return;
   }
 
+  /* ===== 篩選條件 ===== */
   const range = filterRange.value;
   const showPastChecked = showPast.checked;
   const kw = keyword.value.trim();
 
   const today = new Date();
   today.setHours(0,0,0,0);
+
+  function timeToMinutes(t) {
+    const d = new Date(t);
+    return d.getHours() * 60 + d.getMinutes();
+  }
 
   function inThisMonth(dateStr) {
     const d = new Date(dateStr.replace(/\//g,'-'));
@@ -869,14 +870,6 @@ function render() {
     dateGroups[g.date].push(g);
   });
 
-  /* 不同 tournament 的色系 */
-  const colorPools = [
-    ['#e3f8f8', '#d7f2f2', '#cbecec'],
-    ['#f1f5ff', '#e6ecff', '#dbe3ff'],
-    ['#f4f1ff', '#ece6ff', '#e3dbff'],
-    ['#fff7e6', '#fff1d6', '#ffe8bf']
-  ];
-
   Object.keys(dateGroups).sort().forEach(date => {
 
     const h3 = document.createElement('h3');
@@ -887,135 +880,109 @@ function render() {
     panel.className = 'panel';
 
     const table = document.createElement('table');
-    table.innerHTML = `
-      <thead>
-        <tr>
-          <th class="col-game-id">場次</th>
-          <th>時間</th>
-          <th>組別</th>
-          <th>客隊</th>
-          <th>主隊</th>
-          <th>場地</th>
-          <th>時長</th>
-          <th>裁判數</th>
-          <th class="pos-cell">主審</th>
-          <th class="pos-cell">一壘</th>
-          <th class="pos-cell">二壘</th>
-          <th class="pos-cell">三壘</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
+
+    /* ===== table thead ===== */
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+      <tr>
+        <th class="col-game-id">場次</th>
+        <th>時間</th>
+        <th>組別</th>
+        <th>客隊</th>
+        <th>主隊</th>
+        <th>場地</th>
+        <th>時長</th>
+        <th>裁判數</th>
+        <th class="pos-cell">主審</th>
+        <th class="pos-cell">一壘</th>
+        <th class="pos-cell">二壘</th>
+        <th class="pos-cell">三壘</th>
+      </tr>
     `;
+    table.appendChild(thead);
 
-    const tbody = table.querySelector('tbody');
+    const tbody = document.createElement('tbody');
 
-    /* 依 tournament 分組 */
+    /* ===== 依 tournament 分組 ===== */
     const tournamentGroups = {};
     dateGroups[date].forEach(g => {
-      // const t = g.tournament || '未指定賽事';
-      const t =
-        (typeof g.tournament === 'string' && g.tournament.trim()) ||
-        '未指定賽事';
-
+      const t = (typeof g.tournament === 'string' && g.tournament.trim()) || '未指定賽事';
       if (!tournamentGroups[t]) tournamentGroups[t] = [];
       tournamentGroups[t].push(g);
     });
 
-    let tourColorIndex = 0;
-
     Object.keys(tournamentGroups).sort().forEach(tournament => {
 
-      const pool = colorPools[tourColorIndex % colorPools.length];
-      tourColorIndex++;
+      /* tournament 標題 */
+      const trTitle = document.createElement('tr');
+      const tdTitle = document.createElement('td');
+      tdTitle.colSpan = 12;
+      tdTitle.style.background = '#ddd';
+      tdTitle.style.fontWeight = '700';
+      tdTitle.style.textAlign = 'left';
+      tdTitle.textContent = tournament;
 
-      const tGames = tournamentGroups[tournament];
+      trTitle.appendChild(tdTitle);
+      tbody.appendChild(trTitle);
 
-      /* tournament 標題列 */
-      const trT = document.createElement('tr');
-      trT.innerHTML = `
-        <td colspan="12"
-            style="background:#ddd;font-weight:700;text-align:left;">
-          ${tournament}
-        </td>
-      `;
-      tbody.appendChild(trT);
+      tournamentGroups[tournament]
+        .sort((a,b) => timeToMinutes(a.time_range) - timeToMinutes(b.time_range))
+        .forEach(g => {
 
-      /* tournament 內依 category */
-      const categoryGroups = {};
-      tGames.forEach(g => {
-        const c = g.category || '未分類';
-        if (!categoryGroups[c]) categoryGroups[c] = [];
-        categoryGroups[c].push(g);
-      });
+          const tr = document.createElement('tr');
 
-      let catIndex = 0;
+          const gd = new Date(g.date.replace(/\//g,'-'));
+          if (gd < today) tr.classList.add('expired');
 
-      Object.keys(categoryGroups).sort().forEach(category => {
+          const filled = Object.keys(g.occupied_positions || {}).length;
+          if (filled >= g.need_count) tr.classList.add('full');
 
-        const bg = pool[catIndex % pool.length];
-        catIndex++;
+          /* ---- 前段基本欄位 ---- */
+          const cells = [
+            g.game_code,
+            formatTime(g.time_range),
+            g.category || '',
+            g.away_team || '',
+            g.home_team || '',
+            g.field || '',
+            g.duration || ''
+          ];
 
-        categoryGroups[category]
-          .sort((a,b) => timeToMinutes(a.time_range) - timeToMinutes(b.time_range))
-          .forEach(g => {
-
-            const tr = document.createElement('tr');
-            tr.style.backgroundColor = bg;
-
-            const gd = new Date(g.date.replace(/\//g,'-'));
-            const isPast = gd < today;
-            if (isPast) tr.classList.add('expired');
-
-            const filled = Object.keys(g.occupied_positions || {}).length;
-            if (filled >= g.need_count) tr.classList.add('full');
-
-            let umpireCell = g.need_count;
-            if (g.need_count === 0) {
-              umpireCell = '<span class="umpire-na">不需裁判</span>';
-            } else if (filled >= g.need_count) {
-              umpireCell = '<span class="umpire-full">已額滿</span>';
-            }
-
-            tr.innerHTML = `
-              <td class="col-game-id">${g.game_code}</td>
-              <td>${formatTime(g.time_range)}</td>
-              <td>${g.category || ''}</td>
-              <td>${g.away_team || ''}</td>
-              <td>${g.home_team || ''}</td>
-              <td>${g.field || ''}</td>
-              <td>${g.duration || ''}</td>
-              <td>${umpireCell}</td>
-          <td>${umpireCell}</td>${(() => {
-                  const v = renderPos('PU');
-                  if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
-                  return `<td class="pos-cell">${v}</td>`;
-                })()}
-      
-              ${(() => {
-                const v = renderPos('U1');
-                if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
-                return `<td class="pos-cell">${v}</td>`;
-              })()}
-              ${(() => {
-                const v = renderPos('U2');
-                if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
-                return `<td class="pos-cell">${v}</td>`;
-              })()}
-              ${(() => {
-                const v = renderPos('U3');
-                if (v === '__NA__') return '<td class="pos-cell cell-na"></td>';
-                return `<td class="pos-cell">${v}</td>`;
-              })()}
-
-            tbody.appendChild(tr);
+          cells.forEach(val => {
+            const td = document.createElement('td');
+            td.textContent = val;
+            tr.appendChild(td);
           });
-      });
+
+          /* ---- 裁判數 ---- */
+          const tdUmpire = document.createElement('td');
+          if (g.need_count === 0) {
+            tdUmpire.innerHTML = '<span class="umpire-na">不需裁判</span>';
+          } else if (filled >= g.need_count) {
+            tdUmpire.innerHTML = '<span class="umpire-full">已額滿</span>';
+          } else {
+            tdUmpire.textContent = g.need_count;
+          }
+          tr.appendChild(tdUmpire);
+
+          /* ✅✅✅ 站位欄位（關鍵：用 appendChild，不用 innerHTML） */
+          ['PU','U1','U2','U3'].forEach(role => {
+            const td = document.createElement('td');
+            td.className = 'pos-cell';
+            td.innerHTML = renderPos(g, role);  // 真 HTML，radio 會活
+            tr.appendChild(td);
+          });
+
+          tbody.appendChild(tr);
+        });
     });
 
+    table.appendChild(tbody);
     panel.appendChild(table);
     box.appendChild(panel);
   });
 }
+
 
 // 手機版 ${renderTimeHHmm(g.time_range)}
  
