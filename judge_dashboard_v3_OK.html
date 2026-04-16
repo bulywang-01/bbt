@@ -717,9 +717,14 @@ function render() {
           return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
         });
 
-
+/*
     const h3 = document.createElement('h3');
     h3.textContent = `${month} 月`;
+    box.appendChild(h3);
+*/
+    
+    const h3 = document.createElement('h3');
+    h3.textContent = date;
     box.appendChild(h3);
 
     const panel = document.createElement('div');
