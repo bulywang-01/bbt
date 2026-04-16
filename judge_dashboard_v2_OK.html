@@ -175,6 +175,72 @@ function render() {
   renderDesktopTable(filtered);
 }
 
+/* 裁判站位 render 函式 */
+function renderPos(g, role) {
+
+  /* 0️⃣ 不需裁判 → 黑格 */
+  if (
+    g.need_count === 0 ||
+    (g.need_count === 1 && role !== 'PU') ||
+    (g.need_count === 2 && ['U2','U3'].includes(role)) ||
+    (g.need_count === 3 && role === 'U2')
+  ) {
+    return '<div class="cell-na">&nbsp;</div>';
+  }
+
+  /* 1️⃣ 已佔用（approved） */
+  if (g.occupied_positions && g.occupied_positions[role]) {
+    const isMe = g.my_position === role;
+
+    // ✅ 自己的站位
+    if (isMe) {
+      return `
+        <div class="judge-name me">
+          <span class="judge-star">★</span>
+          ${g.occupied_positions[role]}
+          <span class="cancel-btn"
+                onclick="cancelMySignup('${g.my_signup_id}')">
+            [取消]
+          </span>
+        </div>
+      `;
+    }
+
+    // ✅ 別人的站位
+    return `
+      <div class="judge-name">
+        ${g.occupied_positions[role]}
+      </div>
+    `;
+  }
+
+  /* 2️⃣ 我已報名此場其他站位 → 留空 */
+  if (g.my_position && g.my_position !== role) {
+    return '';
+  }
+
+  /* 3️⃣ 尚未送出，且是我選的 */
+  if (selectedPositions[g.game_id] === role) {
+    return `
+      <label>
+        <input type="radio" checked>
+        ${role}
+      </label>
+      <span class="cancel-btn"
+            onclick="cancelSelected('${g.game_id}')">✖</span>
+    `;
+  }
+
+  /* 4️⃣ 尚未選 → 可報名 */
+  return `
+    <label>
+      <input type="radio"
+             onchange="rememberSelection('${g.game_id}','${role}')">
+      ${role}
+    </label>
+  `;
+}
+  
 /* ===== 桌機表格 ===== */
 function renderDesktopTable(list) {
   const box = document.getElementById('content');
@@ -204,6 +270,10 @@ function renderDesktopTable(list) {
           <th>客隊</th>
           <th>主隊</th>
           <th>場地</th>
+          <th>主審</th>
+          <th>一壘</th>
+          <th>二壘</th>
+          <th>三壘</th>
         </tr>
       </thead><tbody></tbody>`;
 
@@ -225,14 +295,19 @@ function renderDesktopTable(list) {
           dateDone = true;
         }
 
-        tr.innerHTML += `
-          <td>${g.category||''}</td>
-          <td>${g.game_code}</td>
-          <td>${formatTime(g.time_range)}</td>
-          <td>${g.away_team||''}</td>
-          <td>${g.home_team||''}</td>
-          <td>${g.field||''}</td>
-        `;
+          tr.innerHTML += `
+            <td>${g.game_code}</td>
+            <td>${formatTime(g.time_range)}</td>
+            <td>${g.away_team || ''}</td>
+            <td>${g.home_team || ''}</td>
+            <td>${g.field || ''}</td>
+          
+            <td>${renderPos(g, 'PU')}</td>
+            <td>${renderPos(g, 'U1')}</td>
+            <td>${renderPos(g, 'U2')}</td>
+            <td>${renderPos(g, 'U3')}</td>
+          `;
+
         tbody.appendChild(tr);
       });
 
