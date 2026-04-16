@@ -587,8 +587,7 @@ function loadGames() {
       }
 
       allGames = res.games || [];
-      // render();
-      renderDesktopTable(filteredGames);
+      render();
       renderMobile();
 
     }
@@ -598,8 +597,7 @@ function loadGames() {
 /* ===== 工具 ===== */
 function cancelSelected(gameId) {
   delete selectedPositions[gameId];
-  // render();
-  renderDesktopTable(filteredGames);
+  render();
   renderMobile();
 
 }
@@ -626,8 +624,7 @@ function cancelSelectedByDate() {
     alert('該日期沒有已選擇的站位');
   } else {
     alert(`已取消 ${date} 的 ${removed} 筆選擇`);
-    // render();
-    renderDesktopTable(filteredGames);
+    render();
     renderMobile();
 
   }
@@ -655,8 +652,7 @@ function rememberSelection(gameId, role, btn) {
   }
 
   // ✅ 一定要在 if 外
-  // render();
-  renderDesktopTable(filteredGames);
+  render();
   renderMobile();
 }
 
