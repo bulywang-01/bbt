@@ -246,14 +246,6 @@ td.cell-na {
       border-top: 1px solid #ddd;
       z-index: 10;
     }
-  
-  /* Test
-  .submit-bar {
-    position: relative !important;
-    bottom: auto !important;
-    z-index: auto !important;
-  }
-  */
 
   .submit-bar button {
     width: 100%;
@@ -534,7 +526,11 @@ button {
   border-color: #2e7d32;
   background: #e8f5e9;
 }
-``
+
+input[type="radio"] {
+  pointer-events: auto;
+}
+
 </style>
 </head>
 
@@ -989,10 +985,19 @@ function render() {
               <td>${g.field || ''}</td>
               <td>${g.duration || ''}</td>
               <td>${umpireCell}</td>
+              /*
               ${renderPosCell(g,'PU',isPast)}
               ${renderPosCell(g,'U1',isPast)}
               ${renderPosCell(g,'U2',isPast)}
               ${renderPosCell(g,'U3',isPast)}
+              */
+              
+              ['PU','U1','U2','U3'].forEach(role => {
+                const td = document.createElement('td');
+                td.className = 'pos-cell';
+                td.innerHTML = renderPos(g, role);
+                tr.appendChild(td);
+               }
             `;
 
             tbody.appendChild(tr);
@@ -1008,6 +1013,7 @@ function render() {
 // 手機版 ${renderTimeHHmm(g.time_range)}
  
 function renderMobile() {
+ console.log('✅ NEW MOBILE VERSION RUNNING');
   const box = document.getElementById('mobileView');
   if (!box) return;
 
