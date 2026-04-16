@@ -209,6 +209,12 @@ function timeToMinutes(t) {
   return d.getHours()*60 + d.getMinutes();
 }
 
+function rememberSelection(gameId, role) {
+  selectedPositions[gameId] = role;
+  render();
+  renderMobile();
+}
+
 
 /* ======================
    render / API / 行為
