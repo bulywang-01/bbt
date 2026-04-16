@@ -368,7 +368,7 @@ function renderPos(g, role) {
       return `
         <div class="pos-me">
           <span class="judge-star">★</span>
-          ${ROLE_NAME_MAP[role]}：${g.occupied_positions[role]}
+          ${g.occupied_positions[role]}
           <span class="cancel-btn"
                 onclick="cancelMySignup('${g.my_signup_id}')">
             [取消]
@@ -390,7 +390,7 @@ function renderPos(g, role) {
    *    → 這個格子留白
    * ===================================== */
   if (g.my_position && g.my_position !== role) {
-    return '';
+    return '<span style="color:#999;">–</span>';
   }
 
   /* =====================================
