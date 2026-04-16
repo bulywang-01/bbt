@@ -673,7 +673,37 @@ function submitSignup(){
    }
  );
 }
-  
+
+
+// 取消自已報名的賽事
+function cancelMySignup(signupId) {
+  if (!signupId) return;
+
+  if (!confirm('確定要取消這個站位嗎？')) return;
+
+  const session = JSON.parse(localStorage.getItem('session_user') || {});
+  if (!session.user_id) {
+    alert('登入狀態已失效');
+    return;
+  }
+
+  callApi(
+    {
+      action: 'cancelJudgeSignup',
+      user_id: session.user_id,
+      signup_id: signupId
+    },
+    res => {
+      if (res && res.result === 'ok') {
+        alert('已取消站位，請於Line群組告知取消原因，謝謝。');
+        location.reload();
+      } else {
+        alert(res?.message || '取消失敗');
+      }
+    }
+  );
+}
+
 /* init */
 document.addEventListener('DOMContentLoaded', loadGames);
 </script>
