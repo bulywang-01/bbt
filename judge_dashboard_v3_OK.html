@@ -811,7 +811,11 @@ function render() {
     /* 依 tournament 分組 */
     const tournamentGroups = {};
     dateGroups[date].forEach(g => {
-      const t = g.tournament || '未指定賽事';
+      // const t = g.tournament || '未指定賽事';
+      const t =
+        (typeof g.tournament === 'string' && g.tournament.trim()) ||
+        '未指定賽事';
+
       if (!tournamentGroups[t]) tournamentGroups[t] = [];
       tournamentGroups[t].push(g);
     });
