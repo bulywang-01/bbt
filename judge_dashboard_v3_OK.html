@@ -966,58 +966,55 @@ function render() {
           tr.appendChild(tdUmpire);
 
           /* ✅✅✅ 站位欄位（關鍵：用 appendChild，不用 innerHTML） */
-          ['PU','U1','U2','U3'].forEach(role => {
-             const td = document.createElement('td');
-             td.className = 'pos-cell';
-             
-             const occupiedName = g.occupied_positions && g.occupied_positions[role];
-             const iAmInThisGame = Object.values(g.occupied_positions || {})
-               .includes(CURRENT_USER_NAME);
-             
-             /* 已是我 */
-             if (occupiedName === CURRENT_USER_NAME) {
-               td.innerHTML = `
-                 <div class="pos-me">
-                   <span class="judge-star">★</span>
-                   ${occupiedName}
-                   <span class="cancel-btn"
-                         onclick="cancelMySignup('${g.my_signup_id}')">[取消]</span>
-                 </div>
-               `;
-             }
-             /* 被別人佔 */
-             else if (occupiedName) {
-               td.innerHTML = `<div class="pos-occupied">${occupiedName}</div>`;
-             }
-             /* 我已報名這場 → 待位中 */
-             else if (iAmInThisGame) {
-               td.innerHTML = `<span class="pos-pending">待位中</span>`;
-             }
-             /* ✅ 尚未報名 → 真正可點 radio（DOM 建立） */
-             else {
-               const label = document.createElement('label');
-               label.className = 'pos-available';
-             
-               const input = document.createElement('input');
-               input.type = 'radio';
-               input.name = `signup_${g.game_id}`;
-            //   input.addEventListener('change', () => {
-            //     rememberSelection(g.game_id, role);
-            //   });
-              input.addEventListener('click', () => {
-                console.log('✅ radio clicked', g.game_id, role);
-              });
+['PU','U1','U2','U3'].forEach(role => {
+  const td = document.createElement('td');
+  td.className = 'pos-cell';
 
-             
-               label.appendChild(input);
-               label.appendChild(document.createTextNode(` ${ROLE_NAME_MAP[role]}`));
-             
-               td.appendChild(label);
-             }
-             
-             tr.appendChild(td);
+  const occupiedName = g.occupied_positions && g.occupied_positions[role];
+  const iAmInThisGame = Object.values(g.occupied_positions || {})
+    .includes(CURRENT_USER_NAME);
 
-          });
+  // ✅ 自己的站位
+  if (occupiedName === CURRENT_USER_NAME) {
+    td.innerHTML = `
+      <div class="pos-me">
+        <span class="judge-star">★</span>
+        ${occupiedName}
+        <span class="cancel-btn"
+              onclick="cancelMySignup('${g.my_signup_id}')">[取消]</span>
+      </div>
+    `;
+  }
+  // ✅ 被別人佔用
+  else if (occupiedName) {
+    td.innerHTML = `<div class="pos-occupied">${occupiedName}</div>`;
+  }
+  // ✅ 我已報名這場（其他格）
+  else if (iAmInThisGame) {
+    td.innerHTML = `<span class="pos-pending">待位中</span>`;
+  }
+  // ✅ ✅ ✅ 尚未報名 → 真正可用的 radio
+  else {
+    const label = document.createElement('label');
+    label.className = 'pos-available';
+
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = `signup_${g.game_id}`;
+
+    // 🔥 關鍵：真正的事件綁定
+    input.addEventListener('change', () => {
+      console.log('✅ rememberSelection fired', g.game_id, role);
+      rememberSelection(g.game_id, role);
+    });
+
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(` ${ROLE_NAME_MAP[role]}`));
+    td.appendChild(label);
+  }
+
+  tr.appendChild(td);
+});
 
           tbody.appendChild(tr);
         });
