@@ -596,6 +596,15 @@ button {
 <script src="js/config.js"></script>
 
 <script>
+
+/* ===== 狀態 ===== */
+let allGames = [];
+let selectedPositions = {}; // game_id -> role
+// ✅ 目前登入者姓名（用來判斷是不是自己）
+const CURRENT_USER_NAME =
+  JSON.parse(localStorage.getItem('session_user') || '{}').name || '';
+
+  
 /* ===== 共用工具（桌機 render 專用）===== */
 
 function renderPos(g, role) {
@@ -701,10 +710,6 @@ document.addEventListener('DOMContentLoaded', () => {
       loadGames();
     });
 });
-
-/* ===== 狀態 ===== */
-let allGames = [];
-let selectedPositions = {}; // game_id -> role
 
 /* ===== API ===== */
 function loadGames() {
