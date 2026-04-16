@@ -298,10 +298,10 @@ function renderDesktopTable(list) {
           tr.innerHTML += `
             <td>${g.game_code}</td>
             <td>${formatTime(g.time_range)}</td>
+            <td>${g.category || ''}</td>
             <td>${g.away_team || ''}</td>
             <td>${g.home_team || ''}</td>
             <td>${g.field || ''}</td>
-          
             <td>${renderPos(g, 'PU')}</td>
             <td>${renderPos(g, 'U1')}</td>
             <td>${renderPos(g, 'U2')}</td>
