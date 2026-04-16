@@ -349,19 +349,18 @@ function renderPos(g, role) {
     (g.need_count === 2 && ['U2','U3'].includes(role)) ||
     (g.need_count === 3 && role === 'U2')
   ) {
-    return '<div class="pos-na">X</div>';
+    return '<div class="pos-na">-</div>';
   }
 
-  /* 1️⃣ 已佔用（approved） */
-  if (g.occupied_positions && g.occupied_positions[role]) {
-    const isMe = g.my_position === role;
+  /* ✅ 1️⃣【最優先】自己已正式報名這一場 */
+  if (g.my_position) {
 
-    // ✅ 自己正式報名：只顯示姓名，不要「主審：」
-    if (isMe) {
+    // ✅ 自己報名的那一格
+    if (g.my_position === role) {
       return `
         <div class="pos-me">
           <span class="judge-star">★</span>
-          ${g.occupied_positions[role]}
+          ${g.occupied_positions?.[role] || ''}
           <span class="cancel-btn"
                 onclick="cancelMySignup('${g.my_signup_id}')">
             [取消]
@@ -370,7 +369,12 @@ function renderPos(g, role) {
       `;
     }
 
-    // ✅ 別人已佔用：維持原來顯示（含站位名稱）
+    // ✅ 其它站位 → 一律「待位中」
+    return '<span style="color:#999;">待位中</span>';
+  }
+
+  /* 2️⃣ 已被別人佔用 */
+  if (g.occupied_positions && g.occupied_positions[role]) {
     return `
       <div class="pos-occupied">
         ${ROLE_NAME_MAP[role]}：${g.occupied_positions[role]}
@@ -378,12 +382,7 @@ function renderPos(g, role) {
     `;
   }
 
-  /* 2️⃣ 我已經正式報名這一場（別的站位） → 顯示「待位中」 */
-  if (g.my_position && g.my_position !== role) {
-    return '<span style="color:#999;">待位中</span>';
-  }
-
-  /* 3️⃣ 尚未送出，但我選了這個站位 */
+  /* 3️⃣ 尚未送出，但我選了這個 */
   if (selectedPositions[g.game_id] === role) {
     return '<span class="pos-selected">待位中</span>';
   }
