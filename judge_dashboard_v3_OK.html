@@ -439,6 +439,61 @@ button {
 .pos-btn:active {
   opacity: 0.85;
 }
+/* ===== 手機：站位橫排按鈕 ===== */
+
+.mobile-pos-row {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0 6px;
+}
+
+.mobile-pos-btn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #4a7ef5;
+  background: #ffffff;
+  color: #4a7ef5;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* 已選 */
+.mobile-pos-btn.selected {
+  background: #4a7ef5;
+  color: #fff;
+}
+
+/* 已被佔用 */
+.mobile-pos-btn.occupied {
+  background: #eee;
+  color: #888;
+  border-color: #ccc;
+}
+
+/* 自己的站位 */
+.mobile-pos-btn.me {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+/* 不需要的站位 */
+.mobile-pos-btn.na {
+  background: #000;
+  color: #000;
+  border-color: #000;
+  pointer-events: none;
+}
+
+/* tournament 顯示 */
+.mobile-tournament {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+}
 
 </style>
 </head>
@@ -922,12 +977,18 @@ function renderMobile() {
         <div class="teams">${g.away_team} vs ${g.home_team}</div>
         <div>📍 ${g.field}</div>
       </div>
+
       ${renderMobilePositions(g)}
+
+      <div class="mobile-tournament">
+        ${g.tournament}
+      </div>
     `;
 
     box.appendChild(card);
   });
 }
+
 
 function renderMobilePositions(g) {
   const ROLE_NAME_MAP = {
