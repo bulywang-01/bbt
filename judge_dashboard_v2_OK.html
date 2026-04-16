@@ -349,13 +349,13 @@ function renderPos(g, role) {
     (g.need_count === 2 && ['U2','U3'].includes(role)) ||
     (g.need_count === 3 && role === 'U2')
   ) {
-    return '<div class="pos-na">-</div>';
+    return '<div class="pos-na">X</div>';
   }
 
   /* ✅ 1️⃣【最優先】自己已正式報名這一場 */
   if (g.my_position) {
 
-    // ✅ 自己報名的那一格
+    // ✅ 自己報名的那一格（不要主審：）
     if (g.my_position === role) {
       return `
         <div class="pos-me">
@@ -369,7 +369,7 @@ function renderPos(g, role) {
       `;
     }
 
-    // ✅ 其它站位 → 一律「待位中」
+    // ✅ 其它站位 → 一律顯示「待位中」
     return '<span style="color:#999;">待位中</span>';
   }
 
@@ -377,12 +377,12 @@ function renderPos(g, role) {
   if (g.occupied_positions && g.occupied_positions[role]) {
     return `
       <div class="pos-occupied">
-        ${ROLE_NAME_MAP[role]}：${g.occupied_positions[role]}
+        ${g.occupied_positions[role]}
       </div>
     `;
   }
 
-  /* 3️⃣ 尚未送出，但我選了這個 */
+  /* 3️⃣ 尚未送出，但我選了這個站位 */
   if (selectedPositions[g.game_id] === role) {
     return '<span class="pos-selected">待位中</span>';
   }
