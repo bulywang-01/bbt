@@ -412,6 +412,137 @@ function renderDesktopTable(list) {
   });
 }
 
+  /* =====================================
+   * 手機版 ${renderTimeHHmm(g.time_range)}
+   *    
+   * ===================================== */
+  
+function renderMobile() {
+  const box = document.getElementById('mobileView');
+  if (!box) return;
+
+  box.innerHTML = '';
+
+  allGames.forEach(g => {
+    const card = document.createElement('div');
+    card.className = 'game-card';
+
+    card.innerHTML = `
+      <div class="game-header">
+        <div>📅 <strong>${g.date}</strong></div>
+        <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
+      </div>
+
+      <div class="game-main">
+        <div class="teams">${g.away_team} vs ${g.home_team}</div>
+        <div>📍 ${g.field}</div>
+      </div>
+      ${renderMobilePositions(g)}
+    `;
+
+    box.appendChild(card);
+  });
+}
+
+function renderMobilePositions(g) {
+  const ROLE_NAME_MAP = {
+    PU: '主審',
+    U1: '一壘審',
+    U2: '二壘審',
+    U3: '三壘審'
+  };
+
+  let roles = [];
+  switch (Number(g.need_count)) {
+    case 0:
+      return `<div class="position-row">本場次不需要裁判</div>`;
+    case 1:
+      roles = ['PU'];
+      break;
+    case 2:
+      roles = ['PU', 'U1'];
+      break;
+    case 3:
+      roles = ['PU', 'U1', 'U3'];
+      break;
+    default:
+      roles = ['PU', 'U1', 'U2', 'U3'];
+  }
+
+  return roles.map(role => {
+    const roleName = ROLE_NAME_MAP[role];
+    const occupied = g.occupied_positions?.[role];
+    const isMe = g.my_position === role;
+
+    if (occupied) {
+      if (isMe) {
+        return `
+          <div class="position-row">
+            <span>${roleName}：${occupied}（你）</span>
+            <button class="mobile-cancel"
+              onclick="cancelMySignup('${g.my_signup_id}')">
+              取消
+            </button>
+          </div>
+        `;
+      }
+      return `
+        <div class="position-row">
+          <span>${roleName}：${occupied}</span>
+        </div>
+      `;
+    }
+
+    if (g.my_position) {
+      return `
+        <div class="position-row">
+          <span>${roleName}</span>
+          <span>—</span>
+        </div>
+      `;
+    }
+
+    const isSelected = selectedPositions[g.game_id] === role;
+
+    return `
+    <div class="position-row">
+      <span>${roleName}</span>
+      <button class="signup-btn ${isSelected ? 'selected' : ''}"
+        data-game="${g.game_id}"
+        onclick="rememberSelection('${g.game_id}','${role}')">
+        ${isSelected ? '已選' : '報名'}
+      </button>
+    </div>
+    `;
+  }).join('');
+}
+ 
+function renderTimeHHmm(t) {
+  if (!t) return '';
+
+  // ✅ 已經是字串（08:30）
+  if (typeof t === 'string') {
+    // 保險：如果已經是 HH:mm，直接回傳
+    if (/^\d{1,2}:\d{2}$/.test(t)) {
+      return t;
+    }
+    // 其他字串就原樣回
+    return t;
+  }
+
+  // ✅ 是 Date 物件（1899-12-30）
+  if (t instanceof Date) {
+    return (
+      t.getHours().toString().padStart(2, '0') +
+      ':' +
+      t.getMinutes().toString().padStart(2, '0')
+    );
+  }
+
+  // 其他型別（保險）
+  return String(t);
+}
+
 /* ===== overlay ===== */
 function showOverlay(msg){
   document.getElementById('overlay-text').textContent = msg;
@@ -427,10 +558,55 @@ function showMessage(msg){
 }
 
 /* ===== submit ===== */
+/*
 function submitSignup(){
-  alert('送出報名（示意）');
+  alert('送出報名');
 }
+*/
 
+function submitSignup(){
+  const entries = Object.keys(selectedPositions);
+  if (!entries.length){
+    showMessage('尚未選擇站位', false);
+    return;
+  }
+
+  const session = JSON.parse(localStorage.getItem('session_user') || {});
+  if (!session.user_id) {
+    showMessage('登入狀態已失效，請重新登入', false);
+    return;
+  }
+
+  const payload = entries.map(
+    id => `${id}:${selectedPositions[id]}`
+  );
+
+  showLoading('送出報名中...');
+ 
+  callApi(
+   {
+     action: 'judgeSignupByGames',
+     user_id: session.user_id,
+     games_with_position: payload.join(',')
+   },
+   res => {
+     if (res && res.result === 'ok') {
+ 
+       // ✅ 新增：顯示「曾取消過」提醒
+       if (res.has_cancelled_before) {
+         alert('⚠️ 提醒：你曾取消過此場，已成功重新報名，請務必確認可出勤。');
+       } else {
+         alert('報名成功');
+       }
+ 
+       location.reload();
+     } else {
+       alert(res?.message || '報名失敗');
+     }
+   }
+ );
+}
+  
 /* init */
 document.addEventListener('DOMContentLoaded', loadGames);
 </script>
