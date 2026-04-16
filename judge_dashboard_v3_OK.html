@@ -556,7 +556,7 @@ function loadGames() {
       hideOverlay();
 
       if (!res || res.result !== 'ok') {
-        showMessage(res?.message || '無法取得賽事資料');
+        showMessage(resobj && obj[key]message || '無法取得賽事資料');
         return;
       }
 
@@ -1022,7 +1022,8 @@ function renderMobilePositions(g) {
 
   return roles.map(role => {
     const roleName = ROLE_NAME_MAP[role];
-    const occupied = g.occupied_positions?.[role];
+    // const occupied = g.occupied_positionsobj && obj[key][role];
+    const occupied = g.occupied_positions && g.occupied_positions[role];
     const isMe = g.my_position === role;
 
     if (occupied) {
@@ -1133,7 +1134,7 @@ function submitSignup(){
  
        location.reload();
      } else {
-       alert(res?.message || '報名失敗');
+       alert(resobj && obj[key]message || '報名失敗');
      }
    }
  );
@@ -1216,7 +1217,7 @@ function cancelMySignup(signupId) {
         alert('已取消站位，請於Line群組告知取消原因，謝謝。');
         location.reload();
       } else {
-        alert(res?.message || '取消失敗');
+        alert(resobj && obj[key]message || '取消失敗');
       }
     }
   );
