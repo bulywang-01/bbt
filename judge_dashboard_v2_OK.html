@@ -677,7 +677,10 @@ function renderDesktopTable(filteredGames) {
   
     return 0;
   }
-
+  
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  
   /* ===== 前置篩選 ===== */
   const filtered = allGames.filter(g => {
     const gd = new Date(g.date.replace(/\//g,'-'));
