@@ -689,13 +689,13 @@ function submitSignup(){
 
 // 取消自已報名的賽事
 function cancelMySignup(signupId) {
-  if (!signupId) return;
+  console.log('🔥 cancelMySignup called', signupId);
 
   if (!confirm('確定要取消這個站位嗎？')) return;
 
   const session = JSON.parse(localStorage.getItem('session_user') || {});
   if (!session.user_id) {
-    alert('登入狀態已失效，請重新登入');
+    alert('登入狀態已失效');
     return;
   }
 
@@ -719,6 +719,7 @@ function cancelMySignup(signupId) {
     }
   );
 }
+
 
 /* init */
 document.addEventListener('DOMContentLoaded', loadGames);
