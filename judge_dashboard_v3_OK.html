@@ -757,6 +757,7 @@ function render() {
     let lastDate = null;
     let zebra = false;
 
+    /*
     groups[month]
       .sort((a, b) => {
         // 先比日期
@@ -766,7 +767,26 @@ function render() {
         // 同一天再比時間
         return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
       })
-
+      */
+        
+      Object.keys(dateGroups)
+        .sort()
+        .forEach(date => {
+      
+          // ✅ 同一天內排序：組別 → 時間
+          dateGroups[date].sort((a, b) => {
+            if (a.category !== b.category) {
+              return a.category.localeCompare(b.category);
+            }
+            return timeToMinutes(a.time_range) - timeToMinutes(b.time_range);
+          });
+      
+          dateGroups[date].forEach(g => {
+            const tr = document.createElement('tr');
+            ...
+          });
+        });
+        
       .forEach(g => {
 
         const tr = document.createElement('tr');
