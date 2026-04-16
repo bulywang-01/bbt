@@ -215,6 +215,91 @@ function rememberSelection(gameId, role) {
   renderMobile();
 }
 
+function cancelSelected(gameId) {
+  delete selectedPositions[gameId];
+  render();
+  renderMobile();
+
+}
+  
+function cancelSelectedByDate() {
+  if (!Object.keys(selectedPositions).length) {
+    alert('目前沒有已選擇的站位');
+    return;
+  }
+
+  const date = prompt('請輸入要取消的日期（yyyy/MM/dd）');
+  if (!date) return;
+
+  let removed = 0;
+
+  allGames.forEach(g => {
+    if (g.date === date && selectedPositions[g.game_id]) {
+      delete selectedPositions[g.game_id];
+      removed++;
+    }
+  });
+
+  if (!removed) {
+    alert('該日期沒有已選擇的站位');
+  } else {
+    alert(`已取消 ${date} 的 ${removed} 筆選擇`);
+    render();
+    renderMobile();
+
+  }
+}
+
+    function showLoading(msg = '處理中...') {
+      const overlay = document.getElementById('overlay');
+      document.getElementById('overlay-text').textContent = msg;
+      document.getElementById('overlay-ok').style.display = 'none';
+      overlay.classList.add('show');
+    }
+    
+    function showMessage(msg, reload = true) {
+      const overlay = document.getElementById('overlay');
+      document.getElementById('overlay-text').textContent = msg;
+    
+      const ok = document.getElementById('overlay-ok');
+      ok.style.display = 'inline-block';
+      ok.onclick = () => {
+        overlay.classList.remove('show');
+        if (reload) location.reload();
+      };
+    
+      overlay.classList.add('show');
+    }
+/*    
+    function hideOverlay() {
+      document.getElementById('overlay').classList.remove('show');
+    }
+*/
+  
+function showMessage(msg, reload = true) {
+  document.getElementById('overlay-text').textContent = msg;
+  const ok = document.getElementById('overlay-ok');
+  ok.style.display = 'inline-block';
+
+  ok.onclick = () => {
+    document.getElementById('overlay').style.display = 'none';
+    if (reload) {
+      location.reload();
+    }
+  };
+
+  // ✅ 重點：這裡一定要顯示 overlay
+  document.getElementById('overlay').style.display = 'flex';
+}
+
+function hideOverlay() {
+  document.getElementById('overlay').style.display = 'none';
+}
+
+function logout(){
+  localStorage.clear();
+  location.replace('login.html');
+}
 
 /* ======================
    render / API / 行為
@@ -548,9 +633,7 @@ function showOverlay(msg){
   document.getElementById('overlay-text').textContent = msg;
   document.getElementById('overlay').classList.add('show');
 }
-function hideOverlay(){
-  document.getElementById('overlay').classList.remove('show');
-}
+
 function showMessage(msg){
   document.getElementById('overlay-text').textContent = msg;
   document.getElementById('overlay-ok').style.display='inline-block';
