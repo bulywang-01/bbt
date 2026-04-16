@@ -364,7 +364,7 @@ function renderPos(g, role) {
     (g.need_count === 2 && ['U2','U3'].includes(role)) ||
     (g.need_count === 3 && role === 'U2')
   ) {
-    return '<div class="pos-na">X</div>';
+    return '<div class="pos-na">-</div>';
   }
 
   const occupiedName = g.occupied_positions?.[role];
@@ -720,6 +720,36 @@ function cancelMySignup(signupId) {
   );
 }
 
+function cancelMySignupByGame(gameId, role) {
+  if (!confirm('確定要取消這個站位嗎？')) return;
+
+  const session = JSON.parse(localStorage.getItem('session_user') || {});
+  if (!session.user_id) {
+    alert('登入狀態已失效，請重新登入');
+    return;
+  }
+
+  showLoading('取消站位中...');
+
+  callApi(
+    {
+      action: 'cancelJudgeSignupByGame', // ✅ 新 action
+      user_id: session.user_id,
+      game_id: gameId,
+      role: role
+    },
+    res => {
+      hideOverlay();
+
+      if (res && res.result === 'ok') {
+        alert('已取消站位');
+        location.reload();
+      } else {
+        alert(res?.message || '取消失敗');
+      }
+    }
+  );
+}
 
 /* init */
 document.addEventListener('DOMContentLoaded', loadGames);
