@@ -228,6 +228,32 @@ td.cell-na {
   display: none;
 }
 
+/* ===== 電腦版表格：日期區隔 + 專業視覺 ===== */
+
+/* 日期合併儲存格 */
+td.col-date {
+  background: #eef2f8;
+  font-weight: 700;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* 組別合併儲存格 */
+td.col-category {
+  background: #f6f8fb;
+  font-weight: 600;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* 不同日期底色區隔 */
+tr.date-odd {
+  background-color: #fafbfe;
+}
+tr.date-even {
+  background-color: #ffffff;
+}
+
 /* ===== 手機 ===== */
 @media (max-width: 768px) {
   #desktopView {
@@ -461,16 +487,16 @@ button {
   <!-- 篩選 -->
   <div class="filter-bar">
     目前顯示的資料是：
-    <select id="filterRange" onchange="render()">
+    <select id="filterRange" onchange="renderDesktopTable(filtered)">
       <option value="all">全部</option>
       <option value="month">本月</option>
       <option value="week">本週</option>
     </select>
 
     <label style="margin-left:10px;">
-      <input type="checkbox" id="showPast" onchange="render()"> 顯示過期賽事　　　
+      <input type="checkbox" id="showPast" onchange="renderDesktopTable(filtered)"> 顯示過期賽事　　　
     </label>
-    關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninput="render()">
+    關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninput="renderDesktopTable(filtered)">
   </div>
   
   <!-- 桌機表格 -->
@@ -561,7 +587,8 @@ function loadGames() {
       }
 
       allGames = res.games || [];
-      render();
+      // render();
+      renderDesktopTable(filtered);
       renderMobile();
 
     }
@@ -571,7 +598,8 @@ function loadGames() {
 /* ===== 工具 ===== */
 function cancelSelected(gameId) {
   delete selectedPositions[gameId];
-  render();
+  // render();
+  renderDesktopTable(filtered);
   renderMobile();
 
 }
@@ -598,7 +626,8 @@ function cancelSelectedByDate() {
     alert('該日期沒有已選擇的站位');
   } else {
     alert(`已取消 ${date} 的 ${removed} 筆選擇`);
-    render();
+    // render();
+    renderDesktopTable(filtered);
     renderMobile();
 
   }
@@ -626,10 +655,106 @@ function rememberSelection(gameId, role, btn) {
   }
 
   // ✅ 一定要在 if 外
-  render();
+  // render();
+  renderDesktopTable(filtered);
   renderMobile();
 }
 
+// 新增「桌機專用 render 函式」
+function renderDesktopTable(filteredGames) {
+  const box = document.getElementById('content');
+  box.innerHTML = '';
+
+  // 依日期分組
+  const dateGroups = {};
+  filteredGames.forEach(g => {
+    if (!dateGroups[g.date]) dateGroups[g.date] = [];
+    dateGroups[g.date].push(g);
+  });
+
+  let dateIndex = 0;
+
+  Object.keys(dateGroups).sort().forEach(date => {
+    const gamesOfDate = dateGroups[date];
+
+    // 同日期內依組別分組
+    const categoryGroups = {};
+    gamesOfDate.forEach(g => {
+      const cat = g.category || '';
+      if (!categoryGroups[cat]) categoryGroups[cat] = [];
+      categoryGroups[cat].push(g);
+    });
+
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>日期</th>
+          <th>組別</th>
+          <th>場次</th>
+          <th>時間</th>
+          <th>客隊</th>
+          <th>主隊</th>
+          <th>場地</th>
+          <th>裁判</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+
+    const tbody = table.querySelector('tbody');
+    const dateRowspan = gamesOfDate.length;
+    let dateRendered = false;
+
+    Object.keys(categoryGroups).sort().forEach(category => {
+      const rows = categoryGroups[category]
+        .sort((a, b) => timeToMinutes(a.time_range) - timeToMinutes(b.time_range));
+
+      let categoryRendered = false;
+
+      rows.forEach(g => {
+        const tr = document.createElement('tr');
+        tr.className = (dateIndex % 2 === 0) ? 'date-even' : 'date-odd';
+
+        if (!dateRendered) {
+          const td = document.createElement('td');
+          td.className = 'col-date';
+          td.rowSpan = dateRowspan;
+          td.textContent = g.date;
+          tr.appendChild(td);
+          dateRendered = true;
+        }
+
+        if (!categoryRendered) {
+          const td = document.createElement('td');
+          td.className = 'col-category';
+          td.rowSpan = rows.length;
+          td.textContent = category;
+          tr.appendChild(td);
+          categoryRendered = true;
+        }
+
+        tr.innerHTML += `
+          <td>${g.game_code}</td>
+          <td>${formatTime(g.time_range)}</td>
+          <td>${g.away_team || ''}</td>
+          <td>${g.home_team || ''}</td>
+          <td>${g.field || ''}</td>
+          <td>${renderPos(g, 'PU')}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    });
+
+    panel.appendChild(table);
+    box.appendChild(panel);
+    dateIndex++;
+  });
+}
 
 /* ===== 產置出表格及內容 ===== */
 function render() {
