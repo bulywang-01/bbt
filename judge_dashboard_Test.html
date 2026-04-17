@@ -7,6 +7,40 @@
 
 <style>
 /* ===============================
+   Header 導覽列保護修正
+   （避免被內文樣式影響）
+================================ */
+#header {
+  background: #ffffff;
+  border-bottom: 1px solid #ddd;
+}
+
+#header a {
+  color: #0066cc;
+  text-decoration: none;
+  margin-right: 14px;
+  font-weight: 500;
+}
+
+#header a:hover {
+  text-decoration: underline;
+}
+
+/* Header 裡的工具列對齊 */
+#header .nav,
+#header .header,
+#header .header-right {
+  display: flex;
+  align-items: center;
+}
+
+/* 使用者名稱 */
+#header #u_name {
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+/* ===============================
    基本版型
 ================================ */
 body {
