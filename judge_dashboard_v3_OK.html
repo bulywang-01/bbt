@@ -596,6 +596,17 @@ function hideLoading() {
   if (overlay) overlay.remove();
 }
 
+function timeToMinutesSafe(t) {
+  if (!t) return 0;
+  if (typeof t === 'string' && t.includes(':')) {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  }
+  const d = new Date(t);
+  if (isNaN(d)) return 0;
+  return d.getHours() * 60 + d.getMinutes();
+}
+
 /* ===== 給共用header.html使用 ===== */
 /* ===== 初始化（含共用 header） ===== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -951,120 +962,119 @@ function render() {
 
 // 手機版 ${renderTimeHHmm(g.time_range)}
  
-  function renderMobile() {
-    const box = document.getElementById('mobileView');
-    if (!box) return;
-    box.innerHTML = '';
-  
-    // ✅ 依日期分組（跟桌機一致）
-    const groups = {};
-    allGames.forEach(g => {
-      if (!groups[g.date]) groups[g.date] = [];
-      groups[g.date].push(g);
-    });
-  
-    Object.keys(groups).sort().forEach(date => {
-      groups[date]
-        .sort((a, b) => new Date(a.time_range) - new Date(b.time_range))
-        .forEach(g => {
-          const card = document.createElement('div');
-          card.className = 'game-card';
-  
-          card.innerHTML = `
-            <div class="game-header">
-              <div>📅 <strong>${g.date}</strong></div>
-              <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
-            </div>
-  
-            <div class="game-main">
-              <div class="teams">${g.away_team} vs ${g.home_team}</div>
-              <div>📍 ${g.field}</div>
-            </div>
-  
-            ${renderMobilePosGrid(g)}
-  
-            <div style="margin-top:10px;font-size:14px;font-weight:700;text-align:center;">
-              ${g.category || ''}
-            </div>
-          `;
-  
-          box.appendChild(card);
-        });
-    });
-  }
+function renderMobile() {
+  const box = document.getElementById('mobileView');
+  if (!box) return;
+  box.innerHTML = '';
 
-function renderMobilePositions(g) {
-  const ROLE_NAME_MAP = {
-    PU: '主審',
-    U1: '一壘審',
-    U2: '二壘審',
-    U3: '三壘審'
-  };
+  if (!allGames || !allGames.length) return;
 
-  let roles = [];
-  switch (Number(g.need_count)) {
-    case 0:
-      return `<div class="position-row">本場次不需要裁判</div>`;
-    case 1:
-      roles = ['PU'];
-      break;
-    case 2:
-      roles = ['PU', 'U1'];
-      break;
-    case 3:
-      roles = ['PU', 'U1', 'U3'];
-      break;
-    default:
-      roles = ['PU', 'U1', 'U2', 'U3'];
-  }
+  // ✅ 依日期分組
+  const groups = {};
+  allGames.forEach(g => {
+    if (!groups[g.date]) groups[g.date] = [];
+    groups[g.date].push(g);
+  });
 
-  return roles.map(role => {
-    const roleName = ROLE_NAME_MAP[role];
-    const occupied = g.occupied_positions?.[role];
-    const isMe = g.my_position === role;
+  Object.keys(groups).sort().forEach(date => {
+    groups[date]
+      .sort((a, b) =>
+        timeToMinutesSafe(a.time_range) -
+        timeToMinutesSafe(b.time_range)
+      )
+      .forEach(g => {
+        const card = document.createElement('div');
+        card.className = 'game-card';
 
-    if (occupied) {
-      if (isMe) {
-        return `
-          <div class="position-row">
-            <span>${roleName}：${occupied}（你）</span>
-            <button class="mobile-cancel"
-              onclick="cancelMySignup('${g.my_signup_id}')">
-              取消
-            </button>
+        card.innerHTML = `
+          <div class="game-header">
+            <div>📅 <strong>${g.date}</strong></div>
+            <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
+          </div>
+
+          <div class="game-main">
+            <div class="teams">${g.away_team} vs ${g.home_team}</div>
+            <div>📍 ${g.field}</div>
+          </div>
+
+          ${renderMobilePosGrid(g)}
+
+          <div style="margin-top:10px;font-size:14px;font-weight:700;text-align:center;">
+            ${g.category || ''}
           </div>
         `;
-      }
-      return `
-        <div class="position-row">
-          <span>${roleName}：${occupied}</span>
-        </div>
-      `;
-    }
 
-    if (g.my_position) {
-      return `
-        <div class="position-row">
-          <span>${roleName}</span>
-          <span>—</span>
-        </div>
-      `;
-    }
-
-    const isSelected = selectedPositions[g.game_id] === role;
-
-    return `
-    <div class="position-row">
-      <span>${roleName}</span>
-      <button class="signup-btn ${isSelected ? 'selected' : ''}"
-        data-game="${g.game_id}"
-        onclick="rememberSelection('${g.game_id}','${role}')">
-        ${isSelected ? '已選' : '報名'}
-      </button>
-    </div>
-    `;
-  }).join('');
+        box.appendChild(card);
+      });
+  });
 }
+
+function renderMobilePosGrid(g) {
+  const roles = ['PU', 'U1', 'U2', 'U3'];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const isPast = new Date(g.date.replace(/\//g,'-')) < today;
+
+  const occupied = g.occupied_positions || {};
+
+  function needNA(role) {
+    return (
+      g.need_count === 0 ||
+      (g.need_count === 1 && role !== 'PU') ||
+      (g.need_count === 2 && ['U2','U3'].includes(role)) ||
+      (g.need_count === 3 && role === 'U2')
+    );
+  }
+
+  return `
+    <div class="mobile-pos-grid">
+      ${roles.map(role => {
+        if (needNA(role)) {
+          return `<div class="mobile-pos"><span class="mobile-pos-na">-</span></div>`;
+        }
+
+        if (occupied[role]) {
+          const isMe = g.my_position === role;
+          return `
+            <div class="mobile-pos">
+              <span class="${isMe ? 'mobile-judge-me' : ''}">
+                ${isMe ? '★ ' : ''}${occupied[role]}
+              </span>
+              ${
+                isMe
+                  ? `<span class="mobile-cancel"
+                         onclick="cancelMySignup('${g.my_signup_id}')">取消</span>`
+                  : ''
+              }
+            </div>
+          `;
+        }
+
+        if (g.my_position) {
+          return `<div class="mobile-pos"><span class="mobile-pos-hint">待位中</span></div>`;
+        }
+
+        if (selectedPositions[g.game_id] === role) {
+          return `
+            <div class="mobile-pos">
+              <div class="mobile-pos-btn selected"
+                   onclick="cancelSelected('${g.game_id}')">選定</div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="mobile-pos">
+            <div class="mobile-pos-btn"
+                 onclick="rememberSelection('${g.game_id}','${role}')">
+              報名
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
  
 function renderTimeHHmm(t) {
   if (!t) return '';
