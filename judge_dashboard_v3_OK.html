@@ -522,13 +522,17 @@ button {
   font-weight: 700;
 }
 
+/* ✅ 手機版：取消報名（文字型） */
 .mobile-cancel {
-  margin-left: 6px;
-  color: #c62828;
-  font-weight: 600;
-  font-size: 13px;
-  display: block;        /* ✅ 換到下一行 */
+  display: block;            /* 換行 */
   margin-top: 4px;
+  padding: 0;                /* ✅ 關鍵：拿掉 padding */
+  background: none;          /* ✅ 關鍵：拿掉紅底 */
+  border: none;              /* ✅ 保險 */
+  color: #c62828;            /* 紅色文字即可 */
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 </style>
