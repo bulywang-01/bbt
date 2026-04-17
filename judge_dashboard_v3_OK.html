@@ -478,6 +478,57 @@ button {
   opacity: 0.85;
 }
 
+/* ===== 手機卡片站位區 ===== */
+.mobile-pos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.mobile-pos {
+  text-align: center;
+  font-size: 14px;
+}
+
+.mobile-pos-btn {
+  display: inline-block;
+  width: 100%;
+  padding: 6px 0;
+  border: 1px solid #4a7ef5;
+  border-radius: 8px;
+  color: #4a7ef5;
+  background: #fff;
+  font-weight: 600;
+}
+
+.mobile-pos-btn.selected {
+  background: #4a7ef5;
+  color: #fff;
+}
+
+.mobile-pos-na {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.mobile-pos-hint {
+  color: #90a4ae;
+  font-size: 13px;
+}
+
+.mobile-judge-me {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.mobile-cancel {
+  margin-left: 6px;
+  color: #c62828;
+  font-weight: 600;
+  font-size: 13px;
+}
+
 </style>
 </head>
 
@@ -900,32 +951,47 @@ function render() {
 
 // 手機版 ${renderTimeHHmm(g.time_range)}
  
-function renderMobile() {
-  const box = document.getElementById('mobileView');
-  if (!box) return;
-
-  box.innerHTML = '';
-
-  allGames.forEach(g => {
-    const card = document.createElement('div');
-    card.className = 'game-card';
-
-    card.innerHTML = `
-      <div class="game-header">
-        <div>📅 <strong>${g.date}</strong></div>
-        <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
-      </div>
-
-      <div class="game-main">
-        <div class="teams">${g.away_team} vs ${g.home_team}</div>
-        <div>📍 ${g.field}</div>
-      </div>
-      ${renderMobilePositions(g)}
-    `;
-
-    box.appendChild(card);
-  });
-}
+  function renderMobile() {
+    const box = document.getElementById('mobileView');
+    if (!box) return;
+    box.innerHTML = '';
+  
+    // ✅ 依日期分組（跟桌機一致）
+    const groups = {};
+    allGames.forEach(g => {
+      if (!groups[g.date]) groups[g.date] = [];
+      groups[g.date].push(g);
+    });
+  
+    Object.keys(groups).sort().forEach(date => {
+      groups[date]
+        .sort((a, b) => new Date(a.time_range) - new Date(b.time_range))
+        .forEach(g => {
+          const card = document.createElement('div');
+          card.className = 'game-card';
+  
+          card.innerHTML = `
+            <div class="game-header">
+              <div>📅 <strong>${g.date}</strong></div>
+              <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
+            </div>
+  
+            <div class="game-main">
+              <div class="teams">${g.away_team} vs ${g.home_team}</div>
+              <div>📍 ${g.field}</div>
+            </div>
+  
+            ${renderMobilePosGrid(g)}
+  
+            <div style="margin-top:10px;font-size:14px;font-weight:700;text-align:center;">
+              ${g.category || ''}
+            </div>
+          `;
+  
+          box.appendChild(card);
+        });
+    });
+  }
 
 function renderMobilePositions(g) {
   const ROLE_NAME_MAP = {
