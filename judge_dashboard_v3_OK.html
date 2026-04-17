@@ -633,6 +633,12 @@ function rememberSelection(gameId, role, btn) {
 
 /* ===== 產置出表格及內容 ===== */
 function render() {
+
+  function timeToMinutes(t){
+    const d = new Date(t);
+    return d.getHours() * 60 + d.getMinutes();
+  }
+  
   const box = document.getElementById('content');
   box.innerHTML = '';
 
