@@ -392,6 +392,54 @@
     padding: 18px;
   }
 }
+
+    /* ===== 裁判守則 Overlay ===== */
+#rules-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#rules-box {
+  background: #ffffff;
+  width: 90%;
+  max-width: 760px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 14px;
+  padding: 26px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.3);
+}
+
+#rules-box h2 {
+  margin-top: 0;
+  color: #1a237e;
+}
+
+#rules-close-btn {
+  margin-top: 16px;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #4a7ef5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 📱 手機微調 */
+@media (max-width: 768px) {
+  #rules-box {
+    padding: 20px;
+  }
+}
+
   </style>
   
 </head>
@@ -421,8 +469,24 @@
 </script>
   
 <script>
+
   document.addEventListener('DOMContentLoaded', () => {
     const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      const openBtn = document.getElementById('open-rules');
+  const overlay = document.getElementById('rules-overlay');
+  const closeBtn = document.getElementById('rules-close-btn');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', () => {
+      overlay.style.display = 'flex';
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      overlay.style.display = 'none';
+    });
+  }
   
     /* ===== 身份 role → 中文 + icon ===== */
     const roleMap = {
@@ -466,9 +530,33 @@
             <div class="welcome-role" id="welcome-role"></div>
             <div class="welcome-name" id="welcome-name"></div>
             <div class="welcome-bg" id="license-bg"></div>
-                
+
+            <!--
             <div class="welcome-line">
               歡迎使用 <strong>裁判出勤管理系統</strong>
+            </div>
+            -->
+            <div class="welcome-line">
+              歡迎使用 <strong>裁判出勤管理系統</strong>
+              <span style="margin-left:8px;">｜</span>
+              <a href="javascript:void(0)"
+                 id="open-rules"
+                 style="color:#4a7ef5;font-weight:600;text-decoration:none;">
+                裁判守則
+              </a>
+            </div>
+            <!-- 🧑‍⚖️ 裁判守則 Overlay -->
+            <div id="rules-overlay" style="display:none;">
+              <div id="rules-box">
+                <h2>🧑‍⚖️ BBT 聯盟例行賽｜裁判守則</h2>
+            
+                <div id="rules-content">
+                  <!-- ✅ 放你前面那一整段「裁判守則 HTML」 -->
+                  <!--（完全照你已經整理好的版本貼進來）-->
+                </div>
+            
+                <button id="rules-close-btn">關閉</button>
+              </div>
             </div>
           </div>
         </div>
