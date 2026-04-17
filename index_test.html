@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+ 
+  <!-- ✅ 一定要有：手機版關鍵 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>系統首頁｜裁判出勤管理系統</title>
+
+  <!-- ✅ 共用樣式 -->
+  <link rel="stylesheet" href="common.css">
+
+  <!-- ✅ 首頁專屬微調 -->
+  <style>
+    /* =========================
+       Layout / Container
+       ========================= */
+    
+    .main {
+      padding: 24px;
+      max-width: 1100px;
+      margin: auto;
+    }
+    
+    .panel {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+    
+    
+    /* =========================
+       Headings & Typography
+       ========================= */
+    
+    .panel h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 18px;
+      border-left: 4px solid #4a7ef5;
+      padding-left: 10px;
+    }
+    
+    .welcome {
+      font-size: 16px;
+      line-height: 1.6;
+      background: linear-gradient(135deg,#f5f8ff,#ffffff);
+    }
+    
+    
+    /* =========================
+       Lists (Upcoming / Monthly / Download)
+       ========================= */
+    
+    /* 共用 list reset */
+    .upcoming-list,
+    .monthly-list,
+    .download-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 6px 0 12px;
+    }
+    
+    /* Upcoming（執勤賽事，緊湊版） */
+    .upcoming-list {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    
+    .upcoming-list li {
+      padding: 2px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    /* Upcoming 站位 */
+    .upcoming-position {
+      font-weight: bold;
+      margin-right: 6px;
+    }
+    
+    /* Monthly */
+    .monthly-list {
+      font-size: 14px;
+    }
+    
+    /* Download */
+    .download-list li {
+      margin-bottom: 6px;
+    }
+    
+    
+    /* =========================
+       Empty / State text
+       ========================= */
+    
+    .upcoming-empty,
+    .monthly-empty {
+      color: #666;
+      font-style: italic;
+    }
+    
+    
+    /* =========================
+       📱 Mobile overrides
+       ========================= */
+    
+    @media (max-width: 768px) {
+    
+      /* Layout */
+      .main {
+        padding: 14px;
+      }
+    
+      /* Page title */
+      .main h2 {
+        font-size: 20px;
+        line-height: 1.4;
+        margin-bottom: 16px;
+      }
+    
+      /* Panel card feel */
+      .panel {
+        padding: 16px;
+        border-radius: 14px;
+      }
+    
+      .panel h3 {
+        font-size: 17px;
+        margin-bottom: 10px;
+      }
+    
+      /* Welcome text */
+      .welcome {
+        font-size: 15px;
+        line-height: 1.7;
+      }
+    
+      /* Upcoming list – mobile readable */
+      .upcoming-list {
+        font-size: 15px;
+        line-height: 1.8;
+      }
+    
+      .upcoming-list li {
+        padding: 6px 0;
+        white-space: normal;
+      }
+    
+      .upcoming-position {
+        display: inline-block;
+        margin-bottom: 2px;
+      }
+    
+      /* Section sub-title */
+      #upcoming-panel h4 {
+        font-size: 16px;
+        margin: 10px 0 6px;
+      }
+    
+      /* Empty states */
+      .upcoming-empty,
+      .monthly-empty {
+        font-size: 14px;
+        margin: 6px 0;
+      }
+    
+      /* Download list */
+      .download-list li {
+        font-size: 15px;
+        line-height: 1.5;
+      }
+    }
+    
+      /* =========================
+         公告區塊 Announcement
+         ========================= */
+      
+      .announcement {
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      
+      /* 每一個公告段落 */
+      .announce-block {
+        margin-bottom: 22px;
+      }
+      
+      /* 標題列 */
+      display: flex;
+      align-items: center;
+      font-size: 17px;
+      font-weight: 700;
+      margin: 18px 0 10px;
+      }
+      
+      /* 藍色直條 */
+      .announce-bar {
+        width: 4px;
+        height: 20px;
+        background: #4a7ef5;
+        margin-right: 10px;
+        border-radius: 2px;
+      }
+      
+      /* 圖示 */
+      .announce-icon {
+        margin-right: 8px;
+      }
+      
+      /* 內容整體縮排 */
+      .announce-content {
+        padding-left: 24px;      /* ✅ 你要的「往內縮」 */
+      }
+      
+      /* 清單樣式 */
+      .announce-list {
+        list-style: disc;
+        padding-left: 20px;
+        margin-bottom: 10px;
+      }
+      
+      .announce-rules {
+        line-height: 1.5;
+        padding-left: 36px;              /* ✅ 比無序清單再內縮一點 */
+        list-style-position: outside;    /* 數字在外，版面穩定 */
+        margin-left: 12px;
+      }
+      
+      .announce-rules li {
+        margin-bottom: 8px;
+        margin-left: 0;
+        padding-left: 6px;               /* ✅ 讓文字跟數字有呼吸感 */
+      }
+      
+      /* 子說明 */
+      .sub-rule {
+        margin-top: 4px;
+        font-size: 14px;
+        color: #555;
+        margin-left: 12px;
+      }
+      
+      /* 指定顏色 */
+      .text-danger {
+        color: #c62828;
+        font-weight: 700;
+      }
+      
+      .text-info {
+        color: #1565c0;
+        font-weight: 700;
+      }
+      
+      /* 📱 手機微調 */
+      @media (max-width: 768px) {
+        .announce-title {
+          font-size: 16px;
+        }
+      
+        .announce-content {
+          padding-left: 18px;
+        }
+      }
+    
+      /* =========================
+         首頁歡迎區 Welcome
+         ========================= */
+      
+      .welcome-box {
+        position: relative;
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 26px 28px;
+        overflow: hidden;
+      }
+      
+      .welcome-main {
+        position: relative;
+        z-index: 2;
+      }
+      
+      /* 身份（裁判員 / 系統管理員） */
+      .welcome-role {
+        font-size: 22px;          /* ✅ 放大 */
+        font-weight: 800;
+        color: #1a237e;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      
+      .welcome-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      
+      .welcome-line {
+        font-size: 16px;
+        color: #333;
+      }
+      
+      /* =========================
+         證照等級背景（A / B / C）
+         ========================= */
+      
+      .welcome-bg {
+        position: absolute;
+        right: 18px;
+        bottom: 8px;
+        font-size: 120px;       /* ✅ 大大的字 */
+        font-weight: 900;
+        color: rgba(0,0,0,0.06);
+        line-height: 1;
+        z-index: 1;
+        opacity: 0.08;          /* ✅ 淡淡的，不干擾 */
+        pointer-events: none;
+      }
+      
+      /* 📱 手機微調 */
+      @media (max-width: 768px) {
+        .welcome-role {
+          font-size: 20px;
+        }
+        .welcome-bg {
+          font-size: 90px;
+        }
+      }
+    
+      /* =========================
+         身份徽章
+         ========================= */
+       .role-icon {
+        font-size: 20px;
+        line-height: 1;
+        }
+        
+      /* =========================
+         證照等級背景（水印）
+         ========================= */
+
+      /* 不同等級顏色 */
+      .welcome-bg.level-A {
+        color: #1a237e;         /* 深藍 */
+      }
+      
+      .welcome-bg.level-B {
+        color: #2e7d32;         /* 綠 */
+      }
+      
+      .welcome-bg.level-C {
+        color: #ef6c00;         /* 橘 */
+      }
+      
+      /* 📱 手機微調 */
+      @media (max-width: 768px) {
+        .welcome-role {
+          font-size: 20px;
+        }
+      
+        .welcome-bg {
+          font-size: 90px;
+          right: 10px;
+        }
+      }
+
+    
+/* =========================
+   我的班表（重點提示）
+   ========================= */
+#upcoming-panel {
+  background: linear-gradient(135deg, #f2f6ff, #ffffff);
+  border-left: 5px solid #4a7ef5;
+}
+
+/* 標題強調 */
+#upcoming-panel h3 {
+  color: #1a237e;
+}
+
+/* =========================
+   我的班表（手機版）
+   ========================= */
+@media (max-width: 768px) {
+  #upcoming-panel {
+    padding: 18px;
+  }
+}
+  </style>
+  
+</head>
+
+<body>
+
+<!-- ✅ 共用 Header -->
+<div id="header-container"></div>
+
+<div class="main">
+
+  <h2>BBT軟式棒球大聯盟　裁判組　出勤系統</h2>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  
+    if (session.name) {
+      const el = document.getElementById('welcome-text');
+      el.innerHTML = `
+        裁判員 <strong>${session.name}</strong> 您好<br>
+        歡迎使用裁判出勤管理系統。<br>
+        請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
+      `;
+    }
+  });
+</script>
+  
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  
+    /* ===== 身份 role → 中文 + icon ===== */
+    const roleMap = {
+      judge:      { text: '裁判員', icon: '' },
+      admin:      { text: '系統管理員', icon: '🛡️' },
+      chief_judge:{ text: '裁判長', icon: '🎖️' }
+    };
+  
+    const roleInfo = roleMap[session.role] || {};
+    const roleEl  = document.getElementById('welcome-role');
+    const nameEl  = document.getElementById('welcome-name');
+  
+    if (roleEl && roleInfo.text) {
+      roleEl.innerHTML =
+        roleInfo.icon
+          ? `<span class="role-icon">${roleInfo.icon}</span> ${roleInfo.text}`
+          : roleInfo.text;
+    }
+  
+    if (nameEl && session.name) {
+      nameEl.textContent = `${session.name} 您好`;
+    }
+  
+    /* ===== 證照等級背景（A / B / C） ===== */
+    const level = session.level; // 'A' | 'B' | 'C'
+    const bgEl  = document.getElementById('license-bg');
+  
+    if (bgEl && /^[ABC]$/.test(level)) {
+      bgEl.textContent = level;
+      bgEl.classList.add(`level-${level}`);
+    }
+  });
+  
+</script>
+  
+      <!-- ✅ 歡迎區塊 -->
+        <div class="welcome-box">
+          <div class="welcome-bg" id="license-bg"></div>
+        
+          <div class="welcome-main">
+            <div class="welcome-role" id="welcome-role"></div>
+            <div class="welcome-name" id="welcome-name"></div>
+            <div class="welcome-bg" id="license-bg"></div>
+                
+            <div class="welcome-line">
+              歡迎使用 <strong>裁判出勤管理系統</strong>
+            </div>
+          </div>
+        </div>
+      
+    <!-- ✅ 我即將執勤的比賽 -->
+    <div class="panel" id="upcoming-panel">
+      <h3>我的班表</h3>
+    
+      <!-- 本週班表 -->
+      <div id="week-section" style="display:none;">
+        <h4>本週班表</h4>
+        <ul id="week-list" class="upcoming-list"></ul>
+      </div>
+    
+      <!-- 其他班表 -->
+      <div id="other-section" style="display:none;">
+        <h4>其他班表</h4>
+        <ul id="other-list" class="upcoming-list"></ul>
+      </div>
+    
+      <!-- 沒有任何班表時 -->
+      <div id="no-duty" class="upcoming-empty" style="display:none;">
+        本月尚未安排執勤賽事，其它月份班表請至報名頁面瀏覽。
+      </div>
+    </div>
+  
+<script>
+      function renderMyDuties(weekDuties, otherDuties) {
+      const weekSection = document.getElementById('week-section');
+      const otherSection = document.getElementById('other-section');
+      const noDuty = document.getElementById('no-duty');
+    
+      // 先全部隱藏
+      weekSection.style.display = 'none';
+      otherSection.style.display = 'none';
+      noDuty.style.display = 'none';
+    
+      // 本週班表
+      if (weekDuties.length > 0) {
+        weekSection.style.display = 'block';
+        renderDutyList('week-list', weekDuties);
+      }
+    
+      // 其他班表
+      if (otherDuties.length > 0) {
+        otherSection.style.display = 'block';
+        renderDutyList('other-list', otherDuties);
+      }
+    
+      // 都沒有
+      if (weekDuties.length === 0 && otherDuties.length === 0) {
+        noDuty.style.display = 'block';
+      }
+    }
+
+      function renderDutyList(elementId, duties) {
+      const ul = document.getElementById(elementId);
+      ul.innerHTML = '';
+    
+      duties.forEach(d => {
+        const li = document.createElement('li');
+        li.textContent = `${d.date} ${d.game_code} ${d.position}`;
+        ul.appendChild(li);
+      });
+    }
+</script>
+
+  <!-- ✅ 系統公告 -->
+  <div class="panel">
+    <h3>📢 聯盟公告</h3>
+    <!-- <p>目前尚無公告。</p> -->
+        <div id="upcoming-container" class="announcement">
+        
+          <!-- 📢 賽制規定 -->
+          <div class="announce-block">
+            <h3 class="announce-title">
+              <!-- <span class="announce-bar"></span> -->
+              <span class="announce-icon">📄</span>
+              賽制規定 Rules
+            </h3>
+        
+            <div class="announce-content">
+              <ul class="announce-list">
+                <li>
+                  本賽季採分：大聯盟組 8 隊＋小聯盟組 8 隊，雙循環制，
+                  合計 112 場賽事，每隊各有 14 場例行賽。
+                </li>
+              </ul>
+        
+              <ol class="announce-rules">
+                <li>
+                  比賽用球：KENKO BALL（全日本軟式野球聯盟公認球），
+                  賽後將回收重複使用。
+                </li>
+                <li>
+                  正規七局制或 2.5 小時制，依裁判認定。
+                  若時間已達賽前 15 分鐘且平手，下局進入突破僵局制。
+                  <div class="sub-rule">
+                    【突破僵局制】0 出局，進攻方自二壘放置跑者（前一局最後出局者）。
+                  </div>
+                </li>
+                <li class="text-danger">
+                  例行賽、季後賽、冠軍賽，雙方分數差 10 分（含）以上，
+                  判定提早結束比賽。
+                </li>
+                <li>
+                  比賽遇雨：未滿 3 局另行補賽；滿 3 局視同裁定比賽。
+                </li>
+                <li>
+                  大聯盟組部分賽事採三人制裁判；小聯盟組固定為兩人制裁判。
+                </li>
+              </ol>
+            </div>
+          </div>
+        
+          <!-- 🏆 季後賽 -->
+          <div class="announce-block">
+            <h3 class="announce-title">
+              <!-- <span class="announce-bar"></span> -->
+              <span class="announce-icon">🏆</span>
+              Postseason 季後系列戰
+            </h3>
+        
+            <div class="announce-content">
+              <ul class="announce-list">
+                <li>
+                  季後賽：單賽制，例行賽戰績前四名晉級，
+                  對戰組合由各隊派員抽籤決定。
+                </li>
+                <li>
+                  冠軍賽：單場決勝制，
+                  季後賽勝隊比較得失分高者為主場。
+                </li>
+              </ul>
+            </div>
+          </div>
+        
+          <!-- ⚠️ 迴避原則 -->
+          <div class="announce-block">
+            <h3 class="announce-title">
+              <!-- <span class="announce-bar"></span> -->
+              <span class="announce-icon">⚠️</span>
+              迴避原則（母隊限制）
+            </h3>
+        
+            <div class="announce-content">
+              <ul class="announce-list">
+                <li>
+                  <span class="text-danger">
+                    嚴格禁止：例行賽、季後賽、冠軍賽，
+                    裁判不得執法所屬母隊之賽事。
+                  </span>
+                </li>
+                <li>
+                  <span class="text-info">
+                    開放範圍：
+                    「隊內交流賽」、「熱身賽」、「冬季聯盟」
+                  </span>
+                  可安排母隊裁判站崗。
+                </li>
+              </ul>
+            </div>
+          </div>
+        
+        </div>
+  </div>
+
+  <!-- ✅ 文件下載 -->
+  <div class="panel">
+    <h3>📄 文件下載</h3>
+    <ul class="">
+      <li>
+        <a href="https://bbtls.com/a03.php" target="_blank">
+          BBT 軟式棒球大聯盟賽事規章
+        </a>
+      </li>
+      <li>
+        <a href="https://bbtls.com/" target="_blank">
+          BBT 軟式棒球大聯盟官網
+        </a>
+      </li>
+      <li>
+        <a href="ctba_rules.pdf" target="_blank">
+          📘 中華民國棒球規則（2024）
+        </a>
+      </li>
+      <li>
+        <a href="umpire_2man_rotation.pdf" target="_blank">
+          🧑‍⚖️ 兩人制裁判移補位（WBSC 英文版）
+        </a>
+      </li>
+      <li>
+        <a href="umpire_3man_rotation.pdf" target="_blank">
+          🧑‍⚖️ 三人制裁判移補位（CTBA 中文版）
+        </a>
+      </li>
+      <li>
+        <a href="umpire_4man_rotation.pdf" target="_blank">
+          🧑‍⚖️ 四人制裁判移補位（WBSC 英文版）
+        </a>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ================= Script ================= -->
+<script src="js/config.js"></script>
+<script>
+
+/* ===== 載入共用 Header ===== */
+function loadHeader(){
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+
+      const s = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (s.name) {
+        const u = document.getElementById('u_name');
+        if (u) u.textContent = s.name;
+      }
+
+      const t = document.getElementById('pageTitle');
+      if (t) t.textContent = '系統首頁';
+
+      const page = location.pathname.split('/').pop();
+      document.querySelectorAll('.nav a').forEach(a=>{
+        if(a.getAttribute('href') === page){
+          a.classList.add('active');
+        }
+      });
+    });
+}
+  
+function isToday(dateStr) {
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth() + 1).padStart(2, '0');
+  const d = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${y}-${m}-${d}`;
+  return dateStr === todayStr;
+}
+
+function isThisWeek(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = new Date();
+
+  const start = new Date(today);
+  start.setDate(today.getDate() - today.getDay()); // 週日
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6); // 週六
+
+  return d >= start && d <= end;
+}
+
+function isThisMonth(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth()
+  );
+}
+
+/* ===== 登出 ===== */
+function logout(){
+  if(!confirm('確定要登出系統？')) return;
+  localStorage.clear();
+  location.replace('login.html');
+}
+
+/* ===== 初始化 ===== */
+// ✅ 將各種 time 型別統一轉成 HH:mm
+function formatTime(t) {
+  if (!t) return '';
+
+  // ISO / Date 字串
+  if (typeof t === 'string' && t.includes('T')) {
+    const d = new Date(t);
+    return d.toISOString().slice(11, 16); // HH:mm
+  }
+
+  // 已經是 HH:mm
+  if (typeof t === 'string') {
+    return t.slice(0, 5);
+  }
+
+  return '';
+}
+
+// ✅ 站位中文化
+function positionText(pos) {
+  const map = {
+    PU: '主　審',
+    U1: '一壘審',
+    U2: '二壘審',
+    U3: '三壘審'
+  };
+  return map[pos] || pos || '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  const raw = localStorage.getItem('session_user');
+  if (!raw) {
+    location.replace('login.html');
+    return;
+  }
+
+  let s;
+  try {
+    s = JSON.parse(raw);
+  } catch (e) {
+    location.replace('login.html');
+    return;
+  }
+
+  if (!s.user_id) {
+    location.replace('login.html');
+    return;
+  }
+
+  if (s.must_change_pwd === 'Y') {
+    location.replace('change_password.html');
+    return;
+  }
+
+  loadHeader();
+});
+
+/* 近期站場資訊 */
+function loadMonthlyGames() {
+
+  const panel = document.getElementById('monthly-games-panel');
+  if (!panel) return;
+
+  callApi(
+    { action: 'getGames' },
+    res => {
+
+      // 清舊內容
+      panel.querySelectorAll('.monthly-list, .monthly-empty')
+        .forEach(el => el.remove());
+
+      if (!res || res.result !== 'ok' || !res.games) {
+        panel.insertAdjacentHTML(
+          'beforeend',
+          `<p class="monthly-empty">讀取賽事失敗。</p>`
+        );
+        return;
+      }
+
+      const now = new Date();
+      const thisYear = now.getFullYear();
+      const thisMonth = now.getMonth(); // 0-based
+
+      // ✅ 只取本月賽事
+      const list = res.games.filter(g => {
+        if (!g.date) return false;
+        const d = new Date(g.date + 'T00:00:00'); // 僅用於比對月份
+        return d.getFullYear() === thisYear && d.getMonth() === thisMonth;
+      });
+
+      if (list.length === 0) {
+        panel.insertAdjacentHTML(
+          'beforeend',
+          `<p class="monthly-empty">本月尚無賽事。</p>`
+        );
+        return;
+      }
+
+      res.games.forEach(g => {
+      
+        const todayTag = isToday(g.date)
+          ? '<span style="color:#d32f2f;font-weight:bold;">【今日】</span> '
+          : '';
+        
+        const line = [
+          g.todayTag,
+          g.position,
+          g.date,
+          g.time,
+          g.category,
+          g.game_code,
+          g.matchup
+        ].filter(Boolean).join('　');
+      
+        const li = document.createElement('li');
+        li.textContent = line;
+      
+        list.appendChild(li);
+      });
+
+      html += `</ul>`;
+      panel.insertAdjacentHTML('beforeend', html);
+    }
+  );
+}
+
+  
+function loadUpcomingGames() {
+
+  const s = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!s.user_id) return;
+
+  const panel = document.getElementById('upcoming-panel');
+  if (!panel) return;
+
+  callApi(
+    {
+      action: 'getMyUpcomingGames',
+      user_id: s.user_id
+    },
+    res => {
+      
+    console.log('getMyUpcomingGames response =', res);
+
+      // 清掉舊內容
+      panel.querySelectorAll('.upcoming-empty, .upcoming-list').forEach(el => el.remove());
+
+      if (!res || res.result !== 'ok' || !res.games || res.games.length === 0) {
+        panel.insertAdjacentHTML(
+          'beforeend',
+          `<p class="upcoming-empty">本月尚未安排執勤賽事。</p>`
+        );
+        return;
+      }
+
+      const weekGames = res.games.filter(g => isThisWeek(g.date));
+      const monthGames = res.games.filter(
+        g => isThisMonth(g.date) && !isThisWeek(g.date)
+      );
+      const container = document.getElementById('upcoming-container');
+      
+      let html = '';
+      
+      if (weekGames.length) {
+        html += '<h4>📅 本週賽事</h4><ul class="upcoming-list">';
+        weekGames.forEach(e => {
+          html += `
+            <li>
+              <span class="upcoming-position">
+                【${positionText(e.position)}】　
+              </span>
+              ${e.date} ${formatTime(e.time)}　
+              ${e.category}　
+              <b>${e.game_code}</b>　
+              ${e.matchup}
+            </li>
+          `;
+        });
+        html += '</ul>';
+      }
+      
+      if (monthGames.length) {
+        // html += '<h4>🗓 本月其它賽事</h4><ul class="upcoming-list">';
+        html += '<ul class="upcoming-list">';
+        monthGames.forEach(e => {
+          html += `
+            <li>
+              <span class="upcoming-position">
+                【${positionText(e.position)}】　
+              </span> 
+              ${e.date} ${formatTime(e.time)}　
+              ${e.category}　
+              <b>${e.game_code}</b>　
+              ${e.matchup}
+            </li>
+          `;
+        });
+        html += '</ul>';
+      }
+      
+      container.innerHTML = html || '<p class="upcoming-empty">目前尚無執勤賽事</p>';
+    }
+  );
+}
+
+
+loadHeader();
+loadUpcomingGames(); // 我將執勤的比賽
+loadMonthlyGames();  // ✅ 本月賽事
+
+
+</script>
+
+</body>
+</html>
