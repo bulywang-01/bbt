@@ -228,6 +228,37 @@ td.cell-na {
   display: none;
 }
 
+/* ===== 桌機站位選擇樣式 ===== */
+.pos-choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  height: 28px;
+  border: 1px solid #cfd8dc;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pos-choice input {
+  transform: scale(1.1);
+}
+
+/* 已選 */
+.pos-choice.selected {
+  background: #4a7ef5;
+  color: #fff;
+  border-color: #4a7ef5;
+  font-weight: 600;
+}
+
+/* 不需要裁判 */
+.pos-na {
+  color: #d32f2f;
+  font-weight: 600;
+}
+  
 /* ===== 手機 ===== */
 @media (max-width: 768px) {
   #desktopView {
@@ -765,50 +796,51 @@ function render() {
             const filled = Object.keys(g.occupied_positions || {}).length;
             if (filled >= g.need_count) tr.classList.add('full');
 
-            function renderPos(role) {
-              if (
-                g.need_count === 0 ||
-                (g.need_count === 1 && role !== 'PU') ||
-                (g.need_count === 2 && ['U2', 'U3'].includes(role)) ||
-                (g.need_count === 3 && role === 'U2')
-              ) {
-                return '__NA__';
-              }
-
-              if (g.occupied_positions && g.occupied_positions[role]) {
-                const isMe = g.my_position === role;
-                if (isMe) {
-                  return `
-                    <div class="judge-name me">
-                      <span class="judge-star">★</span>
-                      ${g.occupied_positions[role]}
-                      <span class="cancel-btn"
-                        onclick="cancelMySignup('${g.my_signup_id}')">[取消]</span>
-                    </div>
-                  `;
-                }
-                return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
-              }
-
-              if (isPast) return '';
-              if (g.my_position && g.my_position !== role) return '';
-
-              if (selectedPositions[g.game_id] === role) {
-                return `
-                  <label><input type="radio" checked> ${role}</label>
-                  <span class="cancel-btn"
-                    onclick="cancelSelected('${g.game_id}')">✖</span>
-                `;
-              }
-
-              return `
-                <label>
-                  <input type="radio"
-                    onchange="rememberSelection('${g.game_id}','${role}')">
-                  ${role}
-                </label>
-              `;
-            }
+      function renderPos(role) {
+        // === 不需要此站位 ===
+        if (
+          g.need_count === 0 ||
+          (g.need_count === 1 && role !== 'PU') ||
+          (g.need_count === 2 && ['U2', 'U3'].includes(role)) ||
+          (g.need_count === 3 && role === 'U2')
+        ) {
+          return '<span class="pos-na">-</span>';
+        }
+      
+        // === 已被佔用（顯示姓名） ===
+        if (g.occupied_positions && g.occupied_positions[role]) {
+          const isMe = g.my_position === role;
+          return `
+            <div class="judge-name ${isMe ? 'me' : ''}">
+              ${isMe ? '<span class="judge-star">★</span>' : ''}
+              ${g.occupied_positions[role]}
+            </div>
+          `;
+        }
+      
+        // === 過期 or 已選其他站位 → 空 ===
+        if (isPast || (g.my_position && g.my_position !== role)) {
+          return '';
+        }
+      
+        // === 尚未送出，且是我選的 ===
+        if (selectedPositions[g.game_id] === role) {
+          return `
+            <div class="pos-choice selected"
+                 onclick="cancelSelected('${g.game_id}')">
+              選定
+            </div>
+          `;
+        }
+      
+        // === 尚未選，可選 ===
+        return `
+          <label class="pos-choice">
+            <input type="radio"
+              onchange="rememberSelection('${g.game_id}','${role}')">
+          </label>
+        `;
+      }
 
             let umpireCell = g.need_count;
             if (g.need_count === 0) {
