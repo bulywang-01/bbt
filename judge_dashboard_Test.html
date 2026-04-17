@@ -328,6 +328,18 @@ tr.expired {
   font-size: 16px;
   padding: 10px 0;
 }
+
+/* 手機站位標籤（主審/一壘/二壘/三壘） */
+.mobile-pos-labels {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #607d8b;
+  text-align: center;
+  font-weight: 600;
+}
 </style>
   
 </head>
@@ -834,6 +846,17 @@ function renderMobilePosGrid(g) {
   }
 
   return `
+  
+     <!-- ✅ 站位標籤列 -->
+     <div class="mobile-pos-labels">
+       <div>主審</div>
+       <div>一壘</div>
+       <div>二壘</div>
+       <div>三壘</div>
+     </div>
+   
+     <!-- ✅ 站位內容 -->
+
     <div class="mobile-pos-grid">
       ${roles.map(role => {
         if (needNA(role)) {
