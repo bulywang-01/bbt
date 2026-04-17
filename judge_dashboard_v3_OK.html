@@ -1012,9 +1012,17 @@ function renderMobile() {
 }
 
 function renderMobilePosGrid(g) {
+  const ROLE_NAME = {
+  PU: '主審',
+  U1: '一壘',
+  U2: '二壘',
+  U3: '三壘'
+  };
+  
   const roles = ['PU', 'U1', 'U2', 'U3'];
   const today = new Date(); today.setHours(0,0,0,0);
   const isPast = new Date(g.date.replace(/\//g,'-')) < today;
+
 
   const occupied = g.occupied_positions || {};
 
@@ -1065,10 +1073,11 @@ function renderMobilePosGrid(g) {
         }
 
         return `
+          // 報名按鍵
           <div class="mobile-pos">
             <div class="mobile-pos-btn"
                  onclick="rememberSelection('${g.game_id}','${role}')">
-              報名
+              ${ROLE_NAME[role]}
             </div>
           </div>
         `;
