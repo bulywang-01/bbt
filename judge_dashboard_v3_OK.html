@@ -722,6 +722,12 @@ function renderPos(g, role) {
   
 /* ===== 桌機表格 ===== */
 function renderDesktopTable(list) {
+  
+  function timeToMinutes(t){
+    const d = new Date(t);
+    return d.getHours() * 60 + d.getMinutes();
+  }
+  
   const box = document.getElementById('content');
 
   const dateGroups = {};
