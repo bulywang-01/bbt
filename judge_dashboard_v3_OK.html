@@ -511,6 +511,9 @@ function hideLoading() {
 /* ===== 初始化（含共用 header） ===== */
 document.addEventListener('DOMContentLoaded', () => {
 
+const CURRENT_USER_NAME =
+  JSON.parse(localStorage.getItem('session_user') || {}).name;
+  
   // 1️⃣ 先載入共用 header
   fetch('header.html')
     .then(res => res.text())
