@@ -985,7 +985,9 @@ function submitSignup(){
   );
 
   //showLoading('送出報名中...');
-   showOverlay('報名送出中，請稍候...');
+   
+   showLoading('報名送出中，請稍候...');
+
  
   callApi(
    {
@@ -1001,14 +1003,16 @@ function submitSignup(){
          alert('⚠️ 提醒：你曾取消過此場，已成功重新報名，請務必確認可出勤。');
        } else {
          //alert('報名成功');
-          showOverlay('✅ 報名成功！', true);
+          showMessage('✅ 報名成功！', true);
+
        }
  
        location.reload();
      } else {
        //alert(res?.message || '報名失敗');
-        showOverlay('❌ 報名失敗，請稍後再試', true);
-     }
+        showMessage('❌ 報名失敗，請稍後再試', false);
+
+       }
      }
    }
  );
