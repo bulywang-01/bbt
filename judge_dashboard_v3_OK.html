@@ -715,6 +715,16 @@ function render() {
         const panel = document.createElement('div');
         panel.className = 'panel';
 
+        // ✅ 組別標題（大聯盟／小聯盟）
+        const categoryTitle = document.createElement('div');
+        categoryTitle.textContent = category;
+        categoryTitle.style.fontSize = '16px';
+        categoryTitle.style.fontWeight = '700';
+        categoryTitle.style.marginBottom = '8px';
+        categoryTitle.style.color = '#1a237e';
+        
+        panel.appendChild(categoryTitle);
+
         const table = document.createElement('table');
         table.innerHTML = `
           <thead>
