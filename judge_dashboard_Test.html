@@ -952,31 +952,34 @@ function submitSignup(){
     id => `${id}:${selectedPositions[id]}`
   );
 
-  showLoading('送出報名中...');
- 
+  // ✅ 開始送出 → 顯示進度
+  showLoading('送出報名中，請稍候...');
+
   callApi(
-   {
-     action: 'judgeSignupByGames',
-     user_id: session.user_id,
-     games_with_position: payload.join(',')
-   },
-   res => {
-     if (res && res.result === 'ok') {
- 
-       // ✅ 新增：顯示「曾取消過」提醒
-       if (res.has_cancelled_before) {
-         alert('⚠️ 提醒：你曾取消過此場，已成功重新報名，請務必確認可出勤。');
-       } else {
-         alert('報名成功');
-       }
- 
-       location.reload();
-     } else {
-       alert(res?.message || '報名失敗');
-     }
-   }
- );
+    {
+      action: 'judgeSignupByGames',
+      user_id: session.user_id,
+      games_with_position: payload.join(',')
+    },
+    res => {
+      if (res && res.result === 'ok') {
+
+        if (res.has_cancelled_before) {
+          showMessage(
+            '⚠️ 提醒：你曾取消過此場，已成功重新報名，請務必確認可出勤。',
+            true
+          );
+        } else {
+          showMessage('✅ 報名成功！', true);
+        }
+
+      } else {
+        showMessage(res?.message || '❌ 報名失敗', false);
+      }
+    }
+  );
 }
+
 
     function showLoading(msg = '處理中...') {
       const overlay = document.getElementById('overlay');
@@ -1003,24 +1006,6 @@ function submitSignup(){
       document.getElementById('overlay').classList.remove('show');
     }
 
-function showMessage(msg, reload = true) {
-  document.getElementById('overlay-text').textContent = msg;
-  const ok = document.getElementById('overlay-ok');
-  ok.style.display = 'inline-block';
-
-  ok.onclick = () => {
-    document.getElementById('overlay').style.display = 'none';
-    if (reload) {
-      location.reload();
-    }
-  };
-
-
-
-  // ✅ 重點：這裡一定要顯示 overlay
-  document.getElementById('overlay').style.display = 'flex';
-}
-
 function hideOverlay() {
   document.getElementById('overlay').style.display = 'none';
 }
@@ -1038,9 +1023,12 @@ function cancelMySignup(signupId) {
 
   const session = JSON.parse(localStorage.getItem('session_user') || {});
   if (!session.user_id) {
-    alert('登入狀態已失效');
+    showMessage('登入狀態已失效', false);
     return;
   }
+
+  // ✅ 顯示處理中
+  showLoading('取消站位中...');
 
   callApi(
     {
@@ -1050,14 +1038,17 @@ function cancelMySignup(signupId) {
     },
     res => {
       if (res && res.result === 'ok') {
-        alert('已取消站位，請於Line群組告知取消原因，謝謝。');
-        location.reload();
+        showMessage(
+          '✅ 已取消站位，請於 Line 群組告知取消原因，謝謝。',
+          true
+        );
       } else {
-        alert(res?.message || '取消失敗');
+        showMessage(res?.message || '❌ 取消失敗', false);
       }
     }
   );
 }
+
 </script>
 </body>
 </html>
