@@ -764,7 +764,6 @@
         <h3>我的完整班表</h3>
     
         <!-- ✅ loading（不要放在 historySchedule 裡） -->
-<!--
         <div
           id="fullScheduleLoading"
           class="loading-text"
@@ -772,16 +771,7 @@
         >
           完整賽事載入中…
         </div>
--->
-        <!-- Test -->
-        <div
-          id="fullScheduleLoading"
-          class="loading-text"
-          style="display:none; background:yellow; font-weight:bold;"
-        >
-          完整賽事載入中…
-        </div>
-        
+
         <!-- （如果之後要分未來 / 歷史可以用） -->
         <div id="upcomingSchedule"></div>
     
@@ -1296,6 +1286,9 @@ function loadUpcomingGames() {
   const panel = document.getElementById('upcoming-panel');
   if (!panel) return;
 
+  const loading = document.getElementById('upcomingLoading');
+  // ✅ 1. 一開始就顯示「讀取賽事中…」
+  if (loading) loading.style.display = 'block';
 
   callApi(
     {
@@ -1306,9 +1299,13 @@ function loadUpcomingGames() {
       
     console.log('getMyUpcomingGames response =', res);
 
+      // ✅ 2. API 回來第一件事：關掉 loading
+      if (loading) loading.style.display = 'none';
+
       // 清掉舊內容
       panel.querySelectorAll('.upcoming-empty, .upcoming-list').forEach(el => el.remove());
 
+      // ✅ 無資料
       if (!res || res.result !== 'ok' || !res.games || res.games.length === 0) {
           //document.getElementById('no-duty').style.display = 'block';
         const noDutyEl = document.getElementById('no-duty');
@@ -1325,6 +1322,7 @@ function loadUpcomingGames() {
           return;
         }
 
+      // ✅ 有資料才 render
       const weekGames = res.games.filter(g => isThisWeek(g.date));
       const monthGames = res.games.filter(
         g => isThisMonth(g.date) && !isThisWeek(g.date)
