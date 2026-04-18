@@ -1307,40 +1307,37 @@ function loadUpcomingGames() {
   const loading = document.getElementById('upcomingLoading');
   const weekSection = document.getElementById('week-section');
   const otherSection = document.getElementById('other-section');
-  const weekEmpty = document.getElementById('week-empty');
-  const monthEmpty = document.getElementById('month-empty');
   const noDuty = document.getElementById('no-duty');
   const viewLink = document.getElementById('view-full-schedule');
 
-  // ===== 1️⃣ 初始狀態重置 =====
+  // ====== ① 初始化狀態（不要互相打架） ======
   if (loading) loading.style.display = 'block';
 
-  weekSection.style.display = 'none';
-  otherSection.style.display = 'none';
-  if (weekEmpty) weekEmpty.style.display = 'none';
-  if (monthEmpty) monthEmpty.style.display = 'none';
+  if (weekSection) weekSection.style.display = 'none';
+  if (otherSection) otherSection.style.display = 'none';
   if (noDuty) noDuty.style.display = 'none';
 
-  panel.querySelectorAll('.upcoming-list').forEach(ul => {
-    ul.innerHTML = '';
-  });
+  // ✅ 關鍵：查看完整班表是「入口」，不是資料狀態
+  if (viewLink) viewLink.style.display = 'inline-block';
 
-  // ===== 2️⃣ 呼叫 API =====
+  // 清空舊列表
+  panel.querySelectorAll('.upcoming-list li').forEach(li => li.remove());
+
+  // ====== ② 呼叫 API ======
   callApi(
     {
       action: 'getMyUpcomingGames',
       user_id: s.user_id
     },
     res => {
-      // ✅ API 回來先關 loading
+      // ====== ③ API 回來，第一件事關 loading ======
       if (loading) loading.style.display = 'none';
 
       console.log('getMyUpcomingGames response =', res);
 
-      // ===== 3️⃣ 無資料或失敗 =====
+      // ====== ④ API 失敗或無資料（但入口還在） ======
       if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
         if (noDuty) noDuty.style.display = 'block';
-        if (viewLink) viewLink.style.display = 'inline-block';
         return;
       }
 
@@ -1349,39 +1346,22 @@ function loadUpcomingGames() {
         g => isThisMonth(g.date) && !isThisWeek(g.date)
       );
 
-      // ===== 4️⃣ 本週區塊 =====
-      weekSection.style.display = 'block';
+      // ====== ⑤ 本週 ======
       if (weekGames.length > 0) {
+        weekSection.style.display = 'block';
         renderDutyList('week-list', weekGames);
-      } else if (weekEmpty) {
-        weekEmpty.style.display = 'block';
       }
 
-      // ===== 5️⃣ 本月其他區塊 =====
-      otherSection.style.display = 'block';
+      // ====== ⑥ 其他 ======
       if (monthGames.length > 0) {
+        otherSection.style.display = 'block';
         renderDutyList('other-list', monthGames);
-      } else if (monthEmpty) {
-        monthEmpty.style.display = 'block';
       }
 
-      // ===== 6️⃣ 整個月都沒有 =====
+      // ====== ⑦ 都沒有 upcoming ======
       if (weekGames.length === 0 && monthGames.length === 0) {
         if (noDuty) noDuty.style.display = 'block';
-
-        // ✅ 關掉其他空狀態（避免重複顯示）
-        if (weekEmpty) weekEmpty.style.display = 'none';
-        if (monthEmpty) monthEmpty.style.display = 'none';
-        if (weekSection) weekSection.style.display = 'none';
-        if (otherSection) otherSection.style.display = 'none';
-      
-        // ✅ 直接 return，下面不再跑
-        return;
-
       }
-
-      // ===== 7️⃣ 查看完整班表一定顯示 =====
-      if (viewLink) viewLink.style.display = 'inline-block';
     }
   );
 }
