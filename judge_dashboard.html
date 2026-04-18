@@ -220,6 +220,34 @@ tr.expired {
   #mobileView { display: block; padding: 12px; }
 }
 
+/* ===== 共用訊息遮罩（桌機＋手機） ===== */
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#overlay.show {
+  display: flex;
+}
+
+#overlay-box {
+  background: #fff;
+  padding: 20px 26px;
+  border-radius: 10px;
+  min-width: 260px;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+#overlay-text {
+  font-size: 16px;
+}
+
 /* ===============================
    手機卡片
 ================================ */
@@ -340,6 +368,7 @@ tr.expired {
   text-align: center;
   font-weight: 600;
 }
+
 </style>
   
 </head>
@@ -348,13 +377,15 @@ tr.expired {
 <!-- 共用 Header -->
 <body data-page-title="裁判報名">
 <!-- 畫面中間呈現訊息 -->
-<div id="overlay" style="display:none;">
+<div id="overlay"">
   <div id="overlay-box">
     <div id="overlay-text">處理中...</div>
-    <button id="overlay-ok" style="display:none;">確定</button>
+    <button id="overlay-ok">確定</button>
   </div>
 </div>
-  
+
+
+
 <div id="header"></div>
 
 <div class="main">
@@ -938,13 +969,13 @@ function renderTimeHHmm(t) {
 function submitSignup(){
   const entries = Object.keys(selectedPositions);
   if (!entries.length){
-    showMessage('尚未選擇站位', false);
+    showMessage('尚未選擇站位');
     return;
   }
 
   const session = JSON.parse(localStorage.getItem('session_user') || {});
   if (!session.user_id) {
-    showMessage('登入狀態已失效，請重新登入', false);
+    showMessage('登入狀態已失效，請重新登入');
     return;
   }
 
@@ -952,32 +983,27 @@ function submitSignup(){
     id => `${id}:${selectedPositions[id]}`
   );
 
-  showLoading('送出報名中...');
- 
+  // ✅ 顯示存入中
+  showLoading('報名資料存入中...');
+
   callApi(
-   {
-     action: 'judgeSignupByGames',
-     user_id: session.user_id,
-     games_with_position: payload.join(',')
-   },
-   res => {
-     if (res && res.result === 'ok') {
- 
-       // ✅ 新增：顯示「曾取消過」提醒
-       if (res.has_cancelled_before) {
-         alert('⚠️ 提醒：你曾取消過此場，已成功重新報名，請務必確認可出勤。');
-       } else {
-         alert('報名成功');
-       }
- 
-       location.reload();
-     } else {
-       alert(res?.message || '報名失敗');
-     }
-   }
- );
+    {
+      action: 'judgeSignupByGames',
+      user_id: session.user_id,
+      games_with_position: payload.join(',')
+    },
+    res => {
+      if (res && res.result === 'ok') {
+        showMessage('✅ 報名成功');
+        setTimeout(() => location.reload(), 800);
+      } else {
+        showMessage(res?.message || '❌ 報名失敗');
+      }
+    }
+  );
 }
 
+/*
     function showLoading(msg = '處理中...') {
       const overlay = document.getElementById('overlay');
       document.getElementById('overlay-text').textContent = msg;
@@ -1015,14 +1041,41 @@ function showMessage(msg, reload = true) {
     }
   };
 
-
-
   // ✅ 重點：這裡一定要顯示 overlay
   document.getElementById('overlay').style.display = 'flex';
 }
 
 function hideOverlay() {
   document.getElementById('overlay').style.display = 'none';
+}
+*/
+
+function showLoading(msg) {
+  const overlay = document.getElementById('overlay');
+  document.getElementById('overlay-text').textContent = msg;
+  document.getElementById('overlay-ok').style.display = 'none';
+  overlay.classList.add('show');
+}
+
+function showMessage(msg) {
+  const overlay = document.getElementById('overlay');
+  const text = document.getElementById('overlay-text');
+  const ok = document.getElementById('overlay-ok');
+
+  text.textContent = msg;
+  ok.style.display = 'none';
+
+  // ✅ 重點：點遮罩即可關閉（只綁一次）
+  overlay.onclick = () => {
+    hideOverlay();
+    overlay.onclick = null; // 避免影響後續 loading
+  };
+
+  overlay.classList.add('show');
+}
+
+function hideOverlay() {
+  document.getElementById('overlay').classList.remove('show');
 }
 
 function logout(){
@@ -1038,9 +1091,12 @@ function cancelMySignup(signupId) {
 
   const session = JSON.parse(localStorage.getItem('session_user') || {});
   if (!session.user_id) {
-    alert('登入狀態已失效');
+    showMessage('登入狀態已失效');
     return;
   }
+
+  // ✅ 顯示取消中
+  showLoading('取消報名中...');
 
   callApi(
     {
@@ -1050,14 +1106,15 @@ function cancelMySignup(signupId) {
     },
     res => {
       if (res && res.result === 'ok') {
-        alert('已取消站位，請於Line群組告知取消原因，謝謝。');
-        location.reload();
+        showMessage('✅ 已取消站位');
+        setTimeout(() => location.reload(), 800);
       } else {
-        alert(res?.message || '取消失敗');
+        showMessage(res?.message || '❌ 取消失敗');
       }
     }
   );
 }
+
 </script>
 </body>
 </html>
