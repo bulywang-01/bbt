@@ -839,27 +839,30 @@ function renderFullSchedule(res) {
     const html = upcomingGames.map(g => `
       <div style="margin-bottom:6px;">
         📅 ${g.date}
-        ${g.game_code || ''}
-        ｜ ${g.position || ''}
+        ${g.time ? g.time : ''}
+        ｜ ${g.game_code}
+        ｜ ${g.position}
         ${g.field ? '｜' + g.field : ''}
       </div>
     `).join('');
     upcoming.innerHTML = `<h4>尚未執勤</h4>${html}`;
   }
 
-  // ===== 已執勤 =====
+  // ===== 歷史班表 =====
   if (historyGames.length) {
     const html = historyGames.map(g => `
       <div style="margin-bottom:6px;">
         📅 ${g.date}
-        ${g.game_code || ''}
-        ｜ ${g.position || ''}
+        ${g.time ? g.time : ''}
+        ｜ ${g.game_code}
+        ｜ ${g.position}
         ${g.field ? '｜' + g.field : ''}
       </div>
     `).join('');
     history.innerHTML = `<h4 style="margin-top:12px;">歷史班表</h4>${html}`;
   }
 }
+
 
 function openFullSchedule() {
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
