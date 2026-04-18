@@ -515,9 +515,9 @@
 
 .loading-text {
   text-align: center;
-  padding: 12px;
-  color: #777;
+  padding: 16px 0;
   font-size: 14px;
+  color: #666;
 }
 
 .schedule-table {
@@ -762,8 +762,16 @@
   <div class="overlay-box">
     <h3>我的完整班表</h3>
 
+    <!-- ✅ 載入訊息（不要放在 historySchedule 裡） -->
+    <div id="fullScheduleLoading" class="loading-text" style="display:none;">
+      載入完整班表中…
+    </div>
+
     <div id="upcomingSchedule"></div>
+
+    <!-- ✅ 真正 render 表格的地方 -->
     <div id="historySchedule"></div>
+
 
     <button onclick="closeFullSchedule()">關閉</button>
   </div>
@@ -887,21 +895,32 @@ function renderFullSchedule(res) {
 
 
 function openFullSchedule() {
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  const loading = document.getElementById('fullScheduleLoading');
+  const container = document.getElementById('historySchedule');
 
-  console.log('送出 getMyFullSchedule 參數 user_id =', session.user_id);
+  // ✅ 1. 先清畫面、顯示 loading
+  container.innerHTML = '';
+  loading.style.display = 'block';
 
+  // ✅ 2. 先把 modal 打開（不然 loading 也看不到）
+  document
+    .getElementById('fullScheduleModal')
+    .classList.add('show');
+
+  const session = JSON.parse(localStorage.getItem('session_user'));
+
+  // ✅ 3. 再打 API
   callApi(
     {
       action: 'getMyFullSchedule',
-      user_id: session.user_id   // ✅ 一定要送
+      user_id: session.user_id
     },
     res => {
-      console.log('getMyFullSchedule response =', res);
+      // ✅ 4. API 回來後關掉 loading
+      loading.style.display = 'none';
+
+      // ✅ 5. render 資料
       renderFullSchedule(res);
-      document
-        .getElementById('fullScheduleModal')
-        .classList.add('show');
     }
   );
 }
@@ -1257,6 +1276,10 @@ function loadUpcomingGames() {
 
   const panel = document.getElementById('upcoming-panel');
   if (!panel) return;
+
+  <div id="upcomingLoading" class="loading-text" style="display:none;">
+  讀取賽事中…
+  </div>
 
   callApi(
     {
