@@ -777,6 +777,10 @@
   </div>
 </div>
   
+  <div id="upcomingLoading" class="loading-text" style="display:none;">
+  讀取賽事中…
+  </div>
+  
   <!-- ✅ 查看完整班表（放在我的班表文字下方） -->
     <div id="view-full-schedule"
          style="
@@ -1277,9 +1281,6 @@ function loadUpcomingGames() {
   const panel = document.getElementById('upcoming-panel');
   if (!panel) return;
 
-  <div id="upcomingLoading" class="loading-text" style="display:none;">
-  讀取賽事中…
-  </div>
 
   callApi(
     {
