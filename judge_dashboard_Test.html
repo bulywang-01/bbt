@@ -58,25 +58,6 @@ body {
   padding: 20px;
 }
 
-#overlay {
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.35);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  pointer-events: none;
-}
-
-#overlay.show {
-  display: flex;
-  pointer-events: auto;
-}
-
-  
 /* ===============================
    Panel / 區塊
 ================================ */
@@ -367,10 +348,10 @@ tr.expired {
 <!-- 共用 Header -->
 <body data-page-title="裁判報名">
 <!-- 畫面中間呈現訊息 -->
-<div id="overlay"">
+<div id="overlay" style="display:none;">
   <div id="overlay-box">
     <div id="overlay-text">處理中...</div>
-    <button id="overlay-ok">確定</button>
+    <button id="overlay-ok" style="display:none;">確定</button>
   </div>
 </div>
   
@@ -421,19 +402,6 @@ tr.expired {
 <script src="js/config.js"></script>
 
 <script>
-
-  function showOverlay(message, showOk = false) {
-  document.getElementById('overlay-text').textContent = message;
-  document.getElementById('overlay').classList.add('show');
-
-  const okBtn = document.getElementById('overlay-ok');
-  okBtn.style.display = showOk ? 'inline-block' : 'none';
-}
-
-function hideOverlay() {
-  document.getElementById('overlay').classList.remove('show');
-}
-
 
 function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
@@ -984,10 +952,7 @@ function submitSignup(){
     id => `${id}:${selectedPositions[id]}`
   );
 
-  //showLoading('送出報名中...');
-   
-   showLoading('報名送出中，請稍候...');
-
+  showLoading('送出報名中...');
  
   callApi(
    {
@@ -1002,17 +967,12 @@ function submitSignup(){
        if (res.has_cancelled_before) {
          alert('⚠️ 提醒：你曾取消過此場，已成功重新報名，請務必確認可出勤。');
        } else {
-         //alert('報名成功');
-          showMessage('✅ 報名成功！', true);
-
+         alert('報名成功');
        }
  
        location.reload();
      } else {
-       //alert(res?.message || '報名失敗');
-        showMessage('❌ 報名失敗，請稍後再試', false);
-
-       }
+       alert(res?.message || '報名失敗');
      }
    }
  );
@@ -1089,29 +1049,15 @@ function cancelMySignup(signupId) {
       signup_id: signupId
     },
     res => {
-       showOverlay('取消報名中...');
-       
       if (res && res.result === 'ok') {
-        //alert('已取消站位，請於Line群組告知取消原因，謝謝。');
-         showOverlay('✅ 已取消報名，請於Line群組告知取消原因，謝謝。', true);
+        alert('已取消站位，請於Line群組告知取消原因，謝謝。');
         location.reload();
       } else {
-        //alert(res?.message || '取消失敗');
-         showOverlay('❌ 取消失敗，請稍後再試', true);
+        alert(res?.message || '取消失敗');
       }
     }
   );
 }
-
-
 </script>
-
-  <div id="overlay">
-  <div id="overlay-box">
-    <div id="overlay-text">處理中...</div>
-    <button id="overlay-ok"">確定</button>
-  </div>
-</div>
-
 </body>
 </html>
