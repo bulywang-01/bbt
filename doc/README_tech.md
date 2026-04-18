@@ -79,19 +79,26 @@ Email 通知模組
 - active / token / created_at
 
 ### Games
-- game_id（PK）
-- game_code
-- date / time（HH:mm）
-- field / category / teams
-- umpire_count（0–4）
+game_id（PK）
+game_code
+date
+time
+duration
+field
+tournament
+category
+away_team
+home_team
+umpire_count（0–4）
+position_mode
 
 ### Judge_Signup
-- signup_id（PK）
-- user_id（FK）
-- game_id（FK）
-- preferred_position
-- status（approved / cancelled）
-- created_at
+signup_id（PK）
+user_id（FK）
+game_id（FK）
+preferred_position
+status（approved / cancelled）
+created_at
 
 ⚠️ 不刪資料，只改狀態
 
