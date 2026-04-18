@@ -525,25 +525,6 @@
 <div class="main">
 
   <h2>BBT軟式棒球大聯盟　裁判組　出勤系統</h2>
-
-<!--
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  
-    if (session.name) {
-      const el = document.getElementById('welcome-text');
-      if (el) {
-        el.innerHTML = `
-          裁判員 <strong>${session.name}</strong> 您好<br>
-          歡迎使用裁判出勤管理系統。<br>
-          請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
-        `;
-      }
-    }
-  });
-</script>
--->
   
 <script>
 
@@ -607,13 +588,6 @@
             <div class="welcome-role" id="welcome-role"></div>
             <div class="welcome-name" id="welcome-name"></div>
             <div class="welcome-bg" id="license-bg"></div>
-
-            <!--
-            <div class="welcome-line">
-              歡迎使用 <strong>裁判出勤管理系統</strong>
-            </div>
-            -->
-            
             <div class="welcome-line">
               歡迎使用 <strong>裁判出勤管理系統</strong>
               <span style="margin-left:8px;">｜</span>
@@ -624,10 +598,12 @@
               </a>
             </div>
             
-            <!-- ✅ 補回說明文字（就在正確位置） -->
-            <div class="welcome-line" style="margin-top:4px;font-size:14px;color:#555;">
-              請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
-            </div>
+         <!-- ✅ 補回說明文字（就在正確位置） -->
+          <div class="welcome-line sub"
+               style="margin-top:4px;font-size:14px;color:#555;">
+            請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
+          </div>
+
 
             <!-- 🧑‍⚖️ 裁判守則 Overlay -->
             <div id="rules-overlay" style="display:none;">
@@ -1155,15 +1131,6 @@ function loadUpcomingGames() {
       // 清掉舊內容
       panel.querySelectorAll('.upcoming-empty, .upcoming-list').forEach(el => el.remove());
 
-      /*
-      if (!res || res.result !== 'ok' || !res.games || res.games.length === 0) {
-        panel.insertAdjacentHTML(
-          'beforeend',
-          `<p class="upcoming-empty">本月尚未安排執勤賽事。</p>`
-        );
-        return;
-      }
-      */
       if (!res || res.result !== 'ok' || !res.games || res.games.length === 0) {
           document.getElementById('no-duty').style.display = 'block';
           document.getElementById('view-full-schedule').style.display = 'inline-block';
