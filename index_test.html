@@ -522,7 +522,7 @@
 
 <!-- ✅ 共用 Header -->
 <div id="header-container"></div>
-
+<div id="welcome-text"></div>
 <div class="main">
 
   <h2>BBT軟式棒球大聯盟　裁判組　出勤系統</h2>
@@ -533,11 +533,13 @@
   
     if (session.name) {
       const el = document.getElementById('welcome-text');
-      el.innerHTML = `
-        裁判員 <strong>${session.name}</strong> 您好<br>
-        歡迎使用裁判出勤管理系統。<br>
-        請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
-      `;
+      if (el) {
+        el.innerHTML = `
+          裁判員 <strong>${session.name}</strong> 您好<br>
+          歡迎使用裁判出勤管理系統。<br>
+          請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
+        `;
+      }
     }
   });
 </script>
@@ -1208,7 +1210,6 @@ function loadUpcomingGames() {
       container.innerHTML = html || '<p class="upcoming-empty">目前尚無執勤賽事</p>';
     }
     document.getElementById('view-full-schedule').style.display = 'inline-block';
-  );
 }
 
 
