@@ -797,70 +797,28 @@
     }
 
 function renderFullSchedule(res) {
-  const upcoming = document.getElementById('upcomingSchedule');
-  const history  = document.getElementById('historySchedule');
-
-  if (!upcoming || !history) {
-    console.error('schedule containers not found');
-    return;
-  }
-
-  // 清空
-  upcoming.innerHTML = '';
+  const history = document.getElementById('historySchedule');
   history.innerHTML = '';
 
-  console.log('renderFullSchedule res =', res);
+  const games = res.games || [];
 
-  const games = Array.isArray(res.games) ? res.games : [];
-
-  if (games.length === 0) {
-    upcoming.innerHTML =
-      '<p class="upcoming-empty">目前尚無完整班表資料</p>';
+  if (!games.length) {
+    history.innerHTML = '<p>目前尚無完整班表</p>';
     return;
   }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const html = games.map(g => `
+    <div style="margin:6px 0; display:flex; gap:8px; align-items:center;">
+      📆
+      <span>${g.date} ${g.time}</span>
+      <span>| ${g.game_code}</span>
+      <span>| ${g.matchup}</span>
+      <span>| ${g.position}</span>
+      <span>| ${g.field}</span>
+    </div>
+  `).join('');
 
-  const upcomingGames = [];
-  const historyGames = [];
-
-  games.forEach(g => {
-    const d = new Date(g.date);
-    if (d >= today) {
-      upcomingGames.push(g);
-    } else {
-      historyGames.push(g);
-    }
-  });
-
-  // ===== 尚未執勤 =====
-  if (upcomingGames.length) {
-    const html = upcomingGames.map(g => `
-      <div style="margin-bottom:6px;">
-        📅 ${g.date}
-        ${g.time ? g.time : ''}
-        ｜ ${g.game_code}
-        ｜ ${g.position}
-        ${g.field ? '｜' + g.field : ''}
-      </div>
-    `).join('');
-    upcoming.innerHTML = `<h4>尚未執勤</h4>${html}`;
-  }
-
-  // ===== 歷史班表 =====
-  if (historyGames.length) {
-    const html = historyGames.map(g => `
-      <div style="margin-bottom:6px;">
-        📅 ${g.date}
-        ${g.time ? g.time : ''}
-        ｜ ${g.game_code}
-        ｜ ${g.position}
-        ${g.field ? '｜' + g.field : ''}
-      </div>
-    `).join('');
-    history.innerHTML = `<h4 style="margin-top:12px;">歷史班表</h4>${html}`;
-  }
+  history.innerHTML = `<h4>歷史班表</h4>${html}`;
 }
 
 
