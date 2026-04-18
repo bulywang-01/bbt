@@ -1368,6 +1368,16 @@ function loadUpcomingGames() {
       // ===== 6️⃣ 整個月都沒有 =====
       if (weekGames.length === 0 && monthGames.length === 0) {
         if (noDuty) noDuty.style.display = 'block';
+
+        // ✅ 關掉其他空狀態（避免重複顯示）
+        if (weekEmpty) weekEmpty.style.display = 'none';
+        if (monthEmpty) monthEmpty.style.display = 'none';
+        if (weekSection) weekSection.style.display = 'none';
+        if (otherSection) otherSection.style.display = 'none';
+      
+        // ✅ 直接 return，下面不再跑
+        return;
+
       }
 
       // ===== 7️⃣ 查看完整班表一定顯示 =====
