@@ -736,32 +736,44 @@
         </div>
   
         <div class="panel" id="upcoming-panel">
-        <h3>我的班表</h3>
-      
-        <!-- 本週班表 -->
-        <div id="week-section" style="display:none;">
-          <h4>本週班表</h4>
-          <ul id="week-list" class="upcoming-list"></ul>
+          <h3>我的班表</h3>
+        
+          <!-- ✅ loading -->
+          <div id="upcomingLoading" class="loading-text" style="display:none;">
+            讀取賽事中…
+          </div>
+        
+          <!-- 本週 -->
+          <div id="week-section" style="display:none;">
+            <h4>本週班表</h4>
+            <ul id="week-list" class="upcoming-list"></ul>
+            <div id="week-empty" class="upcoming-empty" style="display:none;">
+              本週尚無執勤賽事。
+            </div>
+          </div>
+        
+          <!-- 本月其他 -->
+          <div id="other-section" style="display:none;">
+            <h4>其他班表</h4>
+            <ul id="other-list" class="upcoming-list"></ul>
+            <div id="month-empty" class="upcoming-empty" style="display:none;">
+              本月尚無其他執勤賽事。
+            </div>
+          </div>
+        
+          <!-- 整個月都沒有 -->
+          <div id="no-duty" class="upcoming-empty" style="display:none;">
+            本月尚未安排執勤賽事。
+          </div>
+        
+          <div
+            id="view-full-schedule"
+            class="view-full-schedule"
+            onclick="openFullSchedule()"
+          >
+            查看完整班表 ▶
+          </div>
         </div>
-      
-        <!-- 其他班表 -->
-        <div id="other-section" style="display:none;">
-          <h4>其他班表</h4>
-          <ul id="other-list" class="upcoming-list"></ul>
-        </div>
-      
-        <!-- 沒有任何班表時 -->
-        <div id="no-duty" class="upcoming-empty" style="display:none;">
-          本月尚未安排執勤賽事。
-        </div>
-      
-        <!-- 查看完整班表 -->
-        <div id="view-full-schedule"
-             class="view-full-schedule"
-             onclick="openFullSchedule()">
-          查看完整班表 ▶
-        </div>
-      </div>
       
     <!-- ✅ 我即將執勤的比賽 -->
     <!-- ✅ 我的完整班表 Modal -->
@@ -1286,7 +1298,6 @@ function loadMonthlyGames() {
 
   
 function loadUpcomingGames() {
-
   const s = JSON.parse(localStorage.getItem('session_user') || '{}');
   if (!s.user_id) return;
 
@@ -1294,90 +1305,75 @@ function loadUpcomingGames() {
   if (!panel) return;
 
   const loading = document.getElementById('upcomingLoading');
-  // ✅ 1. 一開始就顯示「讀取賽事中…」
+  const weekSection = document.getElementById('week-section');
+  const otherSection = document.getElementById('other-section');
+  const weekEmpty = document.getElementById('week-empty');
+  const monthEmpty = document.getElementById('month-empty');
+  const noDuty = document.getElementById('no-duty');
+  const viewLink = document.getElementById('view-full-schedule');
+
+  // ===== 1️⃣ 初始狀態重置 =====
   if (loading) loading.style.display = 'block';
 
+  weekSection.style.display = 'none';
+  otherSection.style.display = 'none';
+  if (weekEmpty) weekEmpty.style.display = 'none';
+  if (monthEmpty) monthEmpty.style.display = 'none';
+  if (noDuty) noDuty.style.display = 'none';
+
+  panel.querySelectorAll('.upcoming-list').forEach(ul => {
+    ul.innerHTML = '';
+  });
+
+  // ===== 2️⃣ 呼叫 API =====
   callApi(
     {
       action: 'getMyUpcomingGames',
       user_id: s.user_id
     },
     res => {
-      
-    console.log('getMyUpcomingGames response =', res);
-
-      // ✅ 2. API 回來第一件事：關掉 loading
+      // ✅ API 回來先關 loading
       if (loading) loading.style.display = 'none';
 
-      // 清掉舊內容
-      panel.querySelectorAll('.upcoming-empty, .upcoming-list').forEach(el => el.remove());
+      console.log('getMyUpcomingGames response =', res);
 
-      // ✅ 無資料
-      if (!res || res.result !== 'ok' || !res.games || res.games.length === 0) {
-          //document.getElementById('no-duty').style.display = 'block';
-        const noDutyEl = document.getElementById('no-duty');
-          if (noDutyEl) {
-            noDutyEl.style.display = 'block';
-          }
-          
-        const viewLink = document.getElementById('view-full-schedule');
-          if (viewLink) {
-            viewLink.style.display = 'inline-block';
-          }
-        
-          document.getElementById('view-full-schedule').style.display = 'inline-block';
-          return;
-        }
+      // ===== 3️⃣ 無資料或失敗 =====
+      if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
+        if (noDuty) noDuty.style.display = 'block';
+        if (viewLink) viewLink.style.display = 'inline-block';
+        return;
+      }
 
-      // ✅ 有資料才 render
       const weekGames = res.games.filter(g => isThisWeek(g.date));
       const monthGames = res.games.filter(
         g => isThisMonth(g.date) && !isThisWeek(g.date)
       );
-      const container = document.getElementById('upcoming-container');
-      
-      let html = '';
-      
-      if (weekGames.length) {
-        html += '<h4>📅 本週賽事</h4><ul class="upcoming-list">';
-        weekGames.forEach(e => {
-          html += `
-            <li>
-              <span class="upcoming-position">
-                【${positionText(e.position)}】　
-              </span>
-              ${e.date} ${formatTime(e.time)}　
-              ${e.category}　
-              <b>${e.game_code}</b>　
-              ${e.matchup}
-            </li>
-          `;
-        });
-        html += '</ul>';
+
+      // ===== 4️⃣ 本週區塊 =====
+      weekSection.style.display = 'block';
+      if (weekGames.length > 0) {
+        renderDutyList('week-list', weekGames);
+      } else if (weekEmpty) {
+        weekEmpty.style.display = 'block';
       }
-      
-      if (monthGames.length) {
-        // html += '<h4>🗓 本月其它賽事</h4><ul class="upcoming-list">';
-        html += '<ul class="upcoming-list">';
-        monthGames.forEach(e => {
-          html += `
-            <li>
-              <span class="upcoming-position">
-                【${positionText(e.position)}】　
-              </span> 
-              ${e.date} ${formatTime(e.time)}　
-              ${e.category}　
-              <b>${e.game_code}</b>　
-              ${e.matchup}
-            </li>
-          `;
-        });
-        html += '</ul>';
+
+      // ===== 5️⃣ 本月其他區塊 =====
+      otherSection.style.display = 'block';
+      if (monthGames.length > 0) {
+        renderDutyList('other-list', monthGames);
+      } else if (monthEmpty) {
+        monthEmpty.style.display = 'block';
       }
-      
-      container.innerHTML = html || '<p class="upcoming-empty">目前尚無執勤賽事</p>';
-      document.getElementById('view-full-schedule').style.display = 'inline-block';
-});
+
+      // ===== 6️⃣ 整個月都沒有 =====
+      if (weekGames.length === 0 && monthGames.length === 0) {
+        if (noDuty) noDuty.style.display = 'block';
+      }
+
+      // ===== 7️⃣ 查看完整班表一定顯示 =====
+      if (viewLink) viewLink.style.display = 'inline-block';
+    }
+  );
 }
 
 loadHeader();
