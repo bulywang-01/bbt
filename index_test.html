@@ -796,6 +796,30 @@
       });
     }
 
+function renderFullSchedule(res) {
+  const upcoming = document.getElementById('upcomingSchedule');
+  const history  = document.getElementById('historySchedule');
+
+  if (!upcoming || !history) return;
+
+  // 清空
+  upcoming.innerHTML = '';
+  history.innerHTML = '';
+
+  // 保護判斷
+  if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
+    upcoming.innerHTML = '<p>無法載入班表資料</p>';
+    return;
+  }
+
+  // ✅ 暫時只確認資料有進來
+  upcoming.innerHTML = `
+    <p style="font-weight:600;margin-bottom:6px;">
+      （測試）共 ${res.games.length} 筆班表資料
+    </p>
+  `;
+}
+
 function openFullSchedule() {
   callApi({ action: 'getMyFullSchedule' }, res => {
     renderFullSchedule(res);
