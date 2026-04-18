@@ -752,7 +752,7 @@
       function renderMyDuties(weekDuties, otherDuties) {
       const weekSection = document.getElementById('week-section');
       const otherSection = document.getElementById('other-section');
-      const noDuty = document.getElementById('no-duty');
+      //const noDuty = document.getElementById('no-duty');
       const noDutyEl = document.getElementById('no-duty');
           if (noDutyEl) {
             noDutyEl.style.display = 'block';
@@ -1168,7 +1168,17 @@ function loadUpcomingGames() {
       panel.querySelectorAll('.upcoming-empty, .upcoming-list').forEach(el => el.remove());
 
       if (!res || res.result !== 'ok' || !res.games || res.games.length === 0) {
-          document.getElementById('no-duty').style.display = 'block';
+          //document.getElementById('no-duty').style.display = 'block';
+        const noDutyEl = document.getElementById('no-duty');
+          if (noDutyEl) {
+            noDutyEl.style.display = 'block';
+          }
+          
+        const viewLink = document.getElementById('view-full-schedule');
+          if (viewLink) {
+            viewLink.style.display = 'inline-block';
+          }
+        
           document.getElementById('view-full-schedule').style.display = 'inline-block';
           return;
         }
