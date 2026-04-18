@@ -1059,8 +1059,18 @@ function showLoading(msg) {
 
 function showMessage(msg) {
   const overlay = document.getElementById('overlay');
-  document.getElementById('overlay-text').textContent = msg;
-  document.getElementById('overlay-ok').style.display = 'none';
+  const text = document.getElementById('overlay-text');
+  const ok = document.getElementById('overlay-ok');
+
+  text.textContent = msg;
+  ok.style.display = 'none';
+
+  // ✅ 重點：點遮罩即可關閉（只綁一次）
+  overlay.onclick = () => {
+    hideOverlay();
+    overlay.onclick = null; // 避免影響後續 loading
+  };
+
   overlay.classList.add('show');
 }
 
