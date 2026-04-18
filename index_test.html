@@ -797,11 +797,11 @@
     }
 
 function openFullSchedule() {
-  //showLoading('載入完整班表中...');
   callApi({ action: 'getMyFullSchedule' }, res => {
-    //hideOverlay();
     renderFullSchedule(res);
-    document.getElementById('fullScheduleModal').classList.add('show');
+    document
+      .getElementById('fullScheduleModal')
+      .classList.add('show');
   });
 }
 
