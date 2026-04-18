@@ -821,14 +821,21 @@ function renderFullSchedule(res) {
 }
 
 function openFullSchedule() {
-  callApi({ action: 'getMyFullSchedule' }, res => {
-    console.log('getMyFullSchedule response =', res);
-    renderFullSchedule(res);
-    document
-      .getElementById('fullScheduleModal')
-      .classList.add('show');
-  });
+  callApi(
+    {
+      action: 'getMyUpcomingGames',
+      user_id: JSON.parse(localStorage.getItem('session_user')).user_id
+    },
+    res => {
+      console.log('暫用 upcoming 當 full schedule =', res);
+      renderFullSchedule(res);
+      document
+        .getElementById('fullScheduleModal')
+        .classList.add('show');
+    }
+  );
 }
+
 
 
 function closeFullSchedule() {
