@@ -800,60 +800,64 @@ function renderFullSchedule(res) {
   const upcoming = document.getElementById('upcomingSchedule');
   const history  = document.getElementById('historySchedule');
 
-  if (!upcoming || !history) return;
+  if (!upcoming || !history) {
+    console.error('schedule containers not found');
+    return;
+  }
 
-  // 清空舊內容
+  // 清空
   upcoming.innerHTML = '';
   history.innerHTML = '';
 
-  // 取得班表陣列（目前用 upcoming API 撐畫面）
-  const games = Array.isArray(res?.games) ? res.games : [];
+  console.log('renderFullSchedule res =', res);
 
-  // ✅ 沒有任何班表
+  const games = Array.isArray(res.games) ? res.games : [];
+
   if (games.length === 0) {
-    upcoming.innerHTML = `
-      <p class="upcoming-empty">
-        目前尚無完整班表資料
-      </p>
-    `;
+    upcoming.innerHTML =
+      '<p class="upcoming-empty">目前尚無完整班表資料</p>';
     return;
   }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // ✅ 尚未執勤（未來或今天）
-  const upcomingGames = games
-    .filter(g => new Date(g.date) >= today)
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const upcomingGames = [];
+  const historyGames = [];
 
-  // ✅ 已執勤（歷史）
-  const historyGames = games
-    .filter(g => new Date(g.date) < today)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  games.forEach(g => {
+    const d = new Date(g.date);
+    if (d >= today) {
+      upcomingGames.push(g);
+    } else {
+      historyGames.push(g);
+    }
+  });
 
-  /* ===== 尚未執勤 ===== */
-  if (upcomingGames.length > 0) {
-    upcoming.innerHTML += `<h4>尚未執勤</h4><ul class="upcoming-list"></ul>`;
-    const ul = upcoming.querySelector('ul');
-
-    upcomingGames.forEach(g => {
-      const li = document.createElement('li');
-      li.textContent = `${g.date} ${g.game_code || ''} ${g.position || ''}`;
-      ul.appendChild(li);
-    });
+  // ===== 尚未執勤 =====
+  if (upcomingGames.length) {
+    const html = upcomingGames.map(g => `
+      <div style="margin-bottom:6px;">
+        📅 ${g.date}
+        ${g.game_code || ''}
+        ｜ ${g.position || ''}
+        ${g.field ? '｜' + g.field : ''}
+      </div>
+    `).join('');
+    upcoming.innerHTML = `<h4>尚未執勤</h4>${html}`;
   }
 
-  /* ===== 歷史班表（先不折疊，下一步再加） ===== */
-  if (historyGames.length > 0) {
-    history.innerHTML += `<h4 style="margin-top:12px;">歷史班表</h4><ul class="upcoming-list"></ul>`;
-    const ul = history.querySelector('ul');
-
-    historyGames.forEach(g => {
-      const li = document.createElement('li');
-      li.textContent = `${g.date} ${g.game_code || ''} ${g.position || ''}`;
-      ul.appendChild(li);
-    });
+  // ===== 已執勤 =====
+  if (historyGames.length) {
+    const html = historyGames.map(g => `
+      <div style="margin-bottom:6px;">
+        📅 ${g.date}
+        ${g.game_code || ''}
+        ｜ ${g.position || ''}
+        ${g.field ? '｜' + g.field : ''}
+      </div>
+    `).join('');
+    history.innerHTML = `<h4 style="margin-top:12px;">歷史班表</h4>${html}`;
   }
 }
 
