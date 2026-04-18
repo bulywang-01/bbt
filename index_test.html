@@ -753,6 +753,14 @@
       const weekSection = document.getElementById('week-section');
       const otherSection = document.getElementById('other-section');
       const noDuty = document.getElementById('no-duty');
+      const noDutyEl = document.getElementById('no-duty');
+          if (noDutyEl) {
+            noDutyEl.style.display = 'block';
+          }
+      const link = document.getElementById('view-full-schedule');
+          if (link) {
+            link.style.display = 'inline-block';
+          }
     
       // 先全部隱藏
       weekSection.style.display = 'none';
