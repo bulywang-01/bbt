@@ -797,9 +797,9 @@
     }
 
 function openFullSchedule() {
-  showLoading('載入完整班表中...');
+  //showLoading('載入完整班表中...');
   callApi({ action: 'getMyFullSchedule' }, res => {
-    hideOverlay();
+    //hideOverlay();
     renderFullSchedule(res);
     document.getElementById('fullScheduleModal').classList.add('show');
   });
