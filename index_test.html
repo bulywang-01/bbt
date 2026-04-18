@@ -513,7 +513,36 @@
   text-decoration: underline;
 }
 
+.loading-text {
+  text-align: center;
+  padding: 12px;
+  color: #777;
+  font-size: 14px;
+}
 
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.schedule-table th,
+.schedule-table td {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 8px 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.schedule-table th {
+  background: #f7f9fc;
+  font-weight: 600;
+}
+
+.schedule-table tr:hover {
+  background: #f0f6ff;
+}
+    
   </style>
   
 </head>
@@ -521,6 +550,11 @@
 <body>
 
 <!-- ✅ 共用 Header -->
+
+<div id="fullScheduleLoading" class="loading-text">
+  載入完整班表中…
+</div>
+
 <div id="header-container"></div>
 <div class="main">
 
@@ -797,28 +831,58 @@
     }
 
 function renderFullSchedule(res) {
-  const history = document.getElementById('historySchedule');
-  history.innerHTML = '';
+  const container = document.getElementById('historySchedule');
+  const loading = document.getElementById('fullScheduleLoading');
+
+  if (loading) loading.style.display = 'none';
+  container.innerHTML = '';
+
+  if (!res || res.result !== 'ok') {
+    container.innerHTML = '<p>載入完整班表失敗</p>';
+    return;
+  }
 
   const games = res.games || [];
 
   if (!games.length) {
-    history.innerHTML = '<p>目前尚無完整班表</p>';
+    container.innerHTML = '<p>目前尚無完整班表</p>';
     return;
   }
 
-  const html = games.map(g => `
-    <div style="margin:6px 0; display:flex; gap:8px; align-items:center;">
-      📆
-      <span>${g.date} ${g.time}</span>
-      <span>| ${g.game_code}</span>
-      <span>| ${g.matchup}</span>
-      <span>| ${g.position}</span>
-      <span>| ${g.field}</span>
-    </div>
-  `).join('');
+  let html = `
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>日期</th>
+          <th>時間</th>
+          <th>場次</th>
+          <th>對戰</th>
+          <th>站位</th>
+          <th>場地</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
 
-  history.innerHTML = `<h4>歷史班表</h4>${html}`;
+  games.forEach(g => {
+    html += `
+      <tr>
+        <td>${g.date}</td>
+        <td>${g.time}</td>
+        <td>${g.game_code}</td>
+        <td>${g.matchup}</td>
+        <td>${g.position}</td>
+        <td>${g.field}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+      </tbody>
+    </table>
+  `;
+
+  container.innerHTML = html;
 }
 
 
