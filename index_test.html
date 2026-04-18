@@ -858,13 +858,17 @@ function renderFullSchedule(res) {
 }
 
 function openFullSchedule() {
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  console.log('送出 getMyFullSchedule 參數 user_id =', session.user_id);
+
   callApi(
     {
-      action: 'getMyUpcomingGames',
-      user_id: JSON.parse(localStorage.getItem('session_user')).user_id
+      action: 'getMyFullSchedule',
+      user_id: session.user_id   // ✅ 一定要送
     },
     res => {
-      console.log('暫用 upcoming 當 full schedule =', res);
+      console.log('getMyFullSchedule response =', res);
       renderFullSchedule(res);
       document
         .getElementById('fullScheduleModal')
