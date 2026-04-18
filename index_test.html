@@ -475,6 +475,20 @@
   font-weight: 700;
 }
 
+.view-full-schedule {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a7ef5;
+  cursor: pointer;
+  display: none;   /* JS 控制 */
+}
+
+.view-full-schedule:hover {
+  text-decoration: underline;
+}
+
+
   </style>
   
 </head>
@@ -670,27 +684,55 @@
         </div>
       
     <!-- ✅ 我即將執勤的比賽 -->
-    <div class="panel" id="upcoming-panel">
-      <h3>我的班表</h3>
-    
-      <!-- 本週班表 -->
-      <div id="week-section" style="display:none;">
-        <h4>本週班表</h4>
-        <ul id="week-list" class="upcoming-list"></ul>
-      </div>
-    
-      <!-- 其他班表 -->
-      <div id="other-section" style="display:none;">
-        <h4>其他班表</h4>
-        <ul id="other-list" class="upcoming-list"></ul>
-      </div>
-    
-      <!-- 沒有任何班表時 -->
-      <div id="no-duty" class="upcoming-empty" style="display:none;">
-        本月尚未安排執勤賽事，其它月份班表請至報名頁面瀏覽。
-      </div>
+<!-- 完整班表 Modal -->
+<div id="scheduleModal" class="overlay">
+  <div class="overlay-box">
+    <h3>我的完整班表</h3>
+
+    <div id="upcomingSchedule">
+      <!-- 尚未執勤 -->
     </div>
+
+    <div id="historySchedule">
+      <!-- 歷史班表（折疊） -->
+    </div>
+
+    <button onclick="closeScheduleModal()">關閉</button>
+  </div>
+</div>
+    
+    <!-- 我的完整班表 -->
+<div id="fullScheduleModal" class="overlay">
+  <div class="overlay-box">
+
+    <h3>我的完整班表</h3>
+
+    <div id="upcomingSchedule">
+      <!-- 尚未執勤（直接 render） -->
+    </div>
+
+    <div id="historySchedule">
+      <!-- 歷史班表（折疊） -->
+    </div>
+
+    <button onclick="closeFullSchedule()">關閉</button>
+
+  </div>
+</div>
   
+  <!-- ✅ 查看完整班表（放在我的班表文字下方） -->
+    <div id="view-full-schedule"
+         style="
+           margin-top: 8px;
+           font-size: 14px;
+           font-weight: 600;
+           color: #4a7ef5;
+           cursor: pointer;
+           display: none;
+         "
+         onclick="openFullSchedule()">
+      查看完整班表 ▶
+    </div>
 <script>
       function renderMyDuties(weekDuties, otherDuties) {
       const weekSection = document.getElementById('week-section');
@@ -730,6 +772,21 @@
         ul.appendChild(li);
       });
     }
+
+function openFullSchedule() {
+  showLoading('載入完整班表中...');
+  callApi({ action: 'getMyFullSchedule' }, res => {
+    hideOverlay();
+    renderFullSchedule(res);
+    document.getElementById('fullScheduleModal').classList.add('show');
+  });
+}
+
+function closeFullSchedule() {
+  document.getElementById('fullScheduleModal').classList.remove('show');
+}
+
+
 </script>
 
   <!-- ✅ 系統公告 -->
@@ -1087,6 +1144,7 @@ function loadUpcomingGames() {
       // 清掉舊內容
       panel.querySelectorAll('.upcoming-empty, .upcoming-list').forEach(el => el.remove());
 
+      /*
       if (!res || res.result !== 'ok' || !res.games || res.games.length === 0) {
         panel.insertAdjacentHTML(
           'beforeend',
@@ -1094,6 +1152,12 @@ function loadUpcomingGames() {
         );
         return;
       }
+      */
+      if (!res || res.result !== 'ok' || !res.games || res.games.length === 0) {
+          document.getElementById('no-duty').style.display = 'block';
+          document.getElementById('view-full-schedule').style.display = 'inline-block';
+          return;
+        }
 
       const weekGames = res.games.filter(g => isThisWeek(g.date));
       const monthGames = res.games.filter(
@@ -1142,6 +1206,7 @@ function loadUpcomingGames() {
       
       container.innerHTML = html || '<p class="upcoming-empty">目前尚無執勤賽事</p>';
     }
+    document.getElementById('view-full-schedule').style.display = 'inline-block';
   );
 }
 
