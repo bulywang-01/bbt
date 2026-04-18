@@ -1208,10 +1208,9 @@ function loadUpcomingGames() {
       }
       
       container.innerHTML = html || '<p class="upcoming-empty">目前尚無執勤賽事</p>';
-    }
-    document.getElementById('view-full-schedule').style.display = 'inline-block';
+      document.getElementById('view-full-schedule').style.display = 'inline-block';
+});
 }
-
 
 loadHeader();
 loadUpcomingGames(); // 我將執勤的比賽
