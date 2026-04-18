@@ -31,7 +31,32 @@
       box-shadow: 0 2px 8px rgba(0,0,0,.08);
     }
     
+    /* 共用 overlay（裁判守則 / 完整班表） */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;                  /* ✅ 預設不顯示 */
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
     
+    .overlay.show {
+      display: flex;                  /* ✅ 顯示時 */
+    }
+    
+    .overlay-box {
+      background: #fff;
+      width: 90%;
+      max-width: 760px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border-radius: 14px;
+      padding: 26px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.3);
+    }
+        
     /* =========================
        Headings & Typography
        ========================= */
@@ -684,39 +709,15 @@
         </div>
       
     <!-- ✅ 我即將執勤的比賽 -->
-<!-- 完整班表 Modal -->
-<div id="scheduleModal" class="overlay">
-  <div class="overlay-box">
-    <h3>我的完整班表</h3>
-
-    <div id="upcomingSchedule">
-      <!-- 尚未執勤 -->
-    </div>
-
-    <div id="historySchedule">
-      <!-- 歷史班表（折疊） -->
-    </div>
-
-    <button onclick="closeScheduleModal()">關閉</button>
-  </div>
-</div>
-    
     <!-- 我的完整班表 -->
-<div id="fullScheduleModal" class="overlay">
+<div id="fullScheduleModal" class="overlay" style="display:none;">
   <div class="overlay-box">
-
     <h3>我的完整班表</h3>
 
-    <div id="upcomingSchedule">
-      <!-- 尚未執勤（直接 render） -->
-    </div>
-
-    <div id="historySchedule">
-      <!-- 歷史班表（折疊） -->
-    </div>
+    <div id="upcomingSchedule"></div>
+    <div id="historySchedule"></div>
 
     <button onclick="closeFullSchedule()">關閉</button>
-
   </div>
 </div>
   
