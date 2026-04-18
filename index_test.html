@@ -693,6 +693,34 @@
             </div>
           </div>
         </div>
+  
+        <div class="panel" id="upcoming-panel">
+        <h3>我的班表</h3>
+      
+        <!-- 本週班表 -->
+        <div id="week-section" style="display:none;">
+          <h4>本週班表</h4>
+          <ul id="week-list" class="upcoming-list"></ul>
+        </div>
+      
+        <!-- 其他班表 -->
+        <div id="other-section" style="display:none;">
+          <h4>其他班表</h4>
+          <ul id="other-list" class="upcoming-list"></ul>
+        </div>
+      
+        <!-- 沒有任何班表時 -->
+        <div id="no-duty" class="upcoming-empty" style="display:none;">
+          本月尚未安排執勤賽事。
+        </div>
+      
+        <!-- 查看完整班表 -->
+        <div id="view-full-schedule"
+             class="view-full-schedule"
+             onclick="openFullSchedule()">
+          查看完整班表 ▶
+        </div>
+      </div>
       
     <!-- ✅ 我即將執勤的比賽 -->
     <!-- 我的完整班表 -->
