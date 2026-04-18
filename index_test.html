@@ -757,25 +757,31 @@
       </div>
       
     <!-- ✅ 我即將執勤的比賽 -->
-    <!-- 我的完整班表 -->
-<div id="fullScheduleModal" class="overlay">
-  <div class="overlay-box">
-    <h3>我的完整班表</h3>
-
-    <!-- ✅ 載入訊息（不要放在 historySchedule 裡） -->
-    <div id="fullScheduleLoading" class="loading-text" style="display:none;">
-      載入完整班表中…
+    <!-- ✅ 我的完整班表 Modal -->
+    <div id="fullScheduleModal" class="overlay">
+      <div class="overlay-box">
+    
+        <h3>我的完整班表</h3>
+    
+        <!-- ✅ loading（不要放在 historySchedule 裡） -->
+        <div
+          id="fullScheduleLoading"
+          class="loading-text"
+          style="display:none;"
+        >
+          完整賽事載入中…
+        </div>
+    
+        <!-- （如果之後要分未來 / 歷史可以用） -->
+        <div id="upcomingSchedule"></div>
+    
+        <!-- ✅ 真正 render 表格的地方 -->
+        <div id="historySchedule"></div>
+    
+        <button onclick="closeFullSchedule()">關閉</button>
+    
+      </div>
     </div>
-
-    <div id="upcomingSchedule"></div>
-
-    <!-- ✅ 真正 render 表格的地方 -->
-    <div id="historySchedule"></div>
-
-
-    <button onclick="closeFullSchedule()">關閉</button>
-  </div>
-</div>
   
   <div id="upcomingLoading" class="loading-text" style="display:none;">
   讀取賽事中…
@@ -899,31 +905,32 @@ function renderFullSchedule(res) {
 
 
 function openFullSchedule() {
+  const modal = document.getElementById('fullScheduleModal');
   const loading = document.getElementById('fullScheduleLoading');
   const container = document.getElementById('historySchedule');
 
-  // ✅ 1. 先清畫面、顯示 loading
-  container.innerHTML = '';
-  loading.style.display = 'block';
+  // ✅ 1. 先打開 modal（很重要）
+  modal.classList.add('show');
 
-  // ✅ 2. 先把 modal 打開（不然 loading 也看不到）
-  document
-    .getElementById('fullScheduleModal')
-    .classList.add('show');
+  // ✅ 2. 清空舊內容
+  container.innerHTML = '';
+
+  // ✅ 3. 顯示 loading（現在一定看得到）
+  if (loading) loading.style.display = 'block';
 
   const session = JSON.parse(localStorage.getItem('session_user'));
 
-  // ✅ 3. 再打 API
+  // ✅ 4. 再呼叫 API
   callApi(
     {
       action: 'getMyFullSchedule',
       user_id: session.user_id
     },
     res => {
-      // ✅ 4. API 回來後關掉 loading
-      loading.style.display = 'none';
+      // ✅ 5. API 回來才關 loading
+      if (loading) loading.style.display = 'none';
 
-      // ✅ 5. render 資料
+      // ✅ 6. render 資料
       renderFullSchedule(res);
     }
   );
