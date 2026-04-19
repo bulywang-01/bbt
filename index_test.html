@@ -821,24 +821,32 @@
     
         <h3>我的完整班表</h3>
     
-        <!-- ✅ loading（不要放在 historySchedule 裡） -->
-        <div id="fullScheduleLoading" class="loading-text" style="display:none;">
+        <!-- ✅ Loading Spinner -->
+        <div id="fullScheduleLoading" class="loading-box" style="display:none;">
           <div class="spinner"></div>
           <div class="loading-text">完整賽事載入中…</div>
         </div>
-        
-        <!-- ✅ 尚未執勤 -->
+    
+        <!-- ✅ 尚未執勤（未來三個月） -->
         <div id="futureSection" style="display:none;">
-          <h4>尚未執勤</h4>
+          <h4>尚未執勤（未來三個月）</h4>
           <div id="futureSchedule"></div>
         </div>
     
-        <!-- ✅ 歷史（三個月） -->
-        <div id="historySection" style="display:none;">
-          <h4>歷史班表（近三個月）</h4>
+        <!-- ✅ 展開歷史班表按鈕 -->
+        <div id="toggleHistory"
+             class="view-full-schedule"
+             style="margin-top:12px;"
+             onclick="toggleHistory()">
+          ▶ 顯示歷史班表
+        </div>
+    
+        <!-- ✅ 歷史班表（預設隱藏） -->
+        <div id="historySection" style="display:none; margin-top:12px;">
+          <h4>歷史班表</h4>
           <div id="historySchedule"></div>
         </div>
-
+    
         <button onclick="closeFullSchedule()">關閉</button>
     
       </div>
@@ -914,12 +922,14 @@ function renderFullSchedule(res) {
   const historyWrap = document.getElementById('historySchedule');
   const futureSection = document.getElementById('futureSection');
   const historySection = document.getElementById('historySection');
+  const toggleBtn = document.getElementById('toggleHistory');
 
-  // ✅ 初始化：先清空 + 隱藏
+  // 初始化
   futureWrap.innerHTML = '';
   historyWrap.innerHTML = '';
   futureSection.style.display = 'none';
   historySection.style.display = 'none';
+  toggleBtn.style.display = 'none';
 
   if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
     futureSection.style.display = 'block';
@@ -951,7 +961,7 @@ function renderFullSchedule(res) {
     }
   });
 
-  /* ===== 尚未執勤（未來三個月，預設顯示） ===== */
+  /* ===== 尚未執勤（預設顯示） ===== */
   futureSection.style.display = 'block';
   if (future.length > 0) {
     futureWrap.innerHTML = buildScheduleTable(future);
@@ -959,11 +969,11 @@ function renderFullSchedule(res) {
     futureWrap.innerHTML = '<p>未來三個月內尚無執勤賽事</p>';
   }
 
-  /* ===== 歷史班表 =====
-     ❗ 不在這裡顯示
-     ❗ 等使用者點選再顯示
-  */
-  historyWrap.innerHTML = buildScheduleTable(history);
+  /* ===== 歷史班表（點選才顯示） ===== */
+  if (history.length > 0) {
+    historyWrap.innerHTML = buildScheduleTable(history);
+    toggleBtn.style.display = 'inline-block';
+  }
 }
 
 // ===== 表格產生器（共用） =====
@@ -1009,8 +1019,8 @@ function toggleHistory() {
   const btn = document.getElementById('toggleHistory');
 
   const isOpen = section.style.display === 'block';
-  section.style.display = isOpen ? 'none' : 'block';
 
+  section.style.display = isOpen ? 'none' : 'block';
   btn.textContent = isOpen
     ? '▶ 顯示歷史班表'
     : '▼ 隱藏歷史班表';
@@ -1019,39 +1029,30 @@ function toggleHistory() {
 function openFullSchedule() {
   const modal = document.getElementById('fullScheduleModal');
   const loading = document.getElementById('fullScheduleLoading');
-  const container = document.getElementById('historySchedule');
 
   // 1️⃣ 打開 modal
   modal.classList.add('show');
- 
-  // ✅ 顯示 spinner
+
+  // 2️⃣ 顯示 spinner
   loading.style.display = 'flex';
 
-  // 2️⃣ 顯示 loading（先顯示，不急著清）
-  if (loading) loading.style.display = 'block';
-
-  // ✅ 隱藏區塊（避免殘影）
+  // 3️⃣ 隱藏區塊（避免殘影）
   document.getElementById('futureSection').style.display = 'none';
   document.getElementById('historySection').style.display = 'none';
+  document.getElementById('toggleHistory').style.display = 'none';
 
-  // 3️⃣ 用 setTimeout 確保 DOM repaint（關鍵）
-  setTimeout(() => {
-    container.innerHTML = '';
+  const session = JSON.parse(localStorage.getItem('session_user'));
 
-    const session = JSON.parse(localStorage.getItem('session_user'));
-
-    callApi(
-      {
-        action: 'getMyFullSchedule',
-        user_id: session.user_id
-      },
-      res => {
-        //if (loading) loading.style.display = 'none';
-        loading.style.display = 'none';
-        renderFullSchedule(res);
-      }
-    );
-  }, 0);
+  callApi(
+    {
+      action: 'getMyFullSchedule',
+      user_id: session.user_id
+    },
+    res => {
+      loading.style.display = 'none';
+      renderFullSchedule(res);
+    }
+  );
 }
 
 
