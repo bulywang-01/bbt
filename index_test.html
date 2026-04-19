@@ -807,7 +807,13 @@
             查看完整班表 ▶
           </div>
         </div>
-      
+  
+        <div id="toggleHistory"
+             class="view-full-schedule"
+             onclick="toggleHistory()">
+          ▶ 顯示歷史班表
+        </div>
+  
     <!-- ✅ 我即將執勤的比賽 -->
     <!-- ✅ 我的完整班表 Modal -->
     <div id="fullScheduleModal" class="overlay">
@@ -909,50 +915,55 @@ function renderFullSchedule(res) {
   const futureSection = document.getElementById('futureSection');
   const historySection = document.getElementById('historySection');
 
+  // ✅ 初始化：先清空 + 隱藏
   futureWrap.innerHTML = '';
   historyWrap.innerHTML = '';
+  futureSection.style.display = 'none';
+  historySection.style.display = 'none';
 
   if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
-    historyWrap.innerHTML = '<p>載入完整班表失敗</p>';
-    historySection.style.display = 'block';
+    futureSection.style.display = 'block';
+    futureWrap.innerHTML = '<p>載入完整班表失敗</p>';
     return;
   }
 
   const games = res.games;
 
   if (games.length === 0) {
-    historyWrap.innerHTML = '<p>目前尚無完整班表</p>';
-    historySection.style.display = 'block';
+    futureSection.style.display = 'block';
+    futureWrap.innerHTML = '<p>未來三個月內尚無執勤賽事</p>';
     return;
   }
 
   const now = new Date();
-  const threeMonthsAgo = new Date();
-  threeMonthsAgo.setMonth(now.getMonth() - 3);
+  const threeMonthsLater = new Date();
+  threeMonthsLater.setMonth(now.getMonth() + 3);
 
   const future = [];
   const history = [];
 
   games.forEach(g => {
     const dt = new Date(`${g.date} ${g.time}`);
-    if (dt >= now) {
+    if (dt >= now && dt <= threeMonthsLater) {
       future.push(g);
-    } else if (dt >= threeMonthsAgo) {
+    } else if (dt < now) {
       history.push(g);
     }
   });
 
-  // ===== 尚未執勤 =====
+  /* ===== 尚未執勤（未來三個月，預設顯示） ===== */
+  futureSection.style.display = 'block';
   if (future.length > 0) {
-    futureSection.style.display = 'block';
     futureWrap.innerHTML = buildScheduleTable(future);
+  } else {
+    futureWrap.innerHTML = '<p>未來三個月內尚無執勤賽事</p>';
   }
 
-  // ===== 歷史（三個月） =====
-  if (history.length > 0) {
-    historySection.style.display = 'block';
-    historyWrap.innerHTML = buildScheduleTable(history);
-  }
+  /* ===== 歷史班表 =====
+     ❗ 不在這裡顯示
+     ❗ 等使用者點選再顯示
+  */
+  historyWrap.innerHTML = buildScheduleTable(history);
 }
 
 // ===== 表格產生器（共用） =====
@@ -993,6 +1004,17 @@ function buildScheduleTable(list) {
   return html;
 }
 
+function toggleHistory() {
+  const section = document.getElementById('historySection');
+  const btn = document.getElementById('toggleHistory');
+
+  const isOpen = section.style.display === 'block';
+  section.style.display = isOpen ? 'none' : 'block';
+
+  btn.textContent = isOpen
+    ? '▶ 顯示歷史班表'
+    : '▼ 隱藏歷史班表';
+}
 
 function openFullSchedule() {
   const modal = document.getElementById('fullScheduleModal');
