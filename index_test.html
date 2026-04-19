@@ -917,6 +917,16 @@
       });
     }
 
+function positionToZh(pos) {
+  const map = {
+    PU: '主審',
+    U1: '一壘審',
+    U2: '二壘審',
+    U3: '三壘審'
+  };
+  return map[pos] || pos || '';
+}
+  
 function renderFullSchedule(res) {
   const futureWrap = document.getElementById('futureSchedule');
   const historyWrap = document.getElementById('historySchedule');
@@ -1000,7 +1010,7 @@ function buildScheduleTable(list) {
         <td>${g.time}</td>
         <td>${g.game_code}</td>
         <td>${g.matchup}</td>
-        <td>${g.position}</td>
+        <td>${positionToZh(g.position)}</td>
         <td>${g.field}</td>
       </tr>
     `;
