@@ -779,7 +779,7 @@ function render() {
             if (g.need_count === 0) {
               umpireCell = '<span class="umpire-na">不需裁判</span>';
             } else if (filled >= g.need_count) {
-              umpireCell = '<span class="umpire-full">已額滿</span>';
+              umpireCell = '<span class="umpire-full"><strong>已額滿</strong></span>';
             }
 
             tr.innerHTML = `
