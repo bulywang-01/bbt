@@ -555,6 +555,39 @@
   text-align: center;
 }
     
+/* ===== Loading Spinner ===== */
+.loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  gap: 10px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid #e0e0e0;
+  border-top: 4px solid #4a7ef5;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #666;
+}
+
+/* ===== Section spacing ===== */
+#futureSection,
+#historySection {
+  margin-top: 12px;
+}
   </style>
   
 </head>
@@ -783,12 +816,21 @@
         <h3>我的完整班表</h3>
     
         <!-- ✅ loading（不要放在 historySchedule 裡） -->
-        <div
-          id="fullScheduleLoading"
-          class="loading-text"
-          style="display:none;"
-        >
-          完整賽事載入中…
+        <div id="fullScheduleLoading" class="loading-text" style="display:none;">
+          <div class="spinner"></div>
+          <div class="loading-text">完整賽事載入中…</div>
+        </div>
+        
+        <!-- ✅ 尚未執勤 -->
+        <div id="futureSection" style="display:none;">
+          <h4>尚未執勤</h4>
+          <div id="futureSchedule"></div>
+        </div>
+    
+        <!-- ✅ 歷史（三個月） -->
+        <div id="historySection" style="display:none;">
+          <h4>歷史班表（近三個月）</h4>
+          <div id="historySchedule"></div>
         </div>
 
         <!-- （如果之後要分未來 / 歷史可以用） -->
@@ -868,24 +910,59 @@
     }
 
 function renderFullSchedule(res) {
-  const container = document.getElementById('historySchedule');
-  const loading = document.getElementById('fullScheduleLoading');
+  const futureWrap = document.getElementById('futureSchedule');
+  const historyWrap = document.getElementById('historySchedule');
+  const futureSection = document.getElementById('futureSection');
+  const historySection = document.getElementById('historySection');
 
-  if (loading) loading.style.display = 'none';
-  container.innerHTML = '';
+  futureWrap.innerHTML = '';
+  historyWrap.innerHTML = '';
 
-  if (!res || res.result !== 'ok') {
-    container.innerHTML = '<p>載入完整班表失敗</p>';
+  if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
+    historyWrap.innerHTML = '<p>載入完整班表失敗</p>';
+    historySection.style.display = 'block';
     return;
   }
 
-  const games = res.games || [];
+  const games = res.games;
 
-  if (!games.length) {
-    container.innerHTML = '<p>目前尚無完整班表</p>';
+  if (games.length === 0) {
+    historyWrap.innerHTML = '<p>目前尚無完整班表</p>';
+    historySection.style.display = 'block';
     return;
   }
 
+  const now = new Date();
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(now.getMonth() - 3);
+
+  const future = [];
+  const history = [];
+
+  games.forEach(g => {
+    const dt = new Date(`${g.date} ${g.time}`);
+    if (dt >= now) {
+      future.push(g);
+    } else if (dt >= threeMonthsAgo) {
+      history.push(g);
+    }
+  });
+
+  // ===== 尚未執勤 =====
+  if (future.length > 0) {
+    futureSection.style.display = 'block';
+    futureWrap.innerHTML = buildScheduleTable(future);
+  }
+
+  // ===== 歷史（三個月） =====
+  if (history.length > 0) {
+    historySection.style.display = 'block';
+    historyWrap.innerHTML = buildScheduleTable(history);
+  }
+}
+
+// ===== 表格產生器（共用） =====
+function buildScheduleTable(list) {
   let html = `
     <table class="schedule-table">
       <thead>
@@ -901,7 +978,7 @@ function renderFullSchedule(res) {
       <tbody>
   `;
 
-  games.forEach(g => {
+  list.forEach(g => {
     html += `
       <tr>
         <td>${g.date}</td>
@@ -919,7 +996,7 @@ function renderFullSchedule(res) {
     </table>
   `;
 
-  container.innerHTML = html;
+  return html;
 }
 
 
@@ -930,9 +1007,16 @@ function openFullSchedule() {
 
   // 1️⃣ 打開 modal
   modal.classList.add('show');
+ 
+  // ✅ 顯示 spinner
+  loading.style.display = 'flex';
 
   // 2️⃣ 顯示 loading（先顯示，不急著清）
   if (loading) loading.style.display = 'block';
+
+  // ✅ 隱藏區塊（避免殘影）
+  document.getElementById('futureSection').style.display = 'none';
+  document.getElementById('historySection').style.display = 'none';
 
   // 3️⃣ 用 setTimeout 確保 DOM repaint（關鍵）
   setTimeout(() => {
@@ -946,7 +1030,8 @@ function openFullSchedule() {
         user_id: session.user_id
       },
       res => {
-        if (loading) loading.style.display = 'none';
+        //if (loading) loading.style.display = 'none';
+        loading.style.display = 'none';
         renderFullSchedule(res);
       }
     );
