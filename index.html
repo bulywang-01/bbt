@@ -555,6 +555,39 @@
   text-align: center;
 }
     
+/* ===== Loading Spinner ===== */
+.loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  gap: 10px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid #e0e0e0;
+  border-top: 4px solid #4a7ef5;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #666;
+}
+
+/* ===== Section spacing ===== */
+#futureSection,
+#historySection {
+  margin-top: 12px;
+}
   </style>
   
 </head>
@@ -774,7 +807,13 @@
             查看完整班表 ▶
           </div>
         </div>
-      
+  
+        <div id="toggleHistory"
+             class="view-full-schedule"
+             onclick="toggleHistory()">
+          ▶ 顯示歷史班表
+        </div>
+  
     <!-- ✅ 我即將執勤的比賽 -->
     <!-- ✅ 我的完整班表 Modal -->
     <div id="fullScheduleModal" class="overlay">
@@ -782,20 +821,31 @@
     
         <h3>我的完整班表</h3>
     
-        <!-- ✅ loading（不要放在 historySchedule 裡） -->
-        <div
-          id="fullScheduleLoading"
-          class="loading-text"
-          style="display:none;"
-        >
-          完整賽事載入中…
+        <!-- ✅ Loading Spinner -->
+        <div id="fullScheduleLoading" class="loading-box" style="display:none;">
+          <div class="spinner"></div>
+          <div class="loading-text">完整賽事載入中…</div>
         </div>
-
-        <!-- （如果之後要分未來 / 歷史可以用） -->
-        <div id="upcomingSchedule"></div>
     
-        <!-- ✅ 真正 render 表格的地方 -->
-        <div id="historySchedule"></div>
+        <!-- ✅ 尚未執勤（未來三個月） -->
+        <div id="futureSection" style="display:none;">
+          <h4>尚未執勤（未來三個月）</h4>
+          <div id="futureSchedule"></div>
+        </div>
+    
+        <!-- ✅ 展開歷史班表按鈕 -->
+        <div id="toggleHistory"
+             class="view-full-schedule"
+             style="margin-top:12px;"
+             onclick="toggleHistory()">
+          ▶ 顯示歷史班表
+        </div>
+    
+        <!-- ✅ 歷史班表（預設隱藏） -->
+        <div id="historySection" style="display:none; margin-top:12px;">
+          <h4>歷史班表</h4>
+          <div id="historySchedule"></div>
+        </div>
     
         <button onclick="closeFullSchedule()">關閉</button>
     
@@ -867,25 +917,77 @@
       });
     }
 
+function positionToZh(pos) {
+  const map = {
+    PU: '主審',
+    U1: '一壘審',
+    U2: '二壘審',
+    U3: '三壘審'
+  };
+  return map[pos] || pos || '';
+}
+  
 function renderFullSchedule(res) {
-  const container = document.getElementById('historySchedule');
-  const loading = document.getElementById('fullScheduleLoading');
+  const futureWrap = document.getElementById('futureSchedule');
+  const historyWrap = document.getElementById('historySchedule');
+  const futureSection = document.getElementById('futureSection');
+  const historySection = document.getElementById('historySection');
+  const toggleBtn = document.getElementById('toggleHistory');
 
-  if (loading) loading.style.display = 'none';
-  container.innerHTML = '';
+  // 初始化
+  futureWrap.innerHTML = '';
+  historyWrap.innerHTML = '';
+  futureSection.style.display = 'none';
+  historySection.style.display = 'none';
+  toggleBtn.style.display = 'none';
 
-  if (!res || res.result !== 'ok') {
-    container.innerHTML = '<p>載入完整班表失敗</p>';
+  if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
+    futureSection.style.display = 'block';
+    futureWrap.innerHTML = '<p>載入完整班表失敗</p>';
     return;
   }
 
-  const games = res.games || [];
+  const games = res.games;
 
-  if (!games.length) {
-    container.innerHTML = '<p>目前尚無完整班表</p>';
+  if (games.length === 0) {
+    futureSection.style.display = 'block';
+    futureWrap.innerHTML = '<p>未來三個月內尚無執勤賽事</p>';
     return;
   }
 
+  const now = new Date();
+  const threeMonthsLater = new Date();
+  threeMonthsLater.setMonth(now.getMonth() + 3);
+
+  const future = [];
+  const history = [];
+
+  games.forEach(g => {
+    const dt = new Date(`${g.date} ${g.time}`);
+    if (dt >= now && dt <= threeMonthsLater) {
+      future.push(g);
+    } else if (dt < now) {
+      history.push(g);
+    }
+  });
+
+  /* ===== 尚未執勤（預設顯示） ===== */
+  futureSection.style.display = 'block';
+  if (future.length > 0) {
+    futureWrap.innerHTML = buildScheduleTable(future);
+  } else {
+    futureWrap.innerHTML = '<p>未來三個月內尚無執勤賽事</p>';
+  }
+
+  /* ===== 歷史班表（點選才顯示） ===== */
+  if (history.length > 0) {
+    historyWrap.innerHTML = buildScheduleTable(history);
+    toggleBtn.style.display = 'inline-block';
+  }
+}
+
+// ===== 表格產生器（共用） =====
+function buildScheduleTable(list) {
   let html = `
     <table class="schedule-table">
       <thead>
@@ -901,14 +1003,14 @@ function renderFullSchedule(res) {
       <tbody>
   `;
 
-  games.forEach(g => {
+  list.forEach(g => {
     html += `
       <tr>
         <td>${g.date}</td>
         <td>${g.time}</td>
         <td>${g.game_code}</td>
         <td>${g.matchup}</td>
-        <td>${g.position}</td>
+        <td>${positionText(g.position)}</td>
         <td>${g.field}</td>
       </tr>
     `;
@@ -919,38 +1021,48 @@ function renderFullSchedule(res) {
     </table>
   `;
 
-  container.innerHTML = html;
+  return html;
 }
 
+function toggleHistory() {
+  const section = document.getElementById('historySection');
+  const btn = document.getElementById('toggleHistory');
+
+  const isOpen = section.style.display === 'block';
+
+  section.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen
+    ? '▶ 顯示歷史班表'
+    : '▼ 隱藏歷史班表';
+}
 
 function openFullSchedule() {
   const modal = document.getElementById('fullScheduleModal');
   const loading = document.getElementById('fullScheduleLoading');
-  const container = document.getElementById('historySchedule');
 
   // 1️⃣ 打開 modal
   modal.classList.add('show');
 
-  // 2️⃣ 顯示 loading（先顯示，不急著清）
-  if (loading) loading.style.display = 'block';
+  // 2️⃣ 顯示 spinner
+  loading.style.display = 'flex';
 
-  // 3️⃣ 用 setTimeout 確保 DOM repaint（關鍵）
-  setTimeout(() => {
-    container.innerHTML = '';
+  // 3️⃣ 隱藏區塊（避免殘影）
+  document.getElementById('futureSection').style.display = 'none';
+  document.getElementById('historySection').style.display = 'none';
+  document.getElementById('toggleHistory').style.display = 'none';
 
-    const session = JSON.parse(localStorage.getItem('session_user'));
+  const session = JSON.parse(localStorage.getItem('session_user'));
 
-    callApi(
-      {
-        action: 'getMyFullSchedule',
-        user_id: session.user_id
-      },
-      res => {
-        if (loading) loading.style.display = 'none';
-        renderFullSchedule(res);
-      }
-    );
-  }, 0);
+  callApi(
+    {
+      action: 'getMyFullSchedule',
+      user_id: session.user_id
+    },
+    res => {
+      loading.style.display = 'none';
+      renderFullSchedule(res);
+    }
+  );
 }
 
 
