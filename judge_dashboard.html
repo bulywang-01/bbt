@@ -168,9 +168,9 @@ tr.expired {
   box-shadow: 0 2px 8px rgba(74,126,245,0.35);
 }
 
-/* 不需裁判 */
 .pos-na {
-  color: #d32f2f;
+  /* color: #d32f2f; */ 
+  color: #919191;
   font-weight: 600;
 }
 
@@ -716,7 +716,7 @@ function render() {
       (g.need_count === 2 && ['U2', 'U3'].includes(role)) ||
       (g.need_count === 3 && role === 'U2')
     ) {
-      return '<span class="pos-na">X</span>';
+      return '<span class="pos-na">不需要</span>';
     }
   
     // === 已被佔用（含自己） ===
