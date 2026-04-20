@@ -215,6 +215,7 @@ body{
   
 <!-- ===== Script ===== -->
 <script src="js/config.js"></script>
+<script src="js/judge_annual_dashboard.js"></script>
 <script>
 
 //開啟選擇裁判 Modal
@@ -292,9 +293,6 @@ function loadJudgeOptions(){
     });
 }
 
-function openJudgeDashboard(uid) {
-  alert('準備開啟裁判年度總覽，裁判 ID = ' + uid);
-}
 
 function confirmSelectJudge(){
   const uid = document.getElementById('judgeSelect').value;
