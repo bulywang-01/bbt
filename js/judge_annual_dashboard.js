@@ -78,9 +78,18 @@
 
         /** ===== 站位表 ===== */
         const pt = document.getElementById('positionTable');
+        pt.className = 'dashboard-table';
         pt.innerHTML = '<tr><th>站位</th><th>場次</th></tr>';
-        Object.keys(res.positions).forEach(p => {
-          pt.innerHTML += `<tr><td>${p}</td><td>${res.positions[p]}</td></tr>`;
+        
+        POSITION_ORDER.forEach(pos => {
+          if (res.positions[pos]) {
+            pt.innerHTML += `
+              <tr>
+                <td>${pos}</td>
+                <td>${res.positions[pos]}</td>
+              </tr>
+            `;
+          }
         });
 
         document.getElementById('judgeAnnualLoading').style.display = 'none';
