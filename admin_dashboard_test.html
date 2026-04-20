@@ -227,6 +227,7 @@ function closeSelectJudge(){
   document.getElementById('selectJudgeModal').style.display = 'none';
 }
 
+/*
 function loadJudgeOptions(){
   const select = document.getElementById('judgeSelect');
   select.innerHTML = '<option value="">載入中…</option>';
@@ -252,7 +253,45 @@ function loadJudgeOptions(){
       select.innerHTML = '<option value="">載入失敗</option>';
     });
 }
+*/
 
+function loadJudgeOptions(){
+  const select = document.getElementById('judgeSelect');
+  select.innerHTML = '<option value="">載入中…</option>';
+
+  fetch(apiUrl + '?action=getJudgeList')
+    .then(r => r.text())                 // 👈 先不要轉 json
+    .then(txt => {
+      console.log('getJudgeList RAW =', txt);
+
+      let list;
+      try {
+        list = JSON.parse(txt);
+      } catch (e) {
+        console.error('不是 JSON', e);
+        select.innerHTML = '<option value="">後端非 JSON</option>';
+        return;
+      }
+
+      if (!Array.isArray(list) || list.length === 0) {
+        select.innerHTML = '<option value="">查無裁判資料</option>';
+        return;
+      }
+
+      select.innerHTML = '<option value="">請選擇裁判</option>';
+      list.forEach(j => {
+        const opt = document.createElement('option');
+        opt.value = j.user_id;
+        opt.textContent = j.name;
+        select.appendChild(opt);
+      });
+    })
+    .catch(err => {
+      console.error('fetch error', err);
+      select.innerHTML = '<option value="">載入失敗</option>';
+    });
+}
+  
 function confirmSelectJudge(){
   const uid = document.getElementById('judgeSelect').value;
   if(!uid){
