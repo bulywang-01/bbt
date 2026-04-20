@@ -291,7 +291,11 @@ function loadJudgeOptions(){
       select.innerHTML = '<option value="">載入失敗</option>';
     });
 }
-  
+
+function openJudgeDashboard(uid) {
+  alert('準備開啟裁判年度總覽，裁判 ID = ' + uid);
+}
+
 function confirmSelectJudge(){
   const uid = document.getElementById('judgeSelect').value;
   if(!uid){
