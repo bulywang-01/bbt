@@ -1,8 +1,11 @@
 // ============================
-// 裁判年度總覽
+// 裁判年度總覽（正式版）
 // ============================
 
 (function () {
+
+  // ✅ 站位顯示順序（強制業務規則）
+  const POSITION_ORDER = ['主審', '一壘審', '二壘審', '三壘審', '未指定'];
 
   function ensureDashboardModal() {
     if (document.getElementById('judgeAnnualModal')) return;
@@ -11,9 +14,8 @@
     modal.id = 'judgeAnnualModal';
     modal.style.cssText = `
       position:fixed;
-      left:0; top:0;
-      width:100%; height:100%;
-      background:rgba(0,0,0,.5);
+      inset:0;
+      background:rgba(0,0,0,.45);
       display:none;
       align-items:center;
       justify-content:center;
@@ -21,7 +23,36 @@
     `;
 
     modal.innerHTML = `
-      <div style="background:#fff;width:600px;padding:20px;border-radius:6px;">
+      <style>
+        .dashboard-box{
+          background:#fff;
+          width:650px;
+          padding:20px;
+          border-radius:6px;
+          font-size:14px;
+        }
+        .dashboard-table{
+          width:100%;
+          border-collapse:collapse;
+          margin:8px 0 16px;
+        }
+        .dashboard-table th{
+          background:#f3f5f7;
+          border:1px solid #ddd;
+          padding:8px;
+          font-weight:600;
+        }
+        .dashboard-table td{
+          border:1px solid #ddd;
+          padding:8px;
+          text-align:center;
+        }
+        .dashboard-table tr:nth-child(even) td{
+          background:#fafafa;
+        }
+      </style>
+
+      <div class="dashboard-box">
         <h3 id="judgeAnnualTitle">裁判年度總覽</h3>
 
         <div id="judgeAnnualLoading">載入中…</div>
@@ -31,13 +62,13 @@
           <p>生涯站場數：<b id="careerGames"></b></p>
 
           <h4>📅 月份分佈</h4>
-          <table border="1" width="100%" id="monthTable"></table>
+          <table id="monthTable" class="dashboard-table"></table>
 
           <h4>🧍‍♂️ 站位分佈</h4>
-          <table border="1" width="100%" id="positionTable"></table>
+          <table id="positionTable" class="dashboard-table"></table>
         </div>
 
-        <div style="text-align:right;margin-top:12px;">
+        <div style="text-align:right;">
           <button onclick="closeJudgeAnnualDashboard()">關閉</button>
         </div>
       </div>
@@ -46,6 +77,9 @@
     document.body.appendChild(modal);
   }
 
+  // ============================
+  // 對外呼叫
+  // ============================
   window.openJudgeDashboard = function (userId) {
     ensureDashboardModal();
 
@@ -61,26 +95,31 @@
           return;
         }
 
-        document.getElementById('judgeAnnualTitle').innerText =
-          `裁判年度總覽（${res.year}）`;
+        document.getElementById('judgeAnnualTitle')
+          .innerText = `裁判年度總覽（${res.year}）`;
 
-        document.getElementById('annualGames').innerText =
-          res.summary.annual_games;
-        document.getElementById('careerGames').innerText =
-          res.summary.career_games;
+        document.getElementById('annualGames')
+          .innerText = res.summary.annual_games;
 
-        /** ===== 月份表 ===== */
+        document.getElementById('careerGames')
+          .innerText = res.summary.career_games;
+
+        // ===== 月份表 =====
         const mt = document.getElementById('monthTable');
         mt.innerHTML = '<tr><th>月份</th><th>場次</th></tr>';
         Object.keys(res.monthly).forEach(m => {
-          mt.innerHTML += `<tr><td>${m} 月</td><td>${res.monthly[m]}</td></tr>`;
+          mt.innerHTML += `
+            <tr>
+              <td>${m} 月</td>
+              <td>${res.monthly[m]}</td>
+            </tr>
+          `;
         });
 
-        /** ===== 站位表 ===== */
+        // ===== 站位表（固定順序 / 未指定最後）=====
         const pt = document.getElementById('positionTable');
-        pt.className = 'dashboard-table';
         pt.innerHTML = '<tr><th>站位</th><th>場次</th></tr>';
-        
+
         POSITION_ORDER.forEach(pos => {
           if (res.positions[pos]) {
             pt.innerHTML += `
