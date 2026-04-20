@@ -259,7 +259,7 @@ function loadJudgeOptions(){
   const select = document.getElementById('judgeSelect');
   select.innerHTML = '<option value="">載入中…</option>';
 
-  fetch(apiUrl + '?action=getJudgeList')
+  fetch(API_URL + '?action=getJudgeList')
     .then(r => r.text())                 // 👈 先不要轉 json
     .then(txt => {
       console.log('getJudgeList RAW =', txt);
