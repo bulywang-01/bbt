@@ -1,10 +1,9 @@
 // ============================
-// 裁判年度總覽（最小可用版）
+// 裁判年度總覽
 // ============================
 
 (function () {
 
-  // ====== 建立 Modal（只建一次） ======
   function ensureDashboardModal() {
     if (document.getElementById('judgeAnnualModal')) return;
 
@@ -22,24 +21,23 @@
     `;
 
     modal.innerHTML = `
-      <div style="
-        background:#fff;
-        width:420px;
-        padding:20px;
-        border-radius:6px;
-      ">
+      <div style="background:#fff;width:600px;padding:20px;border-radius:6px;">
         <h3 id="judgeAnnualTitle">裁判年度總覽</h3>
 
-        <div id="judgeAnnualLoading" style="padding:12px 0;">
-          載入中…
-        </div>
+        <div id="judgeAnnualLoading">載入中…</div>
 
         <div id="judgeAnnualContent" style="display:none;">
-          <p>年度站場數：<b id="annualGames">0</b></p>
-          <p>生涯站場數：<b id="careerGames">0</b></p>
+          <p>年度站場數：<b id="annualGames"></b></p>
+          <p>生涯站場數：<b id="careerGames"></b></p>
+
+          <h4>📅 月份分佈</h4>
+          <table border="1" width="100%" id="monthTable"></table>
+
+          <h4>🧍‍♂️ 站位分佈</h4>
+          <table border="1" width="100%" id="positionTable"></table>
         </div>
 
-        <div style="text-align:right;margin-top:16px;">
+        <div style="text-align:right;margin-top:12px;">
           <button onclick="closeJudgeAnnualDashboard()">關閉</button>
         </div>
       </div>
@@ -48,59 +46,53 @@
     document.body.appendChild(modal);
   }
 
-  // ====== 對外開啟接口（給 admin / judge 用） ======
   window.openJudgeDashboard = function (userId) {
     ensureDashboardModal();
 
-    const modal = document.getElementById('judgeAnnualModal');
-    modal.style.display = 'flex';
-
+    document.getElementById('judgeAnnualModal').style.display = 'flex';
     document.getElementById('judgeAnnualLoading').style.display = 'block';
     document.getElementById('judgeAnnualContent').style.display = 'none';
 
-    // 呼叫後端年度總覽 API
     fetch(API_URL + '?action=getJudgeAnnualDashboard&user_id=' + userId)
-      .then(r => r.text())   // ✅ 改成 text
-      .then(txt => {
-        console.log('RAW getJudgeAnnualDashboard =', txt);
-    
-        let res;
-        try {
-          res = JSON.parse(txt);   // ✅ 手動 parse
-        } catch (e) {
-          console.error('JSON parse 失敗', e);
-          document.getElementById('judgeAnnualLoading').innerText = '回傳格式錯誤';
-          return;
-        }
-    
+      .then(r => r.json())
+      .then(res => {
         if (!res || res.result !== 'ok') {
           document.getElementById('judgeAnnualLoading').innerText = '載入失敗';
           return;
         }
-    
-        // ===== 正常顯示 =====
+
         document.getElementById('judgeAnnualTitle').innerText =
           `裁判年度總覽（${res.year}）`;
-    
+
         document.getElementById('annualGames').innerText =
           res.summary.annual_games;
-    
         document.getElementById('careerGames').innerText =
           res.summary.career_games;
-    
+
+        /** ===== 月份表 ===== */
+        const mt = document.getElementById('monthTable');
+        mt.innerHTML = '<tr><th>月份</th><th>場次</th></tr>';
+        Object.keys(res.monthly).forEach(m => {
+          mt.innerHTML += `<tr><td>${m} 月</td><td>${res.monthly[m]}</td></tr>`;
+        });
+
+        /** ===== 站位表 ===== */
+        const pt = document.getElementById('positionTable');
+        pt.innerHTML = '<tr><th>站位</th><th>場次</th></tr>';
+        Object.keys(res.positions).forEach(p => {
+          pt.innerHTML += `<tr><td>${p}</td><td>${res.positions[p]}</td></tr>`;
+        });
+
         document.getElementById('judgeAnnualLoading').style.display = 'none';
         document.getElementById('judgeAnnualContent').style.display = 'block';
       })
-      .catch(err => {
-        console.error(err);
+      .catch(() => {
         document.getElementById('judgeAnnualLoading').innerText = '載入失敗';
       });
   };
 
-  // ====== 關閉 ======
   window.closeJudgeAnnualDashboard = function () {
-    const modal = document.getElementById('judgeAnnualModal');
-    if (modal) modal.style.display = 'none';
+    document.getElementById('judgeAnnualModal').style.display = 'none';
   };
 
 })();
