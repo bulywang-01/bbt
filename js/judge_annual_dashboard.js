@@ -60,23 +60,34 @@
 
     // 呼叫後端年度總覽 API
     fetch(API_URL + '?action=getJudgeAnnualDashboard&user_id=' + userId)
-      .then(r => r.json())
-      .then(res => {
+      .then(r => r.text())   // ✅ 改成 text
+      .then(txt => {
+        console.log('RAW getJudgeAnnualDashboard =', txt);
+    
+        let res;
+        try {
+          res = JSON.parse(txt);   // ✅ 手動 parse
+        } catch (e) {
+          console.error('JSON parse 失敗', e);
+          document.getElementById('judgeAnnualLoading').innerText = '回傳格式錯誤';
+          return;
+        }
+    
         if (!res || res.result !== 'ok') {
           document.getElementById('judgeAnnualLoading').innerText = '載入失敗';
           return;
         }
-
-        // 標題（如果後端有 name 就顯示）
+    
+        // ===== 正常顯示 =====
         document.getElementById('judgeAnnualTitle').innerText =
           `裁判年度總覽（${res.year}）`;
-
+    
         document.getElementById('annualGames').innerText =
           res.summary.annual_games;
-
+    
         document.getElementById('careerGames').innerText =
           res.summary.career_games;
-
+    
         document.getElementById('judgeAnnualLoading').style.display = 'none';
         document.getElementById('judgeAnnualContent').style.display = 'block';
       })
