@@ -232,14 +232,23 @@ function loadJudgeOptions(){
 
   fetch(apiUrl + '?action=getJudgeList')
     .then(r => r.json())
-    .then(res => {
+    .then(list => {
+      if (!Array.isArray(list) || list.length === 0) {
+        select.innerHTML = '<option value="">查無裁判資料</option>';
+        return;
+      }
+
       select.innerHTML = '<option value="">請選擇裁判</option>';
-      res.forEach(j => {
+      list.forEach(j => {
         const opt = document.createElement('option');
         opt.value = j.user_id;
         opt.textContent = j.name;
         select.appendChild(opt);
       });
+    })
+    .catch(err => {
+      console.error(err);
+      select.innerHTML = '<option value="">載入失敗</option>';
     });
 }
 
