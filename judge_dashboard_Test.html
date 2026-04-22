@@ -807,6 +807,15 @@ function render() {
             if (filled >= g.need_count) tr.classList.add('full');
 
   function renderPos(role) {
+
+   
+     // 🔴【①】最一開始：先算「超過上限了嗎？」
+     const phase = SIGNUP_PHASES[currentPhaseIndex];
+     const selectedCount = Object.keys(selectedPositions).length;
+     const alreadySelectedThisGame = !!selectedPositions[g.game_id];
+     const isOverLimit =
+       selectedCount >= phase.maxSelect && !alreadySelectedThisGame;
+
     // === 不需要此站位 ===
     if (
       g.need_count === 0 ||
@@ -860,10 +869,19 @@ function render() {
   
     // === 尚未選，可選 ===
     return `
-      <label class="pos-choice">
-        <input type="radio"
-               onchange="rememberSelection('${g.game_id}','${role}')">
-      </label>
+
+    //  <label class="pos-choice">
+    //    <input type="radio"
+    //           onchange="rememberSelection('${g.game_id}','${role}')">
+    //  </label>
+
+     
+       <label class="pos-choice ${isOverLimit ? 'disabled' : ''}">
+         <input type="radio"
+           ${isOverLimit ? 'disabled' : ''}
+           onchange="rememberSelection('${g.game_id}','${role}')">
+       </label>
+
     `;
   }
 
