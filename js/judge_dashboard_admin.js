@@ -1,14 +1,31 @@
 // ===============================
-// 裁判長排班頁（MVP 版）
+// 裁判長排班頁（可跑 MVP 版）
 // ===============================
 
-// ✅ 全域狀態
+// ✅ 全域狀態（只宣告一次）
 let allGames = [];
-let assignedByChief = {}; 
-// 結構： { game_id: { PU: judgeId, U1: judgeId } }
 
-// ✅ 裁判長模式（直接鎖定）
-const isChiefMode = true;
+// ===============================
+// 共用 UI 工具（最小版）
+// ===============================
+function showLoading(msg = '處理中...') {
+  const overlay = document.getElementById('overlay');
+  document.getElementById('overlay-text').textContent = msg;
+  document.getElementById('overlay-ok').style.display = 'none';
+  overlay.classList.add('show');
+}
+
+function hideOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function showMessage(msg) {
+  const overlay = document.getElementById('overlay');
+  document.getElementById('overlay-text').textContent = msg;
+  document.getElementById('overlay-ok').style.display = 'none';
+  overlay.onclick = () => hideOverlay();
+  overlay.classList.add('show');
+}
 
 // ===============================
 // 初始化
@@ -26,22 +43,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ===============================
-// 載入賽事
+// 載入賽事（吃合併後端）
 // ===============================
 function loadGames() {
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-
-  showLoading('載入賽事資料中...');
+  const session = JSON.parse(localStorage.getItem('session_user') || {});
+  showLoading('載入排班資料中...');
 
   callApi(
-    { action: 'getGamesWithAssignments' },
+    { action: 'getGamesWithAssignments', user_id: session.user_id },
     res => {
+      hideOverlay();
+
       if (!res || res.result !== 'ok') {
-        showMessage(res?.message || '載入排班資料失敗');
+        showMessage(res?.message || '載入失敗');
         return;
       }
-  
-      allGames = res.games; // ✅ 已合併 signup + assignment
+
+      allGames = res.games || [];
       render();
       renderMobile();
     }
@@ -49,7 +67,7 @@ function loadGames() {
 }
 
 // ===============================
-// 主畫面 render（桌機）
+// 桌機 render（裁判長）
 // ===============================
 function render() {
   const box = document.getElementById('content');
@@ -60,71 +78,43 @@ function render() {
     return;
   }
 
-  // 依日期分組
-  const dateGroups = {};
   allGames.forEach(g => {
-    if (!dateGroups[g.date]) dateGroups[g.date] = [];
-    dateGroups[g.date].push(g);
-  });
-
-  Object.keys(dateGroups).sort().forEach(date => {
-    const h3 = document.createElement('h3');
-    h3.textContent = date;
-    box.appendChild(h3);
-
     const panel = document.createElement('div');
     panel.className = 'panel';
 
-    const table = document.createElement('table');
-    table.innerHTML = `
-      <thead>
+    panel.innerHTML = `
+      <div style="font-weight:700;margin-bottom:6px;">
+        ${g.date}｜${g.away_team} vs ${g.home_team}
+      </div>
+      <table>
         <tr>
-          <th>場次</th>
-          <th>時間</th>
-          <th>客隊</th>
-          <th>主隊</th>
           <th>主審</th>
           <th>一壘</th>
           <th>二壘</th>
           <th>三壘</th>
         </tr>
-      </thead>
-      <tbody></tbody>
+        <tr>
+          ${['PU','U1','U2','U3'].map(r => `
+            <td>${renderPosForChief(g, r)}</td>
+          `).join('')}
+        </tr>
+      </table>
     `;
 
-    const tbody = table.querySelector('tbody');
-
-    dateGroups[date].forEach(g => {
-      const tr = document.createElement('tr');
-
-      tr.innerHTML = `
-        <td>${g.game_code}</td>
-        <td>${formatTime(g.time_range)}</td>
-        <td>${g.away_team}</td>
-        <td>${g.home_team}</td>
-        ${['PU','U1','U2','U3'].map(r => `
-          <td>${renderPosAdmin(g, r)}</td>
-        `).join('')}
-      `;
-      tbody.appendChild(tr);
-    });
-
-    panel.appendChild(table);
     box.appendChild(panel);
   });
 }
 
 // ===============================
-// 裁判長站位 render（桌機）
+// 裁判長站位 render
 // ===============================
-function renderPosAdmin(g, role) {
-  const gameAssign = assignedByChief[g.game_id] || {};
+function renderPosForChief(g, role) {
+  const pos = g.positions[role];
 
-  // ✅ 已指派
-  if (gameAssign[role]) {
+  if (pos.assigned) {
     return `
       <div class="judge-name">
-        ${gameAssign[role]}
+        ${pos.assigned.name}
         <span class="cancel-btn"
           onclick="openAssignJudge('${g.game_id}','${role}')">
           更換
@@ -133,7 +123,6 @@ function renderPosAdmin(g, role) {
     `;
   }
 
-  // ✅ 空位 → 指派
   return `
     <button class="pos-choice"
       onclick="openAssignJudge('${g.game_id}','${role}')">
@@ -143,10 +132,9 @@ function renderPosAdmin(g, role) {
 }
 
 // ===============================
-// 指派裁判（核心邏輯）
+// 指派裁判 → 寫後端
 // ===============================
 function openAssignJudge(gameId, role) {
-  // 找出同場已使用的裁判（避免重複）
   const game = allGames.find(g => g.game_id === gameId);
   const usedJudges = Object.values(game.positions)
     .filter(p => p.assigned)
@@ -154,15 +142,13 @@ function openAssignJudge(gameId, role) {
 
   openSelectJudge((judgeId, judgeName) => {
 
-    // ✅ 規則：同場不可重複
     if (usedJudges.includes(judgeId)) {
-      showMessage('⚠️ 該裁判已被指派至本場其他站位');
+      showMessage('⚠️ 該裁判已在本場其他站位');
       return;
     }
 
-    const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+    const session = JSON.parse(localStorage.getItem('session_user') || {});
 
-    // ✅ 寫入後端
     callApi(
       {
         action: 'assignJudgeToPosition',
@@ -173,7 +159,6 @@ function openAssignJudge(gameId, role) {
       },
       res => {
         if (res && res.result === 'ok') {
-          // ✅ 重載後端合併資料
           loadGames();
         } else {
           showMessage(res?.message || '指派失敗');
@@ -184,12 +169,11 @@ function openAssignJudge(gameId, role) {
 }
 
 // ===============================
-// 手機版 render（裁判長）
+// 手機版（簡化）
 // ===============================
 function renderMobile() {
   const box = document.getElementById('mobileView');
   if (!box) return;
-
   box.innerHTML = '';
 
   allGames.forEach(g => {
@@ -197,28 +181,10 @@ function renderMobile() {
     card.className = 'game-card';
 
     card.innerHTML = `
-      <div class="game-header">
-        <div>📅 ${g.date}</div>
-        <div>⏰ ${formatTime(g.time_range)}</div>
-      </div>
-
-      ${['PU','U1','U2','U3'].map(r => {
-        const gameAssign = assignedByChief[g.game_id] || {};
-        if (gameAssign[r]) {
-          return `
-            <div class="mobile-pos">
-              ${r}：${gameAssign[r]}
-              <button onclick="openAssignJudge('${g.game_id}','${r}')">更換</button>
-            </div>
-          `;
-        }
-        return `
-          <div class="mobile-pos">
-            ${r}：
-            <button onclick="openAssignJudge('${g.game_id}','${r}')">指派</button>
-          </div>
-        `;
-      }).join('')}
+      <div><b>${g.date}</b></div>
+      ${['PU','U1','U2','U3'].map(r => `
+        <div>${r}：${renderPosForChief(g, r)}</div>
+      `).join('')}
     `;
 
     box.appendChild(card);
