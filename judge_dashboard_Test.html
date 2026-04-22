@@ -391,6 +391,9 @@ tr.expired {
 
 <div class="main">
 
+   <!-- 階段資訊提示 -->
+   <div class="panel" id="phaseInfo"></div>
+   
   <!-- 篩選 -->
   <div class="filter-bar">
     目前顯示的資料是：
@@ -430,11 +433,49 @@ tr.expired {
 </div>
   
 
-  
+// ===============================
+// ✅ 共用載入程式區
+// ===============================
 <script src="js/config.js"></script>
 
 <script>
+// ===============================
+// ✅ 報名階段設定（MVP：前端版）
+// ===============================
+const SIGNUP_PHASES = [
+  {
+    phase: 1,
+    name: '第一階段',
+    maxSelect: 6
+  },
+  {
+    phase: 2,
+    name: '第二階段',
+    maxSelect: 6
+  }
+];
 
+// ✅ 目前階段（MVP 直接固定）
+// 之後只要改成從後端回來即可
+let currentPhaseIndex = 0; // 0 = 第一階段, 1 = 第二階段
+   
+// ===============================
+// ✅ 顯示目前階段狀態
+// ===============================
+function updatePhaseInfo() {
+  const phase = SIGNUP_PHASES[currentPhaseIndex];
+  const used = Object.keys(selectedPositions).length;
+
+  document.getElementById('phaseInfo').innerHTML = `
+    <b>目前報名階段：</b>${phase.name}<br>
+    本階段最多可選 ${phase.maxSelect} 場，
+    已選 ${used} 場
+  `;
+}
+
+// ===============================
+// ✅ 程式起點
+// ===============================
 function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
   if (overlay) overlay.remove();
@@ -555,23 +596,28 @@ function formatTime(t){
 }
 
 function rememberSelection(gameId, role, btn) {
-  // 清掉舊選擇
-  // delete selectedPositions[gameId];
-  selectedPositions[gameId] = role;
+  const phase = SIGNUP_PHASES[currentPhaseIndex];
+  const currentCount = Object.keys(selectedPositions).length;
 
-  // 清除同場所有已選外觀
-  document
-    .querySelectorAll(`.signup-btn[data-game="${gameId}"]`)
-    .forEach(b => b.classList.remove('selected'));
-
-  // 標記目前按下的按鈕
-  if (btn) {
-    btn.classList.add('selected');
+  // ✅ 階段上限判斷（只有新選擇才擋）
+  if (!selectedPositions[gameId] && currentCount >= phase.maxSelect) {
+    showMessage(
+      `⚠️ ${phase.name} 最多只能選 ${phase.maxSelect} 場賽事`
+    );
+    return;
   }
 
-  // ✅ 一定要在 if 外
+  selectedPositions[gameId] = role;
+
+  document
+    .querySelectorAll(`.pos-choice[data-game="${gameId}"]`)
+    .forEach(b => b.classList.remove('selected'));
+
+  if (btn) btn.classList.add('selected');
+
   render();
   renderMobile();
+  updatePhaseInfo();
 }
 
 
@@ -1114,6 +1160,19 @@ function cancelMySignup(signupId) {
       }
     }
   );
+}
+
+//
+// 切換階段用
+//
+function switchToNextPhase() {
+  if (currentPhaseIndex < SIGNUP_PHASES.length - 1) {
+    currentPhaseIndex++;
+    selectedPositions = {}; // 新階段重新計算
+    render();
+    renderMobile();
+    updatePhaseInfo();
+  }
 }
 
 </script>
