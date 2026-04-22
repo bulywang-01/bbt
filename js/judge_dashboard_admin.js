@@ -2,25 +2,6 @@
 // 裁判長排班頁（可跑 MVP 版）
 // ===============================
 
-// ===============================
-// ✅ Admin 頁專用 API 呼叫（不用 JSONP）
-// ===============================
-function callApiAdmin(params, callback) {
-  fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(params)
-  })
-    .then(r => r.json())
-    .then(res => callback(res))
-    .catch(err => {
-      console.error(err);
-      showMessage('API 連線失敗');
-    });
-}
-
 // ✅ 全域狀態（只宣告一次）
 let allGames = [];
 
@@ -210,12 +191,3 @@ function renderMobile() {
   });
 }
 
-// ===============================
-// ✅ JSONP callback（for config.js）
-// ===============================
-window.handleApiResponse = function (res) {
-  if (typeof window.__apiCallback === 'function') {
-    window.__apiCallback(res);
-    window.__apiCallback = null;
-  }
-};
