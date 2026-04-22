@@ -34,16 +34,14 @@ function loadGames() {
   showLoading('載入賽事資料中...');
 
   callApi(
-    { action: 'getSignableGames', user_id: session.user_id },
+    { action: 'getGamesWithAssignments' },
     res => {
-      hideOverlay();
-
       if (!res || res.result !== 'ok') {
-        showMessage(res?.message || '載入失敗');
+        showMessage(res?.message || '載入排班資料失敗');
         return;
       }
-
-      allGames = res.games || [];
+  
+      allGames = res.games; // ✅ 已合併 signup + assignment
       render();
       renderMobile();
     }
