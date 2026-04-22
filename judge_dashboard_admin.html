@@ -1244,14 +1244,14 @@ function cancelMySignup(signupId) {
 //
 // 裁判長專屬
 //
-function renderPosForChief(role) {
-  const gameAssigned = assignedByChief[g.game_id] || {};
+function renderPosForChief(g, role) {
+  const pos = g.positions[role];
 
-  // 已指派 → 顯示裁判 + 更換
-  if (gameAssigned[role]) {
+  // ✅ 已指派
+  if (pos.assigned) {
     return `
       <div class="judge-name">
-        ${gameAssigned[role]}
+        ${pos.assigned.name}
         <span class="cancel-btn"
           onclick="openAssignJudge('${g.game_id}','${role}')">
           更換
@@ -1260,7 +1260,7 @@ function renderPosForChief(role) {
     `;
   }
 
-  // 空位 → 指派
+  // ✅ 空位
   return `
     <button class="pos-choice"
       onclick="openAssignJudge('${g.game_id}','${role}')">
