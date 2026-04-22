@@ -869,13 +869,7 @@ function render() {
   
     // === 尚未選，可選 ===
     return `
-
-    //  <label class="pos-choice">
-    //    <input type="radio"
-    //           onchange="rememberSelection('${g.game_id}','${role}')">
-    //  </label>
-
-     
+    
        <label class="pos-choice ${isOverLimit ? 'disabled' : ''}">
          <input type="radio"
            ${isOverLimit ? 'disabled' : ''}
