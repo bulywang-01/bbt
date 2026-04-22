@@ -68,7 +68,7 @@ function loadGames() {
   const session = JSON.parse(localStorage.getItem('session_user') || {});
   showLoading('載入排班資料中...');
 
-  callApiAdmin(
+  callApi(
     { action: 'getGamesWithAssignments', user_id: session.user_id },
     res => {
       hideOverlay();
@@ -168,7 +168,7 @@ function openAssignJudge(gameId, role) {
 
     const session = JSON.parse(localStorage.getItem('session_user') || {});
 
-    callApiAdmin(
+    callApi(
       {
         action: 'assignJudgeToPosition',
         game_id: gameId,
