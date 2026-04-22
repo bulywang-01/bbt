@@ -370,6 +370,14 @@ tr.expired {
   font-weight: 600;
 }
 
+.mobile-pos-btn.disabled {
+  opacity: 0.4;
+  background: #f0f0f0;
+  color: #999;
+  border-color: #ccc;
+  pointer-events: none;
+}
+   
 /**/
 .phase-info {
   font-size: 16px;
@@ -963,13 +971,20 @@ function renderMobile() {
 }
 
 function renderMobilePosGrid(g) {
-  const ROLE_NAME = {
-  PU: '主審',
-  U1: '一壘',
-  U2: '二壘',
-  U3: '三壘'
-  };
-  
+
+   const phase = SIGNUP_PHASES[currentPhaseIndex];
+   const selectedCount = Object.keys(selectedPositions).length;
+   const alreadySelectedThisGame = !!selectedPositions[g.game_id];
+   const isOverLimit =
+     selectedCount >= phase.maxSelect && !alreadySelectedThisGame;
+      
+   const ROLE_NAME = {
+     PU: '主審',
+     U1: '一壘',
+     U2: '二壘',
+     U3: '三壘'
+     };
+     
   const roles = ['PU', 'U1', 'U2', 'U3'];
   const today = new Date(); today.setHours(0,0,0,0);
   const isPast = new Date(g.date.replace(/\//g,'-')) < today;
@@ -1034,14 +1049,15 @@ function renderMobilePosGrid(g) {
           `;
         }
 
-        return `
-          <div class="mobile-pos">
-            <div class="mobile-pos-btn"
-                 onclick="rememberSelection('${g.game_id}','${role}')">
-              ${ROLE_NAME[role]}
-            </div>
-          </div>
-        `;
+         return `
+           <div class="mobile-pos">
+             <div class="mobile-pos-btn ${isOverLimit ? 'disabled' : ''}"
+               ${isOverLimit ? '' : `onclick="rememberSelection('${g.game_id}','${role}')"`}>
+               ${ROLE_NAME[role]}
+             </div>
+           </div>
+         `;
+         
       }).join('')}
     </div>
   `;
