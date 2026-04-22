@@ -2,6 +2,25 @@
 // 裁判長排班頁（可跑 MVP 版）
 // ===============================
 
+// ===============================
+// ✅ Admin 頁專用 API 呼叫（不用 JSONP）
+// ===============================
+function callApiAdmin(params, callback) {
+  fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(params)
+  })
+    .then(r => r.json())
+    .then(res => callback(res))
+    .catch(err => {
+      console.error(err);
+      showMessage('API 連線失敗');
+    });
+}
+
 // ✅ 全域狀態（只宣告一次）
 let allGames = [];
 
@@ -49,7 +68,7 @@ function loadGames() {
   const session = JSON.parse(localStorage.getItem('session_user') || {});
   showLoading('載入排班資料中...');
 
-  callApi(
+  callApiAdmin(
     { action: 'getGamesWithAssignments', user_id: session.user_id },
     res => {
       hideOverlay();
@@ -149,7 +168,7 @@ function openAssignJudge(gameId, role) {
 
     const session = JSON.parse(localStorage.getItem('session_user') || {});
 
-    callApi(
+    callApiAdmin(
       {
         action: 'assignJudgeToPosition',
         game_id: gameId,
