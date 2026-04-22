@@ -569,6 +569,8 @@ function cancelSelected(gameId) {
   delete selectedPositions[gameId];
   render();
   renderMobile();
+  updatePhaseInfo();
+
 
 }
   
@@ -596,6 +598,8 @@ function cancelSelectedByDate() {
     alert(`已取消 ${date} 的 ${removed} 筆選擇`);
     render();
     renderMobile();
+    updatePhaseInfo();
+
 
   }
 }
