@@ -190,3 +190,13 @@ function renderMobile() {
     box.appendChild(card);
   });
 }
+
+// ===============================
+// ✅ JSONP callback（for config.js）
+// ===============================
+window.handleApiResponse = function (res) {
+  if (typeof window.__apiCallback === 'function') {
+    window.__apiCallback(res);
+    window.__apiCallback = null;
+  }
+};
