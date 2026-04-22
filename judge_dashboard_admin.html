@@ -571,7 +571,7 @@ function loadGames() {
   showLoading('載入賽事資料中...');
 
   callApi(
-    { action:'getSignableGames', user_id: session.user_id || '' },
+    { action:'getGamesWithAssignments', user_id: session.user_id || '' },
     res => {
       hideOverlay();
 
@@ -812,6 +812,11 @@ function render() {
   function renderPos(role) {
 
    
+     // ✅ 裁判長排班模式（最高優先）
+     if (isChiefMode) {
+       return renderPosForChief(role);
+     }
+
      // 🔴【①】最一開始：先算「超過上限了嗎？」
      const phase = SIGNUP_PHASES[currentPhaseIndex];
      const selectedCount = Object.keys(selectedPositions).length;
@@ -1236,6 +1241,34 @@ function cancelMySignup(signupId) {
   );
 }
 
+//
+// 裁判長專屬
+//
+function renderPosForChief(role) {
+  const gameAssigned = assignedByChief[g.game_id] || {};
+
+  // 已指派 → 顯示裁判 + 更換
+  if (gameAssigned[role]) {
+    return `
+      <div class="judge-name">
+        ${gameAssigned[role]}
+        <span class="cancel-btn"
+          onclick="openAssignJudge('${g.game_id}','${role}')">
+          更換
+        </span>
+      </div>
+    `;
+  }
+
+  // 空位 → 指派
+  return `
+    <button class="pos-choice"
+      onclick="openAssignJudge('${g.game_id}','${role}')">
+      指派
+    </button>
+  `;
+}
+   
 //
 // 切換階段用
 //
