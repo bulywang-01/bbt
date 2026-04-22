@@ -146,20 +146,23 @@ function renderPosAdmin(g, role) {
 // 指派裁判（核心邏輯）
 // ===============================
 function openAssignJudge(gameId, role) {
-  const current = assignedByChief[gameId] || {};
-  const alreadyUsed = Object.values(current);
+  // 找出同場已使用的裁判（避免重複）
+  const game = allGames.find(g => g.game_id === gameId);
+  const usedJudges = Object.values(game.positions)
+    .filter(p => p.assigned)
+    .map(p => p.assigned.judge_id);
 
   openSelectJudge((judgeId, judgeName) => {
 
-    // ✅ 規則：同場不能重複裁判
-    if (alreadyUsed.includes(judgeId)) {
-      showMessage('⚠️ 此裁判已在該場負責其他站位');
+    // ✅ 規則：同場不可重複
+    if (usedJudges.includes(judgeId)) {
+      showMessage('⚠️ 該裁判已被指派至本場其他站位');
       return;
     }
 
-    const session = JSON.parse(localStorage.getItem('session_user') || {});
+    const session = JSON.parse(localStorage.getItem('session_user') || '{}');
 
-    // ✅ 這裡就是你問的「前端寫在哪裡」
+    // ✅ 寫入後端
     callApi(
       {
         action: 'assignJudgeToPosition',
@@ -170,8 +173,8 @@ function openAssignJudge(gameId, role) {
       },
       res => {
         if (res && res.result === 'ok') {
-          // ✅ 不再用前端暫存，直接重抓後端合併資料
-          loadGames(); // 會呼叫 getGamesWithAssignments
+          // ✅ 重載後端合併資料
+          loadGames();
         } else {
           showMessage(res?.message || '指派失敗');
         }
