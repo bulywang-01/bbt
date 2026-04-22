@@ -153,18 +153,32 @@ function openAssignJudge(gameId, role) {
 
   openSelectJudge((judgeId, judgeName) => {
 
-    // ✅ 規則 1：同場不能重複
+    // ✅ 規則：同場不能重複裁判
     if (alreadyUsed.includes(judgeId)) {
       showMessage('⚠️ 此裁判已在該場負責其他站位');
       return;
     }
 
-    // ✅ 指派（可覆蓋）
-    assignedByChief[gameId] = assignedByChief[gameId] || {};
-    assignedByChief[gameId][role] = judgeName;
+    const session = JSON.parse(localStorage.getItem('session_user') || {});
 
-    render();
-    renderMobile();
+    // ✅ 這裡就是你問的「前端寫在哪裡」
+    callApi(
+      {
+        action: 'assignJudgeToPosition',
+        game_id: gameId,
+        role: role,
+        judge_id: judgeId,
+        assigned_by: session.user_id
+      },
+      res => {
+        if (res && res.result === 'ok') {
+          // ✅ 不再用前端暫存，直接重抓後端合併資料
+          loadGames(); // 會呼叫 getGamesWithAssignments
+        } else {
+          showMessage(res?.message || '指派失敗');
+        }
+      }
+    );
   });
 }
 
