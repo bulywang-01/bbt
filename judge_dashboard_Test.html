@@ -428,7 +428,9 @@ tr.expired {
    <div class="submit-bar">
      <div id="phaseInfo" class="phase-info"></div>
    
-     <button onclick="submitSignup()">送出報名</button>
+     <button id="submitBtn" onclick="submitSignup()">
+       送出報名
+     </button>
    </div>
 
 </div>
@@ -482,6 +484,25 @@ function updatePhaseInfo() {
     最多可選 ${phase.maxSelect} 場，
     已選 ${used} 場
   `;
+}
+
+// ===============================
+// ✅ 統一更新送出狀態
+// ===============================
+function updateSubmitButtonState() {
+  const btn = document.getElementById('submitBtn');
+  if (!btn) return;
+
+  const phase = SIGNUP_PHASES[currentPhaseIndex];
+  const selectedCount = Object.keys(selectedPositions).length;
+
+  if (selectedCount > phase.maxSelect) {
+    btn.disabled = true;
+    btn.textContent = '已超過本階段上限';
+  } else {
+    btn.disabled = false;
+    btn.textContent = '送出報名';
+  }
 }
 
 // ===============================
@@ -570,6 +591,8 @@ function cancelSelected(gameId) {
   render();
   renderMobile();
   updatePhaseInfo();
+  onSelectionChanged(); // ✅
+
 
 
 }
@@ -599,6 +622,7 @@ function cancelSelectedByDate() {
     render();
     renderMobile();
     updatePhaseInfo();
+    onSelectionChanged(); // ✅
 
 
   }
@@ -608,6 +632,16 @@ function formatTime(t){
   const d = new Date(t);
   return d.getHours().toString().padStart(2,'0') + ':' +
          d.getMinutes().toString().padStart(2,'0');
+}
+
+// ===============================
+// ✅ 集中管理的函式
+// ===============================
+function onSelectionChanged() {
+  render();
+  renderMobile();
+  updatePhaseInfo();
+  updateSubmitButtonState();
 }
 
 function rememberSelection(gameId, role, btn) {
@@ -633,6 +667,8 @@ function rememberSelection(gameId, role, btn) {
   render();
   renderMobile();
   updatePhaseInfo();
+  onSelectionChanged(); // ✅
+
 }
 
 
