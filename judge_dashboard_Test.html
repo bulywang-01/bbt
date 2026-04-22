@@ -370,6 +370,16 @@ tr.expired {
   font-weight: 600;
 }
 
+/**/
+.phase-info {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #37474f;
+}
+
+.phase-info b {
+  color: #1a237e;
+}
 </style>
   
 </head>
@@ -418,9 +428,11 @@ tr.expired {
   <div id="mobileView"></div>
 
   <!-- ✅ 全站唯一的送出按鈕 -->
-  <div class="submit-bar">
-    <button onclick="submitSignup()">送出報名</button>
-  </div>
+   <div class="submit-bar">
+     <div id="phaseInfo" class="phase-info"></div>
+   
+     <button onclick="submitSignup()">送出報名</button>
+   </div>
 
 </div>
   <!--
@@ -469,8 +481,8 @@ function updatePhaseInfo() {
   const used = Object.keys(selectedPositions).length;
 
   document.getElementById('phaseInfo').innerHTML = `
-    <b>目前報名階段：</b>${phase.name}<br>
-    本階段最多可選 ${phase.maxSelect} 場，
+    ${phase.name}<b>報名，</b>
+    最多可選 ${phase.maxSelect} 場，
     已選 ${used} 場
   `;
 }
