@@ -201,11 +201,11 @@ function openAssignJudge(gameId, role) {
   }
   
   // ✅ 修正型別不一致問題
-  const game = allGames.find(
+  const currentGame = allGames.find(
     g => String(g.game_id) === String(gameId)
   );
 
-  if (!game) {
+  if (!currentGame) {
     showMessage('找不到賽事資料');
     return;
   }
@@ -221,10 +221,10 @@ function openAssignJudge(gameId, role) {
     // ===============================
     const clashGame = allGames.find(g => {
       // 同一天
-      if (String(g.date) !== String(game.date)) return false;
+      if (String(g.date) !== String(currentGame.date)) return false;
   
       // 同時間（Sheet time 本質一致即可）
-      if (String(g.time) !== String(game.time)) return false;
+      if (String(g.time) !== String(currentGame.time)) return false;
   
       // 這一場已有此裁判
       return Object.values(g.positions).some(p =>
@@ -249,7 +249,7 @@ function openAssignJudge(gameId, role) {
     callApi(
       {
         action: 'assignJudgeToPosition_admin',
-        game_id: game.game_id,
+        game_id: currentGame.game_id,
         role: role,
         judge_id: judgeId,
         assigned_by: session.user_id
