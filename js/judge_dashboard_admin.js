@@ -164,7 +164,11 @@ function renderPosForChief(game, role) {
 // 指派裁判 → 寫後端 → reload
 // ===============================
 function openAssignJudge(gameId, role) {
-  const game = allGames.find(g => String(g.game_id) === String(gameId));
+  // ✅ 修正型別不一致問題
+  const game = allGames.find(
+    g => String(g.game_id) === String(gameId)
+  );
+
   if (!game) {
     showMessage('找不到賽事資料');
     return;
@@ -175,7 +179,6 @@ function openAssignJudge(gameId, role) {
     .map(p => p.assigned.judge_id);
 
   openSelectJudge((judgeId, judgeName) => {
-
     if (usedJudges.includes(judgeId)) {
       showMessage('⚠️ 該裁判已在本場其他站位');
       return;
@@ -187,7 +190,7 @@ function openAssignJudge(gameId, role) {
       {
         action: 'assignJudgeToPosition_admin',
         game_id: gameId,
-        role: role,
+        role,
         judge_id: judgeId,
         assigned_by: session.user_id
       },
