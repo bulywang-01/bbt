@@ -154,25 +154,32 @@ function render() {
 function renderPosForChief(game, role) {
   const pos = game.positions[role];
 
-  // ✅ 已指派：顯示姓名 + 更換
+  // ✅ 已指派
   if (pos.assigned) {
     return `
-      <span class="judge-name">
-        ${pos.assigned.name}
-        <button class="pos-choice"
+      <div class="assign-row assigned">
+        <span class="judge-name">${pos.assigned.name}</span>
+        <button class="btn btn-change"
           onclick="openAssignJudge('${game.game_id}','${role}')">
           更換
         </button>
-      </span>
+        <button class="btn btn-cancel"
+          onclick="unassignJudge('${game.game_id}','${role}')">
+          取消
+        </button>
+      </div>
     `;
   }
 
-  // ✅ 未指派：可點的指派按鈕
+  // ✅ 未指派
   return `
-    <button class="pos-choice"
-      onclick="openAssignJudge('${game.game_id}','${role}')">
-      指派
-    </button>
+    <div class="assign-row">
+      <span class="empty">—</span>
+      <button class="btn btn-assign"
+        onclick="openAssignJudge('${game.game_id}','${role}')">
+        指派
+      </button>
+    </div>
   `;
 }
 
@@ -180,6 +187,19 @@ function renderPosForChief(game, role) {
 // 指派裁判 → 寫後端 → reload
 // ===============================
 function openAssignJudge(gameId, role) {
+
+  const clash = allGames.find(g =>
+  g.date === game.date &&
+  g.time === game.time &&
+  Object.values(g.positions)
+    .some(p => p.assigned && p.assigned.judge_id === judgeId)
+  );
+
+  if (clash) {
+    showMessage('⚠️ 該裁判在同一時間已有其他場次');
+    return;
+  }
+  
   // ✅ 修正型別不一致問題
   const game = allGames.find(
     g => String(g.game_id) === String(gameId)
@@ -222,6 +242,28 @@ function openAssignJudge(gameId, role) {
 }
 
 // ===============================
+// 取消指派
+// ===============================
+function unassignJudge(gameId, role) {
+  if (!confirm('確定要取消此站位的指派嗎？')) return;
+
+  callApi(
+    {
+      action: 'unassignJudge_admin',
+      game_id: gameId,
+      role: role
+    },
+    res => {
+      if (res && res.result === 'ok') {
+        loadGames();
+      } else {
+        showMessage(res?.message || '取消失敗');
+      }
+    }
+  );
+}
+
+// ===============================
 // 手機版 render（同步邏輯）
 // ===============================
 function renderMobile() {
@@ -251,3 +293,4 @@ function renderMobile() {
     box.appendChild(card);
   });
 }
+
