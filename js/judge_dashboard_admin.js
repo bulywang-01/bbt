@@ -40,8 +40,9 @@ function formatDate(dateStr) {
 }
 
 function formatTime(timeStr) {
+  if (!timeStr) return '';
   const d = new Date(timeStr);
-  if (isNaN(d)) return timeStr;
+  if (isNaN(d)) return '';
   return (
     String(d.getHours()).padStart(2, '0') + ':' +
     String(d.getMinutes()).padStart(2, '0')
