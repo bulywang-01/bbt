@@ -174,7 +174,7 @@ function renderPosForChief(game, role) {
   // ✅ 未指派
   return `
     <div class="assign-row">
-      <span class="empty">—</span>
+      <span class="empty"></span>
       <button class="btn btn-assign"
         onclick="openAssignJudge('${game.game_id}','${role}')">
         指派
