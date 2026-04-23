@@ -54,6 +54,17 @@ function formatTimeFromSheet(timeVal) {
   );
 }
 
+// ✅ 專門處理 Google Sheets time 欄位
+function formatSheetTime(timeVal) {
+  if (!timeVal) return '';
+  const d = new Date(timeVal);
+  if (isNaN(d)) return '';
+  return (
+    String(d.getHours()).padStart(2, '0') + ':' +
+    String(d.getMinutes()).padStart(2, '0')
+  );
+}
+
 // ===============================
 // 初始化
 // ===============================
@@ -111,8 +122,7 @@ function render() {
 
     panel.innerHTML = `
       <div style="font-weight:800;margin-bottom:6px;">
-        ${formatDate(g.date)} ${g.time || ''}
-        ｜ ${g.away_team} vs ${g.home_team}
+        ${formatDate(g.date)} ${formatSheetTime(g.time)} ｜ ${g.away_team} vs ${g.home_team}
       </div>
 
       <table>
