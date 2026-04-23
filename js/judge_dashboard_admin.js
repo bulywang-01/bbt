@@ -14,7 +14,6 @@ function showLoading(msg = '載入排班資料中...') {
   overlay.classList.add('show');
 }
 
-
 function hideOverlay() {
   document.getElementById('overlay').classList.remove('show');
 }
