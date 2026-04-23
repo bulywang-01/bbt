@@ -164,7 +164,7 @@ function renderPosForChief(game, role) {
 // 指派裁判 → 寫後端 → reload
 // ===============================
 function openAssignJudge(gameId, role) {
-  const game = allGames.find(g => g.game_id === gameId);
+  const game = allGames.find(g => String(g.game_id) === String(gameId));
   if (!game) {
     showMessage('找不到賽事資料');
     return;
