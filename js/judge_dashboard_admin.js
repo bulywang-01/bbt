@@ -1,14 +1,13 @@
 // ===============================
-// 裁判長排班頁（可跑 MVP 版）
+// 裁判長排班頁（最終可用版）
 // ===============================
 
-// ✅ 全域狀態（只宣告一次）
 let allGames = [];
 
 // ===============================
-// 共用 UI 工具（最小版）
+// 共用 UI 工具
 // ===============================
-function showLoading(msg = '處理中...') {
+function showLoading(msg = '載入排班資料中...') {
   const overlay = document.getElementById('overlay');
   document.getElementById('overlay-text').textContent = msg;
   document.getElementById('overlay-ok').style.display = 'none';
@@ -28,6 +27,28 @@ function showMessage(msg) {
 }
 
 // ===============================
+// 日期 / 時間格式化（重點）
+// ===============================
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return (
+    d.getFullYear() + '/' +
+    String(d.getMonth() + 1).padStart(2, '0') + '/' +
+    String(d.getDate()).padStart(2, '0')
+  );
+}
+
+function formatTime(timeStr) {
+  const d = new Date(timeStr);
+  if (isNaN(d)) return timeStr;
+  return (
+    String(d.getHours()).padStart(2, '0') + ':' +
+    String(d.getMinutes()).padStart(2, '0')
+  );
+}
+
+// ===============================
 // 初始化
 // ===============================
 document.addEventListener('DOMContentLoaded', () => {
@@ -43,19 +64,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ===============================
-// 載入賽事（吃合併後端）
+// 載入排班資料（JSONP）
 // ===============================
 function loadGames() {
   const session = JSON.parse(localStorage.getItem('session_user') || {});
-  showLoading('載入排班資料中...');
+  showLoading();
 
   callApi(
-    { action: 'getGamesWithAssignments_admin', user_id: session.user_id },
+    { action: 'getGamesWithAssignments', user_id: session.user_id },
     res => {
       hideOverlay();
 
       if (!res || res.result !== 'ok') {
-        showMessage(res?.message || '載入失敗');
+        showMessage(res?.message || '載入排班資料失敗');
         return;
       }
 
@@ -67,7 +88,7 @@ function loadGames() {
 }
 
 // ===============================
-// 桌機 render（裁判長）
+// 桌機版 render
 // ===============================
 function render() {
   const box = document.getElementById('content');
@@ -83,21 +104,27 @@ function render() {
     panel.className = 'panel';
 
     panel.innerHTML = `
-      <div style="font-weight:700;margin-bottom:6px;">
-        ${g.date}｜${g.away_team} vs ${g.home_team}
+      <div style="font-weight:800;margin-bottom:6px;">
+        ${formatDate(g.date)} ${formatTime(g.time_range)}
+        ｜ ${g.away_team} vs ${g.home_team}
       </div>
+
       <table>
-        <tr>
-          <th>主審</th>
-          <th>一壘</th>
-          <th>二壘</th>
-          <th>三壘</th>
-        </tr>
-        <tr>
-          ${['PU','U1','U2','U3'].map(r => `
-            <td>${renderPosForChief(g, r)}</td>
-          `).join('')}
-        </tr>
+        <thead>
+          <tr>
+            <th>主審</th>
+            <th>一壘</th>
+            <th>二壘</th>
+            <th>三壘</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            ${['PU','U1','U2','U3'].map(role => `
+              <td>${renderPosForChief(g, role)}</td>
+            `).join('')}
+          </tr>
+        </tbody>
       </table>
     `;
 
@@ -106,36 +133,41 @@ function render() {
 }
 
 // ===============================
-// 裁判長站位 render
+// 站位顯示（指派 / 顯示姓名＋更換）
 // ===============================
-function renderPosForChief(g, role) {
-  const pos = g.positions[role];
+function renderPosForChief(game, role) {
+  const pos = game.positions[role];
 
+  // ✅ 已指派
   if (pos.assigned) {
     return `
       <div class="judge-name">
         ${pos.assigned.name}
         <span class="cancel-btn"
-          onclick="openAssignJudge('${g.game_id}','${role}')">
+          onclick="openAssignJudge('${game.game_id}','${role}')">
           更換
         </span>
       </div>
     `;
   }
 
+  // ✅ 尚未指派
   return `
     <button class="pos-choice"
-      onclick="openAssignJudge('${g.game_id}','${role}')">
+      onclick="openAssignJudge('${game.game_id}','${role}')">
       指派
     </button>
   `;
 }
 
 // ===============================
-// 指派裁判 → 寫後端
+// 指派裁判 → 寫後端 → reload
 // ===============================
 function openAssignJudge(gameId, role) {
   const game = allGames.find(g => g.game_id === gameId);
+  if (!game) return;
+
+  // 同場已使用裁判（避免重複）
   const usedJudges = Object.values(game.positions)
     .filter(p => p.assigned)
     .map(p => p.assigned.judge_id);
@@ -151,7 +183,7 @@ function openAssignJudge(gameId, role) {
 
     callApi(
       {
-        action: 'assignJudgeToPosition_admin',
+        action: 'assignJudgeToPosition',
         game_id: gameId,
         role: role,
         judge_id: judgeId,
@@ -159,7 +191,7 @@ function openAssignJudge(gameId, role) {
       },
       res => {
         if (res && res.result === 'ok') {
-          loadGames();
+          loadGames(); // ✅ 以後端為準
         } else {
           showMessage(res?.message || '指派失敗');
         }
@@ -169,7 +201,7 @@ function openAssignJudge(gameId, role) {
 }
 
 // ===============================
-// 手機版（簡化）
+// 手機版 render（同步邏輯）
 // ===============================
 function renderMobile() {
   const box = document.getElementById('mobileView');
@@ -181,13 +213,20 @@ function renderMobile() {
     card.className = 'game-card';
 
     card.innerHTML = `
-      <div><b>${g.date}</b></div>
-      ${['PU','U1','U2','U3'].map(r => `
-        <div>${r}：${renderPosForChief(g, r)}</div>
+      <div style="font-weight:700;">
+        ${formatDate(g.date)} ${formatTime(g.time_range)}
+      </div>
+      <div style="margin-bottom:6px;">
+        ${g.away_team} vs ${g.home_team}
+      </div>
+
+      ${['PU','U1','U2','U3'].map(role => `
+        <div style="margin:4px 0;">
+          <b>${role}</b>：${renderPosForChief(g, role)}
+        </div>
       `).join('')}
     `;
 
     box.appendChild(card);
   });
 }
-
