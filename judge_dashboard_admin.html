@@ -1,5 +1,39 @@
 <style>
+.panel {
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
 
+.assign-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.assign-row.assigned {
+  background: #f0f7ff;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.btn {
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-assign { background: #4a7ef5; color:#fff; }
+.btn-change { background: #ffa726; color:#fff; }
+.btn-cancel { background: #ef5350; color:#fff; }
+
+.btn:hover { opacity: .85; }
+  
 /* ✅ 預設只顯示桌機 */
 #desktopView {
   display: block;
