@@ -106,7 +106,7 @@ function render() {
 
     panel.innerHTML = `
       <div style="font-weight:800;margin-bottom:6px;">
-          ${formatDate(g.date)} ${formatTime(g.date)} ｜ ${g.away_team} vs ${g.home_team}
+          ${formatDate(g.date)} ${formatTime(g.start_time)} ｜ ${g.away_team} vs ${g.home_team}
       </div>
 
       <table>
