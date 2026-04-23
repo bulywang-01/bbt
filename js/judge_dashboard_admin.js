@@ -8,7 +8,7 @@ let allGames = [];
 function showMessage(msg) {
   alert(msg);
 }
-
+ 
 /* ===== 格式化 ===== */
 function formatDate(d) {
   return d || '';
