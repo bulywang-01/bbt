@@ -55,11 +55,44 @@ function render() {
         ${formatDate(game.date)} ${formatSheetTime(game.time)}
         ｜ ${game.away_team} vs ${game.home_team}
       </div>
-      ${['PU','U1','U2','U3'].map(role => renderPos(game, role)).join('')}
+
+      <div class="pos-grid">
+        ${['PU','U1','U2','U3'].map(role => renderPosCell(game, role)).join('')}
+      </div>
     `;
 
     box.appendChild(panel);
   });
+}
+
+function renderPosCell(game, role) {
+  const pos = game.positions[role];
+
+  // 已指派
+  if (pos.assigned) {
+    return `
+      <div class="pos-cell assigned">
+        <div class="role">${role}</div>
+        <div class="judge">${pos.assigned.name}</div>
+        <button class="btn btn-change"
+          onclick="openAssignJudge('${game.game_id}','${role}')">
+          更換
+        </button>
+      </div>
+    `;
+  }
+
+  // 未指派
+  return `
+    <div class="pos-cell">
+      <div class="role">${role}</div>
+      <div class="judge empty">—</div>
+      <button class="btn btn-assign"
+        onclick="openAssignJudge('${game.game_id}','${role}')">
+        指派
+      </button>
+    </div>
+  `;
 }
 
 /* ===== 站位 ===== */
