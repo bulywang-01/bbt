@@ -215,18 +215,42 @@ function openAssignJudge(gameId, role) {
     .map(p => p.assigned.judge_id);
 
   openSelectJudge((judgeId, judgeName) => {
-    if (usedJudges.includes(judgeId)) {
-      showMessage('⚠️ 該裁判已在本場其他站位');
-      return;
+  
+    // ===============================
+    // ✅ 同時段裁判衝突檢查（核心）
+    // ===============================
+    const clashGame = allGames.find(g => {
+      // 同一天
+      if (String(g.date) !== String(game.date)) return false;
+  
+      // 同時間（Sheet time 本質一致即可）
+      if (String(g.time) !== String(game.time)) return false;
+  
+      // 這一場已有此裁判
+      return Object.values(g.positions).some(p =>
+        p.assigned && String(p.assigned.judge_id) === String(judgeId)
+      );
+    });
+  
+    if (clashGame) {
+      showMessage(
+        `⚠️ 裁判「${judgeName}」已於 ` +
+        `${formatDate(clashGame.date)} ${formatSheetTime(clashGame.time)} ` +
+        `排班「${clashGame.away_team} vs ${clashGame.home_team}」`
+      );
+      return; // ✅ 中止，不進行指派
     }
-
+  
+    // ===============================
+    // ✅ 沒有衝突，才真的進行指派
+    // ===============================
     const session = JSON.parse(localStorage.getItem('session_user') || {});
-
+  
     callApi(
       {
         action: 'assignJudgeToPosition_admin',
-        game_id: gameId,
-        role,
+        game_id: game.game_id,
+        role: role,
         judge_id: judgeId,
         assigned_by: session.user_id
       },
