@@ -106,8 +106,7 @@ function render() {
 
     panel.innerHTML = `
       <div style="font-weight:800;margin-bottom:6px;">
-        ${formatDate(g.date)} ${formatTime(g.time_range)}
-        ｜ ${g.away_team} vs ${g.home_team}
+          ${formatDate(g.date)} ${formatTime(g.date)} ｜ ${g.away_team} vs ${g.home_team}
       </div>
 
       <table>
@@ -139,20 +138,20 @@ function render() {
 function renderPosForChief(game, role) {
   const pos = game.positions[role];
 
-  // ✅ 已指派
+  // ✅ 已指派：顯示姓名 + 更換
   if (pos.assigned) {
     return `
-      <div class="judge-name">
+      <span class="judge-name">
         ${pos.assigned.name}
-        <span class="cancel-btn"
+        <button class="pos-choice"
           onclick="openAssignJudge('${game.game_id}','${role}')">
           更換
-        </span>
-      </div>
+        </button>
+      </span>
     `;
   }
 
-  // ✅ 尚未指派
+  // ✅ 未指派：可點的指派按鈕
   return `
     <button class="pos-choice"
       onclick="openAssignJudge('${game.game_id}','${role}')">
