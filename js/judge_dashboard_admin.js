@@ -71,7 +71,7 @@ function loadGames() {
   showLoading();
 
   callApi(
-    { action: 'getGamesWithAssignments', user_id: session.user_id },
+    { action: 'getGamesWithAssignments_admin', user_id: session.user_id },
     res => {
       hideOverlay();
 
@@ -183,7 +183,7 @@ function openAssignJudge(gameId, role) {
 
     callApi(
       {
-        action: 'assignJudgeToPosition',
+        action: 'assignJudgeToPosition_admin',
         game_id: gameId,
         role: role,
         judge_id: judgeId,
