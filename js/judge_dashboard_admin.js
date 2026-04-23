@@ -1,63 +1,23 @@
 // ===============================
-// 裁判長排班頁（最終可用版）
+// 裁判長排班頁（修正完成版）
 // ===============================
 
 let allGames = [];
 
-// ===============================
-// 共用 UI 工具
-// ===============================
-function showLoading(msg = '載入排班資料中...') {
-  const overlay = document.getElementById('overlay');
-  document.getElementById('overlay-text').textContent = msg;
-  document.getElementById('overlay-ok').style.display = 'none';
-  overlay.classList.add('show');
-}
-
-function hideOverlay() {
-  document.getElementById('overlay').classList.remove('show');
-}
-
+/* ===== 訊息 ===== */
 function showMessage(msg) {
-  const overlay = document.getElementById('overlay');
-  document.getElementById('overlay-text').textContent = msg;
-  document.getElementById('overlay-ok').style.display = 'none';
-  overlay.onclick = () => hideOverlay();
-  overlay.classList.add('show');
+  alert(msg);
 }
 
-// ===============================
-// 日期 / 時間格式化（重點）
-// ===============================
-function formatDate(dateStr) {
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
-  return (
-    d.getFullYear() + '/' +
-    String(d.getMonth() + 1).padStart(2, '0') + '/' +
-    String(d.getDate()).padStart(2, '0')
-  );
+/* ===== 格式化 ===== */
+function formatDate(d) {
+  return d || '';
 }
 
-
-function formatTimeFromSheet(timeVal) {
-  if (!timeVal) return '';
-
-  // ✅ Google Sheets 傳來通常是 Date 物件或 ISO
-  const d = new Date(timeVal);
-  if (isNaN(d)) return '';
-
-  // ✅ 只取時間，不顯示 1899-12-30
-  return (
-    String(d.getHours()).padStart(2, '0') + ':' +
-    String(d.getMinutes()).padStart(2, '0')
-  );
-}
-
-// ✅ 專門處理 Google Sheets time 欄位
-function formatSheetTime(timeVal) {
-  if (!timeVal) return '';
-  const d = new Date(timeVal);
+// Google Sheets time → HH:mm
+function formatSheetTime(t) {
+  if (!t) return '';
+  const d = new Date(t);
   if (isNaN(d)) return '';
   return (
     String(d.getHours()).padStart(2, '0') + ':' +
@@ -65,38 +25,15 @@ function formatSheetTime(timeVal) {
   );
 }
 
-// ===============================
-// 初始化
-// ===============================
-document.addEventListener('DOMContentLoaded', () => {
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-
-  if (session.role !== 'chief_judge') {
-    alert('您沒有裁判長權限');
-    location.replace('index.html');
-    return;
-  }
-
-  loadGames();
-});
-
-// ===============================
-// 載入排班資料（JSONP）
-// ===============================
+/* ===== 載入排班資料 ===== */
 function loadGames() {
-  const session = JSON.parse(localStorage.getItem('session_user') || {});
-  showLoading();
-
   callApi(
-    { action: 'getGamesWithAssignments_admin', user_id: session.user_id },
+    { action: 'getGamesWithAssignments_admin' },
     res => {
-      hideOverlay();
-
       if (!res || res.result !== 'ok') {
-        showMessage(res?.message || '載入排班資料失敗');
+        showMessage('載入失敗');
         return;
       }
-
       allGames = res.games || [];
       render();
       renderMobile();
@@ -104,90 +41,57 @@ function loadGames() {
   );
 }
 
-// ===============================
-// 桌機版 render
-// ===============================
+/* ===== 桌機 render ===== */
 function render() {
   const box = document.getElementById('content');
   box.innerHTML = '';
 
-  if (!allGames.length) {
-    box.innerHTML = '<div class="panel">目前沒有賽事</div>';
-    return;
-  }
-
-  allGames.forEach(g => {
+  allGames.forEach(game => {
     const panel = document.createElement('div');
     panel.className = 'panel';
 
     panel.innerHTML = `
-      <div style="font-weight:800;margin-bottom:6px;">
-        ${formatDate(g.date)} ${formatSheetTime(g.time)} ｜ ${g.away_team} vs ${g.home_team}
+      <div class="game-header">
+        ${formatDate(game.date)} ${formatSheetTime(game.time)}
+        ｜ ${game.away_team} vs ${game.home_team}
       </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>主審</th>
-            <th>一壘</th>
-            <th>二壘</th>
-            <th>三壘</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            ${['PU','U1','U2','U3'].map(role => `
-              <td>${renderPosForChief(g, role)}</td>
-            `).join('')}
-          </tr>
-        </tbody>
-      </table>
+      ${['PU','U1','U2','U3'].map(role => renderPos(game, role)).join('')}
     `;
 
     box.appendChild(panel);
   });
 }
 
-// ===============================
-// 站位顯示（指派 / 顯示姓名＋更換）
-// ===============================
-function renderPosForChief(game, role) {
+/* ===== 站位 ===== */
+function renderPos(game, role) {
   const pos = game.positions[role];
 
-  // ✅ 已指派
   if (pos.assigned) {
     return `
       <div class="assign-row assigned">
+        <span class="role-label">${role}</span>
         <span class="judge-name">${pos.assigned.name}</span>
         <button class="btn btn-change"
-          onclick="openAssignJudge('${game.game_id}','${role}')">
-          更換
-        </button>
+          onclick="openAssignJudge('${game.game_id}','${role}')">更換</button>
         <button class="btn btn-cancel"
-          onclick="unassignJudge('${game.game_id}','${role}')">
-          取消
-        </button>
+          onclick="unassignJudge('${game.game_id}','${role}')">取消</button>
       </div>
     `;
   }
 
-  // ✅ 未指派
   return `
     <div class="assign-row">
-      <span class="empty"></span>
+      <span class="role-label">${role}</span>
+      <span class="empty">—</span>
       <button class="btn btn-assign"
-        onclick="openAssignJudge('${game.game_id}','${role}')">
-        指派
-      </button>
+        onclick="openAssignJudge('${game.game_id}','${role}')">指派</button>
     </div>
   `;
 }
 
-// ===============================
-// 指派裁判 → 寫後端 → reload
-// ===============================
+/* ===== ✅ 修正完成的指派功能（重點） ===== */
 function openAssignJudge(gameId, role) {
-  // ✅ 第一步：找出目前這一場
+  // ✅ 一定先找出當前場次
   const currentGame = allGames.find(
     g => String(g.game_id) === String(gameId)
   );
@@ -199,30 +103,27 @@ function openAssignJudge(gameId, role) {
 
   openSelectJudge((judgeId, judgeName) => {
 
-    // ✅ 第二步：檢查同時段裁判衝突
-    const clash = allGames.find(g => {
-      // 同一天
+    // ✅ 同時段衝突檢查
+    const clashGame = allGames.find(g => {
       if (String(g.date) !== String(currentGame.date)) return false;
-      // 同時間
       if (String(g.time) !== String(currentGame.time)) return false;
 
-      // 同一裁判已在其他場
       return Object.values(g.positions).some(
         p => p.assigned &&
              String(p.assigned.judge_id) === String(judgeId)
       );
     });
 
-    if (clash) {
+    if (clashGame) {
       showMessage(
         `⚠️ 裁判「${judgeName}」已於 ` +
-        `${formatDate(clash.date)} ${formatSheetTime(clash.time)} ` +
-        `排班「${clash.away_team} vs ${clash.home_team}」`
+        `${formatDate(clashGame.date)} ${formatSheetTime(clashGame.time)} ` +
+        `排班「${clashGame.away_team} vs ${clashGame.home_team}」`
       );
       return;
     }
 
-    // ✅ 第三步：沒有衝突才真的指派
+    // ✅ 沒衝突才真的送指派
     callApi(
       {
         action: 'assignJudgeToPosition_admin',
@@ -235,11 +136,9 @@ function openAssignJudge(gameId, role) {
   });
 }
 
-// ===============================
-// 取消指派
-// ===============================
+/* ===== 取消指派 ===== */
 function unassignJudge(gameId, role) {
-  if (!confirm('確定要取消此站位的指派嗎？')) return;
+  if (!confirm('確定取消這個站位？')) return;
 
   callApi(
     {
@@ -247,44 +146,27 @@ function unassignJudge(gameId, role) {
       game_id: gameId,
       role: role
     },
-    res => {
-      if (res && res.result === 'ok') {
-        loadGames();
-      } else {
-        showMessage(res?.message || '取消失敗');
-      }
-    }
+    () => loadGames()
   );
 }
 
-// ===============================
-// 手機版 render（同步邏輯）
-// ===============================
+/* ===== 手機版 ===== */
 function renderMobile() {
   const box = document.getElementById('mobileView');
-  if (!box) return;
   box.innerHTML = '';
 
-  allGames.forEach(g => {
+  allGames.forEach(game => {
     const card = document.createElement('div');
-    card.className = 'game-card';
-
+    card.className = 'panel';
     card.innerHTML = `
-      <div style="font-weight:700;">
-        ${formatDate(g.date)} ${formatTimeFromSheet(g.time_range)}
+      <div class="game-header">
+        ${formatDate(game.date)} ${formatSheetTime(game.time)}
       </div>
-      <div style="margin-bottom:6px;">
-        ${g.away_team} vs ${g.home_team}
-      </div>
-
-      ${['PU','U1','U2','U3'].map(role => `
-        <div style="margin:4px 0;">
-          <b>${role}</b>：${renderPosForChief(g, role)}
-        </div>
-      `).join('')}
+      ${game.away_team} vs ${game.home_team}
     `;
-
     box.appendChild(card);
   });
 }
 
+/* ===== 啟動 ===== */
+loadGames();
