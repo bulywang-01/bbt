@@ -1,13 +1,23 @@
 <style>
-/* ✅ 預設只顯示桌機 */
-#desktopView { display: block; }
-#mobileView { display: none; }
 
-/* ✅ 小螢幕才顯示手機版 */
+/* ✅ 預設只顯示桌機 */
+#desktopView {
+  display: block;
+}
+#mobileView {
+  display: none;
+}
+
+/* ✅ 手機版才顯示直式 */
 @media (max-width: 768px) {
-  #desktopView { display: none; }
-  #mobileView { display: block; }
-}  
+  #desktopView {
+    display: none;
+  }
+  #mobileView {
+    display: block;
+  }
+}
+
 </style>
 
 <!DOCTYPE html>
