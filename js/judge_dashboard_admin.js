@@ -187,20 +187,7 @@ function renderPosForChief(game, role) {
 // 指派裁判 → 寫後端 → reload
 // ===============================
 function openAssignJudge(gameId, role) {
-
-  const clash = allGames.find(g =>
-  g.date === game.date &&
-  g.time === game.time &&
-  Object.values(g.positions)
-    .some(p => p.assigned && p.assigned.judge_id === judgeId)
-  );
-
-  if (clash) {
-    showMessage('⚠️ 該裁判在同一時間已有其他場次');
-    return;
-  }
-  
-  // ✅ 修正型別不一致問題
+  // ✅ 第一步：找出目前這一場
   const currentGame = allGames.find(
     g => String(g.game_id) === String(gameId)
   );
@@ -210,57 +197,40 @@ function openAssignJudge(gameId, role) {
     return;
   }
 
-  const usedJudges = Object.values(game.positions)
-    .filter(p => p.assigned)
-    .map(p => p.assigned.judge_id);
-
   openSelectJudge((judgeId, judgeName) => {
-  
-    // ===============================
-    // ✅ 同時段裁判衝突檢查（核心）
-    // ===============================
-    const clashGame = allGames.find(g => {
+
+    // ✅ 第二步：檢查同時段裁判衝突
+    const clash = allGames.find(g => {
       // 同一天
       if (String(g.date) !== String(currentGame.date)) return false;
-  
-      // 同時間（Sheet time 本質一致即可）
+      // 同時間
       if (String(g.time) !== String(currentGame.time)) return false;
-  
-      // 這一場已有此裁判
-      return Object.values(g.positions).some(p =>
-        p.assigned && String(p.assigned.judge_id) === String(judgeId)
+
+      // 同一裁判已在其他場
+      return Object.values(g.positions).some(
+        p => p.assigned &&
+             String(p.assigned.judge_id) === String(judgeId)
       );
     });
-  
-    if (clashGame) {
+
+    if (clash) {
       showMessage(
         `⚠️ 裁判「${judgeName}」已於 ` +
-        `${formatDate(clashGame.date)} ${formatSheetTime(clashGame.time)} ` +
-        `排班「${clashGame.away_team} vs ${clashGame.home_team}」`
+        `${formatDate(clash.date)} ${formatSheetTime(clash.time)} ` +
+        `排班「${clash.away_team} vs ${clash.home_team}」`
       );
-      return; // ✅ 中止，不進行指派
+      return;
     }
-  
-    // ===============================
-    // ✅ 沒有衝突，才真的進行指派
-    // ===============================
-    const session = JSON.parse(localStorage.getItem('session_user') || {});
-  
+
+    // ✅ 第三步：沒有衝突才真的指派
     callApi(
       {
         action: 'assignJudgeToPosition_admin',
         game_id: currentGame.game_id,
         role: role,
-        judge_id: judgeId,
-        assigned_by: session.user_id
+        judge_id: judgeId
       },
-      res => {
-        if (res && res.result === 'ok') {
-          loadGames();
-        } else {
-          showMessage(res?.message || '指派失敗');
-        }
-      }
+      () => loadGames()
     );
   });
 }
