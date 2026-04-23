@@ -39,10 +39,15 @@ function formatDate(dateStr) {
   );
 }
 
-function formatTime(timeStr) {
-  if (!timeStr) return '';
-  const d = new Date(timeStr);
+
+function formatTimeFromSheet(timeVal) {
+  if (!timeVal) return '';
+
+  // ✅ Google Sheets 傳來通常是 Date 物件或 ISO
+  const d = new Date(timeVal);
   if (isNaN(d)) return '';
+
+  // ✅ 只取時間，不顯示 1899-12-30
   return (
     String(d.getHours()).padStart(2, '0') + ':' +
     String(d.getMinutes()).padStart(2, '0')
@@ -220,7 +225,7 @@ function renderMobile() {
 
     card.innerHTML = `
       <div style="font-weight:700;">
-        ${formatDate(g.date)} ${formatTime(g.time_range)}
+        ${formatDate(g.date)} ${formatTimeFromSheet(g.time_range)}
       </div>
       <div style="margin-bottom:6px;">
         ${g.away_team} vs ${g.home_team}
