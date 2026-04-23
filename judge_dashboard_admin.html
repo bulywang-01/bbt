@@ -1,4 +1,55 @@
 <style>
+.pos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.pos-cell {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  background: #fafafa;
+}
+
+.pos-cell.assigned {
+  background: #eef5ff;
+  border-color: #4a7ef5;
+}
+
+.pos-cell .role {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.pos-cell .judge {
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+.pos-cell .judge.empty {
+  color: #999;
+}
+
+.btn {
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-assign {
+  background: #4a7ef5;
+  color: white;
+}
+
+.btn-change {
+  background: #f39c12;
+  color: white;
+}
   
 .panel {
   border-radius: 12px;
