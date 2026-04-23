@@ -166,9 +166,11 @@ function renderPosForChief(game, role) {
 // ===============================
 function openAssignJudge(gameId, role) {
   const game = allGames.find(g => g.game_id === gameId);
-  if (!game) return;
+  if (!game) {
+    showMessage('找不到賽事資料');
+    return;
+  }
 
-  // 同場已使用裁判（避免重複）
   const usedJudges = Object.values(game.positions)
     .filter(p => p.assigned)
     .map(p => p.assigned.judge_id);
@@ -192,7 +194,7 @@ function openAssignJudge(gameId, role) {
       },
       res => {
         if (res && res.result === 'ok') {
-          loadGames(); // ✅ 以後端為準
+          loadGames();
         } else {
           showMessage(res?.message || '指派失敗');
         }
