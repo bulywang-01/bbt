@@ -97,8 +97,11 @@ function render() {
       </div>
 
       <div class="pos-grid">
-        getRolesByUmpireCount(game.umpire_count)
-        .map(role => renderPosCell(game, role))
+        ${
+          getRolesByUmpireCount(game.umpire_count)
+            .map(role => renderPosCell(game, role))
+            .join('')
+        }
       </div>
     `;
 
