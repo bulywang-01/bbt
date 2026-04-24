@@ -1,4 +1,18 @@
 // ===============================
+// 找全部的裁判
+// ===============================
+let allJudges = [];   // ✅ 全部裁判
+
+function countJudgeAssignedOnDate(judgeId, date) {
+  return allGames.filter(g =>
+    g.date === date &&
+    Object.values(g.positions).some(
+      p => p.assigned && String(p.assigned.judge_id) === String(judgeId)
+    )
+  ).length;
+}
+
+// ===============================
 // 裁判長排班頁（修正完成版）
 // ===============================
 
@@ -148,26 +162,21 @@ function openAssignJudge(gameId, role) {
 
   openSelectJudge(currentGame, role, (judgeId, judgeName) => {
 
-    // ✅ 同時段裁判衝突檢查
-    const clash = allGames.find(g => {
-      if (String(g.date) !== String(currentGame.date)) return false;
-      if (String(g.time) !== String(currentGame.time)) return false;
-
-      return Object.values(g.positions).some(
-        p => p.assigned &&
-             String(p.assigned.judge_id) === String(judgeId)
-      );
-    });
+    // ✅ 同時段衝突檢查（跨場）
+    const clash = allGames.find(g =>
+      g.date === currentGame.date &&
+      g.time === currentGame.time &&
+      Object.values(g.positions).some(
+        p => p.assigned && String(p.assigned.judge_id) === String(judgeId)
+      )
+    );
 
     if (clash) {
-      showMessage(
-        `⚠️ 裁判「${judgeName}」已於 ` +
-        `${formatDate(clash.date)} ${formatSheetTime(clash.time)} ` +
-        `排班「${clash.away_team} vs ${clash.home_team}」`
-      );
+      showMessage(`⚠️ ${judgeName} 同時間已有其他場次`);
       return;
     }
 
+    // ✅ 直接寫入
     callApi(
       {
         action: 'assignJudgeToPosition_admin',
@@ -210,28 +219,37 @@ function openSelectJudge(game, role, callback) {
   title.textContent = `選擇裁判（${role}）`;
   list.innerHTML = '';
 
-  const judgeMap = {};
+  // ✅ 本場已指派的裁判（禁止再選）
+  const assignedInGame = new Set();
   Object.values(game.positions).forEach(p => {
-    (p.preferred || []).forEach(j => {
-      // ✅ primitive 相容（name / id）
-      judgeMap[j.judge_id || j] = j.name || j;
-    });
+    if (p.assigned) assignedInGame.add(String(p.assigned.judge_id));
   });
 
-  const entries = Object.entries(judgeMap);
-  if (entries.length === 0) {
-    list.innerHTML = '<div>此場尚無裁判報名</div>';
+  // ✅ 全部裁判清單
+  const availableJudges = allJudges.filter(j =>
+    !assignedInGame.has(String(j.judge_id))
+  );
+
+  if (availableJudges.length === 0) {
+    list.innerHTML = '<div>已無可指派裁判</div>';
     modal.classList.remove('hidden');
     return;
   }
 
-  entries.forEach(([id, name]) => {
+  availableJudges.forEach(j => {
+    const count = countJudgeAssignedOnDate(j.judge_id, game.date);
+
     const div = document.createElement('div');
     div.className = 'judge-card';
-    div.textContent = name;
+    div.innerHTML = `
+      <div>${j.name}</div>
+      <div style="font-size:12px;color:#666;">
+        ${count > 0 ? `今日已排 ${count} 場` : '今日未排班'}
+      </div>
+    `;
     div.onclick = () => {
       if (typeof _judgeSelectCallback === 'function') {
-        _judgeSelectCallback(id, name);
+        _judgeSelectCallback(j.judge_id, j.name);
       }
       closeJudgeModal();
     };
@@ -248,3 +266,4 @@ function closeJudgeModal() {
 
 /* ===== 啟動 ===== */
 loadGames();
+
