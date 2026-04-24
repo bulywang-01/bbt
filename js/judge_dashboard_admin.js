@@ -6,7 +6,12 @@ let allGames = [];
 
 /* ===== 訊息 ===== */
 function showMessage(msg) {
-  alert(msg);
+  document.getElementById('overlay-text').textContent = msg;
+  document.getElementById('overlay').style.display = 'flex';
+}
+
+function hideMessage() {
+  document.getElementById('overlay').style.display = 'none';
 }
  
 /* ===== 格式化 ===== */
@@ -75,13 +80,12 @@ function render() {
 function renderPosCell(game, role) {
   const pos = game.positions[role];
 
-  // 已指派
   if (pos.assigned) {
     return `
       <div class="pos-cell assigned">
         <div class="role">${role}</div>
         <div class="judge">${pos.assigned.name}</div>
-        <button class="btn btn-change"
+        <button class="btn-change"
           onclick="openAssignJudge('${game.game_id}','${role}')">
           更換
         </button>
@@ -89,12 +93,14 @@ function renderPosCell(game, role) {
     `;
   }
 
-  // 未指派
+  const preferred = (pos.preferred || []).map(j => j.name || j).join('、');
+
   return `
     <div class="pos-cell">
       <div class="role">${role}</div>
-      <div class="judge empty">—</div>
-      <button class="btn btn-assign"
+      <div class="judge">—</div>
+      <div class="judge preferred">${preferred ? '報名：' + preferred : ''}</div>
+      <button class="btn-assign"
         onclick="openAssignJudge('${game.game_id}','${role}')">
         指派
       </button>
@@ -204,12 +210,11 @@ function openSelectJudge(game, role, callback) {
   title.textContent = `選擇裁判（${role}）`;
   list.innerHTML = '';
 
-  // ✅ 從該場「報名裁判（preferred）」蒐集名單
   const judgeMap = {};
-
   Object.values(game.positions).forEach(p => {
     (p.preferred || []).forEach(j => {
-      judgeMap[j.judge_id] = j.name;
+      // ✅ primitive 相容（name / id）
+      judgeMap[j.judge_id || j] = j.name || j;
     });
   });
 
@@ -225,8 +230,10 @@ function openSelectJudge(game, role, callback) {
     div.className = 'judge-card';
     div.textContent = name;
     div.onclick = () => {
+      if (typeof _judgeSelectCallback === 'function') {
+        _judgeSelectCallback(id, name);
+      }
       closeJudgeModal();
-      _judgeSelectCallback(id, name);
     };
     list.appendChild(div);
   });
