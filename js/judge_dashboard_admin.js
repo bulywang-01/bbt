@@ -44,7 +44,6 @@ function loadGames() {
       }
       allGames = res.games || [];
       render();
-      renderMobile();
     }
   );
 }
@@ -189,24 +188,6 @@ function unassignJudge(gameId, role) {
     },
     () => loadGames()
   );
-}
-
-/* ===== 手機版 ===== */
-function renderMobile() {
-  const box = document.getElementById('mobileView');
-  box.innerHTML = '';
-
-  allGames.forEach(game => {
-    const card = document.createElement('div');
-    card.className = 'panel';
-    card.innerHTML = `
-      <div class="game-header">
-        ${formatDate(game.date)} ${formatSheetTime(game.time)}
-      </div>
-      ${game.away_team} vs ${game.home_team}
-    `;
-    box.appendChild(card);
-  });
 }
 
 /**
