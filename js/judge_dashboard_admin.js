@@ -90,7 +90,7 @@ function loadGames() {
 
 /* ===== 桌機 render ===== */
 function render() {
-  console.log('umpire_count:', game.umpire_count);
+  //console.log('umpire_count:', game.umpire_count);
   
   const box = document.getElementById('content');
   box.innerHTML = '';
