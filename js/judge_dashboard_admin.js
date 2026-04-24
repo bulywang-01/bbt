@@ -121,20 +121,15 @@ function render() {
 
 function renderPosCell(game, role) {
   const pos = game.positions[role];
-  
-    if (!pos.preferred || pos.preferred.length === 0) {
-      preferredText = '無人報名';
-    }
-    
-    if (pos.assigned && !pos.assigned.name) {
-      displayName = '（未知裁判）';
-    }
-  
+
+  // ✅ 已指派
   if (pos.assigned) {
+    const displayName = pos.assigned.name || '（未知裁判）';
+
     return `
       <div class="pos-cell assigned">
-        <div class="role">${ROLE_LABEL[role] || role}</div>
-        <div class="judge">${pos.assigned.name}</div>
+        <div class="role">${ROLE_LABEL[role]}</div>
+        <div class="judge">${displayName}</div>
         <button class="btn-change"
           onclick="openAssignJudge('${game.game_id}','${role}')">
           更換
@@ -143,13 +138,19 @@ function renderPosCell(game, role) {
     `;
   }
 
-  const preferred = (pos.preferred || []).map(j => j.name || j).join('、');
+  // ✅ 尚未指派
+  let preferredText = '尚未報名';
+
+  if (pos.preferred && pos.preferred.length > 0) {
+    preferredText = '報名：' +
+      pos.preferred.map(j => j.name).join('、');
+  }
 
   return `
     <div class="pos-cell">
-      <div class="role">${role}</div>
+      <div class="role">${ROLE_LABEL[role]}</div>
       <div class="judge">—</div>
-      <div class="judge preferred">${preferred ? '報名：' + preferred : ''}</div>
+      <div class="judge preferred">${preferredText}</div>
       <button class="btn-assign"
         onclick="openAssignJudge('${game.game_id}','${role}')">
         指派
