@@ -90,7 +90,50 @@
 #desktopView {
   display: block;
 }
- 
+
+.modal.hidden { display: none; }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+.modal-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+}
+
+.modal-box {
+  position: relative;
+  max-width: 500px;
+  margin: 10vh auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.judge-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.judge-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+}
+
+.judge-card:hover {
+  background: #eef5ff;
+  border-color: #4a7ef5;
+}
 </style>
 
 <!DOCTYPE html>
@@ -132,6 +175,19 @@
   </div>
 
 </div>
+
+  <!-- ✅ 裁判選擇 Modal -->
+  <div id="judgeModal" class="modal hidden">
+    <div class="modal-mask" onclick="closeJudgeModal()"></div>
+    <div class="modal-box">
+      <h3 id="judgeModalTitle">選擇裁判</h3>
+      <div id="judgeList" class="judge-grid"></div>
+      <div class="modal-footer">
+        <button onclick="closeJudgeModal()">取消</button>
+      </div>
+    </div>
+  </div>
+  
  <!--
    ===============================
    ✅ 共用載入程式區
