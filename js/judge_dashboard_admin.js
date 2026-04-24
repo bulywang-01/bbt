@@ -54,14 +54,6 @@ function getRolesByUmpireCount(count) {
   }
 }
 
-if (!pos.preferred || pos.preferred.length === 0) {
-  preferredText = '無人報名';
-}
-
-if (pos.assigned && !pos.assigned.name) {
-  displayName = '（未知裁判）';
-}
-
 // Google Sheets time → HH:mm
 function formatSheetTime(t) {
   if (!t) return '';
@@ -116,7 +108,15 @@ function render() {
 
 function renderPosCell(game, role) {
   const pos = game.positions[role];
-
+  
+    if (!pos.preferred || pos.preferred.length === 0) {
+      preferredText = '無人報名';
+    }
+    
+    if (pos.assigned && !pos.assigned.name) {
+      displayName = '（未知裁判）';
+    }
+  
   if (pos.assigned) {
     return `
       <div class="pos-cell assigned">
