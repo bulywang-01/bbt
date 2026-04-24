@@ -41,6 +41,27 @@ function formatDate(d) {
   );
 }
 
+function getRolesByUmpireCount(count) {
+  switch (Number(count)) {
+    case 1:
+      return ['PU'];
+    case 2:
+      return ['PU', 'U1'];
+    case 3:
+      return ['PU', 'U1', 'U3']; // ✅ 沒 U2
+    default:
+      return ['PU', 'U1', 'U2', 'U3'];
+  }
+}
+
+if (!pos.preferred || pos.preferred.length === 0) {
+  preferredText = '無人報名';
+}
+
+if (pos.assigned && !pos.assigned.name) {
+  displayName = '（未知裁判）';
+}
+
 // Google Sheets time → HH:mm
 function formatSheetTime(t) {
   if (!t) return '';
@@ -84,7 +105,8 @@ function render() {
       </div>
 
       <div class="pos-grid">
-        ${['PU','U1','U2','U3'].map(role => renderPosCell(game, role)).join('')}
+        getRolesByUmpireCount(game.umpire_count)
+        .map(role => renderPosCell(game, role))
       </div>
     `;
 
