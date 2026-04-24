@@ -3,6 +3,13 @@
 // ===============================
 let allJudges = [];   // ✅ 全部裁判
 
+const ROLE_LABEL = {
+  PU: '主審',
+  U1: '一壘審',
+  U2: '二壘審',
+  U3: '三壘審'
+};
+
 function countJudgeAssignedOnDate(judgeId, date) {
   return allGames.filter(g =>
     g.date === date &&
@@ -123,7 +130,7 @@ function renderPosCell(game, role) {
   if (pos.assigned) {
     return `
       <div class="pos-cell assigned">
-        <div class="role">${role}</div>
+        <div class="role">${ROLE_LABEL[role] || role}</div>
         <div class="judge">${pos.assigned.name}</div>
         <button class="btn-change"
           onclick="openAssignJudge('${game.game_id}','${role}')">
