@@ -11,7 +11,15 @@ function showMessage(msg) {
  
 /* ===== 格式化 ===== */
 function formatDate(d) {
-  return d || '';
+  if (!d) return '';
+  // 處理 ISO 或 Date 物件
+  const dateObj = new Date(d);
+  if (isNaN(dateObj)) return String(d);
+  return (
+    dateObj.getFullYear() + '/' +
+    String(dateObj.getMonth() + 1).padStart(2, '0') + '/' +
+    String(dateObj.getDate()).padStart(2, '0')
+  );
 }
 
 // Google Sheets time → HH:mm
@@ -166,7 +174,10 @@ function openAssignJudge(gameId, role) {
       },
       () => loadGames()
     );
-  });
+  }
+    currentGame,
+    role
+  );
 }
 
 /* ===== 取消指派 ===== */
@@ -205,42 +216,35 @@ function renderMobile() {
  * 裁判選擇器（暫行版）
  * 後續可以換成 modal / 下拉 / 搜尋式 UI
  */
-function openSelectJudge(callback) {
-  // ✅ 從 allJudges 或你已有的名單取裁判
-  // 如果你目前沒有，就先從 allGames 推導一份唯一名單
+function openSelectJudge(callback, game, role) {
+  // ✅ 可選裁判來自「該場所有報名者（不分站位）」
   const judgeMap = {};
 
-  allGames.forEach(g => {
-    Object.values(g.positions).forEach(p => {
-      if (p.assigned) {
-        judgeMap[p.assigned.judge_id] = p.assigned.name;
-      }
+  Object.values(game.positions).forEach(p => {
+    (p.preferred || []).forEach(name => {
+      judgeMap[name] = true;
     });
   });
 
-  const judgeIds = Object.keys(judgeMap);
-  if (judgeIds.length === 0) {
-    alert('目前沒有可選擇的裁判（尚未有任何裁判資料）');
+  const names = Object.keys(judgeMap);
+  if (names.length === 0) {
+    showMessage('此場尚無任何裁判報名');
     return;
   }
 
-  // ✅ 最簡單的選擇方式（先 unblock）
-  const names = judgeIds.map(id => judgeMap[id]);
   const pick = prompt(
     '請輸入裁判編號：\n' +
-    judgeIds.map((id, i) => `${i + 1}. ${judgeMap[id]}`).join('\n')
+    names.map((n, i) => `${i + 1}. ${n}`).join('\n')
   );
 
   const index = parseInt(pick, 10) - 1;
-  if (isNaN(index) || index < 0 || index >= judgeIds.length) {
-    alert('已取消指派');
+  if (isNaN(index) || index < 0 || index >= names.length) {
+    showMessage('已取消指派');
     return;
   }
 
-  const judgeId = judgeIds[index];
-  const judgeName = judgeMap[judgeId];
-
-  callback(judgeId, judgeName);
+  const judgeName = names[index];
+  callback(judgeName, judgeName); // ✅ 目前用 name 當 key
 }
 
 /* ===== 啟動 ===== */
