@@ -201,5 +201,47 @@ function renderMobile() {
   });
 }
 
+/**
+ * 裁判選擇器（暫行版）
+ * 後續可以換成 modal / 下拉 / 搜尋式 UI
+ */
+function openSelectJudge(callback) {
+  // ✅ 從 allJudges 或你已有的名單取裁判
+  // 如果你目前沒有，就先從 allGames 推導一份唯一名單
+  const judgeMap = {};
+
+  allGames.forEach(g => {
+    Object.values(g.positions).forEach(p => {
+      if (p.assigned) {
+        judgeMap[p.assigned.judge_id] = p.assigned.name;
+      }
+    });
+  });
+
+  const judgeIds = Object.keys(judgeMap);
+  if (judgeIds.length === 0) {
+    alert('目前沒有可選擇的裁判（尚未有任何裁判資料）');
+    return;
+  }
+
+  // ✅ 最簡單的選擇方式（先 unblock）
+  const names = judgeIds.map(id => judgeMap[id]);
+  const pick = prompt(
+    '請輸入裁判編號：\n' +
+    judgeIds.map((id, i) => `${i + 1}. ${judgeMap[id]}`).join('\n')
+  );
+
+  const index = parseInt(pick, 10) - 1;
+  if (isNaN(index) || index < 0 || index >= judgeIds.length) {
+    alert('已取消指派');
+    return;
+  }
+
+  const judgeId = judgeIds[index];
+  const judgeName = judgeMap[judgeId];
+
+  callback(judgeId, judgeName);
+}
+
 /* ===== 啟動 ===== */
 loadGames();
