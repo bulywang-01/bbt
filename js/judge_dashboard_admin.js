@@ -62,6 +62,7 @@ function loadGames() {
         return;
       }
       allGames = res.games || [];
+      allJudges = res.judges || [];   // ✅ 關鍵這一行
       render();
     }
   );
