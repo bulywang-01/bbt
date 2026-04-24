@@ -135,16 +135,15 @@ function openAssignJudge(gameId, role) {
   const currentGame = allGames.find(
     g => String(g.game_id) === String(gameId)
   );
-
   if (!currentGame) {
     showMessage('找不到賽事資料');
     return;
   }
 
-  openSelectJudge((judgeId, judgeName) => {
+  openSelectJudge(currentGame, role, (judgeId, judgeName) => {
 
     // ✅ 同時段裁判衝突檢查
-    const clashGame = allGames.find(g => {
+    const clash = allGames.find(g => {
       if (String(g.date) !== String(currentGame.date)) return false;
       if (String(g.time) !== String(currentGame.time)) return false;
 
@@ -154,21 +153,20 @@ function openAssignJudge(gameId, role) {
       );
     });
 
-    if (clashGame) {
+    if (clash) {
       showMessage(
         `⚠️ 裁判「${judgeName}」已於 ` +
-        `${formatDate(clashGame.date)} ${formatSheetTime(clashGame.time)} ` +
-        `排班「${clashGame.away_team} vs ${clashGame.home_team}」`
+        `${formatDate(clash.date)} ${formatSheetTime(clash.time)} ` +
+        `排班「${clash.away_team} vs ${clash.home_team}」`
       );
       return;
     }
 
-    // ✅ 沒衝突才真的送指派
     callApi(
       {
         action: 'assignJudgeToPosition_admin',
         game_id: currentGame.game_id,
-        role: role,
+        role,
         judge_id: judgeId
       },
       () => loadGames()
@@ -194,35 +192,51 @@ function unassignJudge(gameId, role) {
  * 裁判選擇器（暫行版）
  * 後續可以換成 modal / 下拉 / 搜尋式 UI
  */
-function openSelectJudge(callback, game, role) {
-  // ✅ 可選裁判來自「該場所有報名者（不分站位）」
+let _judgeSelectCallback = null;
+
+function openSelectJudge(game, role, callback) {
+  _judgeSelectCallback = callback;
+
+  const modal = document.getElementById('judgeModal');
+  const list = document.getElementById('judgeList');
+  const title = document.getElementById('judgeModalTitle');
+
+  title.textContent = `選擇裁判（${role}）`;
+  list.innerHTML = '';
+
+  // ✅ 從該場「報名裁判（preferred）」蒐集名單
   const judgeMap = {};
 
   Object.values(game.positions).forEach(p => {
-    (p.preferred || []).forEach(name => {
-      judgeMap[name] = true;
+    (p.preferred || []).forEach(j => {
+      judgeMap[j.judge_id] = j.name;
     });
   });
 
-  const names = Object.keys(judgeMap);
-  if (names.length === 0) {
-    showMessage('此場尚無任何裁判報名');
+  const entries = Object.entries(judgeMap);
+  if (entries.length === 0) {
+    list.innerHTML = '<div>此場尚無裁判報名</div>';
+    modal.classList.remove('hidden');
     return;
   }
 
-  const pick = prompt(
-    '請輸入裁判編號：\n' +
-    names.map((n, i) => `${i + 1}. ${n}`).join('\n')
-  );
+  entries.forEach(([id, name]) => {
+    const div = document.createElement('div');
+    div.className = 'judge-card';
+    div.textContent = name;
+    div.onclick = () => {
+      closeJudgeModal();
+      _judgeSelectCallback(id, name);
+    };
+    list.appendChild(div);
+  });
 
-  const index = parseInt(pick, 10) - 1;
-  if (isNaN(index) || index < 0 || index >= names.length) {
-    showMessage('已取消指派');
-    return;
-  }
+  modal.classList.remove('hidden');
+}
 
-  const judgeName = names[index];
-  callback(judgeName, judgeName); // ✅ 目前用 name 當 key
+function closeJudgeModal() {
+  document.getElementById('judgeModal').classList.add('hidden');
+  _judgeSelectCallback = null;
 }
 
 /* ===== 啟動 ===== */
