@@ -131,8 +131,8 @@ function renderPos(game, role) {
 }
 
 /* ===== ✅ 修正完成的指派功能（重點） ===== */
+/* ===== ✅ 修正完成的指派功能（正確版） ===== */
 function openAssignJudge(gameId, role) {
-  // ✅ 一定先找出當前場次
   const currentGame = allGames.find(
     g => String(g.game_id) === String(gameId)
   );
@@ -144,7 +144,7 @@ function openAssignJudge(gameId, role) {
 
   openSelectJudge((judgeId, judgeName) => {
 
-    // ✅ 同時段衝突檢查
+    // ✅ 同時段裁判衝突檢查
     const clashGame = allGames.find(g => {
       if (String(g.date) !== String(currentGame.date)) return false;
       if (String(g.time) !== String(currentGame.time)) return false;
@@ -174,10 +174,7 @@ function openAssignJudge(gameId, role) {
       },
       () => loadGames()
     );
-  }
-    currentGame,
-    role
-  );
+  });
 }
 
 /* ===== 取消指派 ===== */
