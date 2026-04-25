@@ -68,12 +68,13 @@ function render() {
 
       <div class="pos-grid">
         ${
-          getRolesByUmpireCount(game.umpire_count)
+          ['PU','U1','U2','U3']
             .map(role => renderPosCell(game, role))
             .join('')
         }
       </div>
     `;
+
     box.appendChild(panel);
   });
 }
@@ -82,18 +83,43 @@ function render() {
 function renderPosCell(game, role) {
   const pos = game.positions[role];
 
+  // ✅ 判斷此站位是否「該場需要」
+  const requiredRolesByCount = {
+    1: ['PU'],
+    2: ['PU','U1'],
+    3: ['PU','U1','U3'],
+    4: ['PU','U1','U2','U3']
+  };
+
+  const neededRoles = requiredRolesByCount[game.umpire_count] || [];
+  const isDisabled = !neededRoles.includes(role);
+
+  // ✅ 不需要的站位：顯示空白、不給點
+  if (isDisabled) {
+    return `
+      <div class="pos-cell disabled">
+        <div class="role">${ROLE_LABEL[role]}</div>
+        <div class="judge">—</div>
+        <div class="judge preferred">不需此站位</div>
+      </div>
+    `;
+  }
+
+  // ✅ 已指派
   if (pos.assigned) {
     return `
       <div class="pos-cell assigned">
         <div class="role">${ROLE_LABEL[role]}</div>
         <div class="judge">${pos.assigned.name || '（未知裁判）'}</div>
-        <button class="btn-change" onclick="openAssignJudge('${game.game_id}','${role}')">
+        <button class="btn-change"
+          onclick="openAssignJudge('${game.game_id}','${role}')">
           更換
         </button>
       </div>
     `;
   }
 
+  // ✅ 尚未指派
   const preferredText =
     pos.preferred && pos.preferred.length > 0
       ? '報名：' + pos.preferred.map(j => j.name).join('、')
@@ -104,7 +130,8 @@ function renderPosCell(game, role) {
       <div class="role">${ROLE_LABEL[role]}</div>
       <div class="judge">—</div>
       <div class="judge preferred">${preferredText}</div>
-      <button class="btn-assign" onclick="openAssignJudge('${game.game_id}','${role}')">
+      <button class="btn-assign"
+        onclick="openAssignJudge('${game.game_id}','${role}')">
         指派
       </button>
     </div>
