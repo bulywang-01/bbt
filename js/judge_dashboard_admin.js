@@ -1,8 +1,8 @@
-// ===============================
-// 找全部的裁判
-// ===============================
-let allJudges = [];   // ✅ 全部裁判
+/* ===== 全域資料 ===== */
+let allGames = [];
+let allJudges = [];
 
+/* ===== 站位中文 ===== */
 const ROLE_LABEL = {
   PU: '主審',
   U1: '一壘審',
@@ -10,87 +10,49 @@ const ROLE_LABEL = {
   U3: '三壘審'
 };
 
-function countJudgeAssignedOnDate(judgeId, date) {
-  return allGames.filter(g =>
-    g.date === date &&
-    Object.values(g.positions).some(
-      p => p.assigned && String(p.assigned.judge_id) === String(judgeId)
-    )
-  ).length;
-}
-
-// ===============================
-// 裁判長排班頁（修正完成版）
-// ===============================
-
-let allGames = [];
-
-/* ===== 訊息 ===== */
-function showMessage(msg) {
-  document.getElementById('overlay-text').textContent = msg;
-  document.getElementById('overlay').style.display = 'flex';
-}
-
-function hideMessage() {
-  document.getElementById('overlay').style.display = 'none';
-}
- 
-/* ===== 格式化 ===== */
+/* ===== 工具 ===== */
 function formatDate(d) {
-  if (!d) return '';
-  // 處理 ISO 或 Date 物件
-  const dateObj = new Date(d);
-  if (isNaN(dateObj)) return String(d);
-  return (
-    dateObj.getFullYear() + '/' +
-    String(dateObj.getMonth() + 1).padStart(2, '0') + '/' +
-    String(dateObj.getDate()).padStart(2, '0')
-  );
+  const x = new Date(d);
+  return `${x.getFullYear()}/${x.getMonth()+1}/${x.getDate()}`;
+}
+
+function formatSheetTime(t) {
+  const d = new Date(t);
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
 function getRolesByUmpireCount(count) {
   switch (Number(count)) {
-    case 1:
-      return ['PU'];
-    case 2:
-      return ['PU', 'U1'];
-    case 3:
-      return ['PU', 'U1', 'U3']; // ✅ 沒 U2
-    default:
-      return ['PU', 'U1', 'U2', 'U3'];
+    case 1: return ['PU'];
+    case 2: return ['PU','U1'];
+    case 3: return ['PU','U1','U3'];
+    default: return ['PU','U1','U2','U3'];
   }
 }
 
-// Google Sheets time → HH:mm
-function formatSheetTime(t) {
-  if (!t) return '';
-  const d = new Date(t);
-  if (isNaN(d)) return '';
-  return (
-    String(d.getHours()).padStart(2, '0') + ':' +
-    String(d.getMinutes()).padStart(2, '0')
-  );
-}
-
-/* ===== 載入排班資料 ===== */
+/* ===== 載入資料 ===== */
 function loadGames() {
   callApi(
     { action: 'getGamesWithAssignments_admin' },
     res => {
-      if (!res || res.result !== 'ok') {
-        showMessage('載入失敗');
-        return;
-      }
-      allGames = res.games || [];
-      allJudges = res.judges || [];   // ✅ 關鍵這一行
+      if (!res || res.result !== 'ok') return;
+
+      allGames = res.games;
+      allJudges = res.judges || [];
+
+      // ✅ 依日期 → 時間排序
+      allGames.sort((a,b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        return new Date(a.time) - new Date(b.time);
+      });
+
       render();
     }
   );
 }
 
-/* ===== 桌機 render ===== */
+/* ===== render ===== */
 function render() {
-  
   const box = document.getElementById('content');
   box.innerHTML = '';
 
@@ -112,139 +74,62 @@ function render() {
         }
       </div>
     `;
-    
-    console.log('umpire_count:', game.umpire_count);
-
     box.appendChild(panel);
   });
 }
 
+/* ===== 單一站位 ===== */
 function renderPosCell(game, role) {
   const pos = game.positions[role];
 
-  // ✅ 已指派
   if (pos.assigned) {
-    const displayName = pos.assigned.name || '（未知裁判）';
-
     return `
       <div class="pos-cell assigned">
         <div class="role">${ROLE_LABEL[role]}</div>
-        <div class="judge">${displayName}</div>
-        <button class="btn-change"
-          onclick="openAssignJudge('${game.game_id}','${role}')">
+        <div class="judge">${pos.assigned.name || '（未知裁判）'}</div>
+        <button class="btn-change" onclick="openAssignJudge('${game.game_id}','${role}')">
           更換
         </button>
       </div>
     `;
   }
 
-  // ✅ 尚未指派
-  let preferredText = '尚未報名';
-
-  if (pos.preferred && pos.preferred.length > 0) {
-    preferredText = '報名：' +
-      pos.preferred.map(j => j.name).join('、');
-  }
+  const preferredText =
+    pos.preferred && pos.preferred.length > 0
+      ? '報名：' + pos.preferred.map(j => j.name).join('、')
+      : '尚未報名';
 
   return `
     <div class="pos-cell">
       <div class="role">${ROLE_LABEL[role]}</div>
       <div class="judge">—</div>
       <div class="judge preferred">${preferredText}</div>
-      <button class="btn-assign"
-        onclick="openAssignJudge('${game.game_id}','${role}')">
+      <button class="btn-assign" onclick="openAssignJudge('${game.game_id}','${role}')">
         指派
       </button>
     </div>
   `;
 }
 
-/* ===== 站位 ===== */
-function renderPos(game, role) {
-  const pos = game.positions[role];
+/* ===== 指派 ===== */
+let _judgeSelectCallback = null;
 
-  if (pos.assigned) {
-    return `
-      <div class="assign-row assigned">
-        <span class="role-label">${role}</span>
-        <span class="judge-name">${pos.assigned.name}</span>
-        <button class="btn btn-change"
-          onclick="openAssignJudge('${game.game_id}','${role}')">更換</button>
-        <button class="btn btn-cancel"
-          onclick="unassignJudge('${game.game_id}','${role}')">取消</button>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="assign-row">
-      <span class="role-label">${role}</span>
-      <span class="empty">—</span>
-      <button class="btn btn-assign"
-        onclick="openAssignJudge('${game.game_id}','${role}')">指派</button>
-    </div>
-  `;
-}
-
-/* ===== ✅ 修正完成的指派功能（重點） ===== */
-/* ===== ✅ 修正完成的指派功能（正確版） ===== */
 function openAssignJudge(gameId, role) {
-  const currentGame = allGames.find(
-    g => String(g.game_id) === String(gameId)
-  );
-  if (!currentGame) {
-    showMessage('找不到賽事資料');
-    return;
-  }
+  const game = allGames.find(g => g.game_id == gameId);
+  if (!game) return;
 
-  openSelectJudge(currentGame, role, (judgeId, judgeName) => {
-
-    // ✅ 同時段衝突檢查（跨場）
-    const clash = allGames.find(g =>
-      g.date === currentGame.date &&
-      g.time === currentGame.time &&
-      Object.values(g.positions).some(
-        p => p.assigned && String(p.assigned.judge_id) === String(judgeId)
-      )
-    );
-
-    if (clash) {
-      showMessage(`⚠️ ${judgeName} 同時間已有其他場次`);
-      return;
-    }
-
-    // ✅ 直接寫入
+  openSelectJudge(game, role, (jid, name) => {
     callApi(
       {
         action: 'assignJudgeToPosition_admin',
-        game_id: currentGame.game_id,
-        role,
-        judge_id: judgeId
+        game_id: gameId,
+        role: role,
+        judge_id: jid
       },
       () => loadGames()
     );
   });
 }
-
-/* ===== 取消指派 ===== */
-function unassignJudge(gameId, role) {
-  if (!confirm('確定取消這個站位？')) return;
-
-  callApi(
-    {
-      action: 'unassignJudge_admin',
-      game_id: gameId,
-      role: role
-    },
-    () => loadGames()
-  );
-}
-
-/**
- * 裁判選擇器（暫行版）
- * 後續可以換成 modal / 下拉 / 搜尋式 UI
- */
-let _judgeSelectCallback = null;
 
 function openSelectJudge(game, role, callback) {
   _judgeSelectCallback = callback;
@@ -253,45 +138,31 @@ function openSelectJudge(game, role, callback) {
   const list = document.getElementById('judgeList');
   const title = document.getElementById('judgeModalTitle');
 
-  title.textContent = `選擇裁判（${role}）`;
+  title.textContent = `選擇裁判（${ROLE_LABEL[role]}）`;
   list.innerHTML = '';
 
-  // ✅ 本場已指派的裁判（禁止再選）
-  const assignedInGame = new Set();
+  // 本場已指派
+  const assigned = new Set();
   Object.values(game.positions).forEach(p => {
-    if (p.assigned) assignedInGame.add(String(p.assigned.judge_id));
+    if (p.assigned) assigned.add(String(p.assigned.judge_id));
   });
 
-  // ✅ 全部裁判清單
-  const availableJudges = allJudges.filter(j =>
-    !assignedInGame.has(String(j.judge_id))
-  );
+  const available = allJudges.filter(j => !assigned.has(String(j.judge_id)));
 
-  if (availableJudges.length === 0) {
+  if (available.length === 0) {
     list.innerHTML = '<div>已無可指派裁判</div>';
-    modal.classList.remove('hidden');
-    return;
-  }
-
-  availableJudges.forEach(j => {
-    const count = countJudgeAssignedOnDate(j.judge_id, game.date);
-
-    const div = document.createElement('div');
-    div.className = 'judge-card';
-    div.innerHTML = `
-      <div>${j.name}</div>
-      <div style="font-size:12px;color:#666;">
-        ${count > 0 ? `今日已排 ${count} 場` : '今日未排班'}
-      </div>
-    `;
-    div.onclick = () => {
-      if (typeof _judgeSelectCallback === 'function') {
+  } else {
+    available.forEach(j => {
+      const div = document.createElement('div');
+      div.className = 'judge-card';
+      div.textContent = j.name;
+      div.onclick = () => {
+        closeJudgeModal();
         _judgeSelectCallback(j.judge_id, j.name);
-      }
-      closeJudgeModal();
-    };
-    list.appendChild(div);
-  });
+      };
+      list.appendChild(div);
+    });
+  }
 
   modal.classList.remove('hidden');
 }
@@ -303,4 +174,3 @@ function closeJudgeModal() {
 
 /* ===== 啟動 ===== */
 loadGames();
-
