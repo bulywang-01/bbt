@@ -35,8 +35,7 @@ function loadGames() {
   callApi(
     { action: 'getGamesWithAssignments_admin' },
     res => {
-      if (!res || res.result !== 'ok') return;
-
+    if (!res || res.result !== 'ok') return;
       allGames = res.games;
       allJudges = res.judges || [];
 
