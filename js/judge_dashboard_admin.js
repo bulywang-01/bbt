@@ -141,7 +141,7 @@ function openAssignJudge(gameId, role) {
   const game = allGames.find(g => String(g.game_id) === String(gameId));
   if (!game) return;
 
-  openSelectJudge(game, role, (judgeId, name) => {
+  openSelectJudge(game, role, (judgeId, judgeName) => {
     callApi(
       {
         action: 'assignJudgeToPosition_admin',
@@ -149,9 +149,32 @@ function openAssignJudge(gameId, role) {
         role: role,
         judge_id: judgeId
       },
-      () => loadGames()
+      res => {
+        // ✅ 1️⃣ 成功視覺回饋
+        showAssignSuccess(`${judgeName} 已指派為 ${ROLE_LABEL[role]}`);
+
+        // ✅ 2️⃣ 重新載入班表
+        loadGames();
+      }
     );
   });
+}
+
+function showAssignSuccess(text) {
+  const msg = document.createElement('div');
+  msg.textContent = text;
+  msg.style.position = 'fixed';
+  msg.style.top = '50%';
+  msg.style.left = '50%';
+  msg.style.transform = 'translate(-50%, -50%)';
+  msg.style.background = '#4a7ef5';
+  msg.style.color = '#fff';
+  msg.style.padding = '12px 20px';
+  msg.style.borderRadius = '10px';
+  msg.style.zIndex = '9999';
+  document.body.appendChild(msg);
+
+  setTimeout(() => msg.remove(), 1500);
 }
 
 function openSelectJudge(game, role, callback) {
@@ -164,13 +187,18 @@ function openSelectJudge(game, role, callback) {
   title.textContent = `選擇裁判（${ROLE_LABEL[role]}）`;
   list.innerHTML = '';
 
-  // 本場已指派（避免重複）
-  const assigned = new Set();
+  // 本場已指派的裁判（任何站位）
+  const assignedSet = new Set();
   Object.values(game.positions).forEach(p => {
-    if (p.assigned) assigned.add(String(p.assigned.judge_id));
+    if (p.assigned) {
+      assignedSet.add(String(p.assigned.judge_id));
+    }
   });
-
-  const available = allJudges.filter(j => !assigned.has(String(j.judge_id)));
+  
+  // ✅ 排除本場已指派
+  const available = allJudges.filter(j =>
+    !assignedSet.has(String(j.judge_id))
+  );
 
   if (available.length === 0) {
     list.innerHTML = '<div>已無可指派裁判</div>';
@@ -178,22 +206,31 @@ function openSelectJudge(game, role, callback) {
       available.forEach(j => {
         const div = document.createElement('div');
         div.className = 'judge-card';
-        div.textContent = j.name;
+      
+        // ✅ 計算同時段衝突數
+        const conflictCount = allGames.filter(g =>
+          String(g.game_id) !== String(game.game_id) &&
+          g.date === game.date &&
+          g.time === game.time &&
+          Object.values(g.positions).some(p =>
+            p.assigned && String(p.assigned.judge_id) === String(j.judge_id)
+          )
+        ).length;
+      
+        div.innerHTML = `
+          <div>${j.name}</div>
+          ${conflictCount > 0
+            ? `<div style="color:red;font-size:12px;margin-top:4px;">
+                 ⚠ 同時段已有 ${conflictCount} 場
+               </div>`
+            : ''}
+        `;
       
         div.addEventListener('click', () => {
-          // ✅ 此刻強制保證 callback 正確
           const cb = _judgeSelectCallback;
+          if (typeof cb !== 'function') return;
       
-          if (typeof cb !== 'function') {
-            console.error('judgeSelectCallback 已失效', _judgeSelectCallback);
-            alert('系統狀態異常，請重新開啟指派視窗');
-            return;
-          }
-      
-          // ✅ 先執行 callback（核心動作）
           cb(j.judge_id, j.name);
-      
-          // ✅ 再關 modal
           closeJudgeModal();
         });
       
