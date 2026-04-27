@@ -123,7 +123,6 @@ function renderPosCell(game, role) {
   return `
     <div class="pos-cell">
       <div class="role">${ROLE_LABEL[role]}</div>
-      <div class="judge">—</div>
       <div class="judge preferred">${preferredText}</div>
       <button class="btn-assign"
         onclick="openAssignJudge('${game.game_id}','${role}')">
