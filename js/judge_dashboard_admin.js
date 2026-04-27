@@ -118,7 +118,7 @@ function renderPosCell(game, role) {
   // 尚未指派
   const preferredText =
     pos.preferred && pos.preferred.length > 0
-      ? '報名：' + pos.preferred.map(j => j.name).join('、')
+      ? '' + pos.preferred.map(j => j.name).join('、')
       : '尚未報名';
 
   return `
