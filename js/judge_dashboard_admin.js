@@ -175,16 +175,30 @@ function openSelectJudge(game, role, callback) {
   if (available.length === 0) {
     list.innerHTML = '<div>已無可指派裁判</div>';
   } else {
-    available.forEach(j => {
-      const div = document.createElement('div');
-      div.className = 'judge-card';
-      div.textContent = j.name;
-      div.onclick = () => {
-        closeJudgeModal();
-        _judgeSelectCallback(j.judge_id, j.name);
-      };
-      list.appendChild(div);
-    });
+      available.forEach(j => {
+        const div = document.createElement('div');
+        div.className = 'judge-card';
+        div.textContent = j.name;
+      
+        div.addEventListener('click', () => {
+          // ✅ 此刻強制保證 callback 正確
+          const cb = _judgeSelectCallback;
+      
+          if (typeof cb !== 'function') {
+            console.error('judgeSelectCallback 已失效', _judgeSelectCallback);
+            alert('系統狀態異常，請重新開啟指派視窗');
+            return;
+          }
+      
+          // ✅ 先執行 callback（核心動作）
+          cb(j.judge_id, j.name);
+      
+          // ✅ 再關 modal
+          closeJudgeModal();
+        });
+      
+        list.appendChild(div);
+      });
   }
 
   modal.classList.remove('hidden');
@@ -192,7 +206,11 @@ function openSelectJudge(game, role, callback) {
 
 function closeJudgeModal() {
   document.getElementById('judgeModal').classList.add('hidden');
-  _judgeSelectCallback = null;
+
+  // ✅ 延後清空，避免點擊事件還在跑
+  setTimeout(() => {
+    _judgeSelectCallback = null;
+  }, 0);
 }
 
 /* =========================
