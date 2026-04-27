@@ -83,7 +83,6 @@ function render() {
 function renderPosCell(game, role) {
   const pos = game.positions[role];
 
-  // ✅ 判斷此站位是否「該場需要」
   const requiredRolesByCount = {
     1: ['PU'],
     2: ['PU','U1'],
@@ -94,7 +93,6 @@ function renderPosCell(game, role) {
   const neededRoles = requiredRolesByCount[game.umpire_count] || [];
   const isDisabled = !neededRoles.includes(role);
 
-  // ✅ 不需要的站位：顯示空白、不給點
   if (isDisabled) {
     return `
       <div class="pos-cell disabled">
@@ -105,7 +103,6 @@ function renderPosCell(game, role) {
     `;
   }
 
-  // ✅ 已指派
   if (pos.assigned) {
     return `
       <div class="pos-cell assigned">
@@ -119,7 +116,6 @@ function renderPosCell(game, role) {
     `;
   }
 
-  // ✅ 尚未指派
   const preferredText =
     pos.preferred && pos.preferred.length > 0
       ? '報名：' + pos.preferred.map(j => j.name).join('、')
