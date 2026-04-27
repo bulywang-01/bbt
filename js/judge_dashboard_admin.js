@@ -141,23 +141,28 @@ function openAssignJudge(gameId, role) {
   const game = allGames.find(g => String(g.game_id) === String(gameId));
   if (!game) return;
 
-  openSelectJudge(game, role, (judgeId, judgeName) => {
-    callApi(
-      {
-        action: 'assignJudgeToPosition_admin',
-        game_id: gameId,
-        role: role,
-        judge_id: judgeId
-      },
-      res => {
-        // ✅ 1️⃣ 成功視覺回饋
-        showAssignSuccess(`${judgeName} 已指派為 ${ROLE_LABEL[role]}`);
-
-        // ✅ 2️⃣ 重新載入班表
-        loadGames();
-      }
-    );
-  });
+    openSelectJudge(game, role, (judgeId, judgeName) => {
+      callApi(
+        {
+          action: 'assignJudgeToPosition_admin',
+          game_id: gameId,
+          role: role,
+          judge_id: judgeId
+        },
+        res => {
+          if (!res || res.result !== 'ok') {
+            alert('❌ 指派失敗，請查看後端');
+            return;
+          }
+    
+          // ✅ 真的成功才顯示
+          showAssignSuccess(`${judgeName} 已指派為 ${ROLE_LABEL[role]}`);
+    
+          // ✅ 再重新抓一次資料
+          loadGames();
+        }
+      );
+    });
 }
 
 function showAssignSuccess(text) {
