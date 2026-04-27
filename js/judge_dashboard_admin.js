@@ -33,7 +33,7 @@ function getRolesByUmpireCount(count) {
 /* ===== 載入資料 ===== */
 function loadGames() {
   callApi(
-    { action: 'getGamesWithAssignments_admin' },
+    { action: 'getGamesWithAssignments_admin_' },
     res => {
       if (!res || res.result !== 'ok') return;
 
