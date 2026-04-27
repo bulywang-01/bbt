@@ -95,7 +95,7 @@ function renderPosCell(game, role) {
     return `
       <div class="pos-cell disabled">
         <div class="role">${ROLE_LABEL[role]}</div>
-        <div class="judge preferred">不需此站位</div>
+        <div class="judge preferred">不指派</div>
       </div>
     `;
   }
