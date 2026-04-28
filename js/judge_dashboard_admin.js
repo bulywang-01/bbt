@@ -216,9 +216,10 @@ function openSelectJudge(game, role, callback) {
         const conflictCount = allGames.filter(g =>
           String(g.game_id) !== String(game.game_id) &&
           g.date === game.date &&
-          g.time === game.time &&
+          g.time_range === game.time_range &&   // ✅ 補這一行
           Object.values(g.positions).some(p =>
-            p.assigned && String(p.assigned.judge_id) === String(j.judge_id)
+            p.assigned &&
+            String(p.assigned.judge_id) === String(j.judge_id)
           )
         ).length;
       
