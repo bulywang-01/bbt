@@ -267,14 +267,14 @@ tr.expired {
 .game-header {
   display: flex;
   justify-content: space-between;
-  font-size: 18px;
+  font-size: 17px;
   margin-bottom: 6px;
 }
 
 .game-main {
   display: flex;
   justify-content: space-between;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
   margin-bottom: 8px;
 }
@@ -842,7 +842,7 @@ function renderMobile() {
 
           <div class="game-main">
             <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
-            <div class="teams">${g.away_team} vs ${g.home_team}</div>
+            <div class="teams"><strong>${g.away_team}</strong> vs <strong>${g.home_team}</strong></div>
          </div>
 
           ${renderMobilePosGrid(g)}
