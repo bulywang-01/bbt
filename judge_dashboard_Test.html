@@ -126,6 +126,11 @@ tr.full {
   background: #fff3f3;
 }
 
+.umpire-full {
+  //font-weight: 600;
+  color: #d32f2f;
+}
+
 /* 過期 */
 tr.expired {
   background: #f2f2f2;
@@ -168,7 +173,6 @@ tr.expired {
   box-shadow: 0 2px 8px rgba(74,126,245,0.35);
 }
 
-/* 不需裁判 */
 .pos-na {
   /* color: #d32f2f; */ 
   color: #919191;
@@ -370,24 +374,6 @@ tr.expired {
   font-weight: 600;
 }
 
-.mobile-pos-btn.disabled {
-  opacity: 0.4;
-  background: #f0f0f0;
-  color: #999;
-  border-color: #ccc;
-  pointer-events: none;
-}
-   
-/**/
-.phase-info {
-  font-size: 16px;
-  margin-bottom: 8px;
-  color: #035883;
-}
-
-.phase-info b {
-  color: #1a237e;
-}
 </style>
   
 </head>
@@ -408,7 +394,7 @@ tr.expired {
 <div id="header"></div>
 
 <div class="main">
-   
+
   <!-- 篩選 -->
   <div class="filter-bar">
     目前顯示的資料是：
@@ -433,13 +419,9 @@ tr.expired {
   <div id="mobileView"></div>
 
   <!-- ✅ 全站唯一的送出按鈕 -->
-   <div class="submit-bar">
-     <div id="phaseInfo" class="phase-info"></div>
-   
-     <button id="submitBtn" onclick="submitSignup()">
-       送出報名
-     </button>
-   </div>
+  <div class="submit-bar">
+    <button onclick="submitSignup()">送出報名</button>
+  </div>
 
 </div>
   <!--
@@ -452,70 +434,11 @@ tr.expired {
 </div>
   
 
- <!--
-   ===============================
-   ✅ 共用載入程式區
-   ===============================
--->
+  
 <script src="js/config.js"></script>
 
 <script>
-// ===============================
-// ✅ 報名階段設定（MVP：前端版）
-// ===============================
-const SIGNUP_PHASES = [
-  {
-    phase: 1,
-    name: '第一階段',
-    maxSelect: 6
-  },
-  {
-    phase: 2,
-    name: '第二階段',
-    maxSelect: 6
-  }
-];
 
-// ✅ 目前階段（MVP 直接固定）
-// 之後只要改成從後端回來即可
-let currentPhaseIndex = 0; // 0 = 第一階段, 1 = 第二階段
-   
-// ===============================
-// ✅ 顯示目前階段狀態
-// ===============================
-function updatePhaseInfo() {
-  const phase = SIGNUP_PHASES[currentPhaseIndex];
-  const used = Object.keys(selectedPositions).length;
-
-  document.getElementById('phaseInfo').innerHTML = `
-    ${phase.name}報名，
-    最多可選 ${phase.maxSelect} 場，
-    已選 ${used} 場
-  `;
-}
-
-// ===============================
-// ✅ 統一更新送出狀態
-// ===============================
-function updateSubmitButtonState() {
-  const btn = document.getElementById('submitBtn');
-  if (!btn) return;
-
-  const phase = SIGNUP_PHASES[currentPhaseIndex];
-  const selectedCount = Object.keys(selectedPositions).length;
-
-  if (selectedCount > phase.maxSelect) {
-    btn.disabled = true;
-    btn.textContent = '已超過本階段上限';
-  } else {
-    btn.disabled = false;
-    btn.textContent = '送出報名';
-  }
-}
-
-// ===============================
-// ✅ 程式起點
-// ===============================
 function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
   if (overlay) overlay.remove();
@@ -598,10 +521,6 @@ function cancelSelected(gameId) {
   delete selectedPositions[gameId];
   render();
   renderMobile();
-  updatePhaseInfo();
-  onSelectionChanged(); // ✅
-
-
 
 }
   
@@ -629,9 +548,6 @@ function cancelSelectedByDate() {
     alert(`已取消 ${date} 的 ${removed} 筆選擇`);
     render();
     renderMobile();
-    updatePhaseInfo();
-    onSelectionChanged(); // ✅
-
 
   }
 }
@@ -642,41 +558,24 @@ function formatTime(t){
          d.getMinutes().toString().padStart(2,'0');
 }
 
-// ===============================
-// ✅ 集中管理的函式
-// ===============================
-function onSelectionChanged() {
-  render();
-  renderMobile();
-  updatePhaseInfo();
-  updateSubmitButtonState();
-}
-
 function rememberSelection(gameId, role, btn) {
-  const phase = SIGNUP_PHASES[currentPhaseIndex];
-  const currentCount = Object.keys(selectedPositions).length;
-
-  // ✅ 階段上限判斷（只有新選擇才擋）
-  if (!selectedPositions[gameId] && currentCount >= phase.maxSelect) {
-    showMessage(
-      `⚠️ ${phase.name} 最多只能選 ${phase.maxSelect} 場賽事`
-    );
-    return;
-  }
-
+  // 清掉舊選擇
+  // delete selectedPositions[gameId];
   selectedPositions[gameId] = role;
 
+  // 清除同場所有已選外觀
   document
-    .querySelectorAll(`.pos-choice[data-game="${gameId}"]`)
+    .querySelectorAll(`.signup-btn[data-game="${gameId}"]`)
     .forEach(b => b.classList.remove('selected'));
 
-  if (btn) btn.classList.add('selected');
+  // 標記目前按下的按鈕
+  if (btn) {
+    btn.classList.add('selected');
+  }
 
+  // ✅ 一定要在 if 外
   render();
   renderMobile();
-  updatePhaseInfo();
-  onSelectionChanged(); // ✅
-
 }
 
 
@@ -815,15 +714,6 @@ function render() {
             if (filled >= g.need_count) tr.classList.add('full');
 
   function renderPos(role) {
-
-   
-     // 🔴【①】最一開始：先算「超過上限了嗎？」
-     const phase = SIGNUP_PHASES[currentPhaseIndex];
-     const selectedCount = Object.keys(selectedPositions).length;
-     const alreadySelectedThisGame = !!selectedPositions[g.game_id];
-     const isOverLimit =
-       selectedCount >= phase.maxSelect && !alreadySelectedThisGame;
-
     // === 不需要此站位 ===
     if (
       g.need_count === 0 ||
@@ -877,13 +767,10 @@ function render() {
   
     // === 尚未選，可選 ===
     return `
-    
-       <label class="pos-choice ${isOverLimit ? 'disabled' : ''}">
-         <input type="radio"
-           ${isOverLimit ? 'disabled' : ''}
-           onchange="rememberSelection('${g.game_id}','${role}')">
-       </label>
-
+      <label class="pos-choice">
+        <input type="radio"
+               onchange="rememberSelection('${g.game_id}','${role}')">
+      </label>
     `;
   }
 
@@ -892,7 +779,7 @@ function render() {
             if (g.need_count === 0) {
               umpireCell = '<span class="umpire-na">不需裁判</span>';
             } else if (filled >= g.need_count) {
-              umpireCell = '<span class="umpire-full">已額滿</span>';
+              umpireCell = '<span class="umpire-full"><strong>已額滿</strong></span>';
             }
 
             tr.innerHTML = `
@@ -950,13 +837,13 @@ function renderMobile() {
         card.innerHTML = `
           <div class="game-header">
             <div>📅 <strong>${g.date}</strong></div>
-            <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
+            <div>📍 ${g.field}</div>
           </div>
 
           <div class="game-main">
+            <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
             <div class="teams">${g.away_team} vs ${g.home_team}</div>
-            <div>📍 ${g.field}</div>
-          </div>
+         </div>
 
           ${renderMobilePosGrid(g)}
 
@@ -971,20 +858,13 @@ function renderMobile() {
 }
 
 function renderMobilePosGrid(g) {
-
-   const phase = SIGNUP_PHASES[currentPhaseIndex];
-   const selectedCount = Object.keys(selectedPositions).length;
-   const alreadySelectedThisGame = !!selectedPositions[g.game_id];
-   const isOverLimit =
-     selectedCount >= phase.maxSelect && !alreadySelectedThisGame;
-      
-   const ROLE_NAME = {
-     PU: '主審',
-     U1: '一壘',
-     U2: '二壘',
-     U3: '三壘'
-     };
-     
+  const ROLE_NAME = {
+  PU: '主審',
+  U1: '一壘',
+  U2: '二壘',
+  U3: '三壘'
+  };
+  
   const roles = ['PU', 'U1', 'U2', 'U3'];
   const today = new Date(); today.setHours(0,0,0,0);
   const isPast = new Date(g.date.replace(/\//g,'-')) < today;
@@ -1049,15 +929,14 @@ function renderMobilePosGrid(g) {
           `;
         }
 
-         return `
-           <div class="mobile-pos">
-             <div class="mobile-pos-btn ${isOverLimit ? 'disabled' : ''}"
-               ${isOverLimit ? '' : `onclick="rememberSelection('${g.game_id}','${role}')"`}>
-               ${ROLE_NAME[role]}
-             </div>
-           </div>
-         `;
-         
+        return `
+          <div class="mobile-pos">
+            <div class="mobile-pos-btn"
+                 onclick="rememberSelection('${g.game_id}','${role}')">
+              ${ROLE_NAME[role]}
+            </div>
+          </div>
+        `;
       }).join('')}
     </div>
   `;
@@ -1129,53 +1008,6 @@ function submitSignup(){
   );
 }
 
-/*
-    function showLoading(msg = '處理中...') {
-      const overlay = document.getElementById('overlay');
-      document.getElementById('overlay-text').textContent = msg;
-      document.getElementById('overlay-ok').style.display = 'none';
-      overlay.classList.add('show');
-    }
-    
-    function showMessage(msg, reload = true) {
-      const overlay = document.getElementById('overlay');
-      document.getElementById('overlay-text').textContent = msg;
-    
-      const ok = document.getElementById('overlay-ok');
-      ok.style.display = 'inline-block';
-      ok.onclick = () => {
-        overlay.classList.remove('show');
-        if (reload) location.reload();
-      };
-    
-      overlay.classList.add('show');
-    }
-    
-    function hideOverlay() {
-      document.getElementById('overlay').classList.remove('show');
-    }
-
-function showMessage(msg, reload = true) {
-  document.getElementById('overlay-text').textContent = msg;
-  const ok = document.getElementById('overlay-ok');
-  ok.style.display = 'inline-block';
-
-  ok.onclick = () => {
-    document.getElementById('overlay').style.display = 'none';
-    if (reload) {
-      location.reload();
-    }
-  };
-
-  // ✅ 重點：這裡一定要顯示 overlay
-  document.getElementById('overlay').style.display = 'flex';
-}
-
-function hideOverlay() {
-  document.getElementById('overlay').style.display = 'none';
-}
-*/
-
 function showLoading(msg) {
   const overlay = document.getElementById('overlay');
   document.getElementById('overlay-text').textContent = msg;
@@ -1239,19 +1071,6 @@ function cancelMySignup(signupId) {
       }
     }
   );
-}
-
-//
-// 切換階段用
-//
-function switchToNextPhase() {
-  if (currentPhaseIndex < SIGNUP_PHASES.length - 1) {
-    currentPhaseIndex++;
-    selectedPositions = {}; // 新階段重新計算
-    render();
-    renderMobile();
-    updatePhaseInfo();
-  }
 }
 
 </script>
