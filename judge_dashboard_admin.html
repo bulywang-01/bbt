@@ -242,18 +242,20 @@ button {
      fetch('header.html')
        .then(res => res.text())
        .then(html => {
-         // ✅ 這時 #header 一定存在
-         document.getElementById('header').innerHTML = html;
+         // ✅ 改這一行（關鍵）
+         document.getElementById('header-container').innerHTML = html;
    
          // ✅ active（對齊 index.html）
          const page = location.pathname.split('/').pop();
    
-         document.querySelectorAll('#header a').forEach(a => {
-           const href = a.getAttribute('href');
-           if (href === page) {
-             a.classList.add('active');
-           }
-         });
+         document
+           .querySelectorAll('#header-container a')
+           .forEach(a => {
+             const href = a.getAttribute('href');
+             if (href === page) {
+               a.classList.add('active');
+             }
+           });
        });
    });
 </script>
