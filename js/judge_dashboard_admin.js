@@ -22,7 +22,7 @@ function formatDate(d) {
   return `${x.getFullYear()}/${x.getMonth() + 1}/${x.getDate()}`;
 }
 
-function formatSheetTime(t) {
+function formatTime(t) {
   const d = new Date(t);
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
@@ -46,20 +46,27 @@ function loadGames() {
 }
 
 /* =========================
- * 將賽事依日期分組並排序
+ * 分組：日期 → 組別 → 時間排序
  * ========================= */
-function groupByDate(games) {
+function groupGames(games) {
   const map = {};
+
   games.forEach(g => {
-    if (!map[g.date]) {
-      map[g.date] = [];
-    }
-    map[g.date].push(g);
+    const dateKey = formatDate(g.date);
+    const categoryKey = g.category || '未分類';
+
+    if (!map[dateKey]) map[dateKey] = {};
+    if (!map[dateKey][categoryKey]) map[dateKey][categoryKey] = [];
+
+    map[dateKey][categoryKey].push(g);
   });
 
-  Object.keys(map).forEach(date => {
-    map[date].sort((a, b) => {
-      return String(a.time || '').localeCompare(String(b.time || ''));
+  // 組別內依時間排序
+  Object.values(map).forEach(categoryMap => {
+    Object.values(categoryMap).forEach(list => {
+      list.sort((a, b) =>
+        String(a.time).localeCompare(String(b.time))
+      );
     });
   });
 
@@ -67,7 +74,7 @@ function groupByDate(games) {
 }
 
 /* =========================
- * render 主畫面（✅同日期同一個 panel）
+ * render 主畫面
  * ========================= */
 function render() {
   const box = document.getElementById('content');
@@ -78,38 +85,54 @@ function render() {
     return;
   }
 
-  const grouped = groupByDate(allGames);
+  const grouped = groupGames(allGames);
   const dates = Object.keys(grouped).sort();
 
   dates.forEach(date => {
-    const panel = document.createElement('div');
-    panel.className = 'panel';
+    const datePanel = document.createElement('div');
+    datePanel.className = 'panel';
 
-    const header = document.createElement('div');
-    header.className = 'game-header';
-    header.textContent = date;
-    panel.appendChild(header);
+    const dateHeader = document.createElement('div');
+    dateHeader.className = 'game-header';
+    dateHeader.textContent = date;
+    datePanel.appendChild(dateHeader);
 
-    grouped[date].forEach(game => {
-      panel.appendChild(renderGameRow(game));
+    const categoryMap = grouped[date];
+    const categories = Object.keys(categoryMap).sort();
+
+    categories.forEach(category => {
+      const catBox = document.createElement('div');
+      catBox.style.marginBottom = '18px';
+
+      const catTitle = document.createElement('div');
+      catTitle.style.fontWeight = '700';
+      catTitle.style.margin = '8px 0';
+      catTitle.textContent = category;
+      catBox.appendChild(catTitle);
+
+      categoryMap[category].forEach(game => {
+        catBox.appendChild(renderGameRow(game));
+      });
+
+      datePanel.appendChild(catBox);
     });
 
-    box.appendChild(panel);
+    box.appendChild(datePanel);
   });
 }
 
 /* =========================
- * render 單場比賽（時間 + 對戰 + 站位）
+ * render 單場比賽
  * ========================= */
 function renderGameRow(game) {
   const wrap = document.createElement('div');
-  wrap.style.marginBottom = '16px';
+  wrap.style.marginBottom = '14px';
 
   const title = document.createElement('div');
   title.style.fontWeight = '700';
-  title.style.marginBottom = '8px';
+  title.style.marginBottom = '6px';
   title.textContent =
-    `${formatSheetTime(game.time)} ｜ ${game.away_team} vs ${game.home_team}`;
+    `${formatTime(game.time)} ｜ ${game.away_team} vs ${game.home_team}`;
   wrap.appendChild(title);
 
   const grid = document.createElement('div');
@@ -124,7 +147,7 @@ function renderGameRow(game) {
 }
 
 /* =========================
- * render 單一站位（✅原邏輯完全保留）
+ * render 單一站位
  * ========================= */
 function renderPosCell(game, role) {
   const pos = game.positions[role];
@@ -169,15 +192,6 @@ function renderPosCell(game, role) {
         onclick="openAssignJudge('${game.game_id}', '${role}')">指派</button>
     </div>`;
 }
-
-/* =========================
- * 以下：指派、Modal、衝突判斷（✅完全保留）
- * ========================= */
-// 🔽（這一段我完全未改，你原本的程式 그대로）
-// openAssignJudge()
-// showAssignSuccess()
-// openSelectJudge()
-// closeJudgeModal()
 
 /* =========================
  * 啟動
