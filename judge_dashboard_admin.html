@@ -238,22 +238,22 @@ button {
 -->
 
 <script>
-   fetch('header.html')
-     .then(res => res.text())
-     .then(html => {
-         // ================================
-         // ✅ Header active 狀態（對齊 index.html）
-         // ================================
-         const page = location.pathname.split('/').pop();
-         
-         // 比對 header 裡所有導覽連結
-         document.querySelectorAll('#header a').forEach(a => {
-           const href = a.getAttribute('href');
-           if (href === page) {
-             a.classList.add('active');
-           }
-         });
-     });
+fetch('header.html')
+  .then(res => res.text())
+  .then(html => {
+    // ① 先把 header 塞進來（這步不能少）
+    document.getElementById('header').innerHTML = html;
+
+    // ② 設定 active（完全對齊 index.html）
+    const page = location.pathname.split('/').pop();
+
+    document.querySelectorAll('#header a').forEach(a => {
+      const href = a.getAttribute('href');
+      if (href === page) {
+        a.classList.add('active');
+      }
+    });
+  });
 </script>
 
 <script src="js/config.js"></script>
