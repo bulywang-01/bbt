@@ -74,6 +74,22 @@ body {
   border-bottom:1px solid #ddd;
 }
 
+/* ==================================================
+   ✅ Header active 狀態（對齊 index.html）
+   ================================================== */
+
+/* 目前頁面 active */
+#header a.active {
+  background: #e3f2fd;     /* ✅ 跟 index 一樣的淡藍 */
+  color: #1565c0;
+  font-weight: 700;
+}
+
+/* hover + active 不打架 */
+#header a.active:hover {
+  background: #e3f2fd;
+}
+   
 /* ===== 主內容 ===== */
 .main {
   max-width: 1100px;
@@ -225,7 +241,18 @@ button {
    fetch('header.html')
      .then(res => res.text())
      .then(html => {
-       document.getElementById('header-container').innerHTML = html;
+         // ================================
+         // ✅ Header active 狀態（對齊 index.html）
+         // ================================
+         const page = location.pathname.split('/').pop();
+         
+         // 比對 header 裡所有導覽連結
+         document.querySelectorAll('#header a').forEach(a => {
+           const href = a.getAttribute('href');
+           if (href === page) {
+             a.classList.add('active');
+           }
+         });
      });
 </script>
 
