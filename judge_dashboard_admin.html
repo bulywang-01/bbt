@@ -238,22 +238,24 @@ button {
 -->
 
 <script>
-fetch('header.html')
-  .then(res => res.text())
-  .then(html => {
-    // ① 先把 header 塞進來（這步不能少）
-    document.getElementById('header').innerHTML = html;
-
-    // ② 設定 active（完全對齊 index.html）
-    const page = location.pathname.split('/').pop();
-
-    document.querySelectorAll('#header a').forEach(a => {
-      const href = a.getAttribute('href');
-      if (href === page) {
-        a.classList.add('active');
-      }
-    });
-  });
+   document.addEventListener('DOMContentLoaded', () => {
+     fetch('header.html')
+       .then(res => res.text())
+       .then(html => {
+         // ✅ 這時 #header 一定存在
+         document.getElementById('header').innerHTML = html;
+   
+         // ✅ active（對齊 index.html）
+         const page = location.pathname.split('/').pop();
+   
+         document.querySelectorAll('#header a').forEach(a => {
+           const href = a.getAttribute('href');
+           if (href === page) {
+             a.classList.add('active');
+           }
+         });
+       });
+   });
 </script>
 
 <script src="js/config.js"></script>
