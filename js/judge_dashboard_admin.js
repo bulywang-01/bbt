@@ -9,9 +9,9 @@ let allJudges = [];
  * ========================= */
 const ROLE_LABEL = {
   PU: '主審',
-  U1: '一壘審',
-  U2: '二壘審',
-  U3: '三壘審'
+  U1: '一壘',
+  U2: '二壘',
+  U3: '三壘'
 };
 
 /* =========================
@@ -46,27 +46,25 @@ function loadGames() {
 }
 
 /* =========================
- * 賽事分組：日期 →（可選）組別 → 時間排序
+ * 分組：日期 → 組別（game.group）→ 時間排序
  * ========================= */
 function groupGames(games) {
   const map = {};
 
   games.forEach(g => {
     const dateKey = formatDate(g.date);
-    const categoryKey = g.category || ''; // ✅ 不強塞「未分類」
+    const groupKey = g.group; // ✅ 正確欄位，強制存在
 
     if (!map[dateKey]) map[dateKey] = {};
-    if (!map[dateKey][categoryKey]) map[dateKey][categoryKey] = [];
+    if (!map[dateKey][groupKey]) map[dateKey][groupKey] = [];
 
-    map[dateKey][categoryKey].push(g);
+    map[dateKey][groupKey].push(g);
   });
 
-  // 每個組別內依時間排序
-  Object.values(map).forEach(categoryMap => {
-    Object.values(categoryMap).forEach(list => {
-      list.sort((a, b) =>
-        new Date(a.time) - new Date(b.time)
-      );
+  // 組別內依時間排序
+  Object.values(map).forEach(groupMap => {
+    Object.values(groupMap).forEach(list => {
+      list.sort((a, b) => new Date(a.time) - new Date(b.time));
     });
   });
 
@@ -87,7 +85,7 @@ function render() {
 
   const grouped = groupGames(allGames);
 
-  // ✅ 日期依真正時間排序
+  // ✅ 日期依實際日期排序
   const dates = Object.keys(grouped).sort(
     (a, b) => new Date(a.replace(/\//g, '-')) - new Date(b.replace(/\//g, '-'))
   );
@@ -101,22 +99,17 @@ function render() {
     dateHeader.textContent = date;
     datePanel.appendChild(dateHeader);
 
-    const categoryMap = grouped[date];
+    const groupMap = grouped[date];
+    const groups = Object.keys(groupMap); // 組別順序照後端給
 
-    Object.keys(categoryMap).forEach(category => {
-      const list = categoryMap[category];
-      if (!list || list.length === 0) return;
+    groups.forEach(group => {
+      const groupTitle = document.createElement('div');
+      groupTitle.style.fontWeight = '700';
+      groupTitle.style.margin = '10px 0 6px';
+      groupTitle.textContent = group;
+      datePanel.appendChild(groupTitle);
 
-      // ✅ 只有真的有組別才顯示標題
-      if (category) {
-        const catTitle = document.createElement('div');
-        catTitle.style.fontWeight = '700';
-        catTitle.style.margin = '10px 0 6px';
-        catTitle.textContent = category;
-        datePanel.appendChild(catTitle);
-      }
-
-      list.forEach(game => {
+      groupMap[group].forEach(game => {
         datePanel.appendChild(renderGameRow(game));
       });
     });
@@ -151,7 +144,7 @@ function renderGameRow(game) {
 }
 
 /* =========================
- * render 單一站位（原邏輯保留）
+ * render 單一站位（既有邏輯）
  * ========================= */
 function renderPosCell(game, role) {
   const pos = game.positions[role];
