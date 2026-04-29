@@ -46,14 +46,14 @@ function loadGames() {
 }
 
 /* =========================
- * 分組：日期 → 組別 → 時間排序
+ * 賽事分組：日期 →（可選）組別 → 時間排序
  * ========================= */
 function groupGames(games) {
   const map = {};
 
   games.forEach(g => {
     const dateKey = formatDate(g.date);
-    const categoryKey = g.category || '未分類';
+    const categoryKey = g.category || ''; // ✅ 不強塞「未分類」
 
     if (!map[dateKey]) map[dateKey] = {};
     if (!map[dateKey][categoryKey]) map[dateKey][categoryKey] = [];
@@ -61,11 +61,11 @@ function groupGames(games) {
     map[dateKey][categoryKey].push(g);
   });
 
-  // 組別內依時間排序
+  // 每個組別內依時間排序
   Object.values(map).forEach(categoryMap => {
     Object.values(categoryMap).forEach(list => {
       list.sort((a, b) =>
-        String(a.time).localeCompare(String(b.time))
+        new Date(a.time) - new Date(b.time)
       );
     });
   });
@@ -86,7 +86,11 @@ function render() {
   }
 
   const grouped = groupGames(allGames);
-  const dates = Object.keys(grouped).sort();
+
+  // ✅ 日期依真正時間排序
+  const dates = Object.keys(grouped).sort(
+    (a, b) => new Date(a.replace(/\//g, '-')) - new Date(b.replace(/\//g, '-'))
+  );
 
   dates.forEach(date => {
     const datePanel = document.createElement('div');
@@ -98,23 +102,23 @@ function render() {
     datePanel.appendChild(dateHeader);
 
     const categoryMap = grouped[date];
-    const categories = Object.keys(categoryMap).sort();
 
-    categories.forEach(category => {
-      const catBox = document.createElement('div');
-      catBox.style.marginBottom = '18px';
+    Object.keys(categoryMap).forEach(category => {
+      const list = categoryMap[category];
+      if (!list || list.length === 0) return;
 
-      const catTitle = document.createElement('div');
-      catTitle.style.fontWeight = '700';
-      catTitle.style.margin = '8px 0';
-      catTitle.textContent = category;
-      catBox.appendChild(catTitle);
+      // ✅ 只有真的有組別才顯示標題
+      if (category) {
+        const catTitle = document.createElement('div');
+        catTitle.style.fontWeight = '700';
+        catTitle.style.margin = '10px 0 6px';
+        catTitle.textContent = category;
+        datePanel.appendChild(catTitle);
+      }
 
-      categoryMap[category].forEach(game => {
-        catBox.appendChild(renderGameRow(game));
+      list.forEach(game => {
+        datePanel.appendChild(renderGameRow(game));
       });
-
-      datePanel.appendChild(catBox);
     });
 
     box.appendChild(datePanel);
@@ -147,7 +151,7 @@ function renderGameRow(game) {
 }
 
 /* =========================
- * render 單一站位
+ * render 單一站位（原邏輯保留）
  * ========================= */
 function renderPosCell(game, role) {
   const pos = game.positions[role];
