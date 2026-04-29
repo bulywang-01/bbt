@@ -7,6 +7,48 @@
 
 <style>
 /* ===== 全域 ===== */
+/* ===============================
+   ✅ Header 導覽列修正（Admin 頁）
+   目的：左邊導覽與右邊字體、寬度完全一致
+================================ */
+
+#header {
+  display: flex;
+  align-items: center;
+}
+
+/* 左側所有導覽連結（關鍵） */
+#header a {
+  display: flex;              /* ✅ 不再是 inline */
+  align-items: center;
+
+  font-size: 15px;             /* ✅ 跟右邊一致 */
+  font-weight: 500;
+  line-height: 1;
+
+  padding: 10px 14px;          /* ✅ 撐寬、撐高 */
+  min-height: 40px;            /* ✅ 高度一致 */
+
+  margin-right: 6px;           /* ✅ 不用 margin 撐寬 */
+  box-sizing: border-box;
+}
+
+/* hover 整塊反應 */
+#header a:hover {
+  background: #f2f5fa;
+  border-radius: 6px;
+}
+
+/* 右側使用者名稱 */
+#header #u_name {
+  margin-left: auto;           /* ✅ 一定靠右 */
+  padding: 10px 14px;
+
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
 body {
   margin: 0;
   background: #f5f6f8;
