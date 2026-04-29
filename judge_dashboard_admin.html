@@ -7,46 +7,55 @@
 
 <style>
 /* ===== 全域 ===== */
-/* ===============================
-   ✅ Header 導覽列修正（Admin 頁）
-   目的：左邊導覽與右邊字體、寬度完全一致
-================================ */
+/* ==================================================
+   ✅ Header 樣式對齊 index.html（Admin 專用）
+   目的：導覽列字體、寬度、高度完全一致
+   ================================================== */
 
 #header {
   display: flex;
   align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-/* 左側所有導覽連結（關鍵） */
+/* 左邊導覽連結（首頁 / 出勤報名 / 管理 / 變更密碼 / 登出） */
 #header a {
-  display: flex;              /* ✅ 不再是 inline */
+  display: flex;              /* ✅ 跟 index 一樣 */
   align-items: center;
+  gap: 6px;
 
-  font-size: 15px;             /* ✅ 跟右邊一致 */
+  font-size: 15px;            /* ✅ 字體大小對齊 */
   font-weight: 500;
   line-height: 1;
 
-  padding: 10px 14px;          /* ✅ 撐寬、撐高 */
-  min-height: 40px;            /* ✅ 高度一致 */
+  padding: 10px 14px;         /* ✅ 寬度、高度來源 */
+  min-height: 40px;           /* ✅ 視覺高度一致 */
 
-  margin-right: 6px;           /* ✅ 不用 margin 撐寬 */
+  color: #0066cc;
+  text-decoration: none;
+  border-radius: 6px;
+
+  margin-right: 0;            /* ❗不用舊的 margin 撐 */
   box-sizing: border-box;
 }
 
-/* hover 整塊反應 */
+/* hover 效果（index 有） */
 #header a:hover {
   background: #f2f5fa;
-  border-radius: 6px;
 }
 
-/* 右側使用者名稱 */
+/* 右側使用者名稱（王韶文） */
 #header #u_name {
-  margin-left: auto;           /* ✅ 一定靠右 */
+  margin-left: auto;          /* ✅ 右推 */
   padding: 10px 14px;
 
   font-size: 15px;
   font-weight: 600;
   color: #333;
+  white-space: nowrap;
 }
 
 body {
@@ -211,41 +220,15 @@ button {
    ✅ 共用載入程式區
    ===============================
 -->
-<!--
+
 <script>
-fetch('header.html')
-  .then(res => res.text())
-  .then(html => {
-    document.getElementById('header-container').innerHTML = html;
-  });
+   fetch('header.html')
+     .then(res => res.text())
+     .then(html => {
+       document.getElementById('header-container').innerHTML = html;
+     });
 </script>
--->
-<script>
-   /* ===== 載入共用 Header ===== */
-function loadHeader(){
-  fetch('header.html')
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById('header-container').innerHTML = html;
 
-      const s = JSON.parse(localStorage.getItem('session_user') || '{}');
-      if (s.name) {
-        const u = document.getElementById('u_name');
-        if (u) u.textContent = s.name;
-      }
-
-      const t = document.getElementById('pageTitle');
-      if (t) t.textContent = '系統首頁';
-
-      const page = location.pathname.split('/').pop();
-      document.querySelectorAll('.nav a').forEach(a=>{
-        if(a.getAttribute('href') === page){
-          a.classList.add('active');
-        }
-      });
-    });
-}
-</script>
 <script src="js/config.js"></script>
 <script src="js/judge_dashboard_admin.js"></script>
 
