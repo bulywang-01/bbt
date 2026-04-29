@@ -211,12 +211,40 @@ button {
    ✅ 共用載入程式區
    ===============================
 -->
+<!--
 <script>
 fetch('header.html')
   .then(res => res.text())
   .then(html => {
     document.getElementById('header-container').innerHTML = html;
   });
+</script>
+-->
+<script>
+   /* ===== 載入共用 Header ===== */
+function loadHeader(){
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+
+      const s = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (s.name) {
+        const u = document.getElementById('u_name');
+        if (u) u.textContent = s.name;
+      }
+
+      const t = document.getElementById('pageTitle');
+      if (t) t.textContent = '系統首頁';
+
+      const page = location.pathname.split('/').pop();
+      document.querySelectorAll('.nav a').forEach(a=>{
+        if(a.getAttribute('href') === page){
+          a.classList.add('active');
+        }
+      });
+    });
+}
 </script>
 <script src="js/config.js"></script>
 <script src="js/judge_dashboard_admin.js"></script>
