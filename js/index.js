@@ -14,9 +14,17 @@ document.addEventListener('DOMContentLoaded', () => {
    * roles: ['judge', 'record']
    */
   const roles = session.roles || [];
-
-  const isJudge  = roles.includes('judge');
-  const isRecord = roles.includes('record');
+  
+  const isJudge  = roles.includes('judge') || roles.includes('chief_judge');
+  const isRecord = roles.includes('record') || roles.includes('record_admin');
+  
+  if (isJudge) {
+    showJudgePanel();
+  }
+  
+  if (isRecord) {
+    showRecordPanel();
+  }
 
   /* =========================
    * 裁判班表
