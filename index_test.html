@@ -895,6 +895,7 @@
          onclick="openFullSchedule()">
       查看完整班表 ▶
     </div>
+  
 <script>
       function renderMyDuties(weekDuties, otherDuties) {
       const weekSection = document.getElementById('week-section');
@@ -946,9 +947,9 @@
 function positionToZh(pos) {
   const map = {
     PU: '主審',
-    U1: '一壘審',
-    U2: '二壘審',
-    U3: '三壘審'
+    U1: '一壘',
+    U2: '二壘',
+    U3: '三壘'
   };
   return map[pos] || pos || '';
 }
@@ -1241,6 +1242,8 @@ function closeFullSchedule() {
 
 <!-- ================= Script ================= -->
 <script src="js/config.js"></script>
+<script src="js/index.js"></script>
+
 <script>
 
 /* ===== 載入共用 Header ===== */
