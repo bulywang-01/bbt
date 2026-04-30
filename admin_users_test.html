@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>裁判帳號管理</title>
+
+<style>
+
+/* === 新增帳號卡片 === */
+.create-user-card {
+  background:#f9fafb;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  padding:16px;
+  margin-top:24px;
+}
+
+.create-user-card h3 {
+  margin:0 0 12px;
+  font-size:16px;
+  color:#333;
+}
+
+/* === 新增帳號表單排列 === */
+.create-user-grid {
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:12px;
+}
+
+.create-user-field {
+  display:flex;
+  flex-direction:column;
+}
+
+.create-user-field label {
+  font-size:12px;
+  color:#555;
+  margin-bottom:4px;
+}
+
+.create-user-field input,
+.create-user-field select {
+  padding:6px 8px;
+  font-size:13px;
+}
+
+/* === 行動列 === */
+.create-user-actions {
+  grid-column: 1 / -1;
+  display:flex;
+  justify-content:flex-end;
+  margin-top:8px;
+}
+
+/* === 新增按鈕 === */
+.btn-primary {
+  background:#2c7be5;
+  color:#fff;
+  border:none;
+  padding:8px 16px;
+  font-size:14px;
+  border-radius:4px;
+  cursor:pointer;
+}
+
+.btn-primary:hover {
+  background:#1a68d1;
+}
+
+/* 小提醒文字 */
+.form-hint {
+  grid-column: 1 / -1;
+  font-size:12px;
+  color:#666;
+}
+
+body{
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:#f5f6f8;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#ffffff;
+  border-bottom:1px solid #ddd;
+}
+
+.nav a{
+  margin-right:16px;
+  color:#0066cc;
+  text-decoration:none;
+  font-weight:500;
+}
+
+.main{ padding:20px; }
+
+.panel{
+  background:#fff;
+  padding:16px;
+  border-radius:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+th,td{
+  border:1px solid #ddd;
+  padding:6px 8px;
+  text-align:center;
+}
+th{ background:#eef2f6; }
+
+input,select{
+  width:100%;
+  box-sizing:border-box;
+  padding:4px;
+  font-size:13px;
+}
+
+tr.inactive{
+  background:#f3f3f3;
+  color:#888;
+}
+
+button{
+  padding:6px 12px;
+  cursor:pointer;
+}
+
+/* ===== Toast（畫面正中央） ===== */
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 280px;
+  max-width: 400px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 15px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,.3);
+  opacity: 0;
+  transition: opacity .3s ease;
+  z-index: 9999;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+.toast.success { background: #2e7d32; }
+.toast.error   { background: #c62828; }
+.toast.warn    { background: #ed6c02; }
+  
+</style>
+</head>
+
+<body>
+
+<!-- ===== Header ===== -->
+<div class="header">
+  <div class="nav">
+    <a href="index.html">🏠 首頁</a>
+    <a href="judge_dashboard.html">📋 報名</a>
+    <!--
+    <a href="files.html">📂 文件下載</a>
+    <a href="review_dashboard.html">✅ 審核</a>
+    -->
+    <a href="admin_dashboard.html">⚙️ 管理</a>
+  </div>
+
+  <div class="user-box">
+    <span id="u_name" class="user-name"></span>
+    <a href="#" class="logout" onclick="logout()">登出</a>
+  </div>
+</div>
+
+<div class="main">
+<div class="panel">
+
+<table>
+<!-- 先 mark 起來 for delete
+<th>
+  <input type="checkbox" id="checkAll" onclick="toggleAllUsers(this)">
+</th>
+-->
+<thead>
+<tr>
+  <th>帳號</th>
+  <th>背號</th>
+  <th>新密碼</th>
+  <th>姓名</th>
+  <th>電話</th>
+  <th>Email</th>
+  <th>裁判證等級</th>
+  <th>角色</th>
+  <th>狀態</th>
+  <th>操作</th>
+</tr>
+</thead>
+<tbody id="userBody">
+<tr><td colspan="10">載入中…</td></tr>
+</tbody>
+</table>
+
+</div>
+</div>
+
+<!-- 先 mark 起來 for delete 
+<button onclick="deleteSelectedUsers()"
+        style="margin-bottom:10px;background:#c62828;color:#fff;">
+  🗑 刪除選取帳號
+</button>
+-->
+<div class="create-user-card">
+  <h3>➕ 新增裁判帳號</h3>
+
+  <div class="create-user-grid">
+
+    <div class="create-user-field">
+      <label>帳號（登入用）</label>
+      <input id="new_username" placeholder="例如：admin01">
+    </div>
+
+    <div class="create-user-field">
+      <label>姓名</label>
+      <input id="new_name" placeholder="真實姓名">
+    </div>
+
+    <div class="create-user-field">
+      <label>電話</label>
+      <input id="new_phone" placeholder="09xxxxxxxx">
+    </div>
+
+    <div class="create-user-field">
+      <label>Email</label>
+      <input id="new_email" placeholder="example@mail.com">
+    </div>
+
+    <div class="create-user-field">
+      <label>裁判證等級</label>
+        <select id="new_level">
+          <option value="NONE">無證照或未知</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+        </select>
+    </div>
+
+    <div class="create-user-field">
+      <label>角色</label>
+        <select id="new_role">
+          <label>
+            <input type="checkbox" value="judge"> 裁判員
+          </label>
+          <label>
+            <input type="checkbox" value="chief_judge"> 裁判長
+          </label>
+          <label>
+            <input type="checkbox" value="record"> 紀錄員
+          </label>
+          <label>
+            <input type="checkbox" value="record_admin"> 紀錄長
+          </label>
+          <label>
+            <input type="checkbox" value="admin"> 系統管理員
+          </label>
+          <!--
+          <option value="judge">一般裁判</option>
+          <option value="chief_judge">裁判長</option>
+          <option value="judge_admin">裁判管理者</option>
+          <option value="match_admin">賽事管理者</option>
+          <option value="admin">系統管理員</option>
+          -->
+        </select>
+    </div>
+
+    <div class="form-hint">
+      ℹ️ 新帳號將自動設定預設密碼 <b>12345678</b>，首次登入需自行修改。
+    </div>
+
+    <div class="create-user-actions">
+      <button type="button" class="btn-primary" id="btnCreateUser">新增帳號</button>
+    </div>
+
+  </div>
+</div>
+
+<hr>
+<!--
+<div id="toast">✅ 已更新</div>
+-->
+  
+<script src="js/config.js"></script>
+
+<script>
+// ===== 全域狀態（一定要最先宣告） =====
+var pendingUserUpdates = {};
+</script>
+
+<script>
+  
+/* ===== Init ===== */
+document.addEventListener('DOMContentLoaded',()=>{
+  const raw = localStorage.getItem('session_user');
+  if(!raw){ location.href='login.html'; return; }
+
+  const session = JSON.parse(raw);
+  document.getElementById('u_name').textContent = session.name || '';
+
+  if(!['admin','judge_admin'].includes(session.role)){
+    alert('沒有權限');
+    location.href='index.html';
+    return;
+  }
+  loadUsers();
+});
+
+function showToast(message, type = 'success') {
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+
+  document.body.appendChild(toast);
+
+  // 觸發動畫
+  setTimeout(() => toast.classList.add('show'), 50);
+
+  // 自動消失
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+}
+
+
+/* ===== Load Users ===== */
+/* ===== 載入使用者清單 ===== */
+function loadUsers() {
+
+  const tbody = document.getElementById('userBody');
+  if (!tbody) return;
+
+  tbody.innerHTML =
+    `<tr><td colspan="10">載入中...</td></tr>`;
+
+  callApi({ action: 'getUsers' }, res => {
+
+    console.log('getUsers response =', res);
+
+    if (!res || res.result !== 'ok') {
+      tbody.innerHTML =
+        `<tr><td colspan="10">${res?.message || '讀取失敗'}</td></tr>`;
+      return;
+    }
+
+    const list = res.users || [];
+    if (list.length === 0) {
+      tbody.innerHTML =
+        `<tr><td colspan="10">尚無使用者資料</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = '';
+
+    list.forEach(u => {
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <!-- 先mark起來，刪除功能
+            <td>
+            <input type="checkbox" class="user-check" value="${u.user_id}">
+            </td>
+        -->
+        
+        <!-- 帳號 -->
+        <td>${u.username || ''}</td>
+
+        <!-- 背號 -->
+        <td>
+          <input type="text" value="${u.note || ''}"
+            onchange="updateUserField('${u.user_id}','note',this.value)">
+        </td>
+
+        <!-- 新密碼 -->
+        <td>
+          <input type="password" placeholder="留空不修改"
+            onchange="updateUserField('${u.user_id}','password',this.value)">
+        </td>
+
+        <!-- 姓名 -->
+        <td>
+          <input type="text" value="${u.name || ''}"
+            onchange="updateUserField('${u.user_id}','name',this.value)">
+        </td>
+
+        <!-- 電話 -->
+        <td>
+          <input type="text" value="${u.phone || ''}"
+            onchange="updateUserField('${u.user_id}','phone',this.value)">
+        </td>
+
+        <!-- Email -->
+        <td>
+          <input type="email" value="${u.email || ''}"
+            onchange="updateUserField('${u.user_id}','email',this.value)">
+        </td>
+
+        <!-- 裁判證等級 -->
+        <td>
+          <select onchange="updateUserField('${u.user_id}','level',this.value)">
+            <option value="NONE" ${!u.level || u.level==='NONE'?'selected':''}>
+              無證照或未知
+            </option>
+            <option value="A" ${u.level==='A'?'selected':''}>A</option>
+            <option value="B" ${u.level==='B'?'selected':''}>B</option>
+            <option value="C" ${u.level==='C'?'selected':''}>C</option>
+          </select>
+        </td>
+
+        <!-- 角色 -->
+        <td>
+          <select onchange="updateUserField('${u.user_id}','role',this.value)">
+            ${renderRoleOptions(u.role)}
+          </select>
+        </td>
+
+        <!-- 狀態 -->
+        <td>
+          <select onchange="updateUserField('${u.user_id}','active',this.value)">
+            <option value="Y" ${u.active==='Y'?'selected':''}>啟用</option>
+            <option value="N" ${u.active==='N'?'selected':''}>停用</option>
+          </select>
+        </td>
+
+        <!-- 操作 -->
+        <td>
+          <button onclick="saveUser('${u.user_id}')">儲存</button>
+          ${
+            u.username === 'admin'
+              ? `<span style="margin-left:6px;color:#999;">不可刪</span>`
+              : `
+                <button
+                  style="margin-left:6px;background:#c62828;color:#fff;"
+                  onclick="deleteSingleUser('${u.user_id}','${u.username}')">
+                  刪除
+                </button>
+              `
+          }
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+
+/* ===== 頁面初始化 ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  loadUsers();
+});
+
+/* ===== Save One User ===== */
+
+function saveUser(userId) {
+
+  const updates = pendingUserUpdates[userId];
+  if (!updates || Object.keys(updates).length === 0) {
+    // alert('沒有變更任何資料');
+    showToast('⚠ 尚未修改任何欄位', 'warn');
+    return;
+  }
+
+  callApi(
+    {
+      action: 'updateUser',
+      user_id: userId,
+      ...updates
+    },
+    res => {
+    /*
+      if (!res || res.result !== 'ok') {
+        alert(res?.message || '更新失敗');
+        return;
+      }
+      alert('更新成功');
+    */
+      
+      if (!res || res.result !== 'ok') {
+        showToast(res?.message || '更新失敗，請稍後再試', 'error');
+        return;
+      }
+      showToast('✅ 使用者資料更新成功', 'success');
+      delete pendingUserUpdates[userId];
+      loadUsers();
+
+      console.log('API error detail =', res);
+
+    }
+  );
+}
+  
+/* ===== 新增使用者 ===== */
+function createUser() {
+  const username = document.getElementById('new_username').value.trim();
+  const name     = document.getElementById('new_name').value.trim();
+  const phone    = document.getElementById('new_phone').value.trim();
+  const email    = document.getElementById('new_email').value.trim();
+  const level    = document.getElementById('new_level').value;
+  const role     = document.getElementById('new_role').value;
+
+  if (!username || !name) {
+    alert('請填寫帳號與姓名');
+    return;
+  }
+
+  callApi(
+    {
+      action: 'createUser',
+      username,
+      name,
+      phone,
+      email,
+      level,
+      role
+    },
+    res => {
+    /*
+      if (!res || res.result !== 'ok') {
+        alert(res?.message || '新增失敗');
+        return;
+      }
+      alert('新增帳號成功');
+    */
+
+      if (!res || res.result !== 'ok') {
+        showToast(res?.message || '新增帳號失敗，可能帳號重複', 'error');
+        return;
+        }
+      showToast('✅ 新增帳號成功', 'success');
+
+      document.getElementById('new_username').value = '';
+      document.getElementById('new_name').value = '';
+      document.getElementById('new_phone').value = '';
+      document.getElementById('new_email').value = '';
+
+      loadUsers();
+
+      console.log('API error detail =', res);
+
+    }
+  );
+}
+/**
+document.getElementById('btnCreateUser')
+  ?.addEventListener('click', createUser);
+*/
+  
+document.addEventListener('DOMContentLoaded', () => {
+
+  const btn = document.getElementById('btnCreateUser');
+  if (!btn) {
+    console.error('btnCreateUser not found');
+    return;
+  }
+
+  btn.addEventListener('click', createUser);
+});
+
+const ROLE_LABEL = {
+  judge: '一般裁判'
+  admin: '系統管理員',
+  chief_judge: '裁判長',
+  //judge_admin: '裁判管理者',
+  //match_admin: '賽事管理者',
+};
+
+// 先暫存 updateUserField()
+function updateUserField(userId, field, value) {
+  if (!pendingUserUpdates[userId]) {
+    pendingUserUpdates[userId] = {};
+  }
+  pendingUserUpdates[userId][field] = value;
+}
+
+function toggleAllUsers(master) {
+  document.querySelectorAll('.user-check').forEach(cb => {
+    cb.checked = master.checked;
+  });
+}
+
+// 刪除使用者(可複選)
+  
+function deleteSelectedUsers() {
+
+  const checked = Array.from(
+    document.querySelectorAll('.user-check:checked')
+  ).map(cb => cb.value);
+
+  if (checked.length === 0) {
+    showToast('⚠ 請先選擇要刪除的帳號', 'warn');
+    return;
+  }
+
+  if (!confirm(`確定要刪除 ${checked.length} 個帳號？此動作無法復原`)) {
+    return;
+  }
+
+  callApi(
+    {
+      action: 'deleteUsers',
+      user_ids: checked.join(','),
+      current_user_id: session.user_id   // ✅ 不能漏
+    },
+    res => {
+      if (!res || res.result !== 'ok') {
+        showToast(res?.message || '刪除失敗', 'error');
+        return;
+      }
+  
+      showToast(res.message, 'success');
+      loadUsers();
+    }
+  );
+}
+
+// 刪除使用者(單筆)
+function deleteSingleUser(userId, username) {
+
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  if (!confirm(`確定要刪除帳號「${username}」？此動作無法復原`)) {
+    return;
+  }
+
+  callApi(
+    {
+      action: 'deleteUsers',
+      user_ids: userId,
+      current_user_id: session.user_id
+    },
+    res => {
+      if (!res || res.result !== 'ok') {
+        showToast(res?.message || '刪除失敗', 'error');
+        return;
+      }
+
+      showToast(res.message || '刪除完成', 'success');
+      loadUsers();
+    }
+  );
+}
+
+/* ===== Helpers ===== */
+function renderRoleOptions(role){
+  const roles = ['admin','match_admin','judge_admin','chief_judge','judge'];
+  return roles.map(r =>
+    `<option value="${r}" ${r === role ? 'selected' : ''}>
+      ${ROLE_LABEL[r]}
+    </option>`
+  ).join('');
+}
+
+function logout(){
+  localStorage.clear();
+  location.href='login.html';
+}
+</script>
+
+</body>
+</html>
