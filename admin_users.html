@@ -170,11 +170,13 @@ button{
 <!-- ===== Header ===== -->
 <div class="header">
   <div class="nav">
-    <a href="index.html">🏠 系統首頁</a>
-    <a href="judge_dashboard.html">📋 裁判報名</a>
+    <a href="index.html">🏠 首頁</a>
+    <a href="judge_dashboard.html">📋 報名</a>
+    <!--
     <a href="files.html">📂 文件下載</a>
-    <a href="review_dashboard.html">✅ 報名審核</a>
-    <a href="admin_dashboard.html">⚙️ 後端管理</a>
+    <a href="review_dashboard.html">✅ 審核</a>
+    -->
+    <a href="admin_dashboard.html">⚙️ 管理</a>
   </div>
 
   <div class="user-box">
@@ -248,7 +250,7 @@ button{
     <div class="create-user-field">
       <label>裁判證等級</label>
         <select id="new_level">
-          <option value="NONE">目前無證照</option>
+          <option value="NONE">無證照或未知</option>
           <option value="A">A</option>
           <option value="B">B</option>
           <option value="C">C</option>
@@ -404,7 +406,7 @@ function loadUsers() {
         <td>
           <select onchange="updateUserField('${u.user_id}','level',this.value)">
             <option value="NONE" ${!u.level || u.level==='NONE'?'selected':''}>
-              目前無證照
+              無證照或未知
             </option>
             <option value="A" ${u.level==='A'?'selected':''}>A</option>
             <option value="B" ${u.level==='B'?'selected':''}>B</option>
