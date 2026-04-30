@@ -46,24 +46,24 @@ function loadGames() {
 }
 
 /* =========================
- * 分組：日期 → 組別（game.group）→ 時間排序
+ * 分組：日期 → category（大聯盟組/小聯盟組）→ 時間排序
  * ========================= */
 function groupGames(games) {
   const map = {};
 
   games.forEach(g => {
     const dateKey = formatDate(g.date);
-    const groupKey = g.group; // ✅ 正確欄位，強制存在
+    const categoryKey = g.category; // ✅ 正確欄位
 
     if (!map[dateKey]) map[dateKey] = {};
-    if (!map[dateKey][groupKey]) map[dateKey][groupKey] = [];
+    if (!map[dateKey][categoryKey]) map[dateKey][categoryKey] = [];
 
-    map[dateKey][groupKey].push(g);
+    map[dateKey][categoryKey].push(g);
   });
 
-  // 組別內依時間排序
-  Object.values(map).forEach(groupMap => {
-    Object.values(groupMap).forEach(list => {
+  // 每個 category 內依時間排序
+  Object.values(map).forEach(categoryMap => {
+    Object.values(categoryMap).forEach(list => {
       list.sort((a, b) => new Date(a.time) - new Date(b.time));
     });
   });
@@ -85,7 +85,7 @@ function render() {
 
   const grouped = groupGames(allGames);
 
-  // ✅ 日期依實際日期排序
+  // ✅ 日期依真正時間排序
   const dates = Object.keys(grouped).sort(
     (a, b) => new Date(a.replace(/\//g, '-')) - new Date(b.replace(/\//g, '-'))
   );
@@ -99,17 +99,16 @@ function render() {
     dateHeader.textContent = date;
     datePanel.appendChild(dateHeader);
 
-    const groupMap = grouped[date];
-    const groups = Object.keys(groupMap); // 組別順序照後端給
+    const categoryMap = grouped[date];
 
-    groups.forEach(group => {
-      const groupTitle = document.createElement('div');
-      groupTitle.style.fontWeight = '700';
-      groupTitle.style.margin = '10px 0 6px';
-      groupTitle.textContent = group;
-      datePanel.appendChild(groupTitle);
+    Object.keys(categoryMap).forEach(category => {
+      const categoryTitle = document.createElement('div');
+      categoryTitle.style.fontWeight = '700';
+      categoryTitle.style.margin = '10px 0 6px';
+      categoryTitle.textContent = category; // ✅ 一定是「大聯盟組 / 小聯盟組」
+      datePanel.appendChild(categoryTitle);
 
-      groupMap[group].forEach(game => {
+      categoryMap[category].forEach(game => {
         datePanel.appendChild(renderGameRow(game));
       });
     });
@@ -144,7 +143,7 @@ function renderGameRow(game) {
 }
 
 /* =========================
- * render 單一站位（既有邏輯）
+ * render 單一站位（你原本的邏輯，未動）
  * ========================= */
 function renderPosCell(game, role) {
   const pos = game.positions[role];
