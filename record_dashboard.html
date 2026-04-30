@@ -452,6 +452,18 @@ function timeToMinutesSafe(t) {
 /* ===== 初始化（含共用 header） ===== */
 document.addEventListener('DOMContentLoaded', () => {
 
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  const roles = session.roles || [];
+
+  // ✅ 沒有紀錄身份，直接擋
+  if (!roles.includes('record') && !roles.includes('record_admin')) {
+    alert('你沒有紀錄員身分，無法進入此頁');
+    location.replace('index.html');
+    return;
+  }
+
+  // ✅ 通過才繼續原本流程（fetch header / loadGames）
+
   // 1️⃣ 先載入共用 header
   fetch('header.html')
     .then(res => res.text())
