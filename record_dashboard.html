@@ -403,9 +403,9 @@ tr.expired {
       </select>
   
       <label style="margin-left:10px;">
-        <inREC_MAINt type="checkbox" id="showPast" onchange="render()"> 顯示過期賽事　　　
+        <input type="checkbox" id="showPast" onchange="render()"> 顯示過期賽事　　　
       </label>
-      關鍵字搜尋：<inREC_MAINt type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninREC_MAINt="render()">
+      關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" onclick="render()">
     </div>
     
     <!-- 桌機表格 -->
@@ -633,7 +633,7 @@ function render() {
   const dateGroups = {};
   filtered.forEach(g => {
     if (!dateGroups[g.date]) dateGroups[g.date] = [];
-    dateGroups[g.date].REC_MAINsh(g);
+    dateGroups[g.date].push(g);
   });
 
   // ✅ 日期排序
@@ -649,7 +649,7 @@ function render() {
       dateGroups[date].forEach(g => {
         const cat = g.category || '未分類';
         if (!categoryGroups[cat]) categoryGroups[cat] = [];
-        categoryGroups[cat].REC_MAINsh(g);
+        categoryGroups[cat].push(g);
       });
 
       Object.keys(categoryGroups).forEach(category => {
@@ -761,7 +761,7 @@ function render() {
     // === 尚未選，可選 ===
     return `
       <label class="pos-choice">
-        <inREC_MAINt type="radio"
+        <input type="radio"
                onchange="rememberSelection('${g.game_id}','${role}')">
       </label>
     `;
@@ -814,7 +814,7 @@ function renderMobile() {
   const groups = {};
   allGames.forEach(g => {
     if (!groups[g.date]) groups[g.date] = [];
-    groups[g.date].REC_MAINsh(g);
+    groups[g.date].push(g);
   });
 
   Object.keys(groups).sort().forEach(date => {
@@ -986,7 +986,7 @@ function submitSignup(){
 
   callApi(
     {
-      action: 'judgeSignupByGames',
+      action: 'recordSignupByGames',
       user_id: session.user_id,
       games_with_position: payload.join(',')
     },
@@ -1000,53 +1000,6 @@ function submitSignup(){
     }
   );
 }
-
-/*
-    function showLoading(msg = '處理中...') {
-      const overlay = document.getElementById('overlay');
-      document.getElementById('overlay-text').textContent = msg;
-      document.getElementById('overlay-ok').style.display = 'none';
-      overlay.classList.add('show');
-    }
-    
-    function showMessage(msg, reload = true) {
-      const overlay = document.getElementById('overlay');
-      document.getElementById('overlay-text').textContent = msg;
-    
-      const ok = document.getElementById('overlay-ok');
-      ok.style.display = 'inline-block';
-      ok.onclick = () => {
-        overlay.classList.remove('show');
-        if (reload) location.reload();
-      };
-    
-      overlay.classList.add('show');
-    }
-    
-    function hideOverlay() {
-      document.getElementById('overlay').classList.remove('show');
-    }
-
-function showMessage(msg, reload = true) {
-  document.getElementById('overlay-text').textContent = msg;
-  const ok = document.getElementById('overlay-ok');
-  ok.style.display = 'inline-block';
-
-  ok.onclick = () => {
-    document.getElementById('overlay').style.display = 'none';
-    if (reload) {
-      location.reload();
-    }
-  };
-
-  // ✅ 重點：這裡一定要顯示 overlay
-  document.getElementById('overlay').style.display = 'flex';
-}
-
-function hideOverlay() {
-  document.getElementById('overlay').style.display = 'none';
-}
-*/
 
 function showLoading(msg) {
   const overlay = document.getElementById('overlay');
