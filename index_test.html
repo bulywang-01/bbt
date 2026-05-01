@@ -931,16 +931,29 @@
       }
     }
 
-      function renderDutyList(elementId, duties) {
-      const ul = document.getElementById(elementId);
-      ul.innerHTML = '';
-    
-      duties.forEach(d => {
-        const li = document.createElement('li');
-        li.textContent = `${d.date} ${d.game_code} ${d.position}`;
-        ul.appendChild(li);
-      });
-    }
+/* 「我的班表」render 格式 */
+function renderDutyList(elementId, duties) {
+  const ul = document.getElementById(elementId);
+  ul.innerHTML = '';
+
+  duties.forEach(d => {
+    const li = document.createElement('li');
+
+    li.innerHTML = `
+      <div>
+        <strong>${d.date} ${d.time}</strong>
+      </div>
+      <div>
+        ${d.away_team} vs ${d.home_team}
+      </div>
+      <div style="color:#555;font-size:13px;">
+        📍 ${d.field} ｜ ${positionTextZh(d.position)}
+      </div>
+    `;
+
+    ul.appendChild(li);
+  });
+}
 
 function positionToZh(pos) {
   const map = {
@@ -1278,15 +1291,20 @@ function isToday(dateStr) {
   return dateStr === todayStr;
 }
 
+/* 本週班表 */
 function isThisWeek(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
-  const today = new Date();
 
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  // ✅ 以「星期一」為一週的開始
+  const day = today.getDay() === 0 ? 7 : today.getDay(); // Sunday=7
   const start = new Date(today);
-  start.setDate(today.getDate() - today.getDay()); // 週日
+  start.setDate(today.getDate() - (day - 1)); // 本週一
 
   const end = new Date(start);
-  end.setDate(start.getDate() + 6); // 週六
+  end.setDate(start.getDate() + 6); // 本週日
 
   return d >= start && d <= end;
 }
@@ -1300,6 +1318,20 @@ function isThisMonth(dateStr) {
   );
 }
 
+/* 站位對照表 */
+function positionTextZh(pos) {
+  const map = {
+    PU: '主審',
+    U1: '一壘審',
+    U2: '二壘審',
+    U3: '三壘審',
+    REC_MAIN: '紀錄員',
+    REC_TRAINEE: '見習紀錄員',
+    REC_VIDEO: '影像紀錄員'
+  };
+  return map[pos] || pos || '';
+}
+  
 /* ===== 登出 ===== */
 function logout(){
   if(!confirm('確定要登出系統？')) return;
