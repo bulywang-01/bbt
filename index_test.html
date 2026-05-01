@@ -1561,67 +1561,27 @@ function loadUpcomingGames() {
   const s = JSON.parse(localStorage.getItem('session_user') || '{}');
   if (!s.user_id) return;
 
-  const panel = document.getElementById('upcoming-panel');
-  if (!panel) return;
-
   const loading = document.getElementById('upcomingLoading');
-  const weekSection = document.getElementById('week-section');
-  const otherSection = document.getElementById('other-section');
-  const noDuty = document.getElementById('no-duty');
-  const viewLink = document.getElementById('view-full-schedule');
-
-  // ====== ① 初始化狀態（不要互相打架） ======
   if (loading) loading.style.display = 'block';
 
-  if (weekSection) weekSection.style.display = 'none';
-  if (otherSection) otherSection.style.display = 'none';
-  if (noDuty) noDuty.style.display = 'none';
-
-  // ✅ 關鍵：查看完整班表是「入口」，不是資料狀態
-  if (viewLink) viewLink.style.display = 'inline-block';
-
-  // 清空舊列表
-  panel.querySelectorAll('.upcoming-list li').forEach(li => li.remove());
-
-  // ====== ② 呼叫 API ======
   callApi(
     {
       action: 'getMyUpcomingGames',
       user_id: s.user_id
     },
     res => {
-      // ====== ③ API 回來，第一件事關 loading ======
       if (loading) loading.style.display = 'none';
 
-      console.log('getMyUpcomingGames response =', res);
-
-      // ====== ④ API 失敗或無資料（但入口還在） ======
       if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
-        if (noDuty) noDuty.style.display = 'block';
+        document.getElementById('no-duty').style.display = 'block';
         return;
       }
 
-      const weekGames = res.games.filter(g => isThisWeek(g.date));
-      const monthGames = res.games.filter(
-        g => isThisMonth(g.date) && !isThisWeek(g.date)
-      );
+      // ✅✅✅ 關鍵在這一行 ✅✅✅
+      cachedGames = res.games;
 
-      // ====== ⑤ 本週 ======
-      if (weekGames.length > 0) {
-        weekSection.style.display = 'block';
-        renderDutyList('week-list', weekGames);
-      }
-
-      // ====== ⑥ 其他 ======
-      if (monthGames.length > 0) {
-        otherSection.style.display = 'block';
-        renderDutyList('other-list', monthGames);
-      }
-
-      // ====== ⑦ 都沒有 upcoming ======
-      if (weekGames.length === 0 && monthGames.length === 0) {
-        if (noDuty) noDuty.style.display = 'block';
-      }
+      // ✅ 預設顯示「本週」
+      switchRange('week');
     }
   );
 }
