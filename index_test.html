@@ -795,7 +795,7 @@
             
               <!-- ✅ 同一排 → 查看完整班表 -->
               <span class="tab-spacer"></span>
-              javascript:void(0) id="view-full-schedule"
+              <a href="javascript:void(0)" id="view-full-schedule"
                  onclick="openFullSchedule()">
                  查看完整班表 ▶
               </a>
@@ -981,12 +981,14 @@ function roleIconByPosition(pos) {
 /* 「我的班表」render 格式 */
 function renderDutyList(list) {
   const ul = document.getElementById('week-list');
+
+  // ✅ 關鍵：每次都清空（避免本週殘留）
   ul.innerHTML = '';
 
   list.forEach(g => {
     const li = document.createElement('li');
     li.innerHTML = `
-      <strong>${g.date.slice(0,10)} ${g.time.slice(0,5)}</strong>
+      <strong>${g.date.slice(0, 10)} ${formatTime(g.time)}</strong>
       ｜ ${g.away_team} vs ${g.home_team}
       ｜ 📍 ${g.field}
       ｜ ${roleIconByPosition(g.position)} ${positionTextZh(g.position)}
@@ -994,6 +996,7 @@ function renderDutyList(list) {
     ul.appendChild(li);
   });
 }
+
 
 function positionToZh(pos) {
   const map = {
@@ -1455,13 +1458,18 @@ function switchRange(range) {
 }
 
 function renderMySchedule() {
+  const ul = document.getElementById('week-list');
   const emptyEl = document.getElementById('no-duty');
+
+  // ✅ 每次切 tab，先全部清空
+  ul.innerHTML = '';
   emptyEl.style.display = 'none';
 
   const filtered = [];
 
   cachedGames.forEach(g => {
     const d = normalizeGameDateTime(g);
+
     if (currentRange === 'week'  && inThisWeek(d))  filtered.push(g);
     if (currentRange === 'next'  && inNextWeek(d))  filtered.push(g);
     if (currentRange === 'month' && inThisMonth(d)) filtered.push(g);
@@ -1474,11 +1482,15 @@ function renderMySchedule() {
         : currentRange === 'next'
         ? '下週尚無執勤賽事。'
         : '本月尚未安排執勤賽事。';
+
     emptyEl.style.display = 'block';
-  } else {
-    renderDutyList(filtered);
+    return;
   }
+
+  // ✅ 只 render 當前 tab 的內容
+  renderDutyList(filtered);
 }
+
   
 // ✅ 站位中文化
 function positionText(pos) {
@@ -1588,6 +1600,15 @@ function loadMonthlyGames() {
       panel.insertAdjacentHTML('beforeend', html);
     }
   );
+}
+
+function formatTime(t) {
+  if (!t) return '';
+  // ISO like 1899-12-30T11:10:00.000Z
+  if (typeof t === 'string' && t.includes('T')) {
+    return t.slice(11, 16); // HH:mm
+  }
+  return t.slice(0, 5); // fallback
 }
 
   
