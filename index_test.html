@@ -771,11 +771,11 @@
   
         <div class="panel" id="upcoming-panel">
           <h3>我的班表</h3>
-          <div id="schedule-tabs" style="margin:8px 0 12px;">
-            <button onclick="switchRange('week')">本週</button>
-            <button onclick="switchRange('next')">下週</button>
-            <button onclick="switchRange('month')">本月</button>
-          </div>
+            <div id="schedule-tabs">
+              <button id="tab-week"  onclick="switchRange('week')">本週</button>
+              <button id="tab-next"  onclick="switchRange('next')">下週</button>
+              <button id="tab-month" onclick="switchRange('month')">本月</button>
+            </div>
           
           <!-- ===============================
           ✅ 紀錄員 - 我的班表（預設隱藏）
@@ -933,8 +933,8 @@
     }
 
 /* 「我的班表」render 格式 */
-function renderDutyList(elementId, list) {
-  const ul = document.getElementById(elementId);
+function renderDutyList(list) {
+  const ul = document.getElementById('week-list');
   ul.innerHTML = '';
 
   list.forEach(g => {
@@ -943,9 +943,7 @@ function renderDutyList(elementId, list) {
       <strong>${g.date.slice(0,10)} ${g.time.slice(0,5)}</strong>
       ｜ ${g.away_team} vs ${g.home_team}
       ｜ 📍 ${g.field}
-      ｜ <span style="color:#1a237e;font-weight:600;">
-          ${positionTextZh(g.position)}
-        </span>
+      ｜ <b>${positionTextZh(g.position)}</b>
     `;
     ul.appendChild(li);
   });
@@ -1322,9 +1320,9 @@ function isToday(dateStr) {
 
 function inThisWeek(d) {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setHours(0,0,0,0);
 
-  const day = today.getDay() === 0 ? 7 : today.getDay(); // 週一為起點
+  const day = today.getDay() === 0 ? 7 : today.getDay();
   const start = new Date(today);
   start.setDate(today.getDate() - (day - 1));
 
@@ -1336,7 +1334,7 @@ function inThisWeek(d) {
 
 function inNextWeek(d) {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setHours(0,0,0,0);
 
   const day = today.getDay() === 0 ? 7 : today.getDay();
   const thisWeekStart = new Date(today);
@@ -1353,10 +1351,8 @@ function inNextWeek(d) {
 
 function inThisMonth(d) {
   const now = new Date();
-  return (
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth()
-  );
+  return d.getFullYear() === now.getFullYear()
+      && d.getMonth() === now.getMonth();
 }
   
 function isThisWeek(dateStr) {
@@ -1413,29 +1409,31 @@ function formatTime(t) {
 }
 
 // 切換函式
-let currentRange = 'week';
+let currentRange = null;   // 'week' | 'next' | 'month'
 let cachedGames = [];
 
 function switchRange(range) {
   currentRange = range;
+
+  // ✅ active 樣式
+  document.querySelectorAll('#schedule-tabs button')
+    .forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById(`tab-${range}`);
+  if (activeBtn) activeBtn.classList.add('active');
+
   renderMySchedule();
 }
 
 function renderMySchedule() {
-  const listEl = document.getElementById('week-list');
   const emptyEl = document.getElementById('no-duty');
-  const fullLink = document.getElementById('view-full-schedule');
-
-  listEl.innerHTML = '';
   emptyEl.style.display = 'none';
 
   const filtered = [];
 
   cachedGames.forEach(g => {
     const d = normalizeGameDateTime(g);
-
-    if (currentRange === 'week' && inThisWeek(d)) filtered.push(g);
-    if (currentRange === 'next' && inNextWeek(d)) filtered.push(g);
+    if (currentRange === 'week'  && inThisWeek(d))  filtered.push(g);
+    if (currentRange === 'next'  && inNextWeek(d))  filtered.push(g);
     if (currentRange === 'month' && inThisMonth(d)) filtered.push(g);
   });
 
@@ -1448,11 +1446,10 @@ function renderMySchedule() {
         : '本月尚未安排執勤賽事。';
     emptyEl.style.display = 'block';
   } else {
-    renderDutyList('week-list', filtered);
+    renderDutyList(filtered);
   }
 
-  // ✅ 查看完整班表一定顯示
-  if (fullLink) fullLink.style.display = 'inline-block';
+  document.getElementById('view-full-schedule').style.display = 'inline-block';
 }
   
 // ✅ 站位中文化
