@@ -827,14 +827,6 @@
           <div id="no-duty" class="upcoming-empty" style="display:none;">
             本月尚未安排執勤賽事。
           </div>
-        
-          <div
-            id="view-full-schedule"
-            class="view-full-schedule"
-            onclick="openFullSchedule()"
-          >
-            查看完整班表 ▶
-          </div>
         </div>
   
         <div id="toggleHistory"
@@ -1556,24 +1548,33 @@ function loadUpcomingGames() {
   const loading = document.getElementById('upcomingLoading');
   if (loading) loading.style.display = 'block';
 
-  callApi(
-    {
-      action: 'getMyUpcomingGames',
-      user_id: s.user_id
-    },
-    res => {
-      if (loading) loading.style.display = 'none';
+  let all = [];
 
-      if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
-        document.getElementById('no-duty').style.display = 'block';
-        return;
+  // ✅ 先撈裁判班表
+  callApi(
+    { action: 'getMyUpcomingGames', user_id: s.user_id },
+    res1 => {
+      if (res1 && res1.result === 'ok' && Array.isArray(res1.games)) {
+        all = all.concat(res1.games);
       }
 
-      // ✅✅✅ 唯一資料來源 ✅✅✅
-      cachedGames = res.games;
+      // ✅ 再撈紀錄班表
+      callApi(
+        { action: 'getMyRecordUpcomingGames', user_id: s.user_id },
+        res2 => {
+          if (loading) loading.style.display = 'none';
 
-      // ✅ 預設顯示本週
-      switchRange('week');
+          if (res2 && res2.result === 'ok' && Array.isArray(res2.games)) {
+            all = all.concat(res2.games);
+          }
+
+          // ✅ 這一行是 index 的「生命線」
+          cachedGames = all;
+
+          // ✅ 預設顯示本週
+          switchRange('week');
+        }
+      );
     }
   );
 }
