@@ -989,7 +989,7 @@ function renderDutyList(list) {
     const li = document.createElement('li');
     li.innerHTML = `
       <strong>${g.date.slice(0, 10)} ${formatTime(g.time)}</strong>
-      ｜ ${g.away_team} vs ${g.home_team}
+      //｜ ${g.away_team} vs ${g.home_team}
       ｜ 📍 ${g.field}
       ｜ ${roleIconByPosition(g.position)} ${positionTextZh(g.position)}
     `;
