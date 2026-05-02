@@ -901,7 +901,7 @@
   
 <script>
 
-  let currentRange = 'week'; // 預設本週
+  let currentRange = 'week'; // 預設本週 week|next|month
   let cachedGames = [];      // API 回來的原始資料
   
   function renderMyDuties(weekDuties, otherDuties) {
@@ -941,31 +941,35 @@
     }
 
 /* 「我的班表」render 格式 */
-function renderDutyList(elementId, duties) {
+function renderDutyList(elementId, list) {
   const ul = document.getElementById(elementId);
   ul.innerHTML = '';
 
-  duties.forEach(d => {
+  list.forEach(d => {
     const li = document.createElement('li');
-
-    // ✅ 橫向、一行看完
     li.innerHTML = `
-      <span style="font-weight:600;">
-        ${d.date} ${d.time}
-      </span>
-      ｜ <span>
-        ${d.away_team} vs ${d.home_team}
-      </span>
-      ｜ <span style="color:#555;">
-        📍 ${d.field}
-      </span>
+      <strong>${d.date} ${d.time}</strong>
+      ｜ ${d.away_team} vs ${d.home_team}
+      ｜ 📍 ${d.field}
       ｜ <span style="color:#1a237e;font-weight:600;">
-        ${positionTextZh(d.position)}
-      </span>
+          ${positionTextZh(d.position)}
+        </span>
     `;
-
     ul.appendChild(li);
   });
+}
+
+function positionTextZh(pos) {
+  const map = {
+    PU: '主審',
+    U1: '一壘審',
+    U2: '二壘審',
+    U3: '三壘審',
+    REC_MAIN: '紀錄員',
+    REC_TRAINEE: '見習紀錄員',
+    REC_VIDEO: '影像紀錄員'
+  };
+  return map[pos] || pos || '';
 }
 
 function positionToZh(pos) {
@@ -1371,19 +1375,6 @@ function isThisMonth(dateStr) {
   );
 }
 
-/* 站位對照表 */
-function positionTextZh(pos) {
-  const map = {
-    PU: '主審',
-    U1: '一壘審',
-    U2: '二壘審',
-    U3: '三壘審',
-    REC_MAIN: '紀錄員',
-    REC_TRAINEE: '見習紀錄員',
-    REC_VIDEO: '影像紀錄員'
-  };
-  return map[pos] || pos || '';
-}
   
 /* ===== 登出 ===== */
 function logout(){
@@ -1424,12 +1415,12 @@ function renderMySchedule() {
   listEl.innerHTML = '';
   emptyEl.style.display = 'none';
 
-  let filtered = [];
+  const filtered = [];
 
   cachedGames.forEach(g => {
     const d = new Date(`${g.date} ${g.time}`);
-    if (currentRange === 'week' && inThisWeek(d)) filtered.push(g);
-    if (currentRange === 'next' && inNextWeek(d)) filtered.push(g);
+    if (currentRange === 'week'  && inThisWeek(d))  filtered.push(g);
+    if (currentRange === 'next'  && inNextWeek(d))  filtered.push(g);
     if (currentRange === 'month' && inThisMonth(d)) filtered.push(g);
   });
 
@@ -1485,6 +1476,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   loadHeader();
+  loadUpcomingGames();
 });
 
 /* 近期站場資訊 */
@@ -1577,10 +1569,10 @@ function loadUpcomingGames() {
         return;
       }
 
-      // ✅✅✅ 關鍵在這一行 ✅✅✅
+      // ✅✅✅ 唯一資料來源 ✅✅✅
       cachedGames = res.games;
 
-      // ✅ 預設顯示「本週」
+      // ✅ 預設顯示本週
       switchRange('week');
     }
   );
