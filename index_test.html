@@ -1438,7 +1438,7 @@ function renderMySchedule() {
     if (currentRange === 'month' && inThisMonth(d)) filtered.push(g);
   });
 
-  console.log('判斷日期', g.game_id, d, isNaN(d));
+//  console.log('判斷日期', g.game_id, d, isNaN(d));
 
   if (filtered.length === 0) {
     emptyEl.textContent =
