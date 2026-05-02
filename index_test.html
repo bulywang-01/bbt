@@ -1266,6 +1266,27 @@ function closeFullSchedule() {
 
 <script>
 
+function normalizeGameDateTime(g) {
+  // --- date ---
+  // 可能是 '2026-05-02T16:00:00.000Z' 或 '2026-05-02'
+  let dateStr = g.date;
+  if (typeof dateStr === 'string' && dateStr.includes('T')) {
+    dateStr = dateStr.slice(0, 10); // YYYY-MM-DD
+  }
+
+  // --- time ---
+  // 可能是 '1899-12-30T01:10:00.000Z' 或 '11:10'
+  let timeStr = g.time || '00:00';
+  if (typeof timeStr === 'string' && timeStr.includes('T')) {
+    timeStr = timeStr.slice(11, 16); // HH:mm
+  } else {
+    timeStr = timeStr.slice(0, 5);
+  }
+
+  // 組成 ISO，避免瀏覽器差異
+  return new Date(`${dateStr}T${timeStr}:00`);
+}
+
 /* ===== 載入共用 Header ===== */
 function loadHeader(){
   fetch('header.html')
@@ -1410,11 +1431,14 @@ function renderMySchedule() {
   const filtered = [];
 
   cachedGames.forEach(g => {
-    const d = new Date(`${g.date} ${g.time}`);
+    // const d = new Date(`${g.date} ${g.time}`);
+    const d = normalizeGameDateTime(g);
     if (currentRange === 'week'  && inThisWeek(d))  filtered.push(g);
     if (currentRange === 'next'  && inNextWeek(d))  filtered.push(g);
     if (currentRange === 'month' && inThisMonth(d)) filtered.push(g);
   });
+
+  console.log('判斷日期', g.game_id, d, isNaN(d));
 
   if (filtered.length === 0) {
     emptyEl.textContent =
