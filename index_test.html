@@ -983,13 +983,13 @@ function renderDutyList(list) {
   const ul = document.getElementById('week-list');
 
   // ✅ 關鍵：每次都清空（避免本週殘留）
+  //   ｜ ${g.away_team} vs ${g.home_team}
   ul.innerHTML = '';
 
   list.forEach(g => {
     const li = document.createElement('li');
     li.innerHTML = `
       <strong>${g.date.slice(0, 10)} ${formatTime(g.time)}</strong>
-      //｜ ${g.away_team} vs ${g.home_team}
       ｜ 📍 ${g.field}
       ｜ ${roleIconByPosition(g.position)} ${positionTextZh(g.position)}
     `;
