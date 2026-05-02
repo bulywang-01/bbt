@@ -603,6 +603,9 @@
 <script>
 
   document.addEventListener('DOMContentLoaded', () => {
+    
+  loadUpcomingGames();
+
     const session = JSON.parse(localStorage.getItem('session_user') || '{}');
     const openBtn = document.getElementById('open-rules');
     const overlay = document.getElementById('rules-overlay');
@@ -892,9 +895,6 @@
     </div>
   
 <script>
-
-  let currentRange = 'week'; // 預設本週 week|next|month
-  let cachedGames = [];      // API 回來的原始資料
   
   function renderMyDuties(weekDuties, otherDuties) {
       const weekSection = document.getElementById('week-section');
@@ -937,14 +937,14 @@ function renderDutyList(elementId, list) {
   const ul = document.getElementById(elementId);
   ul.innerHTML = '';
 
-  list.forEach(d => {
+  list.forEach(g => {
     const li = document.createElement('li');
     li.innerHTML = `
-      <strong>${d.date} ${d.time}</strong>
-      ｜ ${d.away_team} vs ${d.home_team}
-      ｜ 📍 ${d.field}
+      <strong>${g.date.slice(0,10)} ${g.time.slice(0,5)}</strong>
+      ｜ ${g.away_team} vs ${g.home_team}
+      ｜ 📍 ${g.field}
       ｜ <span style="color:#1a237e;font-weight:600;">
-          ${positionTextZh(d.position)}
+          ${positionTextZh(g.position)}
         </span>
     `;
     ul.appendChild(li);
@@ -1267,15 +1267,13 @@ function closeFullSchedule() {
 <script>
 
 function normalizeGameDateTime(g) {
-  // --- date ---
-  // 可能是 '2026-05-02T16:00:00.000Z' 或 '2026-05-02'
+  // date：可能是 2026-05-02T16:00:00.000Z
   let dateStr = g.date;
   if (typeof dateStr === 'string' && dateStr.includes('T')) {
     dateStr = dateStr.slice(0, 10); // YYYY-MM-DD
   }
 
-  // --- time ---
-  // 可能是 '1899-12-30T01:10:00.000Z' 或 '11:10'
+  // time：Google Sheet 的時間，會變成 1899-12-30T01:10:00.000Z
   let timeStr = g.time || '00:00';
   if (typeof timeStr === 'string' && timeStr.includes('T')) {
     timeStr = timeStr.slice(11, 16); // HH:mm
@@ -1283,7 +1281,6 @@ function normalizeGameDateTime(g) {
     timeStr = timeStr.slice(0, 5);
   }
 
-  // 組成 ISO，避免瀏覽器差異
   return new Date(`${dateStr}T${timeStr}:00`);
 }
 
@@ -1325,9 +1322,9 @@ function isToday(dateStr) {
 
 function inThisWeek(d) {
   const today = new Date();
-  today.setHours(0,0,0,0);
+  today.setHours(0, 0, 0, 0);
 
-  const day = today.getDay() === 0 ? 7 : today.getDay();
+  const day = today.getDay() === 0 ? 7 : today.getDay(); // 週一為起點
   const start = new Date(today);
   start.setDate(today.getDate() - (day - 1));
 
@@ -1339,7 +1336,7 @@ function inThisWeek(d) {
 
 function inNextWeek(d) {
   const today = new Date();
-  today.setHours(0,0,0,0);
+  today.setHours(0, 0, 0, 0);
 
   const day = today.getDay() === 0 ? 7 : today.getDay();
   const thisWeekStart = new Date(today);
@@ -1416,6 +1413,9 @@ function formatTime(t) {
 }
 
 // 切換函式
+let currentRange = 'week';
+let cachedGames = [];
+
 function switchRange(range) {
   currentRange = range;
   renderMySchedule();
@@ -1424,6 +1424,7 @@ function switchRange(range) {
 function renderMySchedule() {
   const listEl = document.getElementById('week-list');
   const emptyEl = document.getElementById('no-duty');
+  const fullLink = document.getElementById('view-full-schedule');
 
   listEl.innerHTML = '';
   emptyEl.style.display = 'none';
@@ -1431,14 +1432,12 @@ function renderMySchedule() {
   const filtered = [];
 
   cachedGames.forEach(g => {
-    // const d = new Date(`${g.date} ${g.time}`);
     const d = normalizeGameDateTime(g);
-    console.log('判斷日期', g.game_id, d, isNaN(d));
-    if (currentRange === 'week'  && inThisWeek(d))  filtered.push(g);
-    if (currentRange === 'next'  && inNextWeek(d))  filtered.push(g);
+
+    if (currentRange === 'week' && inThisWeek(d)) filtered.push(g);
+    if (currentRange === 'next' && inNextWeek(d)) filtered.push(g);
     if (currentRange === 'month' && inThisMonth(d)) filtered.push(g);
   });
-
 
   if (filtered.length === 0) {
     emptyEl.textContent =
@@ -1448,10 +1447,12 @@ function renderMySchedule() {
         ? '下週尚無執勤賽事。'
         : '本月尚未安排執勤賽事。';
     emptyEl.style.display = 'block';
-    return;
+  } else {
+    renderDutyList('week-list', filtered);
   }
 
-  renderDutyList('week-list', filtered);
+  // ✅ 查看完整班表一定顯示
+  if (fullLink) fullLink.style.display = 'inline-block';
 }
   
 // ✅ 站位中文化
@@ -1574,37 +1575,34 @@ function loadUpcomingGames() {
 
   let all = [];
 
-  // ✅ 先撈裁判班表
   callApi(
     { action: 'getMyUpcomingGames', user_id: s.user_id },
     res1 => {
-
-      console.log('裁判 upcoming =', res1);   // ✅ 加這行
-
       if (res1 && res1.result === 'ok' && Array.isArray(res1.games)) {
         all = all.concat(res1.games);
       }
 
-      // ✅ 再撈紀錄班表
       callApi(
         { action: 'getMyRecordUpcomingGames', user_id: s.user_id },
         res2 => {
-          
-          console.log('紀錄 upcoming =', res2); // ✅ 加這行
-
           if (loading) loading.style.display = 'none';
 
           if (res2 && res2.result === 'ok' && Array.isArray(res2.games)) {
             all = all.concat(res2.games);
           }
 
-          console.log('合併後 all =', all); // ✅ 最重要的一行
-
-          // ✅ 這一行是 index 的「生命線」
           cachedGames = all;
 
-          // ✅ 預設顯示本週
-          switchRange('week');
+          // ✅ 自動切到「有資料的區間」
+          if (cachedGames.some(g => inThisWeek(normalizeGameDateTime(g)))) {
+            switchRange('week');
+          } else if (cachedGames.some(g => inNextWeek(normalizeGameDateTime(g)))) {
+            switchRange('next');
+          } else if (cachedGames.some(g => inThisMonth(normalizeGameDateTime(g)))) {
+            switchRange('month');
+          } else {
+            switchRange('week');
+          }
         }
       );
     }
