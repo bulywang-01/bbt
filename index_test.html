@@ -1433,12 +1433,12 @@ function renderMySchedule() {
   cachedGames.forEach(g => {
     // const d = new Date(`${g.date} ${g.time}`);
     const d = normalizeGameDateTime(g);
+    console.log('判斷日期', g.game_id, d, isNaN(d));
     if (currentRange === 'week'  && inThisWeek(d))  filtered.push(g);
     if (currentRange === 'next'  && inNextWeek(d))  filtered.push(g);
     if (currentRange === 'month' && inThisMonth(d)) filtered.push(g);
   });
 
-//  console.log('判斷日期', g.game_id, d, isNaN(d));
 
   if (filtered.length === 0) {
     emptyEl.textContent =
