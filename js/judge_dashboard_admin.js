@@ -193,3 +193,62 @@ function renderPosCell(game, role) {
  * 啟動
  * ========================= */
 loadGames();
+
+let currentAssignContext = null;
+
+/**
+ * 開啟指派裁判 modal
+ * @param {string|number} gameId
+ * @param {string} role  PU / U1 / U2 / U3
+ */
+function openAssignJudge(gameId, role) {
+  currentAssignContext = { gameId, role };
+
+  const modal = document.getElementById('judgeModal');
+  const list = document.getElementById('judgeList');
+  const title = document.getElementById('judgeModalTitle');
+
+  title.textContent = `指派 ${ROLE_LABEL[role]}`;
+  list.innerHTML = '';
+
+  allJudges.forEach(j => {
+    const card = document.createElement('div');
+    card.className = 'judge-card';
+    card.textContent = j.name;
+    card.onclick = () => assignJudge(j);
+    list.appendChild(card);
+  });
+
+  modal.classList.remove('hidden');
+}
+
+function closeJudgeModal() {
+  document.getElementById('judgeModal').classList.add('hidden');
+}
+
+function assignJudge(judge) {
+  if (!currentAssignContext) return;
+
+  callApi(
+    {
+      action: 'assignJudge',
+      game_id: currentAssignContext.gameId,
+      role: currentAssignContext.role,
+      judge_id: judge.id
+    },
+    res => {
+      if (res && res.result === 'ok') {
+        closeJudgeModal();
+        loadGames(); // 重新載入畫面
+      } else {
+        alert(res?.message || '指派失敗');
+      }
+    }
+  );
+}
+
+function logout() {
+  if (!confirm('確定要登出？')) return;
+  localStorage.clear();
+  location.replace('login.html');
+}
