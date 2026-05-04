@@ -6,7 +6,7 @@
   <!-- ✅ 一定要有：手機版關鍵 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>系統首頁｜裁判出勤管理系統</title>
+  <title>系統首頁｜裁判／紀錄出勤管理系統</title>
 
   <!-- ✅ 共用樣式 -->
   <link rel="stylesheet" href="common.css">
@@ -502,7 +502,7 @@
 
 .view-full-schedule {
   margin-top: 10px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: #4a7ef5;
   cursor: pointer;
@@ -588,6 +588,21 @@
 #historySection {
   margin-top: 12px;
 }
+
+.schedule-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.schedule-tabs .tab-spacer {
+  flex: 1;
+}
+.schedule-tabs button.active {
+  background: #4a7ef5;
+  color: #fff;
+}
+    
   </style>
   
 </head>
@@ -598,15 +613,18 @@
 <div id="header-container"></div>
 <div class="main">
 
-  <h2>BBT軟式棒球大聯盟　裁判組　出勤系統</h2>
+  <h2>BBT軟式棒球大聯盟　裁判組／紀錄組　出勤系統</h2>
   
 <script>
 
   document.addEventListener('DOMContentLoaded', () => {
+    
+  loadUpcomingGames();
+
     const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-      const openBtn = document.getElementById('open-rules');
-  const overlay = document.getElementById('rules-overlay');
-  const closeBtn = document.getElementById('rules-close-btn');
+    const openBtn = document.getElementById('open-rules');
+    const overlay = document.getElementById('rules-overlay');
+    const closeBtn = document.getElementById('rules-close-btn');
 
   if (openBtn) {
     openBtn.addEventListener('click', () => {
@@ -622,9 +640,11 @@
   
     /* ===== 身份 role → 中文 + icon ===== */
     const roleMap = {
-      judge:      { text: '裁判員', icon: '' },
-      admin:      { text: '系統管理員', icon: '🛡️' },
-      chief_judge:{ text: '裁判長', icon: '🎖️' }
+      judge:        { text: '裁判員', icon: '🧑‍⚖️' },
+      chief_judge:  { text: '裁判長', icon: '🎖️' },
+      record:       { text: '紀錄員', icon: '📝' },      // ✅ 新增
+      record_admin: { text: '紀錄長', icon: '📋' },      // ✅ 新增
+      admin:        { text: '系統管理員', icon: '🛡️' }
     };
   
     const roleInfo = roleMap[session.role] || {};
@@ -663,7 +683,7 @@
             <div class="welcome-name" id="welcome-name"></div>
             <div class="welcome-bg" id="license-bg"></div>
             <div class="welcome-line">
-              歡迎使用 <strong>裁判出勤管理系統</strong>
+              歡迎使用 <strong>出勤管理系統</strong>
               <span style="margin-left:8px;">｜</span>
               <a href="javascript:void(0)"
                  id="open-rules"
@@ -675,7 +695,7 @@
          <!-- ✅ 補回說明文字（就在正確位置） -->
           <div class="welcome-line sub"
                style="margin-top:4px;font-size:14px;color:#555;">
-            請由上方功能選單進行操作，查看賽事、進行裁判報名與管理。
+            請由上方功能選單進行操作，查看賽事及進行自已班表的安排。
           </div>
 
 
@@ -757,9 +777,7 @@
                         <strong>清楚告知比賽結果並致謝</strong>。
                       </li>
                     </ul>
-                  
                   </div>
-
                 </div>
             
                 <button id="rules-close-btn">關閉</button>
@@ -770,12 +788,59 @@
   
         <div class="panel" id="upcoming-panel">
           <h3>我的班表</h3>
-        
-          <!-- ✅ loading -->
-          <div id="upcomingLoading" class="loading-text" style="display:none;">
-            讀取賽事中…
+            <div id="schedule-loading"
+                 class="loading-text"
+                 style="display:none;">
+              班表載入中…
+            </div>
+          
+            <div id="schedule-tabs" class="schedule-tabs">
+              <button id="tab-week"  type="button" onclick="switchRange('week')">本週</button>
+              <button id="tab-next"  type="button" onclick="switchRange('next')">下週</button>
+              <button id="tab-month" type="button" onclick="switchRange('month')">本月</button>
+            
+              <!-- ✅ 同一排 → 查看完整班表 -->
+              <span class="tab-spacer"></span>
+              <a href="javascript:void(0)" id="view-full-schedule"
+                 onclick="openFullSchedule()">
+                 查看完整班表 ▶
+              </a>
+            </div>
+            
+            <ul id="week-list" class="upcoming-list"></ul>
+            <div id="no-duty" class="upcoming-empty" style="display:none;"></div>
+          
+          <!-- ===============================
+          ✅ 紀錄員 - 我的班表（預設隱藏）
+          =============================== -->
+          <div class="panel" id="record-upcoming-panel" style="display:none;">
+            <h3>我的紀錄班表</h3>
+          
+            <div id="recordUpcomingLoading" class="loading-text" style="display:none;">
+              讀取紀錄賽事中…
+            </div>
+          
+            <div id="record-week-section" style="display:none;">
+              <h4>本週紀錄</h4>
+              <ul id="record-week-list" class="upcoming-list"></ul>
+              <div class="upcoming-empty" id="record-week-empty" style="display:none;">
+                本週尚無紀錄賽事。
+              </div>
+            </div>
+          
+            <div id="record-other-section" style="display:none;">
+              <h4>其他紀錄</h4>
+              <ul id="record-other-list" class="upcoming-list"></ul>
+            </div>
+          
+            <div id="record-no-duty" class="upcoming-empty" style="display:none;">
+              本月尚未安排紀錄賽事。
+            </div>
           </div>
         
+          <!-- ===============================
+          ✅ 裁判員　—　我的班表
+          =============================== -->
           <!-- 本週 -->
           <div id="week-section" style="display:none;">
             <h4>本週班表</h4>
@@ -797,14 +862,6 @@
           <!-- 整個月都沒有 -->
           <div id="no-duty" class="upcoming-empty" style="display:none;">
             本月尚未安排執勤賽事。
-          </div>
-        
-          <div
-            id="view-full-schedule"
-            class="view-full-schedule"
-            onclick="openFullSchedule()"
-          >
-            查看完整班表 ▶
           </div>
         </div>
   
@@ -857,10 +914,11 @@
   </div>
   
   <!-- ✅ 查看完整班表（放在我的班表文字下方） -->
+  <!--
     <div id="view-full-schedule"
          style="
            margin-top: 8px;
-           font-size: 14px;
+           font-size: 16px;
            font-weight: 600;
            color: #4a7ef5;
            cursor: pointer;
@@ -869,8 +927,11 @@
          onclick="openFullSchedule()">
       查看完整班表 ▶
     </div>
+  -->
+  
 <script>
-      function renderMyDuties(weekDuties, otherDuties) {
+  
+  function renderMyDuties(weekDuties, otherDuties) {
       const weekSection = document.getElementById('week-section');
       const otherSection = document.getElementById('other-section');
       //const noDuty = document.getElementById('no-duty');
@@ -906,23 +967,46 @@
       }
     }
 
-      function renderDutyList(elementId, duties) {
-      const ul = document.getElementById(elementId);
-      ul.innerHTML = '';
-    
-      duties.forEach(d => {
-        const li = document.createElement('li');
-        li.textContent = `${d.date} ${d.game_code} ${d.position}`;
-        ul.appendChild(li);
-      });
-    }
-
-function positionToZh(pos) {
+function positionTextZh(pos) {
   const map = {
     PU: '主審',
     U1: '一壘審',
     U2: '二壘審',
-    U3: '三壘審'
+    U3: '三壘審',
+    REC_MAIN: '紀錄員',
+    REC_TRAINEE: '見習紀錄員',
+    REC_VIDEO: '影像紀錄員'
+  };
+  return map[pos] || pos || '';
+}
+
+function roleIconByPosition(pos) {
+  return pos?.startsWith('REC') ? '📝' : '🧑‍⚖️';
+}
+
+/* 「我的班表」render 格式 */
+function renderDutyList(list) {
+  const ul = document.getElementById('week-list');
+  ul.innerHTML = '';
+
+  list.forEach(g => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <strong>${displayDate(g.date)} ${displayTime(g.time)}</strong>
+      ｜ 📍 ${g.field}
+      ｜ ${roleIconByPosition(g.position)} ${positionTextZh(g.position)}
+    `;
+    ul.appendChild(li);
+  });
+}
+
+
+function positionToZh(pos) {
+  const map = {
+    PU: '主審',
+    U1: '一壘',
+    U2: '二壘',
+    U3: '三壘'
   };
   return map[pos] || pos || '';
 }
@@ -1215,7 +1299,51 @@ function closeFullSchedule() {
 
 <!-- ================= Script ================= -->
 <script src="js/config.js"></script>
+<script src="js/index.js"></script>
+
 <script>
+
+// ✅ 顯示用日期（不碰時區）
+function displayDate(dateVal) {
+  // 2026-05-02T16:00:00.000Z → 2026-05-03（台灣）
+  const d = new Date(dateVal);
+  return d.toLocaleDateString('sv-SE'); // YYYY-MM-DD
+}
+
+// ✅ 顯示用時間（固定台灣時間，不再差 8 小時）
+function displayTime(timeVal) {
+  if (!timeVal) return '';
+
+  // Google Sheets time: 1899-12-30T11:10:00.000Z
+  if (typeof timeVal === 'string' && timeVal.includes('T')) {
+    const d = new Date(timeVal);
+    return d.toLocaleTimeString('zh-TW', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Taipei'
+    });
+  }
+
+  // fallback: HH:mm
+  return timeVal.slice(0, 5);
+}
+
+function normalizeGameDateTime(g) {
+  let dateStr = g.date;
+  if (typeof dateStr === 'string' && dateStr.includes('T')) {
+    dateStr = dateStr.slice(0, 10); // YYYY-MM-DD
+  }
+
+  let timeStr = g.time || '00:00';
+  if (typeof timeStr === 'string' && timeStr.includes('T')) {
+    timeStr = timeStr.slice(11, 16); // HH:mm
+  } else {
+    timeStr = timeStr.slice(0, 5);
+  }
+
+  return new Date(`${dateStr}T${timeStr}:00`);
+}
 
 /* ===== 載入共用 Header ===== */
 function loadHeader(){
@@ -1251,15 +1379,58 @@ function isToday(dateStr) {
   return dateStr === todayStr;
 }
 
-function isThisWeek(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
-  const today = new Date();
+/* 本週班表 */
 
+function inThisWeek(d) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const day = today.getDay() === 0 ? 7 : today.getDay(); // Sun=7
   const start = new Date(today);
-  start.setDate(today.getDate() - today.getDay()); // 週日
+  start.setDate(today.getDate() - (day - 1));
 
   const end = new Date(start);
-  end.setDate(start.getDate() + 6); // 週六
+  end.setDate(start.getDate() + 6);
+
+  return d >= start && d <= end;
+}
+
+function inNextWeek(d) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const day = today.getDay() === 0 ? 7 : today.getDay();
+  const thisWeekStart = new Date(today);
+  thisWeekStart.setDate(today.getDate() - (day - 1));
+
+  const nextWeekStart = new Date(thisWeekStart);
+  nextWeekStart.setDate(thisWeekStart.getDate() + 7);
+
+  const nextWeekEnd = new Date(nextWeekStart);
+  nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+
+  return d >= nextWeekStart && d <= nextWeekEnd;
+}
+
+function inThisMonth(d) {
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear()
+      && d.getMonth() === now.getMonth();
+}
+  
+function isThisWeek(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  // 以星期一為一週開始
+  const day = today.getDay() === 0 ? 7 : today.getDay();
+  const start = new Date(today);
+  start.setDate(today.getDate() - (day - 1));
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
 
   return d >= start && d <= end;
 }
@@ -1273,6 +1444,7 @@ function isThisMonth(dateStr) {
   );
 }
 
+  
 /* ===== 登出 ===== */
 function logout(){
   if(!confirm('確定要登出系統？')) return;
@@ -1299,6 +1471,56 @@ function formatTime(t) {
   return '';
 }
 
+let currentRange = 'week';
+let cachedGames = [];
+
+function switchRange(range) {
+  currentRange = range;
+
+  // active 樣式
+  document.querySelectorAll('#schedule-tabs button')
+    .forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`tab-${range}`);
+  if (btn) btn.classList.add('active');
+
+  renderMySchedule();
+}
+
+function renderMySchedule() {
+  const ul = document.getElementById('week-list');
+  const emptyEl = document.getElementById('no-duty');
+
+  // ✅ 每次切 tab，先全部清空
+  ul.innerHTML = '';
+  emptyEl.style.display = 'none';
+
+  const filtered = [];
+
+  cachedGames.forEach(g => {
+    const d = normalizeGameDateTime(g);
+
+    if (currentRange === 'week'  && inThisWeek(d))  filtered.push(g);
+    if (currentRange === 'next'  && inNextWeek(d))  filtered.push(g);
+    if (currentRange === 'month' && inThisMonth(d)) filtered.push(g);
+  });
+
+  if (filtered.length === 0) {
+    emptyEl.textContent =
+      currentRange === 'week'
+        ? '本週尚無執勤賽事。'
+        : currentRange === 'next'
+        ? '下週尚無執勤賽事。'
+        : '本月尚未安排執勤賽事。';
+
+    emptyEl.style.display = 'block';
+    return;
+  }
+
+  // ✅ 只 render 當前 tab 的內容
+  renderDutyList(filtered);
+}
+
+  
 // ✅ 站位中文化
 function positionText(pos) {
   const map = {
@@ -1337,6 +1559,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   loadHeader();
+  loadUpcomingGames();
 });
 
 /* 近期站場資訊 */
@@ -1408,75 +1631,47 @@ function loadMonthlyGames() {
   );
 }
 
+function formatTime(t) {
+  if (!t) return '';
+  // ISO like 1899-12-30T11:10:00.000Z
+  if (typeof t === 'string' && t.includes('T')) {
+    return t.slice(11, 16); // HH:mm
+  }
+  return t.slice(0, 5); // fallback
+}
+
   
 function loadUpcomingGames() {
   const s = JSON.parse(localStorage.getItem('session_user') || '{}');
   if (!s.user_id) return;
 
-  const panel = document.getElementById('upcoming-panel');
-  if (!panel) return;
+  const loadingEl = document.getElementById('schedule-loading');
+  const emptyEl = document.getElementById('no-duty');
 
-  const loading = document.getElementById('upcomingLoading');
-  const weekSection = document.getElementById('week-section');
-  const otherSection = document.getElementById('other-section');
-  const noDuty = document.getElementById('no-duty');
-  const viewLink = document.getElementById('view-full-schedule');
+  // ✅ 顯示載入中
+  loadingEl.style.display = 'block';
+  emptyEl.style.display = 'none';
 
-  // ====== ① 初始化狀態（不要互相打架） ======
-  if (loading) loading.style.display = 'block';
+  let all = [];
 
-  if (weekSection) weekSection.style.display = 'none';
-  if (otherSection) otherSection.style.display = 'none';
-  if (noDuty) noDuty.style.display = 'none';
+  callApi({ action:'getMyUpcomingGames', user_id:s.user_id }, r1 => {
+    if (r1?.result === 'ok') all = all.concat(r1.games || []);
 
-  // ✅ 關鍵：查看完整班表是「入口」，不是資料狀態
-  if (viewLink) viewLink.style.display = 'inline-block';
+    callApi({ action:'getMyRecordUpcomingGames', user_id:s.user_id }, r2 => {
+      if (r2?.result === 'ok') all = all.concat(r2.games || []);
 
-  // 清空舊列表
-  panel.querySelectorAll('.upcoming-list li').forEach(li => li.remove());
+      cachedGames = all;
 
-  // ====== ② 呼叫 API ======
-  callApi(
-    {
-      action: 'getMyUpcomingGames',
-      user_id: s.user_id
-    },
-    res => {
-      // ====== ③ API 回來，第一件事關 loading ======
-      if (loading) loading.style.display = 'none';
+      // ✅ 關掉載入中
+      loadingEl.style.display = 'none';
 
-      console.log('getMyUpcomingGames response =', res);
-
-      // ====== ④ API 失敗或無資料（但入口還在） ======
-      if (!res || res.result !== 'ok' || !Array.isArray(res.games)) {
-        if (noDuty) noDuty.style.display = 'block';
-        return;
-      }
-
-      const weekGames = res.games.filter(g => isThisWeek(g.date));
-      const monthGames = res.games.filter(
-        g => isThisMonth(g.date) && !isThisWeek(g.date)
-      );
-
-      // ====== ⑤ 本週 ======
-      if (weekGames.length > 0) {
-        weekSection.style.display = 'block';
-        renderDutyList('week-list', weekGames);
-      }
-
-      // ====== ⑥ 其他 ======
-      if (monthGames.length > 0) {
-        otherSection.style.display = 'block';
-        renderDutyList('other-list', monthGames);
-      }
-
-      // ====== ⑦ 都沒有 upcoming ======
-      if (weekGames.length === 0 && monthGames.length === 0) {
-        if (noDuty) noDuty.style.display = 'block';
-      }
-    }
-  );
+      // ✅ 預設顯示本週（照你需求）
+      switchRange('week');
+    });
+  });
 }
+
+document.addEventListener('DOMContentLoaded', loadUpcomingGames);
 
 loadHeader();
 loadUpcomingGames(); // 我將執勤的比賽
