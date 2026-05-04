@@ -1310,13 +1310,23 @@ function displayDate(dateVal) {
   return d.toLocaleDateString('sv-SE'); // YYYY-MM-DD
 }
 
-// ✅ 顯示用時間（不碰時區）
+// ✅ 顯示用時間（固定台灣時間，不再差 8 小時）
 function displayTime(timeVal) {
-  // 1899-12-30T11:10:00.000Z → 11:10
+  if (!timeVal) return '';
+
+  // Google Sheets time: 1899-12-30T11:10:00.000Z
   if (typeof timeVal === 'string' && timeVal.includes('T')) {
-    return timeVal.slice(11, 16);
+    const d = new Date(timeVal);
+    return d.toLocaleTimeString('zh-TW', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Taipei'
+    });
   }
-  return timeVal ? timeVal.slice(0, 5) : '';
+
+  // fallback: HH:mm
+  return timeVal.slice(0, 5);
 }
 
 function normalizeGameDateTime(g) {
