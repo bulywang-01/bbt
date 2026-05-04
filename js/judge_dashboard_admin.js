@@ -276,17 +276,18 @@ function assignJudge(judge) {
       action: 'assignJudgeToPosition_admin',
       game_id: currentAssignContext.gameId,
       role: currentAssignContext.role,
-      judge_id: judge.id
+      judge_id: judge.user_id
     },
-    res => {
-      if (res && res.result === 'ok') {
-        closeJudgeModal();
-        loadGames(); // 重新載入畫面
-      } else {
-        alert(res?.message || '指派失敗');
-      }
-    }
-  );
+      res => {
+        if (res && res.result === 'ok') {
+          alert('✅ 指派成功');          // ✅ 用最直覺方式
+          closeJudgeModal();
+          loadGames();
+        } else {
+          alert('❌ 指派失敗：' + (res?.message || '未知錯誤'));
+          }
+        }
+    );
 }
 
 /*
