@@ -981,15 +981,12 @@ function roleIconByPosition(pos) {
 /* 「我的班表」render 格式 */
 function renderDutyList(list) {
   const ul = document.getElementById('week-list');
-
-  // ✅ 關鍵：每次都清空（避免本週殘留）
-  //   ｜ ${g.away_team} vs ${g.home_team}
   ul.innerHTML = '';
 
   list.forEach(g => {
     const li = document.createElement('li');
     li.innerHTML = `
-      <strong>${g.date.slice(0, 10)} ${formatTime(g.time)}</strong>
+      <strong>${displayDate(g.date)} ${displayTime(g.time)}</strong>
       ｜ 📍 ${g.field}
       ｜ ${roleIconByPosition(g.position)} ${positionTextZh(g.position)}
     `;
@@ -1299,6 +1296,22 @@ function closeFullSchedule() {
 <script src="js/index.js"></script>
 
 <script>
+
+function displayDate(dateVal) {
+  // dateVal 可能是 2026-05-02T16:00:00.000Z
+  if (typeof dateVal === 'string' && dateVal.includes('T')) {
+    return dateVal.slice(0, 10); // YYYY-MM-DD
+  }
+  return dateVal;
+}
+
+function displayTime(timeVal) {
+  // timeVal 可能是 1899-12-30T11:10:00.000Z
+  if (typeof timeVal === 'string' && timeVal.includes('T')) {
+    return timeVal.slice(11, 16); // HH:mm
+  }
+  return timeVal ? timeVal.slice(0, 5) : '';
+}
 
 function normalizeGameDateTime(g) {
   let dateStr = g.date;
@@ -1616,6 +1629,15 @@ function loadUpcomingGames() {
   const s = JSON.parse(localStorage.getItem('session_user') || '{}');
   if (!s.user_id) return;
 
+  const loadingEl = document.getElementById('schedule-loading');
+  const listEl = document.getElementById('week-list');
+  const emptyEl = document.getElementById('no-duty');
+
+  // ✅顯示載入中
+  if (loadingEl) loadingEl.style.display = 'block';
+  listEl.innerHTML = '';
+  emptyEl.style.display = 'none';
+
   let all = [];
 
   callApi({ action:'getMyUpcomingGames', user_id:s.user_id }, r1 => {
@@ -1626,7 +1648,10 @@ function loadUpcomingGames() {
 
       cachedGames = all;
 
-      // ✅ 需求指定：預設本週
+      // ✅關閉載入中
+      if (loadingEl) loadingEl.style.display = 'none';
+
+      // ✅需求：預設顯示本週
       switchRange('week');
     });
   });
