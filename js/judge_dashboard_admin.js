@@ -201,6 +201,7 @@ let currentAssignContext = null;
  * @param {string|number} gameId
  * @param {string} role  PU / U1 / U2 / U3
  */
+/*
 function openAssignJudge(gameId, role) {
   currentAssignContext = { gameId, role };
 
@@ -221,10 +222,51 @@ function openAssignJudge(gameId, role) {
 
   modal.classList.remove('hidden');
 }
+*/
 
+/* 改成掛在 window */
+window.openAssignJudge = function (gameId, role) {
+  currentAssignContext = { gameId, role };
+
+  const modal = document.getElementById('judgeModal');
+  const list = document.getElementById('judgeList');
+  const title = document.getElementById('judgeModalTitle');
+
+  title.textContent = `指派 ${ROLE_LABEL[role]}`;
+  list.innerHTML = '';
+
+  allJudges.forEach(j => {
+    const card = document.createElement('div');
+    card.className = 'judge-card';
+    card.textContent = j.name;
+    card.onclick = () => assignJudge(j);
+    list.appendChild(card);
+  });
+
+  modal.classList.remove('hidden');
+};
+
+/*
 function closeJudgeModal() {
   document.getElementById('judgeModal').classList.add('hidden');
 }
+*/
+
+/* 改成掛在 window */
+window.closeJudgeModal = function () {
+  const modal = document.getElementById('judgeModal');
+  const list = document.getElementById('judgeList');
+
+  modal.classList.add('hidden');
+  list.innerHTML = '';
+  currentAssignContext = null;
+};
+
+window.handleModalBackdrop = function (e) {
+  if (e.target.id === 'judgeModal') {
+    closeJudgeModal();
+  }
+};
 
 function assignJudge(judge) {
   if (!currentAssignContext) return;
@@ -247,8 +289,17 @@ function assignJudge(judge) {
   );
 }
 
+/*
 function logout() {
   if (!confirm('確定要登出？')) return;
   localStorage.clear();
   location.replace('login.html');
 }
+*/
+
+/* 改成掛在 window */
+window.logout = function () {
+  if (!confirm('確定要登出？')) return;
+  localStorage.clear();
+  location.replace('login.html');
+};
