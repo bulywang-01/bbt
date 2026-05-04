@@ -788,6 +788,12 @@
   
         <div class="panel" id="upcoming-panel">
           <h3>我的班表</h3>
+            <div id="schedule-loading"
+                 class="loading-text"
+                 style="display:none;">
+              班表載入中…
+            </div>
+          
             <div id="schedule-tabs" class="schedule-tabs">
               <button id="tab-week"  type="button" onclick="switchRange('week')">本週</button>
               <button id="tab-next"  type="button" onclick="switchRange('next')">下週</button>
@@ -1297,18 +1303,18 @@ function closeFullSchedule() {
 
 <script>
 
+// ✅ 顯示用日期（不碰時區）
 function displayDate(dateVal) {
-  // dateVal 可能是 2026-05-02T16:00:00.000Z
-  if (typeof dateVal === 'string' && dateVal.includes('T')) {
-    return dateVal.slice(0, 10); // YYYY-MM-DD
-  }
-  return dateVal;
+  // 2026-05-02T16:00:00.000Z → 2026-05-03（台灣）
+  const d = new Date(dateVal);
+  return d.toLocaleDateString('sv-SE'); // YYYY-MM-DD
 }
 
+// ✅ 顯示用時間（不碰時區）
 function displayTime(timeVal) {
-  // timeVal 可能是 1899-12-30T11:10:00.000Z
+  // 1899-12-30T11:10:00.000Z → 11:10
   if (typeof timeVal === 'string' && timeVal.includes('T')) {
-    return timeVal.slice(11, 16); // HH:mm
+    return timeVal.slice(11, 16);
   }
   return timeVal ? timeVal.slice(0, 5) : '';
 }
@@ -1630,12 +1636,10 @@ function loadUpcomingGames() {
   if (!s.user_id) return;
 
   const loadingEl = document.getElementById('schedule-loading');
-  const listEl = document.getElementById('week-list');
   const emptyEl = document.getElementById('no-duty');
 
-  // ✅顯示載入中
-  if (loadingEl) loadingEl.style.display = 'block';
-  listEl.innerHTML = '';
+  // ✅ 顯示載入中
+  loadingEl.style.display = 'block';
   emptyEl.style.display = 'none';
 
   let all = [];
@@ -1648,10 +1652,10 @@ function loadUpcomingGames() {
 
       cachedGames = all;
 
-      // ✅關閉載入中
-      if (loadingEl) loadingEl.style.display = 'none';
+      // ✅ 關掉載入中
+      loadingEl.style.display = 'none';
 
-      // ✅需求：預設顯示本週
+      // ✅ 預設顯示本週（照你需求）
       switchRange('week');
     });
   });
