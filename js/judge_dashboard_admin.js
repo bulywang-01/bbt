@@ -273,7 +273,7 @@ function assignJudge(judge) {
 
   callApi(
     {
-      action: 'assignJudge',
+      action: 'assignJudgeToPosition_admin',
       game_id: currentAssignContext.gameId,
       role: currentAssignContext.role,
       judge_id: judge.id
