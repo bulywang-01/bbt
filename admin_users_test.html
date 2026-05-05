@@ -276,7 +276,54 @@ function renderRow(u){
         onchange="updateField('${u.user_id}','email',this.value)">
     </td>
     <td>
-      <div class="role-group">${u.role}</div>
+      <div class="role-group">
+        <!-- 裁判群組 -->
+        <label>
+          <input type="radio" name="judge_${u.user_id}"
+            value="judge"
+            ${u.role.includes('judge') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','judge','chief_judge','judge')">
+          裁判
+        </label>
+    
+        <label>
+          <input type="radio" name="judge_${u.user_id}"
+            value="chief_judge"
+            ${u.role.includes('chief_judge') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','judge','chief_judge','chief_judge')">
+          裁判長
+        </label>
+    
+        <!-- 紀錄群組 -->
+        <label>
+          <input type="radio" name="record_${u.user_id}"
+            value="record"
+            ${u.role.includes('record') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','record','record_chief','record')">
+          紀錄
+        </label>
+    
+        <label>
+          <input type="radio" name="record_${u.user_id}"
+            value="record_chief"
+            ${u.role.includes('record_chief') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','record','record_chief','record_chief')">
+          紀錄長
+        </label>
+    
+        <!-- 系統管理員 -->
+        <label>
+          <input type="checkbox"
+            ${u.role.includes('admin') ? 'checked' : ''}
+            disabled
+            onchange="toggleAdmin('${u.user_id}',this.checked)">
+          管理員
+        </label>
+      </div>
     </td>
     <td>
       <select class="small-select" disabled
@@ -399,6 +446,42 @@ function toggleRole(uid, role, checked) {
   // ✅ 立刻重畫（多頁籤同步）
   renderLists();
 }
+
+// 裁判 / 紀錄（群組互斥）
+  
+function toggleRoleGroup(uid, roleA, roleB, selected) {
+  const u = allUsers.find(x => x.user_id === uid);
+  let roles = (u.role || '').split(',').filter(Boolean);
+
+  // 先移除同群舊角色
+  roles = roles.filter(r => r !== roleA && r !== roleB);
+
+  // 加入新角色
+  roles.push(selected);
+
+  const newRole = roles.join(',');
+  u.role = newRole;
+  updateField(uid, 'role', newRole);
+
+  renderLists(); // 立刻同步多頁籤
+}
+
+// 系統管理員（可並存）
+  
+function toggleAdmin(uid, checked) {
+  const u = allUsers.find(x => x.user_id === uid);
+  let roles = (u.role || '').split(',').filter(Boolean);
+
+  if (checked && !roles.includes('admin')) roles.push('admin');
+  if (!checked) roles = roles.filter(r => r !== 'admin');
+
+  const newRole = roles.join(',');
+  u.role = newRole;
+  updateField(uid, 'role', newRole);
+
+  renderLists();
+}
+
 
 function logout(){
   localStorage.clear();
