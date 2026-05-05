@@ -288,7 +288,7 @@ window.handleModalBackdrop = function (e) {
 
 function assignJudge(judge) {
   if (!currentAssignContext) return;
-
+  console.log('assign judge object =', judge);
   callApi(
     {
       action: 'assignJudgeToPosition_admin',
