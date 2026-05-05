@@ -83,6 +83,15 @@ button { padding:4px 8px; cursor:pointer; }
 .toast.success { background:#2e7d32; }
 .toast.error { background:#c62828; }
 .toast.warn { background:#ed6c02; }
+
+/* ===== 編輯中列提示 ===== */
+tr.editing {
+  background-color: #fff8dc;   /* 淡黃色 */
+}
+tr.editing td {
+  background-color: #fff8dc;
+}
+
 </style>
 </head>
 
@@ -480,23 +489,38 @@ function toggleRoleGroup(uid, roleA, roleB, selected) {
 function toggleAdmin(uid, checked) {
   const u = allUsers.find(x => String(x.user_id) === String(uid));
   if (!u) {
-    console.error('toggleAdmin: user not found', uid);
-    showToast('找不到使用者資料，請重新整理', 'error');
+    showToast('找不到使用者資料', 'error');
     return;
   }
 
   let roles = (u.role || '').split(',').filter(Boolean);
 
+  // ===== 核心防呆：最後一個 admin 不可取消 =====
+  if (!checked && roles.includes('admin')) {
+    // 計算目前「啟用中的 admin 數量」
+    const activeAdminCount = allUsers.filter(x => {
+      if (x.active !== 'Y') return false;
+      const r = (x.role || '').split(',').filter(Boolean);
+      return r.includes('admin');
+    }).length;
+
+    if (activeAdminCount <= 1) {
+      showToast('至少需保留一位系統管理員', 'warn');
+      return; // ❌ 阻止取消
+    }
+  }
+
+  // ===== 正常處理 =====
   if (checked && !roles.includes('admin')) roles.push('admin');
   if (!checked) roles = roles.filter(r => r !== 'admin');
 
   const newRole = roles.join(',');
 
+  // 同步資料
   u.role = newRole;
   updateField(uid, 'role', newRole);
-
-  // ✅ 不 renderLists()
 }
+
 
 
 function logout(){
