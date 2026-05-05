@@ -450,30 +450,28 @@ function toggleRole(uid, role, checked) {
 // 裁判 / 紀錄（群組互斥）
   
 function toggleRoleGroup(uid, roleA, roleB, selected) {
-  // ✅ 防呆：一定要找得到 user
   const u = allUsers.find(x => String(x.user_id) === String(uid));
   if (!u) {
-    console.error('toggleRoleGroup: user not found:', uid, allUsers);
+    console.error('toggleRoleGroup: user not found', uid);
     showToast('找不到使用者資料，請重新整理', 'error');
     return;
   }
 
   let roles = (u.role || '').split(',').filter(Boolean);
 
-  // ✅ 同群組互斥
+  // ✅ 同群組互斥（裁判 / 裁判長、紀錄 / 紀錄長）
   roles = roles.filter(r => r !== roleA && r !== roleB);
   roles.push(selected);
 
   const newRole = roles.join(',');
 
-  // ✅ 同步前端狀態（超重要）
+  // ✅ 同步資料層（很重要）
   u.role = newRole;
 
-  // ✅ 紀錄待儲存資料
+  // ✅ 標記為已修改（儲存才會有資料）
   updateField(uid, 'role', newRole);
 
-  // ✅ 立刻重畫，讓多頁籤同步
-  renderLists();
+  // ✅ 不要 renderLists()！
 }
 
 
@@ -482,7 +480,7 @@ function toggleRoleGroup(uid, roleA, roleB, selected) {
 function toggleAdmin(uid, checked) {
   const u = allUsers.find(x => String(x.user_id) === String(uid));
   if (!u) {
-    console.error('toggleAdmin: user not found:', uid);
+    console.error('toggleAdmin: user not found', uid);
     showToast('找不到使用者資料，請重新整理', 'error');
     return;
   }
@@ -496,7 +494,8 @@ function toggleAdmin(uid, checked) {
 
   u.role = newRole;
   updateField(uid, 'role', newRole);
-  renderLists();
+
+  // ✅ 不 renderLists()
 }
 
 
