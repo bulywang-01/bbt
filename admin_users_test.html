@@ -5,119 +5,123 @@
 <title>使用者帳號管理</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system;
-  background: #f5f6f8;
+body{
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:#f5f6f8;
 }
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#fff;
+  border-bottom:1px solid #ddd;
 }
-.nav a {
-  margin-right: 16px;
-  text-decoration: none;
-  color: #0066cc;
+.nav a{
+  margin-right:16px;
+  text-decoration:none;
+  color:#0066cc;
 }
-.main {
-  padding: 20px;
+.main{ padding:20px; }
+
+/* ===== 工具列 ===== */
+.toolbar{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:12px;
+}
+.toolbar input[type="text"]{
+  padding:6px 8px;
+  width:220px;
+}
+.toolbar label{
+  font-size:14px;
 }
 
 /* ===== Tabs ===== */
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+.tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:12px;
 }
-.tab {
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 1px solid #ccc;
-  background: #f3f4f6;
-  cursor: pointer;
+.tab{
+  padding:6px 14px;
+  border-radius:16px;
+  border:1px solid #ccc;
+  background:#f3f4f6;
+  cursor:pointer;
 }
-.tab.active {
-  background: #2c7be5;
-  color: #fff;
-  border-color: #2c7be5;
-}
-.hidden {
-  display: none;
+.tab.active{
+  background:#2c7be5;
+  color:#fff;
+  border-color:#2c7be5;
 }
 
-/* ===== User Card ===== */
-.user-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 12px;
+.hidden{ display:none; }
+
+/* ===== Table ===== */
+.user-table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
 }
-.user-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
+.user-table th,
+.user-table td{
+  border:1px solid #ddd;
+  padding:6px;
+  text-align:center;
+  font-size:14px;
 }
-.badge {
-  margin-left: 6px;
-  padding: 2px 8px;
-  font-size: 12px;
-  background: #eef2f6;
-  border-radius: 10px;
+.user-table th{
+  background:#f1f5f9;
 }
-.user-grid {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: 8px 12px;
+.user-table input,
+.user-table select{
+  width:100%;
+  box-sizing:border-box;
+  padding:4px;
+  font-size:13px;
+  background:#fafafa;
 }
-.user-grid input,
-.user-grid select {
-  padding: 4px 6px;
-  font-size: 14px;
+.user-table input:disabled,
+.user-table select:disabled{
+  background:#f5f5f5;
 }
-.user-actions button {
-  margin-left: 6px;
+
+button{
+  padding:4px 8px;
+  cursor:pointer;
 }
-.edit-actions {
-  margin-top: 10px;
-  text-align: right;
+.primary{
+  background:#2c7be5;
+  color:#fff;
+  border:none;
 }
-button {
-  padding: 6px 12px;
-  cursor: pointer;
-}
-.primary {
-  background: #2c7be5;
-  color: #fff;
-  border: none;
-}
-.danger {
-  background: #c62828;
-  color: #fff;
-  border: none;
+.danger{
+  background:#c62828;
+  color:#fff;
+  border:none;
 }
 
 /* ===== Toast ===== */
-.toast {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 14px 20px;
-  border-radius: 8px;
-  color: #fff;
-  opacity: 0;
-  transition: opacity .3s;
-  z-index: 9999;
+.toast{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  padding:14px 20px;
+  border-radius:8px;
+  color:#fff;
+  opacity:0;
+  transition:.3s;
+  z-index:9999;
 }
-.toast.show { opacity: 1; }
-.toast.success { background: #2e7d32; }
-.toast.error { background: #c62828; }
-.toast.warn { background: #ed6c02; }
+.toast.show{ opacity:1; }
+.toast.success{ background:#2e7d32; }
+.toast.error{ background:#c62828; }
+.toast.warn{ background:#ed6c02; }
 </style>
 </head>
 
@@ -127,146 +131,214 @@ button {
     <a href="index.html">🏠 首頁</a>
     <a href="judge_dashboard.html">📋 報名</a>
     <a href="admin_dashboard.html">⚙️ 管理</a>
-    <a href="#" onclick="logout()">登出</a>（
-    <span id="u_name"></span>）
+  </div>
+  <div>
+    <span id="u_name"></span>
+    <a href="#" onclick="logout()">登出</a>
   </div>
 </div>
 
 <div class="main">
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('judge')">⚖️ 裁判</button>
-    <button class="tab" onclick="switchTab('record')">📝 紀錄</button>
+
+  <!-- 工具列 -->
+  <div class="toolbar">
+    <input type="text" id="keyword" placeholder="搜尋帳號 / 姓名">
+    <label>
+      <input type="checkbox" id="onlyActive">
+      只顯示啟用帳號
+    </label>
   </div>
 
-  <div id="list-judge"></div>
-  <div id="list-record" class="hidden"></div>
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('judge',this)">⚖️ 裁判</button>
+    <button class="tab" onclick="switchTab('record',this)">📝 紀錄</button>
+  </div>
+
+  <!-- 裁判 -->
+  <table class="user-table" id="table-judge">
+    <thead>
+      <tr>
+        <th>帳號</th>
+        <th>姓名</th>
+        <th>電話</th>
+        <th>Email</th>
+        <th>身份</th>
+        <th>裁判等級</th>
+        <th>狀態</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-judge"></tbody>
+  </table>
+
+  <!-- 紀錄 -->
+  <table class="user-table hidden" id="table-record">
+    <thead>
+      <tr>
+        <th>帳號</th>
+        <th>姓名</th>
+        <th>電話</th>
+        <th>Email</th>
+        <th>身份</th>
+        <th>裁判等級</th>
+        <th>狀態</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-record"></tbody>
+  </table>
+
 </div>
 
 <script src="js/config.js"></script>
-
 <script>
-let pendingUserUpdates = {};
-let allUsers = [];
+let allUsers=[];
+let pendingUserUpdates={};
+let currentTab='judge';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const raw = localStorage.getItem('session_user');
-  if (!raw) return location.href = 'login.html';
-  const session = JSON.parse(raw);
-  document.getElementById('u_name').textContent = session.name;
+document.addEventListener('DOMContentLoaded',()=>{
+  const raw=localStorage.getItem('session_user');
+  if(!raw) return location.href='login.html';
+  const session=JSON.parse(raw);
+  const nameEl=document.getElementById('u_name');
+  if(nameEl) nameEl.textContent=session.name||'';
+  document.getElementById('keyword').addEventListener('input',renderLists);
+  document.getElementById('onlyActive').addEventListener('change',renderLists);
   loadUsers();
 });
 
-/* ===== Tabs ===== */
-function switchTab(type) {
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('#list-judge,#list-record').forEach(d => d.classList.add('hidden'));
-  event.target.classList.add('active');
-  document.getElementById('list-' + type).classList.remove('hidden');
+/* Tabs */
+function switchTab(type,btn){
+  currentTab=type;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('table-judge').classList.toggle('hidden',type!=='judge');
+  document.getElementById('table-record').classList.toggle('hidden',type!=='record');
 }
 
-/* ===== Toast ===== */
-function showToast(msg, type='success') {
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.textContent = msg;
+function showToast(msg,type='success'){
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.textContent=msg;
   document.body.appendChild(t);
   setTimeout(()=>t.classList.add('show'),50);
-  setTimeout(()=>{ t.remove(); },3000);
+  setTimeout(()=>t.remove(),3000);
 }
 
-/* ===== Load Users ===== */
-function loadUsers() {
-  callApi({ action:'getUsers' }, res => {
-    if (!res || res.result !== 'ok') {
+/* Load */
+function loadUsers(){
+  callApi({action:'getUsers'},res=>{
+    if(!res||res.result!=='ok'){
       showToast('讀取失敗','error');
       return;
     }
-    allUsers = res.users || [];
+    allUsers=res.users||[];
     renderLists();
   });
 }
 
-function renderLists() {
-  const judgeBox = document.getElementById('list-judge');
-  const recordBox = document.getElementById('list-record');
-  judgeBox.innerHTML = '';
-  recordBox.innerHTML = '';
+/* Render */
+function renderLists(){
+  const kw=document.getElementById('keyword').value.trim();
+  const onlyActive=document.getElementById('onlyActive').checked;
+  const judgeBody=document.getElementById('tbody-judge');
+  const recordBody=document.getElementById('tbody-record');
+  judgeBody.innerHTML='';
+  recordBody.innerHTML='';
 
-  allUsers.forEach(u => {
-    const roles = (u.role || '').split(',');
-    if (roles.includes('judge')) judgeBox.appendChild(renderCard(u,'裁判'));
-    if (roles.includes('record')) recordBox.appendChild(renderCard(u,'紀錄'));
+  allUsers.forEach(u=>{
+    if(onlyActive && u.active!=='Y') return;
+    if(kw && !(u.username.includes(kw)||u.name.includes(kw))) return;
+    const roles=(u.role||'').split(',');
+    if(roles.includes('judge')) judgeBody.appendChild(renderRow(u));
+    if(roles.includes('record')) recordBody.appendChild(renderRow(u));
   });
 }
 
-/* ===== Render Card ===== */
-function renderCard(u, label) {
-  const card = document.createElement('div');
-  card.className = 'user-card';
-  card.innerHTML = `
-    <div class="user-header">
-      <div><b>${u.name}</b><span class="badge">${label}</span></div>
-      <div class="user-actions">
-        <button onclick="enableEdit(this)">✏️ 編輯</button>
-        ${u.username!=='admin'
-          ? `<button class="danger" onclick="deleteSingleUser('${u.user_id}','${u.username}')">刪除</button>`
-          : ``}
-      </div>
-    </div>
-    <div class="user-grid">
-      <label>帳號</label><input value="${u.username}" disabled>
-      <label>電話</label><input value="${u.phone||''}" disabled onchange="updateField('${u.user_id}','phone',this.value)">
-      <label>Email</label><input value="${u.email||''}" disabled onchange="updateField('${u.user_id}','email',this.value)">
-      <label>狀態</label>
+function renderRow(u){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td>${u.username}</td>
+    <td><input value="${u.name||''}" disabled onchange="updateField('${u.user_id}','name',this.value)"></td>
+    <td><input value="${u.phone||''}" disabled onchange="updateField('${u.user_id}','phone',this.value)"></td>
+    <td><input value="${u.email||''}" disabled onchange="updateField('${u.user_id}','email',this.value)"></td>
+    <td>
+      <label><input type="checkbox" disabled ${u.role.includes('judge')?'checked':''} onchange="toggleRole('${u.user_id}','judge',this.checked)">裁判</label>
+      <label><input type="checkbox" disabled ${u.role.includes('record')?'checked':''} onchange="toggleRole('${u.user_id}','record',this.checked)">紀錄</label>
+      <label><input type="checkbox" disabled ${u.role.includes('admin')?'checked':''} onchange="toggleRole('${u.user_id}','admin',this.checked)">管理</label>
+    </td>
+    <td>
+      <select disabled onchange="updateField('${u.user_id}','level',this.value)">
+        <option value="NONE">無</option>
+        <option value="A" ${u.level==='A'?'selected':''}>A</option>
+        <option value="B" ${u.level==='B'?'selected':''}>B</option>
+        <option value="C" ${u.level==='C'?'selected':''}>C</option>
+      </select>
+    </td>
+    <td>
       <select disabled onchange="updateField('${u.user_id}','active',this.value)">
         <option value="Y" ${u.active==='Y'?'selected':''}>啟用</option>
         <option value="N" ${u.active==='N'?'selected':''}>停用</option>
       </select>
-    </div>
-    <div class="edit-actions hidden">
-      <button class="primary" onclick="saveUser('${u.user_id}',this)">💾 儲存</button>
-      <button onclick="cancelEdit(this)">❌ 取消</button>
-    </div>
+    </td>
+    <td>
+      <button onclick="enableEdit(this)">✏️</button>
+      <button class="primary" onclick="saveUser('${u.user_id}',this)">💾</button>
+      <button onclick="cancelEdit(this)">❌</button>
+      ${u.username!=='admin'
+        ? `<button class="danger" onclick="deleteSingleUser('${u.user_id}','${u.username}')">🗑</button>`
+        : ''}
+    </td>
   `;
-  return card;
+  return tr;
 }
 
-/* ===== Edit Mode ===== */
-function enableEdit(btn) {
-  const card = btn.closest('.user-card');
-  card.querySelectorAll('input,select').forEach(el => el.disabled=false);
-  card.querySelector('.edit-actions').classList.remove('hidden');
-}
-function cancelEdit(btn) {
-  const card = btn.closest('.user-card');
-  card.querySelectorAll('input,select').forEach(el => el.disabled=true);
-  card.querySelector('.edit-actions').classList.add('hidden');
+function enableEdit(btn){
+  const tr=btn.closest('tr');
+  tr.querySelectorAll('input,select').forEach(el=>el.disabled=false);
 }
 
-/* ===== Update ===== */
-function updateField(uid, field, val) {
-  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
+function cancelEdit(btn){
+  const tr=btn.closest('tr');
+  tr.querySelectorAll('input,select').forEach(el=>el.disabled=true);
+}
+
+function updateField(uid,field,val){
+  if(!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
   pendingUserUpdates[uid][field]=val;
 }
-function saveUser(uid,btn) {
-  const data = pendingUserUpdates[uid];
-  if (!data) return showToast('未修改','warn');
-  callApi({ action:'updateUser', user_id:uid, ...data }, res=>{
-    if (!res||res.result!=='ok') return showToast('更新失敗','error');
+
+function toggleRole(uid,role,checked){
+  const u=allUsers.find(x=>x.user_id===uid);
+  let roles=(u.role||'').split(',').filter(Boolean);
+  if(checked && !roles.includes(role)) roles.push(role);
+  if(!checked) roles=roles.filter(r=>r!==role);
+  updateField(uid,'role',roles.join(','));
+}
+
+function saveUser(uid){
+  const data=pendingUserUpdates[uid];
+  if(!data) return showToast('未修改','warn');
+  callApi({action:'updateUser',user_id:uid,...data},res=>{
+    if(!res||res.result!=='ok') return showToast('更新失敗','error');
     showToast('更新完成','success');
     pendingUserUpdates[uid]=null;
     loadUsers();
   });
 }
 
-/* ===== Delete / Logout ===== */
-function deleteSingleUser(uid,name) {
-  if (!confirm(`刪除 ${name}？`)) return;
-  callApi({ action:'deleteUsers', user_ids:uid }, res=>{
-    if(res.result==='ok'){ showToast('刪除完成'); loadUsers(); }
+function deleteSingleUser(uid,name){
+  if(!confirm(`確定刪除 ${name}？`)) return;
+  callApi({action:'deleteUsers',user_ids:uid},res=>{
+    if(res.result==='ok'){
+      showToast('刪除完成');
+      loadUsers();
+    }
   });
 }
-function logout() {
+
+function logout(){
   localStorage.clear();
   location.href='login.html';
 }
