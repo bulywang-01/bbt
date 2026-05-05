@@ -2,667 +2,531 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>裁判帳號管理</title>
+<title>使用者帳號管理</title>
 
 <style>
+body { margin:0; font-family:system-ui,-apple-system; background:#f5f6f8; }
+.header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 20px; background:#fff; border-bottom:1px solid #ddd;
+}
+.nav a { margin-right:16px; text-decoration:none; color:#0066cc; }
+.main { padding:20px; }
 
-/* === 新增帳號卡片 === */
-.create-user-card {
-  background:#f9fafb;
-  border:1px solid #e2e8f0;
-  border-radius:8px;
-  padding:16px;
-  margin-top:24px;
+/* Toolbar */
+.toolbar {
+  display:flex; gap:12px; align-items:center; margin-bottom:12px;
+}
+.toolbar input[type="text"] { padding:6px 8px; width:220px; }
+
+/* Tabs */
+.tabs { display:flex; gap:8px; margin-bottom:12px; }
+.tab {
+  padding:6px 14px; border-radius:16px;
+  border:1px solid #ccc; background:#f3f4f6; cursor:pointer;
+}
+.tab.active { background:#2c7be5; color:#fff; border-color:#2c7be5; }
+.hidden { display:none; }
+
+/* Table */
+.user-table {
+  width:100%; border-collapse:collapse; background:#fff;
+}
+.user-table th, .user-table td {
+  border:1px solid #ddd; padding:6px; text-align:center; font-size:14px;
+}
+.user-table th { background:#f1f5f9; }
+
+.user-table input, .user-table select {
+  padding:4px; font-size:13px; box-sizing:border-box;
+}
+.user-table input:disabled, .user-table select:disabled {
+  background:#f5f5f5;
 }
 
-.create-user-card h3 {
-  margin:0 0 12px;
-  font-size:16px;
-  color:#333;
+/* Column sizes */
+.col-name input { width:120px; }
+.col-phone input { width:120px; }
+.col-note input { width:60px; text-align:center; }
+
+/* Placeholder style */
+.placeholder { color:#999; font-style:italic; }
+
+/* Roles */
+.role-group {
+  display:flex; gap:8px; justify-content:center; white-space:nowrap;
+}
+.role-group label {
+  display:flex; align-items:center; gap:4px; font-size:13px;
 }
 
-/* === 新增帳號表單排列 === */
-.create-user-grid {
-  display:grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap:12px;
-}
+/* Small selects */
+.small-select { width:70px; font-size:13px; text-align:center; }
 
-.create-user-field {
-  display:flex;
-  flex-direction:column;
-}
+/* Action column */
+.action-edit { display:none; }
+tr.editing .action-view { display:none; }
+tr.editing .action-edit { display:inline-block; }
 
-.create-user-field label {
-  font-size:12px;
-  color:#555;
-  margin-bottom:4px;
-}
+button { padding:4px 8px; cursor:pointer; }
+.primary { background:#2c7be5; color:#fff; border:none; }
+.danger { background:#c62828; color:#fff; border:none; }
 
-.create-user-field input,
-.create-user-field select {
-  padding:6px 8px;
-  font-size:13px;
-}
-
-/* === 行動列 === */
-.create-user-actions {
-  grid-column: 1 / -1;
-  display:flex;
-  justify-content:flex-end;
-  margin-top:8px;
-}
-
-/* === 新增按鈕 === */
-.btn-primary {
-  background:#2c7be5;
-  color:#fff;
-  border:none;
-  padding:8px 16px;
-  font-size:14px;
-  border-radius:4px;
-  cursor:pointer;
-}
-
-.btn-primary:hover {
-  background:#1a68d1;
-}
-
-/* 小提醒文字 */
-.form-hint {
-  grid-column: 1 / -1;
-  font-size:12px;
-  color:#666;
-}
-
-body{
-  margin:0;
-  font-family:system-ui,-apple-system;
-  background:#f5f6f8;
-}
-
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 20px;
-  background:#ffffff;
-  border-bottom:1px solid #ddd;
-}
-
-.nav a{
-  margin-right:16px;
-  color:#0066cc;
-  text-decoration:none;
-  font-weight:500;
-}
-
-.main{ padding:20px; }
-
-.panel{
-  background:#fff;
-  padding:16px;
-  border-radius:6px;
-  box-shadow:0 1px 4px rgba(0,0,0,.08);
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th,td{
-  border:1px solid #ddd;
-  padding:6px 8px;
-  text-align:center;
-}
-th{ background:#eef2f6; }
-
-input,select{
-  width:100%;
-  box-sizing:border-box;
-  padding:4px;
-  font-size:13px;
-}
-
-tr.inactive{
-  background:#f3f3f3;
-  color:#888;
-}
-
-button{
-  padding:6px 12px;
-  cursor:pointer;
-}
-
-/* ===== Toast（畫面正中央） ===== */
+/* Toast */
 .toast {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  min-width: 280px;
-  max-width: 400px;
-  padding: 16px 20px;
-  border-radius: 8px;
-  color: #fff;
-  font-size: 15px;
-  text-align: center;
-  box-shadow: 0 6px 20px rgba(0,0,0,.3);
-  opacity: 0;
-  transition: opacity .3s ease;
-  z-index: 9999;
+  position:fixed; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  padding:14px 20px; border-radius:8px; color:#fff;
+  opacity:0; transition:.3s; z-index:9999;
+}
+.toast.show { opacity:1; }
+.toast.success { background:#2e7d32; }
+.toast.error { background:#c62828; }
+.toast.warn { background:#ed6c02; }
+
+/* ===== 編輯中列提示 ===== */
+tr.editing {
+  background-color: #fff8dc;   /* 淡黃色 */
+}
+tr.editing td {
+  background-color: #fff8dc;
 }
 
-.toast.show {
-  opacity: 1;
-}
-
-.toast.success { background: #2e7d32; }
-.toast.error   { background: #c62828; }
-.toast.warn    { background: #ed6c02; }
-  
 </style>
 </head>
 
 <body>
-
-<!-- ===== Header ===== -->
 <div class="header">
   <div class="nav">
     <a href="index.html">🏠 首頁</a>
     <a href="judge_dashboard.html">📋 報名</a>
-    <!--
-    <a href="files.html">📂 文件下載</a>
-    <a href="review_dashboard.html">✅ 審核</a>
-    -->
     <a href="admin_dashboard.html">⚙️ 管理</a>
   </div>
-
-  <div class="user-box">
-    <span id="u_name" class="user-name"></span>
-    <a href="#" class="logout" onclick="logout()">登出</a>
+  <div>
+    <span id="u_name"></span>
+    <a href="#" onclick="logout()">登出</a>
   </div>
 </div>
+
 
 <div class="main">
-<div class="panel">
 
-<table>
-<!-- 先 mark 起來 for delete
-<th>
-  <input type="checkbox" id="checkAll" onclick="toggleAllUsers(this)">
-</th>
--->
-<thead>
-<tr>
-  <th>帳號</th>
-  <th>背號</th>
-  <th>新密碼</th>
-  <th>姓名</th>
-  <th>電話</th>
-  <th>Email</th>
-  <th>裁判證等級</th>
-  <th>角色</th>
-  <th>狀態</th>
-  <th>操作</th>
-</tr>
-</thead>
-<tbody id="userBody">
-<tr><td colspan="10">載入中…</td></tr>
-</tbody>
-</table>
+  <hr style="margin:24px 0">
 
-</div>
-</div>
-
-<!-- 先 mark 起來 for delete 
-<button onclick="deleteSelectedUsers()"
-        style="margin-bottom:10px;background:#c62828;color:#fff;">
-  🗑 刪除選取帳號
-</button>
--->
-<div class="create-user-card">
-  <h3>➕ 新增裁判帳號</h3>
-
-  <div class="create-user-grid">
-
-    <div class="create-user-field">
-      <label>帳號（登入用）</label>
-      <input id="new_username" placeholder="例如：admin01">
+    <h3>➕ 新增使用者</h3>
+    <div class="toolbar">
+      <input id="new_username" placeholder="帳號">
+      <input id="new_name" placeholder="姓名">
+      <input id="new_phone" placeholder="電話">
+      <input id="new_email" placeholder="Email">
+    
+      <select id="new_level">
+        <option value="NONE">裁判證：無</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+      </select>
+    
+      <label><input type="checkbox" id="r_judge"> 裁判</label>
+      <label><input type="checkbox" id="r_chief_judge"> 裁判長</label>
+      <label><input type="checkbox" id="r_record"> 紀錄</label>
+      <label><input type="checkbox" id="r_record_chief"> 紀錄長</label>
+      <label><input type="checkbox" id="r_admin"> 管理員</label>
+    
+      <button class="primary" onclick="createUser()">新增</button>
     </div>
+    
+    <p style="font-size:12px;color:#666">
+      新帳號預設密碼：<b>12345678</b>（首次登入需修改）
+    </p>
 
-    <div class="create-user-field">
-      <label>姓名</label>
-      <input id="new_name" placeholder="真實姓名">
-    </div>
-
-    <div class="create-user-field">
-      <label>電話</label>
-      <input id="new_phone" placeholder="09xxxxxxxx">
-    </div>
-
-    <div class="create-user-field">
-      <label>Email</label>
-      <input id="new_email" placeholder="example@mail.com">
-    </div>
-
-    <div class="create-user-field">
-      <label>裁判證等級</label>
-        <select id="new_level">
-          <option value="NONE">無證照或未知</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-        </select>
-    </div>
-
-    <div class="create-user-field">
-      <label>角色</label>
-        <select id="new_role">
-          <option value="judge">一般裁判</option>
-          <!--
-          <option value="chief_judge">裁判長</option>
-          <option value="judge_admin">裁判管理者</option>
-          <option value="match_admin">賽事管理者</option>
-          <option value="admin">系統管理員</option>
-          -->
-        </select>
-    </div>
-
-    <div class="form-hint">
-      ℹ️ 新帳號將自動設定預設密碼 <b>12345678</b>，首次登入需自行修改。
-    </div>
-
-    <div class="create-user-actions">
-      <button type="button" class="btn-primary" id="btnCreateUser">新增帳號</button>
-    </div>
-
+  <div class="toolbar">
+    <input type="text" id="keyword" placeholder="搜尋帳號 / 姓名">
+    <label><input type="checkbox" id="onlyActive"> 只顯示啟用帳號</label>
   </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('judge',this)">⚖️ 裁判</button>
+    <button class="tab" onclick="switchTab('record',this)">📝 紀錄</button>
+    <button class="tab" onclick="switchTab('admin',this)">🛠 系統管理員</button>
+  </div>
+
+  <!-- Tables -->
+  <table class="user-table" id="table-judge">
+    <thead>
+      <tr>
+        <th>帳號</th><th>姓名</th><th>背號</th><th>電話</th>
+        <th>Email</th><th>身份</th><th>裁判等級</th>
+        <th>狀態</th><th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-judge"></tbody>
+  </table>
+
+  <table class="user-table hidden" id="table-record">
+    <thead>
+      <tr>
+        <th>帳號</th><th>姓名</th><th>背號</th><th>電話</th>
+        <th>Email</th><th>身份</th><th>裁判等級</th>
+        <th>狀態</th><th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-record"></tbody>
+  </table>
+
+  <table class="user-table hidden" id="table-admin">
+    <thead>
+      <tr>
+        <th>帳號</th><th>姓名</th><th>背號</th><th>電話</th>
+        <th>Email</th><th>身份</th><th>裁判等級</th>
+        <th>狀態</th><th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-admin"></tbody>
+  </table>
+
 </div>
 
-<hr>
-<!--
-<div id="toast">✅ 已更新</div>
--->
-  
+
 <script src="js/config.js"></script>
 
 <script>
-// ===== 全域狀態（一定要最先宣告） =====
-var pendingUserUpdates = {};
-</script>
+let allUsers = [];
+let pendingUserUpdates = {};
 
-<script>
-  
-/* ===== Init ===== */
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
   const raw = localStorage.getItem('session_user');
-  if(!raw){ location.href='login.html'; return; }
-
+  if (!raw) return location.href = 'login.html';
   const session = JSON.parse(raw);
   document.getElementById('u_name').textContent = session.name || '';
-
-  if(!['admin','judge_admin'].includes(session.role)){
-    alert('沒有權限');
-    location.href='index.html';
-    return;
-  }
+  document.getElementById('keyword').addEventListener('input', renderLists);
+  document.getElementById('onlyActive').addEventListener('change', renderLists);
   loadUsers();
 });
 
-function showToast(message, type = 'success') {
-
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-
-  document.body.appendChild(toast);
-
-  // 觸發動畫
-  setTimeout(() => toast.classList.add('show'), 50);
-
-  // 自動消失
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 400);
-  }, 3000);
-}
-
-
-/* ===== Load Users ===== */
-/* ===== 載入使用者清單 ===== */
-function loadUsers() {
-
-  const tbody = document.getElementById('userBody');
-  if (!tbody) return;
-
-  tbody.innerHTML =
-    `<tr><td colspan="10">載入中...</td></tr>`;
-
-  callApi({ action: 'getUsers' }, res => {
-
-    console.log('getUsers response =', res);
-
-    if (!res || res.result !== 'ok') {
-      tbody.innerHTML =
-        `<tr><td colspan="10">${res?.message || '讀取失敗'}</td></tr>`;
-      return;
-    }
-
-    const list = res.users || [];
-    if (list.length === 0) {
-      tbody.innerHTML =
-        `<tr><td colspan="10">尚無使用者資料</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = '';
-
-    list.forEach(u => {
-      const tr = document.createElement('tr');
-
-      tr.innerHTML = `
-        <!-- 先mark起來，刪除功能
-            <td>
-            <input type="checkbox" class="user-check" value="${u.user_id}">
-            </td>
-        -->
-        
-        <!-- 帳號 -->
-        <td>${u.username || ''}</td>
-
-        <!-- 背號 -->
-        <td>
-          <input type="text" value="${u.note || ''}"
-            onchange="updateUserField('${u.user_id}','note',this.value)">
-        </td>
-
-        <!-- 新密碼 -->
-        <td>
-          <input type="password" placeholder="留空不修改"
-            onchange="updateUserField('${u.user_id}','password',this.value)">
-        </td>
-
-        <!-- 姓名 -->
-        <td>
-          <input type="text" value="${u.name || ''}"
-            onchange="updateUserField('${u.user_id}','name',this.value)">
-        </td>
-
-        <!-- 電話 -->
-        <td>
-          <input type="text" value="${u.phone || ''}"
-            onchange="updateUserField('${u.user_id}','phone',this.value)">
-        </td>
-
-        <!-- Email -->
-        <td>
-          <input type="email" value="${u.email || ''}"
-            onchange="updateUserField('${u.user_id}','email',this.value)">
-        </td>
-
-        <!-- 裁判證等級 -->
-        <td>
-          <select onchange="updateUserField('${u.user_id}','level',this.value)">
-            <option value="NONE" ${!u.level || u.level==='NONE'?'selected':''}>
-              無證照或未知
-            </option>
-            <option value="A" ${u.level==='A'?'selected':''}>A</option>
-            <option value="B" ${u.level==='B'?'selected':''}>B</option>
-            <option value="C" ${u.level==='C'?'selected':''}>C</option>
-          </select>
-        </td>
-
-        <!-- 角色 -->
-        <td>
-          <select onchange="updateUserField('${u.user_id}','role',this.value)">
-            ${renderRoleOptions(u.role)}
-          </select>
-        </td>
-
-        <!-- 狀態 -->
-        <td>
-          <select onchange="updateUserField('${u.user_id}','active',this.value)">
-            <option value="Y" ${u.active==='Y'?'selected':''}>啟用</option>
-            <option value="N" ${u.active==='N'?'selected':''}>停用</option>
-          </select>
-        </td>
-
-        <!-- 操作 -->
-        <td>
-          <button onclick="saveUser('${u.user_id}')">儲存</button>
-          ${
-            u.username === 'admin'
-              ? `<span style="margin-left:6px;color:#999;">不可刪</span>`
-              : `
-                <button
-                  style="margin-left:6px;background:#c62828;color:#fff;"
-                  onclick="deleteSingleUser('${u.user_id}','${u.username}')">
-                  刪除
-                </button>
-              `
-          }
-        </td>
-      `;
-
-      tbody.appendChild(tr);
-    });
+/* Tabs */
+function switchTab(type, btn) {
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['judge','record','admin'].forEach(t=>{
+    document.getElementById('table-'+t).classList.toggle('hidden', t!==type);
   });
 }
 
-
-/* ===== 頁面初始化 ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  loadUsers();
-});
-
-/* ===== Save One User ===== */
-
-function saveUser(userId) {
-
-  const updates = pendingUserUpdates[userId];
-  if (!updates || Object.keys(updates).length === 0) {
-    // alert('沒有變更任何資料');
-    showToast('⚠ 尚未修改任何欄位', 'warn');
-    return;
-  }
-
-  callApi(
-    {
-      action: 'updateUser',
-      user_id: userId,
-      ...updates
-    },
-    res => {
-    /*
-      if (!res || res.result !== 'ok') {
-        alert(res?.message || '更新失敗');
-        return;
-      }
-      alert('更新成功');
-    */
-      
-      if (!res || res.result !== 'ok') {
-        showToast(res?.message || '更新失敗，請稍後再試', 'error');
-        return;
-      }
-      showToast('✅ 使用者資料更新成功', 'success');
-      delete pendingUserUpdates[userId];
-      loadUsers();
-
-      console.log('API error detail =', res);
-
-    }
-  );
+/* Toast */
+function showToast(msg,type='success'){
+  const t=document.createElement('div');
+  t.className=`toast ${type}`; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.classList.add('show'),50);
+  setTimeout(()=>t.remove(),3000);
 }
-  
-/* ===== 新增使用者 ===== */
+
+/* Load & Render */
+function loadUsers(){
+  callApi({action:'getUsers'},res=>{
+    if(!res||res.result!=='ok') return showToast('讀取失敗','error');
+    allUsers=res.users||[];
+    renderLists();
+  });
+}
+
+function renderLists(){
+  const kw=document.getElementById('keyword').value.trim();
+  const onlyActive=document.getElementById('onlyActive').checked;
+
+  const bodies={
+    judge:document.getElementById('tbody-judge'),
+    record:document.getElementById('tbody-record'),
+    admin:document.getElementById('tbody-admin')
+  };
+  Object.values(bodies).forEach(b=>b.innerHTML='');
+
+  allUsers.forEach(u=>{
+    const username=u.username||'';
+    const name=u.name||'';
+    if(onlyActive && u.active!=='Y') return;
+    if(kw && !(username.includes(kw)||name.includes(kw))) return;
+
+    const roles=(u.role||'').split(',');
+
+    if (roles.includes('judge') || roles.includes('chief_judge'))
+      bodies.judge.appendChild(renderRow(u));
+
+    if (roles.includes('record') || roles.includes('record_chief'))
+      bodies.record.appendChild(renderRow(u));
+
+    if (roles.includes('admin'))
+      bodies.admin.appendChild(renderRow(u));
+  });
+}
+
+function renderRow(u){
+  const tr=document.createElement('tr');
+  const displayName=u.name||'（未填姓名）';
+  tr.innerHTML=`
+    <td>${u.username}</td>
+    <td class="col-name">
+      <input class="${u.name?'':'placeholder'}" value="${displayName}"
+        disabled onchange="updateField('${u.user_id}','name',this.value)">
+    </td>
+    <td class="col-note">
+      <input value="${u.note||''}" disabled
+        onchange="updateField('${u.user_id}','note',this.value)">
+    </td>
+    <td class="col-phone">
+      <input class="${u.phone?'':'placeholder'}"
+        value="${u.phone||'（未填電話）'}" disabled
+        onchange="updateField('${u.user_id}','phone',this.value)">
+    </td>
+    <td>
+      <input value="${u.email||''}" disabled
+        onchange="updateField('${u.user_id}','email',this.value)">
+    </td>
+    <td>
+      <div class="role-group">
+        <!-- 裁判群組 -->
+        <label>
+          <input type="radio" name="judge_${u.user_id}"
+            value="judge"
+            ${u.role.includes('judge') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','judge','chief_judge','judge')">
+          裁判
+        </label>
+    
+        <label>
+          <input type="radio" name="judge_${u.user_id}"
+            value="chief_judge"
+            ${u.role.includes('chief_judge') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','judge','chief_judge','chief_judge')">
+          裁判長
+        </label>
+    
+        <!-- 紀錄群組 -->
+        <label>
+          <input type="radio" name="record_${u.user_id}"
+            value="record"
+            ${u.role.includes('record') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','record','record_chief','record')">
+          紀錄
+        </label>
+    
+        <label>
+          <input type="radio" name="record_${u.user_id}"
+            value="record_chief"
+            ${u.role.includes('record_chief') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','record','record_chief','record_chief')">
+          紀錄長
+        </label>
+    
+        <!-- 系統管理員 -->
+        <label>
+          <input type="checkbox"
+            ${u.role.includes('admin') ? 'checked' : ''}
+            disabled
+            onchange="toggleAdmin('${u.user_id}',this.checked)">
+          管理員
+        </label>
+      </div>
+    </td>
+    <td>
+      <select class="small-select" disabled
+        onchange="updateField('${u.user_id}','level',this.value)">
+        <option value="NONE">無</option>
+        <option value="A" ${u.level==='A'?'selected':''}>A</option>
+        <option value="B" ${u.level==='B'?'selected':''}>B</option>
+        <option value="C" ${u.level==='C'?'selected':''}>C</option>
+      </select>
+    </td>
+    <td>
+      <select class="small-select" disabled
+        onchange="updateField('${u.user_id}','active',this.value)">
+        <option value="Y" ${u.active==='Y'?'selected':''}>啟用</option>
+        <option value="N" ${u.active==='N'?'selected':''}>停用</option>
+      </select>
+    </td>
+    <td>
+      <div class="action-view">
+        <button onclick="enableEdit(this)">✏️</button>
+      </div>
+      <div class="action-edit">
+        <button class="primary" onclick="saveUser('${u.user_id}')">💾</button>
+        <button onclick="cancelEdit(this)">❌</button>
+      </div>
+    </td>
+  `;
+  return tr;
+}
+
+function enableEdit(btn){
+  const tr=btn.closest('tr');
+  tr.classList.add('editing');
+  tr.querySelectorAll('input,select').forEach(el=>el.disabled=false);
+}
+function cancelEdit(btn){
+  const tr=btn.closest('tr');
+  tr.classList.remove('editing');
+  tr.querySelectorAll('input,select').forEach(el=>el.disabled=true);
+}
+
+function updateField(uid,field,val){
+  if(!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
+  pendingUserUpdates[uid][field]=val;
+}
+function saveUser(uid){
+  const data=pendingUserUpdates[uid];
+  if(!data) return showToast('尚未修改','warn');
+  callApi({action:'updateUser',user_id:uid,...data},res=>{
+    if(!res||res.result!=='ok') return showToast('更新失敗','error');
+    showToast('更新完成');
+    pendingUserUpdates[uid]=null;
+    loadUsers();
+  });
+}
+
 function createUser() {
   const username = document.getElementById('new_username').value.trim();
-  const name     = document.getElementById('new_name').value.trim();
-  const phone    = document.getElementById('new_phone').value.trim();
-  const email    = document.getElementById('new_email').value.trim();
-  const level    = document.getElementById('new_level').value;
-  const role     = document.getElementById('new_role').value;
+  if (!username) return showToast('請填寫帳號','warn');
 
-  if (!username || !name) {
-    alert('請填寫帳號與姓名');
-    return;
+  const roles = [];
+
+  // 裁判群組（2 選 1）
+  if (document.getElementById('r_judge').checked) roles.push('judge');
+  if (document.getElementById('r_chief_judge').checked) roles.push('chief_judge');
+  if (roles.includes('judge') && roles.includes('chief_judge')) {
+    return showToast('裁判 / 裁判長只能擇一','warn');
   }
 
-  callApi(
-    {
-      action: 'createUser',
-      username,
-      name,
-      phone,
-      email,
-      level,
-      role
-    },
-    res => {
-    /*
-      if (!res || res.result !== 'ok') {
-        alert(res?.message || '新增失敗');
-        return;
-      }
-      alert('新增帳號成功');
-    */
-
-      if (!res || res.result !== 'ok') {
-        showToast(res?.message || '新增帳號失敗，可能帳號重複', 'error');
-        return;
-        }
-      showToast('✅ 新增帳號成功', 'success');
-
-      document.getElementById('new_username').value = '';
-      document.getElementById('new_name').value = '';
-      document.getElementById('new_phone').value = '';
-      document.getElementById('new_email').value = '';
-
-      loadUsers();
-
-      console.log('API error detail =', res);
-
-    }
-  );
-}
-/**
-document.getElementById('btnCreateUser')
-  ?.addEventListener('click', createUser);
-*/
-  
-document.addEventListener('DOMContentLoaded', () => {
-
-  const btn = document.getElementById('btnCreateUser');
-  if (!btn) {
-    console.error('btnCreateUser not found');
-    return;
+  // 紀錄群組（2 選 1）
+  if (document.getElementById('r_record').checked) roles.push('record');
+  if (document.getElementById('r_record_chief').checked) roles.push('record_chief');
+  if (roles.includes('record') && roles.includes('record_chief')) {
+    return showToast('紀錄 / 紀錄長只能擇一','warn');
   }
 
-  btn.addEventListener('click', createUser);
-});
+  if (document.getElementById('r_admin').checked) roles.push('admin');
 
-const ROLE_LABEL = {
-  admin: '系統管理員',
-  //judge_admin: '裁判管理者',
-  //chief_judge: '裁判長',
-  //match_admin: '賽事管理者',
-  judge: '一般裁判'
-};
-
-// 先暫存 updateUserField()
-function updateUserField(userId, field, value) {
-  if (!pendingUserUpdates[userId]) {
-    pendingUserUpdates[userId] = {};
-  }
-  pendingUserUpdates[userId][field] = value;
-}
-
-function toggleAllUsers(master) {
-  document.querySelectorAll('.user-check').forEach(cb => {
-    cb.checked = master.checked;
+  callApi({
+    action: 'createUser',
+    username,
+    name: document.getElementById('new_name').value,
+    phone: document.getElementById('new_phone').value,
+    email: document.getElementById('new_email').value,
+    level: document.getElementById('new_level').value,
+    role: roles.join(','),
+    active: 'Y'
+  }, res => {
+    if (!res || res.result !== 'ok')
+      return showToast('新增失敗','error');
+    showToast('新增成功');
+    loadUsers();
   });
 }
 
-// 刪除使用者(可複選)
+
+function toggleRole(uid, role, checked) {
+  const u = allUsers.find(x => x.user_id === uid);
+  let roles = (u.role || '').split(',').filter(Boolean);
+
+  // 裁判群組互斥
+  if (role === 'judge' && checked) roles = roles.filter(r => r !== 'chief_judge');
+  if (role === 'chief_judge' && checked) roles = roles.filter(r => r !== 'judge');
+
+  // 紀錄群組互斥
+  if (role === 'record' && checked) roles = roles.filter(r => r !== 'record_chief');
+  if (role === 'record_chief' && checked) roles = roles.filter(r => r !== 'record');
+
+  if (checked && !roles.includes(role)) roles.push(role);
+  if (!checked) roles = roles.filter(r => r !== role);
+
+  const newRole = roles.join(',');
+
+  // ✅ 同步前端狀態
+  u.role = newRole;
+
+  // ✅ 丟進待儲存
+  updateField(uid,'role',newRole);
+
+  // ✅ 立刻重畫（多頁籤同步）
+  renderLists();
+}
+
+// 裁判 / 紀錄（群組互斥）
   
-function deleteSelectedUsers() {
-
-  const checked = Array.from(
-    document.querySelectorAll('.user-check:checked')
-  ).map(cb => cb.value);
-
-  if (checked.length === 0) {
-    showToast('⚠ 請先選擇要刪除的帳號', 'warn');
+function toggleRoleGroup(uid, roleA, roleB, selected) {
+  const u = allUsers.find(x => String(x.user_id) === String(uid));
+  if (!u) {
+    console.error('toggleRoleGroup: user not found', uid);
+    showToast('找不到使用者資料，請重新整理', 'error');
     return;
   }
 
-  if (!confirm(`確定要刪除 ${checked.length} 個帳號？此動作無法復原`)) {
-    return;
-  }
+  let roles = (u.role || '').split(',').filter(Boolean);
 
-  callApi(
-    {
-      action: 'deleteUsers',
-      user_ids: checked.join(','),
-      current_user_id: session.user_id   // ✅ 不能漏
-    },
-    res => {
-      if (!res || res.result !== 'ok') {
-        showToast(res?.message || '刪除失敗', 'error');
-        return;
-      }
+  // ✅ 同群組互斥（裁判 / 裁判長、紀錄 / 紀錄長）
+  roles = roles.filter(r => r !== roleA && r !== roleB);
+  roles.push(selected);
+
+  const newRole = roles.join(',');
+
+  // ✅ 同步資料層（很重要）
+  u.role = newRole;
+
+  // ✅ 標記為已修改（儲存才會有資料）
+  updateField(uid, 'role', newRole);
+
+  // ✅ 不要 renderLists()！
+}
+
+
+// 系統管理員（可並存）
   
-      showToast(res.message, 'success');
-      loadUsers();
-    }
-  );
-}
-
-// 刪除使用者(單筆)
-function deleteSingleUser(userId, username) {
-
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-
-  if (!confirm(`確定要刪除帳號「${username}」？此動作無法復原`)) {
+function toggleAdmin(uid, checked) {
+  const u = allUsers.find(x => String(x.user_id) === String(uid));
+  if (!u) {
+    showToast('找不到使用者資料', 'error');
     return;
   }
 
-  callApi(
-    {
-      action: 'deleteUsers',
-      user_ids: userId,
-      current_user_id: session.user_id
-    },
-    res => {
-      if (!res || res.result !== 'ok') {
-        showToast(res?.message || '刪除失敗', 'error');
-        return;
-      }
+  let roles = (u.role || '').split(',').filter(Boolean);
 
-      showToast(res.message || '刪除完成', 'success');
-      loadUsers();
+  // ===== 核心防呆：最後一個 admin 不可取消 =====
+  if (!checked && roles.includes('admin')) {
+    // 計算目前「啟用中的 admin 數量」
+    const activeAdminCount = allUsers.filter(x => {
+      if (x.active !== 'Y') return false;
+      const r = (x.role || '').split(',').filter(Boolean);
+      return r.includes('admin');
+    }).length;
+
+    if (activeAdminCount <= 1) {
+      showToast('至少需保留一位系統管理員', 'warn');
+      return; // ❌ 阻止取消
     }
-  );
+  }
+
+  // ===== 正常處理 =====
+  if (checked && !roles.includes('admin')) roles.push('admin');
+  if (!checked) roles = roles.filter(r => r !== 'admin');
+
+  const newRole = roles.join(',');
+
+  // 同步資料
+  u.role = newRole;
+  updateField(uid, 'role', newRole);
 }
 
-/* ===== Helpers ===== */
-function renderRoleOptions(role){
-  const roles = ['admin','match_admin','judge_admin','chief_judge','judge'];
-  return roles.map(r =>
-    `<option value="${r}" ${r === role ? 'selected' : ''}>
-      ${ROLE_LABEL[r]}
-    </option>`
-  ).join('');
-}
+
 
 function logout(){
   localStorage.clear();
   location.href='login.html';
 }
 </script>
-
 </body>
 </html>
