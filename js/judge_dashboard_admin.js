@@ -294,7 +294,8 @@ function assignJudge(judge) {
       action: 'assignJudgeToPosition_admin',
       game_id: currentAssignContext.gameId,
       role: currentAssignContext.role,
-      judge_id: judge.user_id
+      // judge_id: judge.user_id
+      judge_id: judge.judge_id   // ✅ 改成這個
     },
       res => {
         if (res && res.result === 'ok') {
