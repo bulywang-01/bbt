@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -102,6 +101,21 @@ button { padding:4px 8px; cursor:pointer; }
 
 
 <div class="main">
+
+  <hr style="margin:24px 0">
+
+    <h3>➕ 新增使用者</h3>
+    <div class="toolbar">
+      <input id="new_username" placeholder="帳號">
+      <input id="new_name" placeholder="姓名">
+      <input id="new_phone" placeholder="電話">
+      <input id="new_email" placeholder="Email">
+      <button class="primary" onclick="createUser()">新增</button>
+    </div>
+    
+    <p style="font-size:12px;color:#666">
+      新帳號預設密碼：<b>12345678</b>（首次登入需修改）
+    </p>
 
   <div class="toolbar">
     <input type="text" id="keyword" placeholder="搜尋帳號 / 姓名">
@@ -304,6 +318,53 @@ function saveUser(uid){
     loadUsers();
   });
 }
+
+function createUser(){
+  const username = document.getElementById('new_username').value.trim();
+  const name     = document.getElementById('new_name').value.trim();
+  const phone    = document.getElementById('new_phone').value.trim();
+  const email    = document.getElementById('new_email').value.trim();
+
+  if (!username) {
+    showToast('請填寫帳號','warn');
+    return;
+  }
+
+  callApi({
+    action:'createUser',
+    username,
+    name,
+    phone,
+    email,
+    role:'judge',          // ✅ 預設給裁判（符合你實務）
+    level:'NONE',
+    active:'Y'
+  }, res => {
+    if (!res || res.result !== 'ok') {
+      showToast(res?.message || '新增失敗','error');
+      return;
+    }
+    showToast('新增成功');
+    loadUsers();
+  });
+}
+
+function toggleRole(uid, role, checked) {
+  const u = allUsers.find(x => x.user_id === uid);
+  let roles = (u.role || '').split(',').filter(Boolean);
+
+  if (checked && !roles.includes(role)) roles.push(role);
+  if (!checked) roles = roles.filter(r => r !== role);
+
+  const newRole = roles.join(',');
+
+  // ✅ 同步更新前端資料來源
+  u.role = newRole;
+
+  // ✅ 丟進待儲存佇列
+  updateField(uid, 'role', newRole);
+}
+
 function logout(){
   localStorage.clear();
   location.href='login.html';
