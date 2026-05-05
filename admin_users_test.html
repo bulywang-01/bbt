@@ -110,6 +110,20 @@ button { padding:4px 8px; cursor:pointer; }
       <input id="new_name" placeholder="姓名">
       <input id="new_phone" placeholder="電話">
       <input id="new_email" placeholder="Email">
+    
+      <select id="new_level">
+        <option value="NONE">裁判證：無</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+      </select>
+    
+      <label><input type="checkbox" id="r_judge"> 裁判</label>
+      <label><input type="checkbox" id="r_chief_judge"> 裁判長</label>
+      <label><input type="checkbox" id="r_record"> 紀錄</label>
+      <label><input type="checkbox" id="r_record_chief"> 紀錄長</label>
+      <label><input type="checkbox" id="r_admin"> 管理員</label>
+    
       <button class="primary" onclick="createUser()">新增</button>
     </div>
     
@@ -319,50 +333,71 @@ function saveUser(uid){
   });
 }
 
-function createUser(){
+function createUser() {
   const username = document.getElementById('new_username').value.trim();
-  const name     = document.getElementById('new_name').value.trim();
-  const phone    = document.getElementById('new_phone').value.trim();
-  const email    = document.getElementById('new_email').value.trim();
+  if (!username) return showToast('請填寫帳號','warn');
 
-  if (!username) {
-    showToast('請填寫帳號','warn');
-    return;
+  const roles = [];
+
+  // 裁判群組（2 選 1）
+  if (document.getElementById('r_judge').checked) roles.push('judge');
+  if (document.getElementById('r_chief_judge').checked) roles.push('chief_judge');
+  if (roles.includes('judge') && roles.includes('chief_judge')) {
+    return showToast('裁判 / 裁判長只能擇一','warn');
   }
 
+  // 紀錄群組（2 選 1）
+  if (document.getElementById('r_record').checked) roles.push('record');
+  if (document.getElementById('r_record_chief').checked) roles.push('record_chief');
+  if (roles.includes('record') && roles.includes('record_chief')) {
+    return showToast('紀錄 / 紀錄長只能擇一','warn');
+  }
+
+  if (document.getElementById('r_admin').checked) roles.push('admin');
+
   callApi({
-    action:'createUser',
+    action: 'createUser',
     username,
-    name,
-    phone,
-    email,
-    role:'judge',          // ✅ 預設給裁判（符合你實務）
-    level:'NONE',
-    active:'Y'
+    name: document.getElementById('new_name').value,
+    phone: document.getElementById('new_phone').value,
+    email: document.getElementById('new_email').value,
+    level: document.getElementById('new_level').value,
+    role: roles.join(','),
+    active: 'Y'
   }, res => {
-    if (!res || res.result !== 'ok') {
-      showToast(res?.message || '新增失敗','error');
-      return;
-    }
+    if (!res || res.result !== 'ok')
+      return showToast('新增失敗','error');
     showToast('新增成功');
     loadUsers();
   });
 }
 
+
 function toggleRole(uid, role, checked) {
   const u = allUsers.find(x => x.user_id === uid);
   let roles = (u.role || '').split(',').filter(Boolean);
+
+  // 裁判群組互斥
+  if (role === 'judge' && checked) roles = roles.filter(r => r !== 'chief_judge');
+  if (role === 'chief_judge' && checked) roles = roles.filter(r => r !== 'judge');
+
+  // 紀錄群組互斥
+  if (role === 'record' && checked) roles = roles.filter(r => r !== 'record_chief');
+  if (role === 'record_chief' && checked) roles = roles.filter(r => r !== 'record');
 
   if (checked && !roles.includes(role)) roles.push(role);
   if (!checked) roles = roles.filter(r => r !== role);
 
   const newRole = roles.join(',');
 
-  // ✅ 同步更新前端資料來源
+  // ✅ 同步前端狀態
   u.role = newRole;
 
-  // ✅ 丟進待儲存佇列
-  updateField(uid, 'role', newRole);
+  // ✅ 丟進待儲存
+  updateField(uid,'role',newRole);
+
+  // ✅ 立刻重畫（多頁籤同步）
+  renderLists();
 }
 
 function logout(){
