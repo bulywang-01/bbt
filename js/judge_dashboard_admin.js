@@ -229,21 +229,39 @@ window.openAssignJudge = function (gameId, role) {
   currentAssignContext = { gameId, role };
 
   const modal = document.getElementById('judgeModal');
-  const list = document.getElementById('judgeList');
+  const list  = document.getElementById('judgeList');
   const title = document.getElementById('judgeModalTitle');
 
   title.textContent = `指派 ${ROLE_LABEL[role]}`;
-  list.innerHTML = '';
+  list.innerHTML = '載入中...';
 
-  allJudges.forEach(j => {
-    const card = document.createElement('div');
-    card.className = 'judge-card';
-    card.textContent = j.name;
-    card.onclick = () => assignJudge(j);
-    list.appendChild(card);
-  });
+  // ✅ 改成用後端算好的名單
+  callApi(
+    {
+      action: 'getAssignableJudges_admin',
+      game_id: gameId,
+      role: role
+    },
+    res => {
+      list.innerHTML = '';
 
-  modal.classList.remove('hidden');
+      if (!res || res.result !== 'ok' || !res.judges || res.judges.length === 0) {
+        list.innerHTML = `<div style="color:#999;text-align:center;">目前無可指派裁判</div>`;
+        modal.classList.remove('hidden');
+        return;
+      }
+
+      res.judges.forEach(j => {
+        const card = document.createElement('div');
+        card.className = 'judge-card';
+        card.textContent = j.name;
+        card.onclick = () => assignJudge(j);
+        list.appendChild(card);
+      });
+
+      modal.classList.remove('hidden');
+    }
+  );
 };
 
 /*
