@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -5,157 +6,84 @@
 <title>使用者帳號管理</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system;
-  background: #f5f6f8;
-}
+body { margin:0; font-family:system-ui,-apple-system; background:#f5f6f8; }
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 20px; background:#fff; border-bottom:1px solid #ddd;
 }
-.nav a {
-  margin-right: 16px;
-  text-decoration: none;
-  color: #0066cc;
-}
-.main {
-  padding: 20px;
-}
+.nav a { margin-right:16px; text-decoration:none; color:#0066cc; }
+.main { padding:20px; }
 
-/* ===== Toolbar ===== */
+/* Toolbar */
 .toolbar {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 12px;
+  display:flex; gap:12px; align-items:center; margin-bottom:12px;
 }
-.toolbar input[type="text"] {
-  padding: 6px 8px;
-  width: 220px;
-}
+.toolbar input[type="text"] { padding:6px 8px; width:220px; }
 
-/* ===== Tabs ===== */
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
+/* Tabs */
+.tabs { display:flex; gap:8px; margin-bottom:12px; }
 .tab {
-  padding: 6px 14px;
-  border-radius: 16px;
-  border: 1px solid #ccc;
-  background: #f3f4f6;
-  cursor: pointer;
+  padding:6px 14px; border-radius:16px;
+  border:1px solid #ccc; background:#f3f4f6; cursor:pointer;
 }
-.tab.active {
-  background: #2c7be5;
-  color: #fff;
-  border-color: #2c7be5;
-}
-.hidden { display: none; }
+.tab.active { background:#2c7be5; color:#fff; border-color:#2c7be5; }
+.hidden { display:none; }
 
-/* ===== Table ===== */
+/* Table */
 .user-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
+  width:100%; border-collapse:collapse; background:#fff;
 }
-.user-table th,
-.user-table td {
-  border: 1px solid #ddd;
-  padding: 6px;
-  text-align: center;
-  font-size: 14px;
+.user-table th, .user-table td {
+  border:1px solid #ddd; padding:6px; text-align:center; font-size:14px;
 }
-.user-table th {
-  background: #f1f5f9;
+.user-table th { background:#f1f5f9; }
+
+.user-table input, .user-table select {
+  padding:4px; font-size:13px; box-sizing:border-box;
 }
-.user-table input,
-.user-table select {
-  box-sizing: border-box;
-  padding: 4px;
-  font-size: 13px;
-}
-.user-table input:disabled,
-.user-table select:disabled {
-  background: #f5f5f5;
+.user-table input:disabled, .user-table select:disabled {
+  background:#f5f5f5;
 }
 
-/* 欄位尺寸 */
-.col-name input { width: 120px; }
-.col-phone input { width: 120px; }
-.col-note input { width: 60px; text-align: center; }
+/* Column sizes */
+.col-name input { width:120px; }
+.col-phone input { width:120px; }
+.col-note input { width:60px; text-align:center; }
 
-/* 視覺防呆提示 */
-.placeholder {
-  color: #999;
-  font-style: italic;
-}
+/* Placeholder style */
+.placeholder { color:#999; font-style:italic; }
 
-/* 身份橫向 */
+/* Roles */
 .role-group {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  white-space: nowrap;
+  display:flex; gap:8px; justify-content:center; white-space:nowrap;
 }
 .role-group label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
+  display:flex; align-items:center; gap:4px; font-size:13px;
 }
 
-/* 小選單 */
-.small-select {
-  width: 70px;
-  font-size: 13px;
-  text-align: center;
-}
+/* Small selects */
+.small-select { width:70px; font-size:13px; text-align:center; }
 
-/* 操作欄 */
-.action-view button { margin: 0 2px; }
-.action-edit { display: none; }
-tr.editing .action-view { display: none; }
-tr.editing .action-edit { display: inline-block; }
+/* Action column */
+.action-edit { display:none; }
+tr.editing .action-view { display:none; }
+tr.editing .action-edit { display:inline-block; }
 
-button {
-  padding: 4px 8px;
-  cursor: pointer;
-}
-.primary {
-  background: #2c7be5;
-  color: #fff;
-  border: none;
-}
-.danger {
-  background: #c62828;
-  color: #fff;
-  border: none;
-}
+button { padding:4px 8px; cursor:pointer; }
+.primary { background:#2c7be5; color:#fff; border:none; }
+.danger { background:#c62828; color:#fff; border:none; }
 
 /* Toast */
 .toast {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 14px 20px;
-  border-radius: 8px;
-  color: #fff;
-  opacity: 0;
-  transition: .3s;
-  z-index: 9999;
+  position:fixed; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  padding:14px 20px; border-radius:8px; color:#fff;
+  opacity:0; transition:.3s; z-index:9999;
 }
-.toast.show { opacity: 1; }
-.toast.success { background: #2e7d32; }
-.toast.error { background: #c62828; }
-.toast.warn { background: #ed6c02; }
+.toast.show { opacity:1; }
+.toast.success { background:#2e7d32; }
+.toast.error { background:#c62828; }
+.toast.warn { background:#ed6c02; }
 </style>
 </head>
 
@@ -172,6 +100,7 @@ button {
   </div>
 </div>
 
+
 <div class="main">
 
   <div class="toolbar">
@@ -179,54 +108,55 @@ button {
     <label><input type="checkbox" id="onlyActive"> 只顯示啟用帳號</label>
   </div>
 
+  <!-- Tabs -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('judge',this)">⚖️ 裁判</button>
     <button class="tab" onclick="switchTab('record',this)">📝 紀錄</button>
+    <button class="tab" onclick="switchTab('admin',this)">🛠 系統管理員</button>
   </div>
 
-  <!-- 裁判 -->
+  <!-- Tables -->
   <table class="user-table" id="table-judge">
     <thead>
       <tr>
-        <th>帳號</th>
-        <th>姓名</th>
-        <th>背號</th>
-        <th>電話</th>
-        <th>Email</th>
-        <th>身份</th>
-        <th>裁判等級</th>
-        <th>狀態</th>
-        <th>操作</th>
+        <th>帳號</th><th>姓名</th><th>背號</th><th>電話</th>
+        <th>Email</th><th>身份</th><th>裁判等級</th>
+        <th>狀態</th><th>操作</th>
       </tr>
     </thead>
     <tbody id="tbody-judge"></tbody>
   </table>
 
-  <!-- 紀錄 -->
   <table class="user-table hidden" id="table-record">
     <thead>
       <tr>
-        <th>帳號</th>
-        <th>姓名</th>
-        <th>背號</th>
-        <th>電話</th>
-        <th>Email</th>
-        <th>身份</th>
-        <th>裁判等級</th>
-        <th>狀態</th>
-        <th>操作</th>
+        <th>帳號</th><th>姓名</th><th>背號</th><th>電話</th>
+        <th>Email</th><th>身份</th><th>裁判等級</th>
+        <th>狀態</th><th>操作</th>
       </tr>
     </thead>
     <tbody id="tbody-record"></tbody>
   </table>
 
+  <table class="user-table hidden" id="table-admin">
+    <thead>
+      <tr>
+        <th>帳號</th><th>姓名</th><th>背號</th><th>電話</th>
+        <th>Email</th><th>身份</th><th>裁判等級</th>
+        <th>狀態</th><th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-admin"></tbody>
+  </table>
+
 </div>
 
+
 <script src="js/config.js"></script>
+
 <script>
 let allUsers = [];
 let pendingUserUpdates = {};
-let currentTab = 'judge';
 
 document.addEventListener('DOMContentLoaded', () => {
   const raw = localStorage.getItem('session_user');
@@ -238,94 +168,88 @@ document.addEventListener('DOMContentLoaded', () => {
   loadUsers();
 });
 
+/* Tabs */
 function switchTab(type, btn) {
-  currentTab = type;
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('table-judge').classList.toggle('hidden', type !== 'judge');
-  document.getElementById('table-record').classList.toggle('hidden', type !== 'record');
+  ['judge','record','admin'].forEach(t=>{
+    document.getElementById('table-'+t).classList.toggle('hidden', t!==type);
+  });
 }
 
-function showToast(msg, type='success') {
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.textContent = msg;
+/* Toast */
+function showToast(msg,type='success'){
+  const t=document.createElement('div');
+  t.className=`toast ${type}`; t.textContent=msg;
   document.body.appendChild(t);
-  setTimeout(() => t.classList.add('show'), 50);
-  setTimeout(() => t.remove(), 3000);
+  setTimeout(()=>t.classList.add('show'),50);
+  setTimeout(()=>t.remove(),3000);
 }
 
-function loadUsers() {
-  callApi({ action:'getUsers' }, res => {
-    if (!res || res.result !== 'ok') {
-      showToast('讀取失敗','error');
-      return;
-    }
-    allUsers = res.users || [];
+/* Load & Render */
+function loadUsers(){
+  callApi({action:'getUsers'},res=>{
+    if(!res||res.result!=='ok') return showToast('讀取失敗','error');
+    allUsers=res.users||[];
     renderLists();
   });
 }
 
-function renderLists() {
-  const kw = document.getElementById('keyword').value.trim();
-  const onlyActive = document.getElementById('onlyActive').checked;
-  const jb = document.getElementById('tbody-judge');
-  const rb = document.getElementById('tbody-record');
-  jb.innerHTML = '';
-  rb.innerHTML = '';
+function renderLists(){
+  const kw=document.getElementById('keyword').value.trim();
+  const onlyActive=document.getElementById('onlyActive').checked;
 
-  allUsers.forEach(u => {
-    const username = u.username || '';
-    const name = u.name || '';
+  const bodies={
+    judge:document.getElementById('tbody-judge'),
+    record:document.getElementById('tbody-record'),
+    admin:document.getElementById('tbody-admin')
+  };
+  Object.values(bodies).forEach(b=>b.innerHTML='');
 
-    if (onlyActive && u.active !== 'Y') return;
-    if (kw && !(username.includes(kw) || name.includes(kw))) return;
+  allUsers.forEach(u=>{
+    const username=u.username||'';
+    const name=u.name||'';
+    if(onlyActive && u.active!=='Y') return;
+    if(kw && !(username.includes(kw)||name.includes(kw))) return;
 
-    const roles = (u.role || '').split(',');
-    if (roles.includes('judge')) jb.appendChild(renderRow(u));
-    if (roles.includes('record')) rb.appendChild(renderRow(u));
+    const roles=(u.role||'').split(',');
+
+    if (roles.includes('judge') || roles.includes('chief_judge'))
+      bodies.judge.appendChild(renderRow(u));
+
+    if (roles.includes('record') || roles.includes('record_chief'))
+      bodies.record.appendChild(renderRow(u));
+
+    if (roles.includes('admin'))
+      bodies.admin.appendChild(renderRow(u));
   });
 }
 
-function renderRow(u) {
-  const tr = document.createElement('tr');
-  const displayName = u.name || '（未填姓名）';
-  tr.innerHTML = `
+function renderRow(u){
+  const tr=document.createElement('tr');
+  const displayName=u.name||'（未填姓名）';
+  tr.innerHTML=`
     <td>${u.username}</td>
-
     <td class="col-name">
-      <input class="${u.name ? '' : 'placeholder'}"
-        value="${displayName}" disabled
-        onchange="updateField('${u.user_id}','name',this.value)">
+      <input class="${u.name?'':'placeholder'}" value="${displayName}"
+        disabled onchange="updateField('${u.user_id}','name',this.value)">
     </td>
-
     <td class="col-note">
-      <input value="${u.note || ''}" disabled
+      <input value="${u.note||''}" disabled
         onchange="updateField('${u.user_id}','note',this.value)">
     </td>
-
     <td class="col-phone">
-      <input class="${u.phone ? '' : 'placeholder'}"
-        value="${u.phone || '（未填電話）'}" disabled
+      <input class="${u.phone?'':'placeholder'}"
+        value="${u.phone||'（未填電話）'}" disabled
         onchange="updateField('${u.user_id}','phone',this.value)">
     </td>
-
     <td>
-      <input value="${u.email || ''}" disabled
+      <input value="${u.email||''}" disabled
         onchange="updateField('${u.user_id}','email',this.value)">
     </td>
-
     <td>
-      <div class="role-group">
-        <label><input type="checkbox" disabled ${u.role.includes('judge')?'checked':''}
-          onchange="toggleRole('${u.user_id}','judge',this.checked)">裁判</label>
-        <label><input type="checkbox" disabled ${u.role.includes('record')?'checked':''}
-          onchange="toggleRole('${u.user_id}','record',this.checked)">紀錄</label>
-        <label><input type="checkbox" disabled ${u.role.includes('admin')?'checked':''}
-          onchange="toggleRole('${u.user_id}','admin',this.checked)">管理</label>
-      </div>
+      <div class="role-group">${u.role}</div>
     </td>
-
     <td>
       <select class="small-select" disabled
         onchange="updateField('${u.user_id}','level',this.value)">
@@ -335,7 +259,6 @@ function renderRow(u) {
         <option value="C" ${u.level==='C'?'selected':''}>C</option>
       </select>
     </td>
-
     <td>
       <select class="small-select" disabled
         onchange="updateField('${u.user_id}','active',this.value)">
@@ -343,7 +266,6 @@ function renderRow(u) {
         <option value="N" ${u.active==='N'?'selected':''}>停用</option>
       </select>
     </td>
-
     <td>
       <div class="action-view">
         <button onclick="enableEdit(this)">✏️</button>
@@ -351,63 +273,40 @@ function renderRow(u) {
       <div class="action-edit">
         <button class="primary" onclick="saveUser('${u.user_id}')">💾</button>
         <button onclick="cancelEdit(this)">❌</button>
-        ${u.username !== 'admin'
-          ? `<button class="danger" onclick="deleteSingleUser('${u.user_id}','${u.username}')">🗑</button>`
-          : ''}
       </div>
     </td>
   `;
   return tr;
 }
 
-function enableEdit(btn) {
-  const tr = btn.closest('tr');
+function enableEdit(btn){
+  const tr=btn.closest('tr');
   tr.classList.add('editing');
-  tr.querySelectorAll('input,select').forEach(el => el.disabled = false);
+  tr.querySelectorAll('input,select').forEach(el=>el.disabled=false);
 }
-function cancelEdit(btn) {
-  const tr = btn.closest('tr');
+function cancelEdit(btn){
+  const tr=btn.closest('tr');
   tr.classList.remove('editing');
-  tr.querySelectorAll('input,select').forEach(el => el.disabled = true);
+  tr.querySelectorAll('input,select').forEach(el=>el.disabled=true);
 }
 
-function updateField(uid, field, val) {
-  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
-  pendingUserUpdates[uid][field] = val;
+function updateField(uid,field,val){
+  if(!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
+  pendingUserUpdates[uid][field]=val;
 }
-
-function toggleRole(uid, role, checked) {
-  const u = allUsers.find(x => x.user_id === uid);
-  let roles = (u.role || '').split(',').filter(Boolean);
-  if (checked && !roles.includes(role)) roles.push(role);
-  if (!checked) roles = roles.filter(r => r !== role);
-  updateField(uid, 'role', roles.join(','));
-}
-
-function saveUser(uid) {
-  const data = pendingUserUpdates[uid];
-  if (!data) return showToast('尚未修改','warn');
-  callApi({ action:'updateUser', user_id:uid, ...data }, res => {
-    if (!res || res.result !== 'ok') return showToast('更新失敗','error');
+function saveUser(uid){
+  const data=pendingUserUpdates[uid];
+  if(!data) return showToast('尚未修改','warn');
+  callApi({action:'updateUser',user_id:uid,...data},res=>{
+    if(!res||res.result!=='ok') return showToast('更新失敗','error');
     showToast('更新完成');
-    pendingUserUpdates[uid] = null;
+    pendingUserUpdates[uid]=null;
     loadUsers();
   });
 }
-
-function deleteSingleUser(uid, name) {
-  if (!confirm(`確定刪除 ${name}？`)) return;
-  callApi({ action:'deleteUsers', user_ids:uid }, res => {
-    if (res.result === 'ok') {
-      showToast('刪除完成');
-      loadUsers();
-    }
-  });
-}
-
-function logout() {
+function logout(){
   localStorage.clear();
-  location.href = 'login.html';
+  location.href='login.html';
 }
 </script>
 </body>
