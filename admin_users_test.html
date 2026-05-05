@@ -86,12 +86,18 @@ body {
   background: #f5f5f5;
 }
 
-/* ===== 欄位尺寸 ===== */
+/* 欄位尺寸 */
 .col-name input { width: 120px; }
 .col-phone input { width: 120px; }
 .col-note input { width: 60px; text-align: center; }
 
-/* ===== 身份橫向 ===== */
+/* 視覺防呆提示 */
+.placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* 身份橫向 */
 .role-group {
   display: flex;
   gap: 8px;
@@ -105,28 +111,19 @@ body {
   font-size: 13px;
 }
 
-/* ===== 小型選單 ===== */
+/* 小選單 */
 .small-select {
   width: 70px;
   font-size: 13px;
   text-align: center;
 }
 
-/* ===== 操作欄 ===== */
-.action-view button {
-  margin: 0 2px;
-}
-.action-edit {
-  display: none;
-}
-tr.editing .action-view {
-  display: none;
-}
-tr.editing .action-edit {
-  display: inline-block;
-}
+/* 操作欄 */
+.action-view button { margin: 0 2px; }
+.action-edit { display: none; }
+tr.editing .action-view { display: none; }
+tr.editing .action-edit { display: inline-block; }
 
-/* ===== Buttons ===== */
 button {
   padding: 4px 8px;
   cursor: pointer;
@@ -142,7 +139,7 @@ button {
   border: none;
 }
 
-/* ===== Toast ===== */
+/* Toast */
 .toast {
   position: fixed;
   top: 50%;
@@ -177,15 +174,11 @@ button {
 
 <div class="main">
 
-  <!-- Toolbar -->
   <div class="toolbar">
     <input type="text" id="keyword" placeholder="搜尋帳號 / 姓名">
-    <label>
-      <input type="checkbox" id="onlyActive"> 只顯示啟用帳號
-    </label>
+    <label><input type="checkbox" id="onlyActive"> 只顯示啟用帳號</label>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
     <button class="tab active" onclick="switchTab('judge',this)">⚖️ 裁判</button>
     <button class="tab" onclick="switchTab('record',this)">📝 紀錄</button>
@@ -239,14 +232,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const raw = localStorage.getItem('session_user');
   if (!raw) return location.href = 'login.html';
   const session = JSON.parse(raw);
-  const nameEl = document.getElementById('u_name');
-  if (nameEl) nameEl.textContent = session.name || '';
+  document.getElementById('u_name').textContent = session.name || '';
   document.getElementById('keyword').addEventListener('input', renderLists);
   document.getElementById('onlyActive').addEventListener('change', renderLists);
   loadUsers();
 });
 
-/* ===== Tabs ===== */
 function switchTab(type, btn) {
   currentTab = type;
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
@@ -255,8 +246,7 @@ function switchTab(type, btn) {
   document.getElementById('table-record').classList.toggle('hidden', type !== 'record');
 }
 
-/* ===== Toast ===== */
-function showToast(msg, type = 'success') {
+function showToast(msg, type='success') {
   const t = document.createElement('div');
   t.className = `toast ${type}`;
   t.textContent = msg;
@@ -265,11 +255,10 @@ function showToast(msg, type = 'success') {
   setTimeout(() => t.remove(), 3000);
 }
 
-/* ===== Load ===== */
 function loadUsers() {
-  callApi({ action: 'getUsers' }, res => {
+  callApi({ action:'getUsers' }, res => {
     if (!res || res.result !== 'ok') {
-      showToast('讀取失敗', 'error');
+      showToast('讀取失敗','error');
       return;
     }
     allUsers = res.users || [];
@@ -277,7 +266,6 @@ function loadUsers() {
   });
 }
 
-/* ===== Render ===== */
 function renderLists() {
   const kw = document.getElementById('keyword').value.trim();
   const onlyActive = document.getElementById('onlyActive').checked;
@@ -287,8 +275,12 @@ function renderLists() {
   rb.innerHTML = '';
 
   allUsers.forEach(u => {
+    const username = u.username || '';
+    const name = u.name || '';
+
     if (onlyActive && u.active !== 'Y') return;
-    if (kw && !(u.username.includes(kw) || u.name.includes(kw))) return;
+    if (kw && !(username.includes(kw) || name.includes(kw))) return;
+
     const roles = (u.role || '').split(',');
     if (roles.includes('judge')) jb.appendChild(renderRow(u));
     if (roles.includes('record')) rb.appendChild(renderRow(u));
@@ -297,11 +289,13 @@ function renderLists() {
 
 function renderRow(u) {
   const tr = document.createElement('tr');
+  const displayName = u.name || '（未填姓名）';
   tr.innerHTML = `
     <td>${u.username}</td>
 
     <td class="col-name">
-      <input value="${u.name || ''}" disabled
+      <input class="${u.name ? '' : 'placeholder'}"
+        value="${displayName}" disabled
         onchange="updateField('${u.user_id}','name',this.value)">
     </td>
 
@@ -311,7 +305,8 @@ function renderRow(u) {
     </td>
 
     <td class="col-phone">
-      <input value="${u.phone || ''}" disabled
+      <input class="${u.phone ? '' : 'placeholder'}"
+        value="${u.phone || '（未填電話）'}" disabled
         onchange="updateField('${u.user_id}','phone',this.value)">
     </td>
 
@@ -322,14 +317,11 @@ function renderRow(u) {
 
     <td>
       <div class="role-group">
-        <label><input type="checkbox" disabled
-          ${u.role.includes('judge') ? 'checked' : ''}
+        <label><input type="checkbox" disabled ${u.role.includes('judge')?'checked':''}
           onchange="toggleRole('${u.user_id}','judge',this.checked)">裁判</label>
-        <label><input type="checkbox" disabled
-          ${u.role.includes('record') ? 'checked' : ''}
+        <label><input type="checkbox" disabled ${u.role.includes('record')?'checked':''}
           onchange="toggleRole('${u.user_id}','record',this.checked)">紀錄</label>
-        <label><input type="checkbox" disabled
-          ${u.role.includes('admin') ? 'checked' : ''}
+        <label><input type="checkbox" disabled ${u.role.includes('admin')?'checked':''}
           onchange="toggleRole('${u.user_id}','admin',this.checked)">管理</label>
       </div>
     </td>
@@ -357,7 +349,7 @@ function renderRow(u) {
         <button onclick="enableEdit(this)">✏️</button>
       </div>
       <div class="action-edit">
-        <button class="primary" onclick="saveUser('${u.user_id}',this)">💾</button>
+        <button class="primary" onclick="saveUser('${u.user_id}')">💾</button>
         <button onclick="cancelEdit(this)">❌</button>
         ${u.username !== 'admin'
           ? `<button class="danger" onclick="deleteSingleUser('${u.user_id}','${u.username}')">🗑</button>`
@@ -368,7 +360,6 @@ function renderRow(u) {
   return tr;
 }
 
-/* ===== Edit ===== */
 function enableEdit(btn) {
   const tr = btn.closest('tr');
   tr.classList.add('editing');
@@ -380,11 +371,11 @@ function cancelEdit(btn) {
   tr.querySelectorAll('input,select').forEach(el => el.disabled = true);
 }
 
-/* ===== Update ===== */
 function updateField(uid, field, val) {
   if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
   pendingUserUpdates[uid][field] = val;
 }
+
 function toggleRole(uid, role, checked) {
   const u = allUsers.find(x => x.user_id === uid);
   let roles = (u.role || '').split(',').filter(Boolean);
@@ -392,28 +383,28 @@ function toggleRole(uid, role, checked) {
   if (!checked) roles = roles.filter(r => r !== role);
   updateField(uid, 'role', roles.join(','));
 }
+
 function saveUser(uid) {
   const data = pendingUserUpdates[uid];
-  if (!data) return showToast('尚未修改', 'warn');
-  callApi({ action: 'updateUser', user_id: uid, ...data }, res => {
-    if (!res || res.result !== 'ok')
-      return showToast('更新失敗', 'error');
+  if (!data) return showToast('尚未修改','warn');
+  callApi({ action:'updateUser', user_id:uid, ...data }, res => {
+    if (!res || res.result !== 'ok') return showToast('更新失敗','error');
     showToast('更新完成');
     pendingUserUpdates[uid] = null;
     loadUsers();
   });
 }
 
-/* ===== Delete / Logout ===== */
 function deleteSingleUser(uid, name) {
   if (!confirm(`確定刪除 ${name}？`)) return;
-  callApi({ action: 'deleteUsers', user_ids: uid }, res => {
+  callApi({ action:'deleteUsers', user_ids:uid }, res => {
     if (res.result === 'ok') {
       showToast('刪除完成');
       loadUsers();
     }
   });
 }
+
 function logout() {
   localStorage.clear();
   location.href = 'login.html';
