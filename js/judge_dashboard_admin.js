@@ -298,12 +298,16 @@ function assignJudge(judge) {
       judge_id: judge.judge_id   // ✅ 改成這個
     },
       res => {
-        if (res && res.result === 'ok') {
-          alert('✅ 指派成功');          // ✅ 用最直覺方式
-          closeJudgeModal();
-          loadGames();
-        } else {
-          alert('❌ 指派失敗：' + (res?.message || '未知錯誤'));
+          if (res && res.result === 'ok') {
+            alert('✅ 指派成功');
+            closeJudgeModal();
+            loadGames();
+            return; // ✅ 非常重要：直接結束
+          }
+          
+          // 只有「真的有 error 結果」才顯示失敗
+          if (res && res.result === 'error') {
+            alert(`❌ 指派失敗：${res.message || '未知錯誤'}`);
           }
         }
     );
