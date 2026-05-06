@@ -157,20 +157,22 @@ let currentTab = 'judge';  // ✅ 預設在裁判頁
 // ===== 身份顯示小行 =====
 function renderRoleTextCN(roleStr) {
   const map = {
-    .split(',')    judge: '裁判',
-    .filter(Boolean)
-    .map(r => map[r] || r)
-    .join('、');
-}
-  
-  function showToast(msg){ alert(msg); }
+    judge: '裁判',
     chief_judge: '裁判長',
     record: '紀錄',
     record_chief: '紀錄長',
     admin: '系統管理員'
   };
-  return (roleStr || '')
 
+  return (roleStr || '')
+    .split(',')
+    .map(r => r.trim())
+    .filter(Boolean)
+    .map(r => map[r] || r)
+    .join('、');
+}
+  
+function showToast(msg){ alert(msg); }
 
 function switchTab(type, btn){
   currentTab = type; // ✅ 補這行
