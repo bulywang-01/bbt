@@ -416,14 +416,15 @@ function renderAccountList(){
     tr.innerHTML=`
 <td>${u.username}</td>
 <td style="text-align:center;">
-  <label style="cursor:pointer;">
-    <input
-      type="checkbox"
-      ${u.active ? 'checked' : ''}
-      onchange="toggleActive('${u.user_id}', this.checked)"
-    >
-    ${u.active ? '啟用' : '停用'}
-  </label>
+    <label style="cursor:pointer;">
+      <input
+        type="checkbox"
+        ${u.active ? 'checked' : ''}
+        onchange="toggleActive('${u.user_id}', this.checked)"
+      >
+      ${u.active ? '啟用' : '停用'}
+      <span style="font-size:12px;color:#888;">（即時生效）</span>
+    </label>
 </td>
 <td>
   <input
