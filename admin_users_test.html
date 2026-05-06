@@ -267,11 +267,19 @@ function switchTab(type, btn) {
    ===================================================== */
 function loadUsers() {
   callApi({ action: 'getUsers' }, res => {
-    allUsers = res.data.map(u => {
-      // ✅ 確保角色不被吃掉
+
+    if (!res || res.result !== 'ok' || !Array.isArray(res.users)) {
+      showToast('讀取使用者資料失敗', 'error');
+      allUsers = [];
+      renderLists();
+      return;
+    }
+
+    allUsers = res.users.map(u => {
+      // ✅ 確保 role 一定是字串
       if (!u.role) u.role = '';
 
-      // ✅ 前端才有的紀錄證照，補預設
+      // ✅ 補前端用的紀錄證照（後端暫時沒有）
       if (!u.record_level) u.record_level = 'N';
 
       return u;
