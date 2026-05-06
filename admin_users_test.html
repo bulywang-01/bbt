@@ -300,6 +300,11 @@ function saveUser(uid){
   });
 }
 
+function markFieldChanged(uid, field, value) {
+  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
+  pendingUserUpdates[uid][field] = value;
+}
+  
 // JS 防呆 + 組 role 字串
 function markRoleChanged(uid) {
   const row = document.querySelector(`tr[data-uid="${uid}"]`);
