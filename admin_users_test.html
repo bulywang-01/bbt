@@ -148,7 +148,7 @@ button {
 <tbody id="tbody-judge"></tbody>
 </table>
 
-<table class="user-table hidden" id="table-record">
+<table class="hidden" id="table-record">
 <thead>
 <tr>
   <th>帳號</th>
@@ -166,7 +166,7 @@ button {
 <tbody id="tbody-record"></tbody>
 </table>
 
-<table class="user-table hidden" id="table-admin">
+<table class="hidden" id="table-admin">
 <thead>
 <tr>
   <th>帳號</th>
@@ -238,29 +238,18 @@ document.addEventListener('DOMContentLoaded', () => {
    Tabs
    ===================================================== */
 function switchTab(type, btn) {
-
-  // 🔒 若有未儲存變更，先提醒（第 4 項）
-  if (hasUnsavedChanges()) {
-    if (!confirm('尚未儲存修改，確定要切換頁籤？')) {
-      return;
-    }
-  }
-
-  // 記住目前頁籤（給第 5 項使用）
-  currentTab = type;
-
-  // 切換 active 樣式
-  document.querySelectorAll('.tab')
-    .forEach(b => b.classList.remove('active'));
+  // 切 tab 樣式
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 
-  // 顯示對應 table
+  // ✅ 真正切 table
   ['judge', 'record', 'admin'].forEach(t => {
     document
-      .getElementById('table-' + t)
+      .getElementById(`table-${t}`)
       .classList.toggle('hidden', t !== type);
   });
 }
+
 
 /* =====================================================
    Load users
@@ -349,17 +338,17 @@ function renderEditableRow(u) {
     <td>
         <input type="text"
         value="${u.note || ''}"
-        onchange="markFieldChanged('${u.user_id}', 'note', this.value)">
+        onchange="markFieldChanged('${u.user_id}', 'note', this.value)" disabled>
     </td>
     <td>
         <input type="text"
         value="${u.phone || ''}"
-        onchange="markFieldChanged('${u.user_id}', 'phone', this.value)">
+        onchange="markFieldChanged('${u.user_id}', 'phone', this.value)" disabled>
     </td>
     <td>
         <input type="text"
         value="${u.email || ''}"
-        onchange="markFieldChanged('${u.user_id}', 'email', this.value)">
+        onchange="markFieldChanged('${u.user_id}', 'email', this.value)" disabled>
     </td>
     
     <td>
@@ -492,23 +481,24 @@ function hasUnsavedChanges() {
   return Object.keys(pendingUserUpdates).some(k => pendingUserUpdates[k]);
 }
 
-function enableEdit(btn){
+function enableEdit(btn) {
   const tr = btn.closest('tr');
   tr.classList.add('editing');
+
   tr.querySelectorAll('input, select').forEach(el => {
-    if (el.dataset.readonly === 'Y') return; // 保留只讀
     el.disabled = false;
   });
 }
 
-function cancelEdit(btn){
-  if (hasUnsavedChanges()) {
-    if (!confirm('尚未儲存，確定要取消修改？')) return;
-  }
+function cancelEdit(btn) {
   const tr = btn.closest('tr');
   tr.classList.remove('editing');
-  tr.querySelectorAll('input, select').forEach(el => el.disabled = true);
+
+  tr.querySelectorAll('input, select').forEach(el => {
+    el.disabled = true;
+  });
 }
+
   
 function updateJudgeLevel(uid,val){
   const u = allUsers.find(x => x.user_id==uid);
