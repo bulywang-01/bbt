@@ -166,7 +166,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const session = JSON.parse(localStorage.getItem('session_user')||'{}');
   document.getElementById('u_name').textContent = session.name||'';
   loadUsers();
-  switchTab(currentTab, document.querySelector('.tab.active'));
 });
 
 function loadUsers(){
@@ -178,6 +177,8 @@ function loadUsers(){
       return u;
     });
     renderLists();
+    switchTab(currentTab, document.querySelector('.tab.active'));
+
   });
 }
 
@@ -286,6 +287,9 @@ function saveUser(uid){
     pendingUserUpdates[uid]=null;
     renderLists();
     switchTab(currentTab, document.querySelector('.tab.active'));
+    
+    showToast('更新成功');
+
   });
 }
 
