@@ -122,17 +122,26 @@ table td {
 /* ===== Toast ===== */
 .toast {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: #333;
   color: #fff;
-  padding: 10px 14px;
-  border-radius: 6px;
+  padding: 14px 22px;
+  border-radius: 10px;
   opacity: 0;
   pointer-events: none;
-  transition: .3s;
+  transition: opacity .3s, transform .3s;
   z-index: 9999;
+  font-size: 15px;
 }
+.toast.show {
+  opacity: 1;
+}
+.toast.success { background:#15803d; }
+.toast.error { background:#b91c1c; }
+.toast.warn { background:#b45309; }
+
 .toast.show {
   opacity: 1;
 }
@@ -291,7 +300,9 @@ function renderAccountList(){
     const roles = (u.role||'').split(',').filter(Boolean);
     const [jLv,rLv] = splitLevel(u.level);
     const tr=document.createElement('tr');
-    const [judgeLv, recordLv] = splitLevel(u.level || 'N,N');
+    // const [judgeLv, recordLv] = splitLevel(u.level || 'N,N');
+    const [judgeLv, recordLv] = splitLevel(u.level);
+
     
     tr.innerHTML=`
 <td>${u.username}</td>
@@ -326,8 +337,7 @@ function renderAccountList(){
 
       <td>
         <button class="primary" onclick="saveUser('${u.user_id}')">儲存</button>
-        ${
-          roles.includes('admin')
+        ${u.username === 'admin'
             ? ''
             : `<button onclick="deleteUser('${u.user_id}','${u.username}')">🗑 刪除</button>`
         }
@@ -353,20 +363,20 @@ function renderReadonlyLists(){
 
     if(roles.includes('judge')||roles.includes('chief_judge'))
      // addRow('tbody-judge',[u.username,u.name||'',jLv]);
-      addRow('tbody-judge', [
-        u.username,
-        u.name || '',
-        displayLevel(judgeLv)
-      ]);
-
+        addRow('tbody-judge', [
+          u.username,
+          u.name || '',
+          displayLevel(judgeLv)
+        ]);
 
     if(roles.includes('record')||roles.includes('record_chief'))
      // addRow('tbody-record',[u.username,u.name||'',rLv]);
-      addRow('tbody-record', [
-        u.username,
-        u.name || '',
-        displayLevel(recordLv)
-      ]);
+        addRow('tbody-record', [
+          u.username,
+          u.name || '',
+          displayLevel(recordLv)
+        ]);
+
 
     if(roles.includes('chief_judge'))
       addRow('tbody-chief_judge',[u.username,u.name||'',jLv]);
@@ -432,12 +442,19 @@ function openCreateUser(){
   const name=prompt('姓名'); if(!name) return;
   const email=prompt('Email'); if(!email) return;
   
-  callApi({ action:'createUser', username, name, email }, res=>{
-    if (!res || res.result !== 'ok') {
-      showToast('新增失敗','error');
+  callApi({ action:'createUser', username, name, email }, res => {
+    if (!res) {
+      showToast('新增失敗（無回應）','error');
       return;
     }
-    showToast('新增成功');
+  
+    // ✅ 放寬判斷條件
+    if (res.result === 'error') {
+      showToast(res.message || '新增失敗','error');
+      return;
+    }
+  
+    showToast('新增成功','success');
     loadUsers();
   });
 }
@@ -448,12 +465,15 @@ function showToast(msg, type='success') {
   t.className = `toast ${type}`;
   t.textContent = msg;
   document.body.appendChild(t);
+
   setTimeout(()=>t.classList.add('show'),10);
+
   setTimeout(()=>{
     t.classList.remove('show');
     setTimeout(()=>t.remove(),300);
-  },2500);
+  },2000);
 }
+
 
 function deleteUser(uid, username) {
   if (!confirm(`確定要刪除使用者「${username}」？`)) return;
