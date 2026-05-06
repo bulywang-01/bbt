@@ -163,10 +163,10 @@ function switchTab(type, btn){
   });
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-  document.getElementById('u_name').textContent = session.name||'';
-  ();
+document.addEventListener('DOMContentLoaded', () => {
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  document.getElementById('u_name').textContent = session.name || '';
+  loadUsers();
 });
 
 function loadUsers(){
