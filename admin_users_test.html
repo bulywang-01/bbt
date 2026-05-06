@@ -148,6 +148,16 @@ table td {
 .toast.success { background:#15803d; }
 .toast.error { background:#b91c1c; }
 
+.tab .count {
+  margin-left: 4px;
+  font-size: 12px;
+  color: #555;
+}
+
+.tab.active .count {
+  color: #fff;
+  font-weight: 600;
+}
 </style>
 </head>
 
@@ -176,12 +186,39 @@ table td {
 <div class="main">
 
 <div class="tabs">
+ <!--
   <button class="tab active" onclick="switchTab('account',this)">帳號清單</button>
   <button class="tab" onclick="switchTab('judge',this)">裁判名單</button>
   <button class="tab" onclick="switchTab('record',this)">紀錄名單</button>
   <button class="tab" onclick="switchTab('chief_judge',this)">裁判長名單</button>
   <button class="tab" onclick="switchTab('record_chief',this)">紀錄長名單</button>
   <button class="tab" onclick="switchTab('admin',this)">管理員名單</button>
+-->
+  
+  <button class="tab active" data-tab="account">
+    帳號清單 <span class="count" id="count-account">(0)</span>
+  </button>
+  
+  <button class="tab" data-tab="judge">
+    裁判名單 <span class="count" id="count-judge">(0)</span>
+  </button>
+  
+  <button class="tab" data-tab="record">
+    紀錄名單 <span class="count" id="count-record">(0)</span>
+  </button>
+  
+  <button class="tab" data-tab="chief_judge">
+    裁判長名單 <span class="count" id="count-chief_judge">(0)</span>
+  </button>
+  
+  <button class="tab" data-tab="record_chief">
+    紀錄長名單 <span class="count" id="count-record_chief">(0)</span>
+  </button>
+  
+  <button class="tab" data-tab="admin">
+    管理員名單 <span class="count" id="count-admin">(0)</span>
+  </button>
+  
 </div>
 
 <!-- 帳號清單：唯一可編輯 -->
@@ -233,7 +270,7 @@ table td {
 <script src="js/config.js"></script>
   
 <script>
-  
+
 function displayLevel(v) {
   return (!v || v === 'N') ? '無' : v;
 }
@@ -242,6 +279,54 @@ let allUsers = [];
 let pendingUserUpdates = {};
 let currentTab = 'account';
 
+// ===== 專門為頁籤算人數 =====
+function updateTabCounts() {
+  let account = allUsers.length;
+  let judge = 0;
+  let record = 0;
+  let chiefJudge = 0;
+  let recordChief = 0;
+  let admin = 0;
+
+  allUsers.forEach(u => {
+    const roles = (u.role || '').split(',');
+
+    // 裁判名單：裁判 + 裁判長
+    if (roles.includes('judge') || roles.includes('chief_judge')) {
+      judge++;
+    }
+
+    // 紀錄名單：紀錄 + 紀錄長
+    if (roles.includes('record') || roles.includes('record_chief')) {
+      record++;
+    }
+
+    // 裁判長名單
+    if (roles.includes('chief_judge')) {
+      chiefJudge++;
+    }
+
+    // 紀錄長名單
+    if (roles.includes('record_chief')) {
+      recordChief++;
+    }
+
+    // 管理員名單
+    if (roles.includes('admin')) {
+      admin++;
+    }
+  });
+
+  // 寫回頁籤
+  document.getElementById('count-account').textContent = `(${account})`;
+  document.getElementById('count-judge').textContent = `(${judge})`;
+  document.getElementById('count-record').textContent = `(${record})`;
+  document.getElementById('count-chief_judge').textContent = `(${chiefJudge})`;
+  document.getElementById('count-record_chief').textContent = `(${recordChief})`;
+  document.getElementById('count-admin').textContent = `(${admin})`;
+}
+
+  
 /* helpers */
 function renderRoleTextCN(roleStr){
   const map = {
@@ -288,10 +373,12 @@ function loadUsers(){
 }
 
 /* render all tables */
-function renderAll(){
+function renderAll() {
   renderAccountList();
   renderReadonlyLists();
+  updateTabCounts(); // ✅ 加在這裡
 }
+
 
 
 /* 帳號清單（唯一可編輯） */
