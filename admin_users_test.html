@@ -306,9 +306,9 @@ function renderAccountList(){
     
     tr.innerHTML=`
 <td>${u.username}</td>
-<td><input value="${u.name||''}" onchange="markField('${u.user_id}','name',this.value)"></td>
-<td><input value="${u.email||''}" onchange="markField('${u.user_id}','email',this.value)"></td>
-<td><input value="${u.phone||''}" onchange="markField('${u.user_id}','phone',this.value)"></td>
+<td><input value="${u.name||''}" oninput="markField('${u.user_id}','name',this.value)"></td>
+<td><input value="${u.email||''}" oninput="markField('${u.user_id}','email',this.value)"></td>
+<td><input value="${u.phone||''}" oninput="markField('${u.user_id}','phone',this.value)"></td>
 <td>
   <div class="role-summary">目前身份：${renderRoleTextCN(u.role)}</div>
   <label><input type="checkbox" ${roles.includes('judge')?'checked':''} onchange="toggleRole('${u.user_id}','judge',this.checked)">裁判</label>
@@ -419,11 +419,17 @@ function addRow(tbodyId,cols){
 
 /* editing helpers */
 function markField(uid,key,val){
+  
+  console.log('[markField]', uid, key, val);
+
   if(!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
   pendingUserUpdates[uid][key]=val;
 }
   
 function toggleRole(uid,role,on){
+  
+  console.log('[toggleRole]', uid, role, on);
+
   const u=allUsers.find(x=>x.user_id==uid);
   let roles=(u.role||'').split(',').filter(Boolean);
   roles=roles.filter(r=>r!==role);
@@ -435,6 +441,9 @@ function toggleRole(uid,role,on){
 }
   
 function setLevel(uid,type,val){
+  
+  console.log('[setLevel]', uid, type, val);
+
   const u=allUsers.find(x=>x.user_id==uid);
   let [j,r]=splitLevel(u.level);
   if(type==='judge') j=val; else r=val;
@@ -445,7 +454,9 @@ function setLevel(uid,type,val){
   
 function saveUser(uid) {
   const data = pendingUserUpdates[uid];
-  if (!data) {
+
+  // ✅ 沒任何欄位變更
+  if (!data || Object.keys(data).length === 0) {
     showToast('尚未修改','warn');
     return;
   }
