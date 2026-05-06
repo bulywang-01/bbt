@@ -150,6 +150,7 @@ tr.editing .action-edit { display: inline-block; }
 <script>
 let allUsers = [];
 let pendingUserUpdates = {};
+let currentTab = 'judge';  // ✅ 預設在裁判頁
 
 function showToast(msg){ alert(msg); }
 
@@ -177,7 +178,13 @@ function loadUsers(){
       return u;
     });
     renderLists();
-    switchTab(currentTab, document.querySelector('.tab.active'));
+
+    // ✅ 用 currentTab 切回原頁籤（這行位置是對的）
+    const activeBtn =
+      document.querySelector(`.tab[onclick*="${currentTab}"]`)
+      || document.querySelector('.tab');
+
+    switchTab(currentTab, activeBtn);
 
   });
 }
