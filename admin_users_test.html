@@ -254,23 +254,36 @@ function loadUsers() {
    Render lists
    ===================================================== */
 function renderLists() {
-  tbodyJudge.innerHTML = '';
+  // ✅ 正確取得 tbody DOM
+  const tbodyJudge  = document.getElementById('tbody-judge');
+  const tbodyRecord = document.getElementById('tbody-record');
+  const tbodyAdmin  = document.getElementById('tbody-admin');
+
+  // ✅ 清空內容
+  tbodyJudge.innerHTML  = '';
   tbodyRecord.innerHTML = '';
-  tbodyAdmin.innerHTML = '';
+  tbodyAdmin.innerHTML  = '';
 
   allUsers.forEach(u => {
-    const roles = (u.role || '').split(',');
+    const roles = (u.role || '').split(',').filter(Boolean);
 
-    if (roles.some(r => r==='judge' || r==='chief_judge'))
+    // 裁判（含裁判長）
+    if (roles.some(r => r === 'judge' || r === 'chief_judge')) {
       tbodyJudge.appendChild(renderRow(u));
+    }
 
-    if (roles.some(r => r==='record' || r==='record_chief'))
+    // 紀錄（含紀錄長）
+    if (roles.some(r => r === 'record' || r === 'record_chief')) {
       tbodyRecord.appendChild(renderRow(u));
+    }
 
-    if (roles.includes('admin'))
+    // 系統管理員（唯讀）
+    if (roles.includes('admin')) {
       tbodyAdmin.appendChild(renderRowAdmin(u));
+    }
   });
 }
+
 
 /* =====================================================
    Row renderer（裁判 / 紀錄）
