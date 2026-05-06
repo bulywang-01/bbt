@@ -245,10 +245,10 @@ function renderEditableRow(u){
 <td><input disabled value="${u.phone||''}" onchange="markField('${u.user_id}','phone',this.value)"></td>
 <td><input disabled value="${u.email||''}" onchange="markField('${u.user_id}','email',this.value)"></td>
 <td>
-<label><input type="radio" name="j_${u.user_id}" value="judge" ${roles.includes('judge')?'checked':''} disabled onchange="markRole('${u.user_id}')">裁判</label>
-<label><input type="radio" name="j_${u.user_id}" value="chief_judge" ${roles.includes('chief_judge')?'checked':''} disabled onchange="markRole('${u.user_id}')">裁判長</label>
-<label><input type="radio" name="r_${u.user_id}" value="record" ${roles.includes('record')?'checked':''} disabled onchange="markRole('${u.user_id}')">紀錄</label>
-<label><input type="radio" name="r_${u.user_id}" value="record_chief" ${roles.includes('record_chief')?'checked':''} disabled onchange="markRole('${u.user_id}')">紀錄長</label>
+<label><input type="radio" name="j_${u.user_id}" value="judge" ${roles.includes('judge')?'checked':''} disabled onchange="markRole('${u.user_id}')" data-last="">裁判</label>
+<label><input type="radio" name="j_${u.user_id}" value="chief_judge" ${roles.includes('chief_judge')?'checked':''} disabled onchange="markRole('${u.user_id}')" data-last="">裁判長</label>
+<label><input type="radio" name="r_${u.user_id}" value="record" ${roles.includes('record')?'checked':''} disabled onchange="markRole('${u.user_id}')" data-last="">紀錄</label>
+<label><input type="radio" name="r_${u.user_id}" value="record_chief" ${roles.includes('record_chief')?'checked':''} disabled onchange="markRole('${u.user_id}')" data-last="">紀錄長</label>
 <label><input type="checkbox" data-role="admin" ${roles.includes('admin')?'checked':''} disabled onchange="markRole('${u.user_id}')">系統管理員</label>
 </td>
 <td>
@@ -355,55 +355,79 @@ function markFieldChanged(uid, field, value) {
 }
   
 // JS 防呆 + 組 role 字串
-function markRoleChanged(uid) {
+function markRoleChanged(uid, clickedInput) {
   const u = allUsers.find(x => String(x.user_id) === String(uid));
   if (!u) return;
-
-  // ✅ 先從「目前使用者完整 role」拆出狀態
-  let roles = (u.role || '').split(',').filter(Boolean);
 
   const row = document.querySelector(`tr[data-uid="${uid}"]`);
   if (!row) return;
 
-  // ===== 裁判群組 =====
-  const judgeChecked = row.querySelector(`input[name="judge_${uid}"]:checked`);
-  roles = roles.filter(r => r !== 'judge' && r !== 'chief_judge');
-  if (judgeChecked) roles.push(judgeChecked.value);
+  // 先從目前完整 role 開始
+  let roles = (u.role || '').split(',').filter(Boolean);
 
-  // ===== 紀錄群組 =====
-  const recordChecked = row.querySelector(`input[name="record_${uid}"]:checked`);
-  roles = roles.filter(r => r !== 'record' && r !== 'record_chief');
-  if (recordChecked) roles.push(recordChecked.value);
+  const groupName = clickedInput.name;   // judge_xxx 或 record_xxx
+  const roleValue = clickedInput.value;
 
-  // ===== admin =====
-  const adminChecked = row.querySelector('input[data-role="admin"]');
+  // ===== 如果是「已勾選」→ 視為取消 =====
+  if (clickedInput.checked && clickedInput.dataset.last === 'checked') {
+    clickedInput.checked = false;
+    roles = roles.filter(r => r !== roleValue);
+
+    clickedInput.dataset.last = '';
+  } else {
+    // ===== 正常勾選流程 =====
+    // 清掉同群組舊角色
+    if (groupName.startsWith('judge_')) {
+      roles = roles.filter(r => r !== 'judge' && r !== 'chief_judge');
+    }
+    if (groupName.startsWith('record_')) {
+      roles = roles.filter(r => r !== 'record' && r !== 'record_chief');
+    }
+
+    roles.push(roleValue);
+    clickedInput.dataset.last = 'checked';
+  }
+
+  // ===== admin（獨立 checkbox，原邏輯不變）=====
+  const adminInput = row.querySelector('input[data-role="admin"]');
   roles = roles.filter(r => r !== 'admin');
-  if (adminChecked && adminChecked.checked) roles.push('admin');
+  if (adminInput && adminInput.checked) {
+    roles.push('admin');
+  }
 
   const newRole = roles.join(',');
 
   if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
   pendingUserUpdates[uid].role = newRole;
 
-  // ✅ 同步回 allUsers，避免另一頁蓋掉
+  // 同步前端狀態（非常重要）
   u.role = newRole;
 }
 
 // ===== 新增User =====
-function openCreateUser(){
-  const username = prompt('帳號');
+function openCreateUser() {
+  const username = prompt('請輸入帳號（英文/數字）');
   if (!username) return;
+
+  const name = prompt('請輸入姓名');
+  if (!name) return;
+
+  const email = prompt('請輸入 Email');
+  if (!email) return;
 
   callApi({
     action: 'createUser',
-    username: username
+    username: username,
+    name: name,
+    email: email
   }, res => {
     if (!res || res.result !== 'ok') {
       showToast('新增失敗');
       return;
     }
+
     showToast('新增成功');
-    loadUsers(); // 重新載入即可
+    loadUsers(); // ✅ 重新載入清單
   });
 }
 </script>
