@@ -107,13 +107,16 @@ button {
 
 <div class="header">
   <div class="nav">
-    index.html🏠 首頁</a>
-    judge_dashboard.html📋 報名</a>
-    admin_dashboard.html⚙️ 管理</a>
-  </div>
-  <div>
-    <span id="u_name"></span>
-    #登出</a>
+    🏠<a href="index.html">首頁</a>　
+    📋<a href="judge_dashboard.html">出勤班表</a>　
+    <!--
+    <a href="files.html">📂 下載</a>
+    ✅<a href="review_dashboard.html">審核</a>　
+    -->
+    ⚙️<a href="admin_dashboard.html">管理</a>　
+    🔐<a href="change_password.html" class="change-pwd">改密碼</a>　
+    <a href="#" class="logout" onclick="logout()">登出</a>
+         <span id="u_name" class="user-name"></span> 
   </div>
 </div>
 
@@ -181,6 +184,7 @@ button {
 </div>
 
 <script src="js/config.js"></script>
+  
 <script>
 /* =====================================================
    全域狀態
