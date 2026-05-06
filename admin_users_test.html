@@ -153,7 +153,24 @@ let allUsers = [];
 let pendingUserUpdates = {};
 let currentTab = 'judge';  // ✅ 預設在裁判頁
 
-function showToast(msg){ alert(msg); }
+
+// ===== 身份顯示小行 =====
+function renderRoleTextCN(roleStr) {
+  const map = {
+    .split(',')    judge: '裁判',
+    .filter(Boolean)
+    .map(r => map[r] || r)
+    .join('、');
+}
+  
+  function showToast(msg){ alert(msg); }
+    chief_judge: '裁判長',
+    record: '紀錄',
+    record_chief: '紀錄長',
+    admin: '系統管理員'
+  };
+  return (roleStr || '')
+
 
 function switchTab(type, btn){
   currentTab = type; // ✅ 補這行
@@ -222,10 +239,10 @@ function renderLists(){
   allUsers.forEach(u=>{
     const roles = u.role.split(',').map(r=>r.trim()).filter(Boolean);
     if(roles.includes('judge')||roles.includes('chief_judge')){
-      document.getElementById('tbody-judge').appendChild(renderEditableRow(u));
+      document.getElementById('tbody-judge').appendChild((u));
     }
     if(roles.includes('record')||roles.includes('record_chief')){
-      document.getElementById('tbody-record').appendChild(renderEditableRow(u));
+      document.getElementById('tbody-record').appendChild((u));
     }
     if(roles.includes('admin')){
       document.getElementById('tbody-admin').appendChild(renderAdminRow(u));
@@ -241,16 +258,87 @@ function renderEditableRow(u){
   tr.innerHTML=`
 <td>${u.username}</td>
 <td>${u.name||''}</td>
-<td><input disabled value="${u.note||''}" onchange="markField('${u.user_id}','note',this.value)"></td>
-<td><input disabled value="${u.phone||''}" onchange="markField('${u.user_id}','phone',this.value)"></td>
-<td><input disabled value="${u.email||''}" onchange="markField('${u.user_id}','email',this.value)"></td>
-<td>
-<label><input type="radio" name="j_${u.user_id}" value="judge" ${roles.includes('judge')?'checked':''} disabled onchange="markRole('${u.user_id}')" data-last="">裁判</label>
-<label><input type="radio" name="j_${u.user_id}" value="chief_judge" ${roles.includes('chief_judge')?'checked':''} disabled onchange="markRole('${u.user_id}')" data-last="">裁判長</label>
-<label><input type="radio" name="r_${u.user_id}" value="record" ${roles.includes('record')?'checked':''} disabled onchange="markRole('${u.user_id}')" data-last="">紀錄</label>
-<label><input type="radio" name="r_${u.user_id}" value="record_chief" ${roles.includes('record_chief')?'checked':''} disabled onchange="markRole('${u.user_id}')" data-last="">紀錄長</label>
-<label><input type="checkbox" data-role="admin" ${roles.includes('admin')?'checked':''} disabled onchange="markRole('${u.user_id}')">系統管理員</label>
-</td>
+
+  <td>
+    <input disabled
+           value="${u.note || ''}"
+           onchange="markField('${u.user_id}','note',this.value)">
+  </td>
+
+  <td>
+    <input disabled
+           value="${u.phone || ''}"
+           onchange="markField('${u.user_id}','phone',this.value)">
+  </td>
+
+  <td>
+    <input disabled
+           value="${u.email || ''}"
+           onchange="markField('${u.user_id}','email',this.value)">
+  </td>
+
+  <!-- ✅ 身份欄位（重點） -->
+  <td>
+    <!-- ✅ 身份摘要（顯示用，不參與編輯） -->
+    <div class="role-summary" style="font-size:13px;color:#555;margin-bottom:4px;">
+      目前身份：${renderRoleTextCN(u.role)}
+    </div>
+
+    <!-- ✅ 編輯用 radio / checkbox -->
+    <label>
+      <input type="radio"
+             name="judge_${u.user_id}"
+             value="judge"
+             ${roleList.includes('judge') ? 'checked':''}
+             data-last=""
+             disabled
+             onchange="markRoleChanged('${u.user_id}', this)">
+      裁判
+    </label>
+
+    <label>
+      <input type="radio"
+             name="judge_${u.user_id}"
+             value="chief_judge"
+             ${roleList.includes('chief_judge') ? 'checked':''}
+             data-last=""
+             disabled
+             onchange="markRoleChanged('${u.user_id}', this)">
+      裁判長
+    </label>
+
+    <label>
+      <input type="radio"
+             name="record_${u.user_id}"
+             value="record"
+             ${roleList.includes('record') ? 'checked':''}
+             data-last=""
+             disabled
+             onchange="markRoleChanged('${u.user_id}', this)">
+      紀錄
+    </label>
+
+    <label>
+      <input type="radio"
+             name="record_${u.user_id}"
+             value="record_chief"
+             ${roleList.includes('record_chief') ? 'checked':''}
+             data-last=""
+             disabled
+             onchange="markRoleChanged('${u.user_id}', this)">
+      紀錄長
+    </label>
+
+    <label>
+      <input type="checkbox"
+             data-role="admin"
+             ${roleList.includes('admin') ? 'checked':''}
+             disabled
+             onchange="markRoleChanged('${u.user_id}', this)">
+      系統管理員
+    </label>
+  </td>
+
 <td>
 <select disabled
   onchange="markLevelChanged('${u.user_id}', 'judge', this.value)">
@@ -305,7 +393,7 @@ function markLevelChanged(uid, type, value) {
   
 function renderAdminRow(u){
   const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${u.username}</td><td>${u.name}</td><td>${u.note||''}</td><td>${u.phone||''}</td><td>${u.email||''}</td><td>${u.role}</td><td>${u.active==='Y'?'啟用':'停用'}</td>`;
+  tr.innerHTML=`<td>${u.username}</td><td>${u.name}</td><td>${u.note||''}</td><td>${u.phone||''}</td><td>${u.email||''}</td><td>${renderRoleTextCN(u.role)}</td><td>${u.active==='Y'?'啟用':'停用'}</td>`;
   return tr;
 }
 
@@ -355,53 +443,56 @@ function markFieldChanged(uid, field, value) {
 }
   
 // JS 防呆 + 組 role 字串
-function markRoleChanged(uid, clickedInput) {
+function markRoleChanged(uid, input) {
   const u = allUsers.find(x => String(x.user_id) === String(uid));
   if (!u) return;
 
-  const row = document.querySelector(`tr[data-uid="${uid}"]`);
-  if (!row) return;
-
-  // 先從目前完整 role 開始
   let roles = (u.role || '').split(',').filter(Boolean);
+  const row = document.querySelector(`tr[data-uid="${uid}"]`);
 
-  const groupName = clickedInput.name;   // judge_xxx 或 record_xxx
-  const roleValue = clickedInput.value;
+  const group = input.name;   // judge_xxx / record_xxx
+  const value = input.value;
 
-  // ===== 如果是「已勾選」→ 視為取消 =====
-  if (clickedInput.checked && clickedInput.dataset.last === 'checked') {
-    clickedInput.checked = false;
-    roles = roles.filter(r => r !== roleValue);
+  // ===== 點已選中的 radio → 取消 =====
+  if (input.dataset.last === 'checked') {
+    input.checked = false;
+    input.dataset.last = '';
 
-    clickedInput.dataset.last = '';
+    roles = roles.filter(r => r !== value);
   } else {
-    // ===== 正常勾選流程 =====
-    // 清掉同群組舊角色
-    if (groupName.startsWith('judge_')) {
+    // ===== 正常切換 =====
+    if (group.startsWith('judge_')) {
       roles = roles.filter(r => r !== 'judge' && r !== 'chief_judge');
     }
-    if (groupName.startsWith('record_')) {
+    if (group.startsWith('record_')) {
       roles = roles.filter(r => r !== 'record' && r !== 'record_chief');
     }
 
-    roles.push(roleValue);
-    clickedInput.dataset.last = 'checked';
+    roles.push(value);
+    input.dataset.last = 'checked';
+
+    // 同群組其他 radio 的狀態清掉
+    row.querySelectorAll(`input[name="${group}"]`).forEach(r => {
+      if (r !== input) r.dataset.last = '';
+    });
   }
 
-  // ===== admin（獨立 checkbox，原邏輯不變）=====
-  const adminInput = row.querySelector('input[data-role="admin"]');
+  // ===== admin（checkbox）=====
+  const admin = row.querySelector('input[data-role="admin"]');
   roles = roles.filter(r => r !== 'admin');
-  if (adminInput && adminInput.checked) {
-    roles.push('admin');
-  }
+  if (admin && admin.checked) roles.push('admin');
 
   const newRole = roles.join(',');
 
   if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
   pendingUserUpdates[uid].role = newRole;
 
-  // 同步前端狀態（非常重要）
+  // ✅ 同步回 allUsers（非常重要）
   u.role = newRole;
+
+  // ✅ 即時更新身份摘要
+  row.querySelector('.role-summary').textContent =
+    '目前身份：' + renderRoleTextCN(newRole);
 }
 
 // ===== 新增User =====
