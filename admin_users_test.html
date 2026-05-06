@@ -330,6 +330,8 @@ function renderEditableRow(u) {
  // const roleList = (u.role || '').split(',').map(r => r.trim());
   const roleList = (u.role || '').split(',').map(r => r.trim()).filter(Boolean);
 
+  console.log('RENDER ROLE FROM JS:', u.user_id, u.role);
+  
   // ✅ fallback：如果後端暫時沒 role，但之前是 admin
   if (!roleList.length && u.is_admin === true) {
     roleList.push('admin');
