@@ -252,7 +252,7 @@ function renderLists(){
     const roles=(u.role||'').split(',');
 
     if (roles.includes('admin')) {
-      adminBody.appendChild(renderRowAdmin(u));
+      bodies.admin.appendChild(renderRowAdmin(u));
     }
     if (roles.includes('judge') || roles.includes('chief_judge'))
       bodies.judge.appendChild(renderRow(u));
