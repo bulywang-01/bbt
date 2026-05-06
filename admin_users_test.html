@@ -232,6 +232,43 @@ function loadUsers(){
   });
 }
 
+// ===== 等級正規化 =====
+function normalizeLevel(level) {
+  if (!level || level === 'NONE') return 'N';
+  return level; // A / B / C
+}
+
+// ===== 證照顯示邏輯 =====
+function renderLevelByTabs(u) {
+  const roles = (u.role || '').split(',').filter(Boolean);
+
+  // 後端等級（目前只有一個欄位 level）
+  // 如果之後你拆 judge_level / record_level，只要改這裡
+  const judgeLevel = normalizeLevel(u.level);
+  const recordLevel = normalizeLevel(u.level);
+
+  const isJudge = roles.includes('judge') || roles.includes('chief_judge');
+  const isRecord = roles.includes('record') || roles.includes('record_chief');
+
+  // 同時具備裁判＋紀錄
+  if (isJudge && isRecord) {
+    return `${judgeLevel},${recordLevel}`;
+  }
+
+  // 只有裁判
+  if (isJudge) {
+    return `${judgeLevel},N`;
+  }
+
+  // 只有紀錄
+  if (isRecord) {
+    return `N,${recordLevel}`;
+  }
+
+  // 其他（理論上不會出現）
+  return 'N,N';
+}
+  
 function renderLists(){
   const kw=document.getElementById('keyword').value.trim();
   const onlyActive=document.getElementById('onlyActive').checked;
@@ -534,12 +571,25 @@ function renderRowAdmin(u) {
     <td>${u.note || ''}</td>
     <td>${u.phone || ''}</td>
     <td>${u.email || ''}</td>
-    <td>${u.role}</td>
-    <td>${u.level || 'NONE'}</td>
+    <td>${renderRoleText(u.role)}</td>
     <td>${u.active === 'Y' ? '啟用' : '停用'}</td>
   `;
   return tr;
 }
+
+// ===== 中文身份轉換（系統管理員頁籤）=====
+function renderRoleText(roleStr) {
+  const roles = (roleStr || '').split(',').filter(Boolean);
+  const map = {
+    judge: '裁判',
+    chief_judge: '裁判長',
+    record: '紀錄',
+    record_chief: '紀錄長',
+    admin: '系統管理員'
+  };
+  return roles.map(r => map[r] || r).join('、');
+}
+
 
 // ===== 裁判長 / 紀錄長 必須 active =====
 function handleActiveChange(uid, newValue) {
@@ -559,7 +609,30 @@ function handleActiveChange(uid, newValue) {
   u.active = newValue;
   updateField(uid, 'active', newValue);
 }
-  
+
+// ===== 證照文字組合 =====
+function renderLevelByRole(u, viewType) {
+  const roles = (u.role || '').split(',');
+  const judgeLevel = u.level || '無';
+  const recordLevel = u.level || '無'; // 之後可換成獨立欄位
+
+  if (viewType === 'judge') {
+    if (roles.includes('record') || roles.includes('record_chief')) {
+      return `${judgeLevel},${recordLevel}`;
+    }
+    return judgeLevel;
+  }
+
+  if (viewType === 'record') {
+    if (roles.includes('judge') || roles.includes('chief_judge')) {
+      return `${recordLevel},${judgeLevel}`;
+    }
+    return recordLevel;
+  }
+
+  return judgeLevel;
+}
+
 function logout(){
   localStorage.clear();
   location.href='login.html';
