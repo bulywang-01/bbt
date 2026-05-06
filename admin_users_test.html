@@ -338,17 +338,20 @@ function renderEditableRow(u) {
     <td>
         <input type="text"
         value="${u.note || ''}"
-        onchange="markFieldChanged('${u.user_id}', 'note', this.value)" disabled>
+        disabled
+        onchange="markFieldChanged('${u.user_id}', 'note', this.value)">
     </td>
     <td>
         <input type="text"
         value="${u.phone || ''}"
-        onchange="markFieldChanged('${u.user_id}', 'phone', this.value)" disabled>
+        disabled
+        onchange="markFieldChanged('${u.user_id}', 'phone', this.value)">
     </td>
     <td>
         <input type="text"
         value="${u.email || ''}"
-        onchange="markFieldChanged('${u.user_id}', 'email', this.value)" disabled>
+        disabled
+        onchange="markFieldChanged('${u.user_id}', 'email', this.value)">
     </td>
     
     <td>
@@ -358,8 +361,9 @@ function renderEditableRow(u) {
           <input type="radio"
             name="judge_${u.user_id}"
             value="judge"
+            disabled
             ${roleList.includes('judge') ? 'checked' : ''}
-            onchange="markRoleChanged('${u.user_id}')" disabled>
+            onchange="markRoleChanged('${u.user_id}')">
           裁判
         </label>
     
@@ -367,8 +371,9 @@ function renderEditableRow(u) {
           <input type="radio"
             name="judge_${u.user_id}"
             value="chief_judge"
+            disabled
             ${roleList.includes('chief_judge') ? 'checked' : ''}
-            onchange="markRoleChanged('${u.user_id}')" disabled>
+            onchange="markRoleChanged('${u.user_id}')">
           裁判長
         </label>
     
@@ -377,8 +382,9 @@ function renderEditableRow(u) {
           <input type="radio"
             name="record_${u.user_id}"
             value="record"
+            disabled
             ${roleList.includes('record') ? 'checked' : ''}
-            onchange="markRoleChanged('${u.user_id}')" disabled>
+            onchange="markRoleChanged('${u.user_id}')">
           紀錄
         </label>
     
@@ -386,8 +392,9 @@ function renderEditableRow(u) {
           <input type="radio"
             name="record_${u.user_id}"
             value="record_chief"
+            disabled
             ${roleList.includes('record_chief') ? 'checked' : ''}
-            onchange="markRoleChanged('${u.user_id}')" disabled>
+            onchange="markRoleChanged('${u.user_id}')">
           紀錄長
         </label>
     
@@ -395,8 +402,8 @@ function renderEditableRow(u) {
         <label>
           <input type="checkbox"
             value="admin"
-            ${roleList.includes('admin') ? 'checked' : ''}
-            disabled>
+            disabled
+            ${roleList.includes('admin') ? 'checked' : ''}>
           系統管理員
         </label>
       </div>
