@@ -325,7 +325,8 @@ function renderRecordRow(u) {
 function renderEditableRow(u) {
   const roleList = (u.role || '').split(',').map(r => r.trim());
   const tr = document.createElement('tr');
-  
+  tr.setAttribute('data-uid', u.user_id); // ✅ 關鍵！
+
   tr.innerHTML = `
     <td>${u.username}</td>
     <td>${u.name || ''}</td>
@@ -339,16 +340,18 @@ function renderEditableRow(u) {
         <label>
           <input type="radio"
             name="judge_${u.user_id}"
+            value="judge"
             ${roleList.includes('judge') ? 'checked' : ''}
-            disabled>
+            onchange="markRoleChanged('${u.user_id}')" disabled>
           裁判
         </label>
     
         <label>
           <input type="radio"
             name="judge_${u.user_id}"
+            value="chief_judge"
             ${roleList.includes('chief_judge') ? 'checked' : ''}
-            disabled>
+            onchange="markRoleChanged('${u.user_id}')" disabled>
           裁判長
         </label>
     
@@ -356,22 +359,25 @@ function renderEditableRow(u) {
         <label>
           <input type="radio"
             name="record_${u.user_id}"
+            value="record"
             ${roleList.includes('record') ? 'checked' : ''}
-            disabled>
+            onchange="markRoleChanged('${u.user_id}')" disabled>
           紀錄
         </label>
     
         <label>
           <input type="radio"
             name="record_${u.user_id}"
+            value="record_chief"
             ${roleList.includes('record_chief') ? 'checked' : ''}
-            disabled>
+            onchange="markRoleChanged('${u.user_id}')" disabled>
           紀錄長
         </label>
     
         <!-- 系統管理員 -->
         <label>
           <input type="checkbox"
+            value="admin"
             ${roleList.includes('admin') ? 'checked' : ''}
             disabled>
           系統管理員
@@ -524,6 +530,29 @@ function createUser(){
   });
 }
 
+function markRoleChanged(uid) {
+  const row = document.querySelector(`tr[data-uid="${uid}"]`);
+  if (!row) return;
+
+  const roles = [];
+
+  // 裁判群組
+  const judgeChecked = row.querySelector(`input[name="judge_${uid}"]:checked`);
+  if (judgeChecked) roles.push(judgeChecked.value);
+
+  // 紀錄群組
+  const recordChecked = row.querySelector(`input[name="record_${uid}"]:checked`);
+  if (recordChecked) roles.push(recordChecked.value);
+
+  // 系統管理員
+  if (row.querySelector('input[data-role="admin"]')?.checked) {
+    roles.push('admin');
+  }
+
+  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
+  pendingUserUpdates[uid].role = roles.join(',');
+}
+  
 </script>
 </body>
 </html>
