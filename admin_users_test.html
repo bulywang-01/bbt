@@ -279,35 +279,46 @@ function renderLists() {
   const tbodyRecord = document.getElementById('tbody-record');
   const tbodyAdmin  = document.getElementById('tbody-admin');
 
-  tbodyJudge.innerHTML = '';
+  tbodyJudge.innerHTML  = '';
   tbodyRecord.innerHTML = '';
-  tbodyAdmin.innerHTML = '';
+  tbodyAdmin.innerHTML  = '';
 
   allUsers.forEach(u => {
-    const roles = (u.role || '').split(',').filter(Boolean);
+    const roles = (u.role || '').split(',').map(r => r.trim());
 
-    // 裁判視角
-    if (roles.some(r => r === 'judge' || r === 'chief_judge')) {
-      tbodyJudge.appendChild(renderRow(u));
+    const isJudge  = roles.includes('judge') || roles.includes('chief_judge');
+    const isRecord = roles.includes('record') || roles.includes('record_chief');
+    const isAdmin  = roles.includes('admin');
+
+    // ✅ 注意：每一個 append 都「重新產生一個 row」
+    if (isJudge) {
+      tbodyJudge.appendChild(renderJudgeRow(u));
     }
 
-    // 紀錄視角
-    if (roles.some(r => r === 'record' || r === 'record_chief')) {
-      tbodyRecord.appendChild(renderRow(u));
+    if (isRecord) {
+      tbodyRecord.appendChild(renderRecordRow(u));
     }
 
-    // 系統管理員（唯讀）
-    if (roles.includes('admin')) {
-      tbodyAdmin.appendChild(renderRowAdmin(u));
+    if (isAdmin) {
+      tbodyAdmin.appendChild(renderAdminRow(u));
     }
   });
 }
 
 
+
 /* =====================================================
    Row renderer（裁判 / 紀錄）
    ===================================================== */
-function renderRow(u) {
+
+function renderJudgeRow(u) {
+  return renderEditableRow(u);
+}
+function renderRecordRow(u) {
+  return renderEditableRow(u);
+}
+
+function renderEditableRow(u) {
   const roleList = (u.role || '').split(',').map(r => r.trim());
   const tr = document.createElement('tr');
   tr.innerHTML = `
@@ -399,7 +410,7 @@ function renderRow(u) {
 /* =====================================================
    Row renderer（系統管理員唯讀）
    ===================================================== */
-function renderRowAdmin(u) {
+function renderAdminRow(u) {
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td>${u.username}</td>
