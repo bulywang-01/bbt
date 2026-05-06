@@ -195,6 +195,10 @@ let pendingUserUpdates = {};
 // ✅ 記住目前所在的頁籤（judge / record / admin）
 let currentTab = 'judge';
 
+function showToast(msg, type = 'info') {
+  alert(msg); // 先用最簡單的，避免 JS 中斷
+}
+
 
 /* =====================================================
    身份中文化 helper
@@ -284,26 +288,26 @@ function renderLists() {
   tbodyAdmin.innerHTML  = '';
 
   allUsers.forEach(u => {
+    // ✅ 只用後端 role 字串
     const roles = (u.role || '').split(',').map(r => r.trim());
 
     const isJudge  = roles.includes('judge') || roles.includes('chief_judge');
     const isRecord = roles.includes('record') || roles.includes('record_chief');
     const isAdmin  = roles.includes('admin');
 
-    // ✅ 注意：每一個 append 都「重新產生一個 row」
+    // ❗重點：每個 append 都建立新的 row
     if (isJudge) {
       tbodyJudge.appendChild(renderJudgeRow(u));
     }
-
     if (isRecord) {
       tbodyRecord.appendChild(renderRecordRow(u));
     }
-
     if (isAdmin) {
       tbodyAdmin.appendChild(renderAdminRow(u));
     }
   });
 }
+
 
 
 
@@ -321,6 +325,7 @@ function renderRecordRow(u) {
 function renderEditableRow(u) {
   const roleList = (u.role || '').split(',').map(r => r.trim());
   const tr = document.createElement('tr');
+  
   tr.innerHTML = `
     <td>${u.username}</td>
     <td>${u.name || ''}</td>
@@ -414,12 +419,12 @@ function renderAdminRow(u) {
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td>${u.username}</td>
-    <td>${u.name||''}</td>
-    <td>${u.note||''}</td>
-    <td>${u.phone||''}</td>
-    <td>${u.email||''}</td>
+    <td>${u.name || ''}</td>
+    <td>${u.note || ''}</td>
+    <td>${u.phone || ''}</td>
+    <td>${u.email || ''}</td>
     <td>${renderRoleText(u.role)}</td>
-    <td>${u.active==='Y'?'啟用':'停用'}</td>
+    <td>${u.active === 'Y' ? '啟用' : '停用'}</td>
   `;
   return tr;
 }
