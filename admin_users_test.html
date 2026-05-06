@@ -154,6 +154,7 @@ let pendingUserUpdates = {};
 function showToast(msg){ alert(msg); }
 
 function switchTab(type, btn){
+  currentTab = type; // ✅ 補這行
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   ['judge','record','admin'].forEach(t=>{
@@ -165,6 +166,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const session = JSON.parse(localStorage.getItem('session_user')||'{}');
   document.getElementById('u_name').textContent = session.name||'';
   loadUsers();
+  switchTab(currentTab, document.querySelector('.tab.active'));
 });
 
 function loadUsers(){
@@ -217,12 +219,19 @@ function renderEditableRow(u){
 </td>
 <td>
 <select disabled onchange="markField('${u.user_id}','level',this.value)">
-<option value="N">暫無</option><option>A</option><option>B</option><option>C</option>
+  <option value="N" ${u.level === 'N' ? 'selected' : ''}>暫無</option>
+  <option value="A" ${u.level === 'A' ? 'selected' : ''}>A</option>
+  <option value="B" ${u.level === 'B' ? 'selected' : ''}>B</option>
+  <option value="C" ${u.level === 'C' ? 'selected' : ''}>C</option>
 </select>
 </td>
 <td>
-<select disabled onchange="markField('${u.user_id}','record_level',this.value)">
-<option value="N">暫無</option><option>A</option><option>B</option><option>C</option>
+<select disabled
+  onchange="markFieldChanged('${u.user_id}', 'level', this.value)">
+  <option value="N" ${u.level === 'N' ? 'selected' : ''}>暫無</option>
+  <option value="A" ${u.level === 'A' ? 'selected' : ''}>A</option>
+  <option value="B" ${u.level === 'B' ? 'selected' : ''}>B</option>
+  <option value="C" ${u.level === 'C' ? 'selected' : ''}>C</option>
 </select>
 </td>
 <td>${u.active==='Y'?'啟用':'停用'}</td>
@@ -276,7 +285,32 @@ function saveUser(uid){
     Object.assign(allUsers.find(x=>x.user_id==uid),data);
     pendingUserUpdates[uid]=null;
     renderLists();
+    switchTab(currentTab, document.querySelector('.tab.active'));
   });
+}
+
+// JS 防呆 + 組 role 字串
+function markRoleChanged(uid) {
+  const row = document.querySelector(`tr[data-uid="${uid}"]`);
+  if (!row) return;
+
+  const roles = [];
+
+  // 裁判群組（二選一）
+  const judgeChecked = row.querySelector(`input[name="judge_${uid}"]:checked`);
+  if (judgeChecked) roles.push(judgeChecked.value);
+
+  // 紀錄群組（二選一）
+  const recordChecked = row.querySelector(`input[name="record_${uid}"]:checked`);
+  if (recordChecked) roles.push(recordChecked.value);
+
+  // admin（獨立）
+  if (row.querySelector('input[data-role="admin"]')?.checked) {
+    roles.push('admin');
+  }
+
+  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
+  pendingUserUpdates[uid].role = roles.join(',');
 }
 </script>
 </body>
