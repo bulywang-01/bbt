@@ -189,6 +189,7 @@ table td {
 <thead>
 <tr>
   <th>帳號</th>
+  <th>背號</th>
   <th>姓名</th>
   <th>Email</th>
   <th>電話</th>
@@ -203,27 +204,27 @@ table td {
 
 <!-- 只讀名單 -->
 <table id="table-judge" class="hidden">
-<thead><tr><th>帳號</th><th>姓名</th><th>裁判證照</th></tr></thead>
+<thead><tr><th>帳號</th><th>背號</th><th>姓名</th><th>裁判證照</th></tr></thead>
 <tbody id="tbody-judge"></tbody>
 </table>
 
 <table id="table-record" class="hidden">
-<thead><tr><th>帳號</th><th>姓名</th><th>紀錄證照</th></tr></thead>
+<thead><tr><th>帳號</th><th>背號</th><th>姓名</th><th>紀錄證照</th></tr></thead>
 <tbody id="tbody-record"></tbody>
 </table>
 
 <table id="table-chief_judge" class="hidden">
-<thead><tr><th>帳號</th><th>姓名</th><th>裁判證照</th></tr></thead>
+<thead><tr><th>帳號</th><th>背號</th><th>姓名</th><th>裁判證照</th></tr></thead>
 <tbody id="tbody-chief_judge"></tbody>
 </table>
 
 <table id="table-record_chief" class="hidden">
-<thead><tr><th>帳號</th><th>姓名</th><th>紀錄證照</th></tr></thead>
+<thead><tr><th>帳號</th><th>背號</th><th>姓名</th><th>紀錄證照</th></tr></thead>
 <tbody id="tbody-record_chief"></tbody>
 </table>
 
 <table id="table-admin" class="hidden">
-<thead><tr><th>帳號</th><th>姓名</th><th>Email</th></tr></thead>
+<thead><tr><th>帳號</th><th>背號</th><th>姓名</th><th>Email</th></tr></thead>
 <tbody id="tbody-admin"></tbody>
 </table>
 
@@ -307,6 +308,14 @@ function renderAccountList(){
     
     tr.innerHTML=`
 <td>${u.username}</td>
+<td>
+  <input
+    value="${u.note || ''}"
+    placeholder="背號"
+    oninput="markField('${u.user_id}','note',this.value)"
+    style="width:60px;text-align:center;"
+  >
+</td>
 <td><input value="${u.name||''}" oninput="markField('${u.user_id}','name',this.value)"></td>
 <td><input value="${u.email||''}" oninput="markField('${u.user_id}','email',this.value)"></td>
 <td><input value="${u.phone||''}" oninput="markField('${u.user_id}','phone',this.value)"></td>
@@ -375,6 +384,7 @@ function renderReadonlyLists() {
     if (roles.includes('judge') || roles.includes('chief_judge')) {
       addRow('tbody-judge', [
         u.username,
+        u.note || '',          // ✅ 只顯示
         u.name || '',
         displayLevel(judgeLv)
       ]);
@@ -384,6 +394,7 @@ function renderReadonlyLists() {
     if (roles.includes('record') || roles.includes('record_chief')) {
       addRow('tbody-record', [
         u.username,
+        u.note || '',          // ✅ 只顯示
         u.name || '',
         displayLevel(recordLv)
       ]);
@@ -393,6 +404,7 @@ function renderReadonlyLists() {
     if (roles.includes('chief_judge')) {
       addRow('tbody-chief_judge', [
         u.username,
+        u.note || '',          // ✅ 只顯示
         u.name || '',
         displayLevel(judgeLv)
       ]);
@@ -402,6 +414,7 @@ function renderReadonlyLists() {
     if (roles.includes('record_chief')) {
       addRow('tbody-record_chief', [
         u.username,
+        u.note || '',          // ✅ 只顯示
         u.name || '',
         displayLevel(recordLv)
       ]);
@@ -411,6 +424,7 @@ function renderReadonlyLists() {
     if (roles.includes('admin')) {
       addRow('tbody-admin', [
         u.username,
+        u.note || '',          // ✅ 只顯示
         u.name || '',
         u.email || ''
       ]);
