@@ -315,39 +315,40 @@ function renderRow(u) {
     <td>${u.note || ''}</td>
     <td>${u.phone || ''}</td>
     <td>${u.email || ''}</td>
+    
     <td>
       <div class="role-group">
         <!-- 裁判群組 -->
         <label>
-          <input type="radio" name="judge_${u.user_id}"
-            ${u.role.includes('judge') ? 'checked' : ''}
-            disabled
-            onchange="toggleRoleGroup('${u.user_id}','judge','chief_judge','judge')">
+          <input type="radio"
+            name="judge_${u.user_id}"
+            ${u.role.includes('judge') || u.role.includes('chief_judge') ? 'checked' : ''}
+            disabled>
           裁判
         </label>
     
         <label>
-          <input type="radio" name="judge_${u.user_id}"
+          <input type="radio"
+            name="judge_${u.user_id}"
             ${u.role.includes('chief_judge') ? 'checked' : ''}
-            disabled
-            onchange="toggleRoleGroup('${u.user_id}','judge','chief_judge','chief_judge')">
+            disabled>
           裁判長
         </label>
     
         <!-- 紀錄群組 -->
         <label>
-          <input type="radio" name="record_${u.user_id}"
-            ${u.role.includes('record') ? 'checked' : ''}
-            disabled
-            onchange="toggleRoleGroup('${u.user_id}','record','record_chief','record')">
+          <input type="radio"
+            name="record_${u.user_id}"
+            ${u.role.includes('record') || u.role.includes('record_chief') ? 'checked' : ''}
+            disabled>
           紀錄
         </label>
     
         <label>
-          <input type="radio" name="record_${u.user_id}"
+          <input type="radio"
+            name="record_${u.user_id}"
             ${u.role.includes('record_chief') ? 'checked' : ''}
-            disabled
-            onchange="toggleRoleGroup('${u.user_id}','record','record_chief','record_chief')">
+            disabled>
           紀錄長
         </label>
     
@@ -355,8 +356,7 @@ function renderRow(u) {
         <label>
           <input type="checkbox"
             ${u.role.includes('admin') ? 'checked' : ''}
-            disabled
-            onchange="toggleAdmin('${u.user_id}',this.checked)">
+            disabled>
           系統管理員
         </label>
       </div>
