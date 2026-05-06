@@ -372,7 +372,7 @@ function renderEditableRow(u) {
                  disabled>
           裁判
         </label>
-      
+        
         <label>
           <input type="radio"
                  name="judge_${u.user_id}"
@@ -391,7 +391,7 @@ function renderEditableRow(u) {
                  disabled>
           紀錄
         </label>
-      
+        
         <label>
           <input type="radio"
                  name="record_${u.user_id}"
@@ -400,10 +400,12 @@ function renderEditableRow(u) {
                  disabled>
           紀錄長
         </label>
+
       
         <!-- 系統管理員（獨立） -->
         <label>
           <input type="checkbox"
+                 value="admin"
                  ${roleList.includes('admin') ? 'checked' : ''}
                  disabled>
           系統管理員
