@@ -440,17 +440,28 @@ function toggleRole(uid,role,on){
   pendingUserUpdates[uid].role=rStr;
 }
   
-function setLevel(uid,type,val){
-  
-  console.log('[setLevel]', uid, type, val);
+function setLevel(uid, type, val) {
+  const u = allUsers.find(x => x.user_id == uid);
+  if (!u) return;
 
-  const u=allUsers.find(x=>x.user_id==uid);
-  let [j,r]=splitLevel(u.level);
-  if(type==='judge') j=val; else r=val;
-  u.level=`${j},${r}`;
-  if(!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
-  pendingUserUpdates[uid].level=u.level;
+  // 現有 level 拆開
+  const [judgeLv = 'N', recordLv = 'N'] = (u.level || 'N,N').split(',');
+
+  // 改其中一個
+  const newJudgeLv = (type === 'judge') ? val : judgeLv;
+  const newRecordLv = (type === 'record') ? val : recordLv;
+
+  const newLevel = `${newJudgeLv},${newRecordLv}`;
+
+  // ✅ 更新前端狀態
+  u.level = newLevel;
+
+  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
+  pendingUserUpdates[uid].level = newLevel;
+
+  console.log('[setLevel merged]', uid, newLevel);
 }
+  
   
 function saveUser(uid) {
   const data = pendingUserUpdates[uid];
