@@ -166,17 +166,41 @@ function switchTab(type, btn){
 document.addEventListener('DOMContentLoaded', ()=>{
   const session = JSON.parse(localStorage.getItem('session_user')||'{}');
   document.getElementById('u_name').textContent = session.name||'';
-  loadUsers();
+  ();
 });
 
 function loadUsers(){
   callApi({action:'getUsers'}, res=>{
     if(!res || res.result!=='ok'){ showToast('載入失敗'); return; }
-    allUsers = res.users.map(u=>{
-      if(!u.role) u.role='';
-      if(!u.record_level) u.record_level='N';
+
+    // 舊程式
+    // allUsers = res.users.map(u=>{
+    //   if(!u.role) u.role='';
+    //   if(!u.record_level) u.record_level='N';
+    //   return u;
+    // });
+
+    allUsers = res.users.map(u => {
+      // role 保底
+      if (!u.role) u.role = '';
+    
+      // ===== level 標準化 =====
+      // 舊資料：
+      //   "C"    → "C,N"
+      //   "NONE" → "N,N"
+      // 新資料：
+      //   "C,N" / "N,C" / "C,C"
+    
+      if (!u.level || u.level === 'NONE') {
+        u.level = 'N,N';
+      } else if (!u.level.includes(',')) {
+        // 舊單值格式
+        u.level = `${u.level},N`;
+      }
+    
       return u;
     });
+    
     renderLists();
 
     // ✅ 用 currentTab 切回原頁籤（這行位置是對的）
@@ -210,6 +234,7 @@ function renderLists(){
 
 function renderEditableRow(u){
   const roles = u.role.split(',').map(r=>r.trim());
+  const [judgeLevel, recordLevel] = u.level.split(',');
   const tr=document.createElement('tr');
   tr.dataset.uid=u.user_id;
   tr.innerHTML=`
@@ -226,20 +251,21 @@ function renderEditableRow(u){
 <label><input type="checkbox" data-role="admin" ${roles.includes('admin')?'checked':''} disabled onchange="markRole('${u.user_id}')">系統管理員</label>
 </td>
 <td>
-<select disabled onchange="markField('${u.user_id}','level',this.value)">
-  <option value="N" ${u.level === 'N' ? 'selected' : ''}>暫無</option>
-  <option value="A" ${u.level === 'A' ? 'selected' : ''}>A</option>
-  <option value="B" ${u.level === 'B' ? 'selected' : ''}>B</option>
-  <option value="C" ${u.level === 'C' ? 'selected' : ''}>C</option>
+<select disabled
+  onchange="markLevelChanged('${u.user_id}', 'judge', this.value)">
+  <option value="N" ${judgeLevel === 'N' ? 'selected' : ''}>暫無</option>
+  <option value="A" ${judgeLevel === 'A' ? 'selected' : ''}>A</option>
+  <option value="B" ${judgeLevel === 'B' ? 'selected' : ''}>B</option>
+  <option value="C" ${judgeLevel === 'C' ? 'selected' : ''}>C</option>
 </select>
 </td>
 <td>
 <select disabled
-  onchange="markFieldChanged('${u.user_id}', 'level', this.value)">
-  <option value="N" ${u.level === 'N' ? 'selected' : ''}>暫無</option>
-  <option value="A" ${u.level === 'A' ? 'selected' : ''}>A</option>
-  <option value="B" ${u.level === 'B' ? 'selected' : ''}>B</option>
-  <option value="C" ${u.level === 'C' ? 'selected' : ''}>C</option>
+  onchange="markLevelChanged('${u.user_id}', 'record', this.value)">
+  <option value="N" ${recordLevel === 'N' ? 'selected' : ''}>暫無</option>
+  <option value="A" ${recordLevel === 'A' ? 'selected' : ''}>A</option>
+  <option value="B" ${recordLevel === 'B' ? 'selected' : ''}>B</option>
+  <option value="C" ${recordLevel === 'C' ? 'selected' : ''}>C</option>
 </select>
 </td>
 <td>${u.active==='Y'?'啟用':'停用'}</td>
@@ -254,6 +280,28 @@ function renderEditableRow(u){
   return tr;
 }
 
+// 裁判及紀錄值組合成 X,Y
+function markLevelChanged(uid, type, value) {
+  const u = allUsers.find(x => String(x.user_id) === String(uid));
+  if (!u) return;
+
+  let [judgeLevel, recordLevel] = u.level.split(',');
+
+  if (type === 'judge') {
+    judgeLevel = value;
+  } else if (type === 'record') {
+    recordLevel = value;
+  }
+
+  const newLevel = `${judgeLevel},${recordLevel}`;
+
+  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
+  pendingUserUpdates[uid].level = newLevel;
+
+  // 同步前端狀態
+  u.level = newLevel;
+}
+  
 function renderAdminRow(u){
   const tr=document.createElement('tr');
   tr.innerHTML=`<td>${u.username}</td><td>${u.name}</td><td>${u.note||''}</td><td>${u.phone||''}</td><td>${u.email||''}</td><td>${u.role}</td><td>${u.active==='Y'?'啟用':'停用'}</td>`;
