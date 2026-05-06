@@ -361,59 +361,53 @@ function renderEditableRow(u) {
     </td>
     
     <td>
-      <div class="role-group">
         <!-- 裁判群組 -->
         <label>
           <input type="radio"
-            name="judge_${u.user_id}"
-            value="judge"
-            disabled
-            ${roleList.includes('judge') ? 'checked' : ''}
-            onchange="markRoleChanged('${u.user_id}')">
+                 name="judge_${u.user_id}"
+                 value="judge"
+                 ${roleList.includes('judge') ? 'checked' : ''}
+                 disabled>
           裁判
         </label>
-    
+      
         <label>
           <input type="radio"
-            name="judge_${u.user_id}"
-            value="chief_judge"
-            disabled
-            ${roleList.includes('chief_judge') ? 'checked' : ''}
-            onchange="markRoleChanged('${u.user_id}')">
+                 name="judge_${u.user_id}"
+                 value="chief_judge"
+                 ${roleList.includes('chief_judge') ? 'checked' : ''}
+                 disabled>
           裁判長
         </label>
-    
+      
         <!-- 紀錄群組 -->
         <label>
           <input type="radio"
-            name="record_${u.user_id}"
-            value="record"
-            disabled
-            ${roleList.includes('record') ? 'checked' : ''}
-            onchange="markRoleChanged('${u.user_id}')">
+                 name="record_${u.user_id}"
+                 value="record"
+                 ${roleList.includes('record') ? 'checked' : ''}
+                 disabled>
           紀錄
         </label>
-    
+      
         <label>
           <input type="radio"
-            name="record_${u.user_id}"
-            value="record_chief"
-            disabled
-            ${roleList.includes('record_chief') ? 'checked' : ''}
-            onchange="markRoleChanged('${u.user_id}')">
+                 name="record_${u.user_id}"
+                 value="record_chief"
+                 ${roleList.includes('record_chief') ? 'checked' : ''}
+                 disabled>
           紀錄長
         </label>
-    
-        <!-- 系統管理員 -->
+      
+        <!-- 系統管理員（獨立） -->
         <label>
           <input type="checkbox"
-            value="admin"
-            disabled
-            ${roleList.includes('admin') ? 'checked' : ''}>
+                 ${roleList.includes('admin') ? 'checked' : ''}
+                 disabled>
           系統管理員
         </label>
-      </div>
-    </td>
+      </td>
+
     
     <td>
       <select
