@@ -233,21 +233,36 @@ function loadUsers(){
   });
 }
 
-function renderLists(){
-  ['judge','record','admin'].forEach(t=>{
-    document.getElementById('tbody-'+t).innerHTML='';
+function renderLists() {
+  ['judge','record','admin'].forEach(t => {
+    document.getElementById('tbody-' + t).innerHTML = '';
   });
 
-  allUsers.forEach(u=>{
-    const roles = u.role.split(',').map(r=>r.trim()).filter(Boolean);
-    if(roles.includes('judge')||roles.includes('chief_judge')){
-      document.getElementById('tbody-judge').appendChild((u));
+  allUsers.forEach(u => {
+    const roles = (u.role || '')
+      .split(',')
+      .map(r => r.trim())
+      .filter(Boolean);
+
+    // ✅ 裁判頁
+    if (roles.includes('judge') || roles.includes('chief_judge')) {
+      document
+        .getElementById('tbody-judge')
+        .appendChild(renderEditableRow(u)); // ✅ 改這裡
     }
-    if(roles.includes('record')||roles.includes('record_chief')){
-      document.getElementById('tbody-record').appendChild((u));
+
+    // ✅ 紀錄頁
+    if (roles.includes('record') || roles.includes('record_chief')) {
+      document
+        .getElementById('tbody-record')
+        .appendChild(renderEditableRow(u)); // ✅ 改這裡
     }
-    if(roles.includes('admin')){
-      document.getElementById('tbody-admin').appendChild(renderAdminRow(u));
+
+    // ✅ 系統管理員頁
+    if (roles.includes('admin')) {
+      document
+        .getElementById('tbody-admin')
+        .appendChild(renderAdminRow(u));
     }
   });
 }
