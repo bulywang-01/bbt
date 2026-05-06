@@ -191,6 +191,10 @@ button {
    ===================================================== */
 let allUsers = [];
 let pendingUserUpdates = {};
+  
+// ✅ 記住目前所在的頁籤（judge / record / admin）
+let currentTab = 'judge';
+
 
 /* =====================================================
    身份中文化 helper
@@ -230,10 +234,27 @@ document.addEventListener('DOMContentLoaded', () => {
    Tabs
    ===================================================== */
 function switchTab(type, btn) {
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+
+  // 🔒 若有未儲存變更，先提醒（第 4 項）
+  if (hasUnsavedChanges()) {
+    if (!confirm('尚未儲存修改，確定要切換頁籤？')) {
+      return;
+    }
+  }
+
+  // 記住目前頁籤（給第 5 項使用）
+  currentTab = type;
+
+  // 切換 active 樣式
+  document.querySelectorAll('.tab')
+    .forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  ['judge','record','admin'].forEach(t => {
-    document.getElementById('table-'+t).classList.toggle('hidden', t!==type);
+
+  // 顯示對應 table
+  ['judge', 'record', 'admin'].forEach(t => {
+    document
+      .getElementById('table-' + t)
+      .classList.toggle('hidden', t !== type);
   });
 }
 
@@ -254,25 +275,23 @@ function loadUsers() {
    Render lists
    ===================================================== */
 function renderLists() {
-  // ✅ 正確取得 tbody DOM
   const tbodyJudge  = document.getElementById('tbody-judge');
   const tbodyRecord = document.getElementById('tbody-record');
   const tbodyAdmin  = document.getElementById('tbody-admin');
 
-  // ✅ 清空內容
-  tbodyJudge.innerHTML  = '';
+  tbodyJudge.innerHTML = '';
   tbodyRecord.innerHTML = '';
-  tbodyAdmin.innerHTML  = '';
+  tbodyAdmin.innerHTML = '';
 
   allUsers.forEach(u => {
     const roles = (u.role || '').split(',').filter(Boolean);
 
-    // 裁判（含裁判長）
+    // 裁判視角
     if (roles.some(r => r === 'judge' || r === 'chief_judge')) {
       tbodyJudge.appendChild(renderRow(u));
     }
 
-    // 紀錄（含紀錄長）
+    // 紀錄視角
     if (roles.some(r => r === 'record' || r === 'record_chief')) {
       tbodyRecord.appendChild(renderRow(u));
     }
@@ -296,8 +315,53 @@ function renderRow(u) {
     <td>${u.note || ''}</td>
     <td>${u.phone || ''}</td>
     <td>${u.email || ''}</td>
-    <td>${renderRoleText(u.role)}</td>
-
+    <td>
+      <div class="role-group">
+        <!-- 裁判群組 -->
+        <label>
+          <input type="radio" name="judge_${u.user_id}"
+            ${u.role.includes('judge') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','judge','chief_judge','judge')">
+          裁判
+        </label>
+    
+        <label>
+          <input type="radio" name="judge_${u.user_id}"
+            ${u.role.includes('chief_judge') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','judge','chief_judge','chief_judge')">
+          裁判長
+        </label>
+    
+        <!-- 紀錄群組 -->
+        <label>
+          <input type="radio" name="record_${u.user_id}"
+            ${u.role.includes('record') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','record','record_chief','record')">
+          紀錄
+        </label>
+    
+        <label>
+          <input type="radio" name="record_${u.user_id}"
+            ${u.role.includes('record_chief') ? 'checked' : ''}
+            disabled
+            onchange="toggleRoleGroup('${u.user_id}','record','record_chief','record_chief')">
+          紀錄長
+        </label>
+    
+        <!-- 管理員 -->
+        <label>
+          <input type="checkbox"
+            ${u.role.includes('admin') ? 'checked' : ''}
+            disabled
+            onchange="toggleAdmin('${u.user_id}',this.checked)">
+          系統管理員
+        </label>
+      </div>
+    </td>
+    
     <td>
       <select class="small-select edit" disabled
         onchange="updateJudgeLevel('${u.user_id}',this.value)">
@@ -351,16 +415,29 @@ function renderRowAdmin(u) {
 /* =====================================================
    Editing
    ===================================================== */
+// 「是否有未儲存異動」檢查
+function hasUnsavedChanges() {
+  return Object.keys(pendingUserUpdates).some(k => pendingUserUpdates[k]);
+}
+
 function enableEdit(btn){
   const tr = btn.closest('tr');
   tr.classList.add('editing');
-  tr.querySelectorAll('select').forEach(el => el.disabled=false);
+  tr.querySelectorAll('input, select').forEach(el => {
+    if (el.dataset.readonly === 'Y') return; // 保留只讀
+    el.disabled = false;
+  });
 }
+
 function cancelEdit(btn){
+  if (hasUnsavedChanges()) {
+    if (!confirm('尚未儲存，確定要取消修改？')) return;
+  }
   const tr = btn.closest('tr');
   tr.classList.remove('editing');
-  tr.querySelectorAll('select').forEach(el => el.disabled=true);
+  tr.querySelectorAll('input, select').forEach(el => el.disabled = true);
 }
+  
 function updateJudgeLevel(uid,val){
   const u = allUsers.find(x => x.user_id==uid);
   u.level = val;
@@ -377,13 +454,57 @@ function updateRecordLevel(uid,val){
    ===================================================== */
 function saveUser(uid){
   const data = pendingUserUpdates[uid];
-  if(!data) return;
+  if(!data) return showToast('尚未修改','warn');
 
-  callApi({ action:'updateUser', user_id:uid, ...data }, ()=>{
-    pendingUserUpdates[uid]=null;
+  callApi({
+    action:'updateUser',
+    user_id: uid,
+    ...data
+  }, res => {
+    if(!res || res.result !== 'ok'){
+      showToast('更新失敗','error');
+      return;
+    }
+
+    showToast('更新完成');
+    pendingUserUpdates[uid] = null;
+
+    // ✅ 重新載入資料
     loadUsers();
+
+    // ✅【第 5 項】跳回剛剛的頁籤
+    setTimeout(() => {
+      const tabBtn = document.querySelector(
+        `.tab[onclick*="${currentTab}"]`
+      );
+      if (tabBtn) tabBtn.click();
+    }, 0);
   });
 }
+
+function createUser(){
+  callApi({
+    action: 'createUser',
+    ...
+  }, res => {
+    if(!res || res.result !== 'ok'){
+      showToast('新增失敗','error');
+      return;
+    }
+
+    showToast('新增成功');
+    loadUsers();
+
+    // ✅ 同樣套用第 5 項
+    setTimeout(() => {
+      const tabBtn = document.querySelector(
+        `.tab[onclick*="${currentTab}"]`
+      );
+      if (tabBtn) tabBtn.click();
+    }, 0);
+  });
+}
+
 </script>
 </body>
 </html>
