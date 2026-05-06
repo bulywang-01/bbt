@@ -379,13 +379,9 @@ function renderRow(u){
       </div>
     </td>
     <td>
-      <select class="small-select" disabled
-        onchange="updateField('${u.user_id}','level',this.value)">
-        <option value="NONE">無</option>
-        <option value="A" ${u.level==='A'?'selected':''}>A</option>
-        <option value="B" ${u.level==='B'?'selected':''}>B</option>
-        <option value="C" ${u.level==='C'?'selected':''}>C</option>
-      </select>
+
+      ${renderLevelByTabs(u)}
+
     </td>
     <td>
       <select class="small-select" disabled
