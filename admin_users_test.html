@@ -5,9 +5,6 @@
 <title>使用者帳號管理</title>
 
 <style>
-/* =========================
-   基本版型與共用樣式
-   ========================= */
 body {
   margin: 0;
   font-family: system-ui, -apple-system;
@@ -26,19 +23,9 @@ body {
   text-decoration: none;
   color: #0066cc;
 }
-.main {
-  padding: 20px;
-}
+.main { padding: 20px; }
 
-/* =========================
-   Toolbar / Tabs
-   ========================= */
-.toolbar {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 12px;
-}
+/* ===== Tabs ===== */
 .tabs {
   display: flex;
   gap: 8px;
@@ -55,11 +42,8 @@ body {
   background: #2c7be5;
   color: #fff;
 }
-.hidden { display: none; }
 
-/* =========================
-   Table
-   ========================= */
+/* ===== Table ===== */
 .user-table {
   width: 100%;
   border-collapse: collapse;
@@ -76,13 +60,9 @@ body {
   background: #f1f5f9;
 }
 
-.small-select {
-  width: 60px;
-}
+.small-select { width: 70px; }
 
-/* =========================
-   編輯中提示
-   ========================= */
+/* ===== 編輯提示 ===== */
 tr.editing {
   background-color: #fff8dc;
 }
@@ -93,19 +73,7 @@ tr.editing td {
 tr.editing .action-view { display: none; }
 tr.editing .action-edit { display: inline-block; }
 
-/* =========================
-   身份 radio/checkbox
-   ========================= */
-.role-group {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  white-space: nowrap;
-}
-
-/* =========================
-   Toast
-   ========================= */
+/* ===== Toast ===== */
 .toast {
   position: fixed;
   top: 50%;
@@ -137,235 +105,201 @@ button {
 
 <body>
 
-<!-- =========================
-     Header
-     ========================= -->
 <div class="header">
   <div class="nav">
-    <a href="index.html">🏠 首頁</a>
-    <a href="judge_dashboard.html">📋 報名</a>
-    <a href="admin_dashboard.html">⚙️ 管理</a>
+    index.html🏠 首頁</a>
+    judge_dashboard.html📋 報名</a>
+    admin_dashboard.html⚙️ 管理</a>
   </div>
   <div>
     <span id="u_name"></span>
-    <a href="#" onclick="logout()">登出</a>
+    #登出</a>
   </div>
 </div>
 
 <div class="main">
 
-<!-- =========================
-     新增使用者（支援雙證照）
-     ========================= -->
-<h3>➕ 新增使用者</h3>
-<div class="toolbar">
-  <input id="new_username" placeholder="帳號">
-  <input id="new_name" placeholder="姓名">
-  <input id="new_phone" placeholder="電話">
-  <input id="new_email" placeholder="Email">
-
-  <!-- 裁判證照 -->
-  <select id="new_judge_level">
-    <option value="N">裁判證照：N</option>
-    <option value="A">A</option>
-    <option value="B">B</option>
-    <option value="C">C</option>
-  </select>
-
-  <!-- 紀錄證照（前端暫存） -->
-  <select id="new_record_level">
-    <option value="N">紀錄證照：N</option>
-    <option value="A">A</option>
-    <option value="B">B</option>
-    <option value="C">C</option>
-  </select>
-
-  <!-- 身份 -->
-  <label><input type="checkbox" id="r_judge">裁判</label>
-  <label><input type="checkbox" id="r_chief_judge">裁判長</label>
-  <label><input type="checkbox" id="r_record">紀錄</label>
-  <label><input type="checkbox" id="r_record_chief">紀錄長</label>
-  <label><input type="checkbox" id="r_admin">管理員</label>
-
-  <button class="primary" onclick="createUser()">新增</button>
-</div>
-
-<hr>
-
-<!-- =========================
-     Tabs
-     ========================= -->
+<!-- ================= Tabs ================= -->
 <div class="tabs">
   <button class="tab active" onclick="switchTab('judge',this)">⚖️ 裁判</button>
   <button class="tab" onclick="switchTab('record',this)">📝 紀錄</button>
   <button class="tab" onclick="switchTab('admin',this)">🛠 系統管理員</button>
 </div>
 
-<!-- =========================
-     Tables
-     ========================= -->
+<!-- ================= 裁判 / 紀錄 ================= -->
 <table class="user-table" id="table-judge">
-  <thead>
-    <tr>
-      <th>帳號</th>
-      <th>姓名</th>
-      <th>身份</th>
-      <th>裁判證照</th>
-      <th>紀錄證照</th>
-      <th>狀態</th>
-      <th>操作</th>
-    </tr>
-  </thead>
-  <tbody id="tbody-judge"></tbody>
+<thead>
+<tr>
+  <th>帳號</th>
+  <th>姓名</th>
+  <th>背號</th>
+  <th>電話</th>
+  <th>Email</th>
+  <th>身份</th>
+  <th>裁判證照</th>
+  <th>紀錄證照</th>
+  <th>狀態</th>
+  <th>操作</th>
+</tr>
+</thead>
+<tbody id="tbody-judge"></tbody>
 </table>
 
 <table class="user-table hidden" id="table-record">
-  <thead>
-    <tr>
-      <th>帳號</th>
-      <th>姓名</th>
-      <th>身份</th>
-      <th>裁判證照</th>
-      <th>紀錄證照</th>
-      <th>狀態</th>
-      <th>操作</th>
-    </tr>
-  </thead>
-  <tbody id="tbody-record"></tbody>
+<thead>
+<tr>
+  <th>帳號</th>
+  <th>姓名</th>
+  <th>背號</th>
+  <th>電話</th>
+  <th>Email</th>
+  <th>身份</th>
+  <th>裁判證照</th>
+  <th>紀錄證照</th>
+  <th>狀態</th>
+  <th>操作</th>
+</tr>
+</thead>
+<tbody id="tbody-record"></tbody>
 </table>
 
 <table class="user-table hidden" id="table-admin">
-  <thead>
-    <tr>
-      <th>帳號</th>
-      <th>姓名</th>
-      <th>身份</th>
-      <th>狀態</th>
-    </tr>
-  </thead>
-  <tbody id="tbody-admin"></tbody>
+<thead>
+<tr>
+  <th>帳號</th>
+  <th>姓名</th>
+  <th>背號</th>
+  <th>電話</th>
+  <th>Email</th>
+  <th>身份</th>
+  <th>狀態</th>
+</tr>
+</thead>
+<tbody id="tbody-admin"></tbody>
 </table>
 
 </div>
 
 <script src="js/config.js"></script>
 <script>
-/* =========================================================
-   狀態變數
-   ========================================================= */
+/* =====================================================
+   全域狀態
+   ===================================================== */
 let allUsers = [];
 let pendingUserUpdates = {};
 
-/* =========================================================
-   初始化
-   ========================================================= */
+/* =====================================================
+   身份中文化 helper
+   ===================================================== */
+function renderRoleText(roleStr) {
+  const map = {
+    judge: '裁判',
+    chief_judge: '裁判長',
+    record: '紀錄',
+    record_chief: '紀錄長',
+    admin: '系統管理員'
+  };
+  return (roleStr || '')
+    .split(',')
+    .map(r => map[r] || r)
+    .join('／');
+}
+
+/* =====================================================
+   證照顯示 helper（N → 暫無）
+   ===================================================== */
+function displayLevel(val) {
+  if (!val || val === 'N' || val === 'NONE') return '暫無';
+  return val;
+}
+
+/* =====================================================
+   Init
+   ===================================================== */
 document.addEventListener('DOMContentLoaded', () => {
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
   document.getElementById('u_name').textContent = session.name || '';
   loadUsers();
 });
 
-/* =========================================================
-   工具函式
-   ========================================================= */
-function normalizeLevel(v) {
-  return (!v || v === 'NONE') ? 'N' : v;
-}
-
-function showToast(msg, type='success') {
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.classList.add('show'), 50);
-  setTimeout(() => t.remove(), 3000);
-}
-
-/* =========================================================
-   載入使用者（補 record_level 前端欄位）
-   ========================================================= */
-function loadUsers() {
-  callApi({ action: 'getUsers' }, res => {
-    if (!res || res.result !== 'ok') return showToast('讀取失敗','error');
-
-    // ✅ record_level：前端補值（暫不送後端）
-    allUsers = (res.users || []).map(u => {
-      if (!u.record_level) u.record_level = 'N';
-      return u;
-    }).sort((a,b)=>a.user_id-b.user_id);
-
-    renderLists();
-  });
-}
-
-/* =========================================================
+/* =====================================================
    Tabs
-   ========================================================= */
+   ===================================================== */
 function switchTab(type, btn) {
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   ['judge','record','admin'].forEach(t => {
-    document.getElementById('table-'+t).classList.toggle('hidden', t !== type);
+    document.getElementById('table-'+t).classList.toggle('hidden', t!==type);
   });
 }
 
-/* =========================================================
-   Render
-   ========================================================= */
+/* =====================================================
+   Load users
+   ===================================================== */
+function loadUsers() {
+  callApi({ action:'getUsers' }, res => {
+    allUsers = (res.users || []).map(u => {
+      if (!u.record_level) u.record_level = 'N';
+      return u;
+    });
+    renderLists();
+  });
+}
+
+/* =====================================================
+   Render lists
+   ===================================================== */
 function renderLists() {
-  const bodies = {
-    judge: document.getElementById('tbody-judge'),
-    record: document.getElementById('tbody-record'),
-    admin: document.getElementById('tbody-admin'),
-  };
-  Object.values(bodies).forEach(b => b.innerHTML='');
+  tbodyJudge.innerHTML = '';
+  tbodyRecord.innerHTML = '';
+  tbodyAdmin.innerHTML = '';
 
   allUsers.forEach(u => {
-    const roles = (u.role || '').split(',').filter(Boolean);
+    const roles = (u.role || '').split(',');
 
-    if (roles.includes('judge') || roles.includes('chief_judge'))
-      bodies.judge.appendChild(renderRow(u));
+    if (roles.some(r => r==='judge' || r==='chief_judge'))
+      tbodyJudge.appendChild(renderRow(u));
 
-    if (roles.includes('record') || roles.includes('record_chief'))
-      bodies.record.appendChild(renderRow(u));
+    if (roles.some(r => r==='record' || r==='record_chief'))
+      tbodyRecord.appendChild(renderRow(u));
 
     if (roles.includes('admin'))
-      bodies.admin.appendChild(renderRowAdmin(u));
+      tbodyAdmin.appendChild(renderRowAdmin(u));
   });
 }
 
-/* =========================================================
-   Row（裁判 / 紀錄 可編）
-   ========================================================= */
+/* =====================================================
+   Row renderer（裁判 / 紀錄）
+   ===================================================== */
 function renderRow(u) {
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td>${u.username}</td>
-    <td>${u.name || '（未填）'}</td>
+    <td>${u.name || ''}</td>
+    <td>${u.note || ''}</td>
+    <td>${u.phone || ''}</td>
+    <td>${u.email || ''}</td>
+    <td>${renderRoleText(u.role)}</td>
 
-    <td>${u.role}</td>
-
-    <!-- 裁判證照（會送後端） -->
     <td>
       <select class="small-select edit" disabled
-        onchange="updateJudgeLevel('${u.user_id}', this.value)">
+        onchange="updateJudgeLevel('${u.user_id}',this.value)">
         ${['N','A','B','C'].map(v =>
-          `<option value="${v}" ${normalizeLevel(u.level)===v?'selected':''}>${v}</option>`
+          `<option value="${v}" ${u.level===v?'selected':''}>${displayLevel(v)}</option>`
         ).join('')}
       </select>
     </td>
 
-    <!-- 紀錄證照（前端暫存） -->
     <td>
       <select class="small-select edit" disabled
-        onchange="updateRecordLevel('${u.user_id}', this.value)">
+        onchange="updateRecordLevel('${u.user_id}',this.value)">
         ${['N','A','B','C'].map(v =>
-          `<option value="${v}" ${normalizeLevel(u.record_level)===v?'selected':''}>${v}</option>`
+          `<option value="${v}" ${u.record_level===v?'selected':''}>${displayLevel(v)}</option>`
         ).join('')}
       </select>
     </td>
 
-    <td>${u.active === 'Y' ? '啟用' : '停用'}</td>
+    <td>${u.active==='Y'?'啟用':'停用'}</td>
 
     <td>
       <div class="action-view">
@@ -380,109 +314,58 @@ function renderRow(u) {
   return tr;
 }
 
-/* =========================================================
-   Row（系統管理員：唯讀）
-   ========================================================= */
+/* =====================================================
+   Row renderer（系統管理員唯讀）
+   ===================================================== */
 function renderRowAdmin(u) {
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td>${u.username}</td>
-    <td>${u.name || ''}</td>
-    <td>${u.role}</td>
-    <td>${u.active === 'Y' ? '啟用' : '停用'}</td>
+    <td>${u.name||''}</td>
+    <td>${u.note||''}</td>
+    <td>${u.phone||''}</td>
+    <td>${u.email||''}</td>
+    <td>${renderRoleText(u.role)}</td>
+    <td>${u.active==='Y'?'啟用':'停用'}</td>
   `;
   return tr;
 }
 
-/* =========================================================
-   Edit / Save
-   ========================================================= */
-function enableEdit(btn) {
+/* =====================================================
+   Editing
+   ===================================================== */
+function enableEdit(btn){
   const tr = btn.closest('tr');
   tr.classList.add('editing');
-  tr.querySelectorAll('input,select').forEach(el => el.disabled=false);
+  tr.querySelectorAll('select').forEach(el => el.disabled=false);
 }
-
-function cancelEdit(btn) {
+function cancelEdit(btn){
   const tr = btn.closest('tr');
   tr.classList.remove('editing');
-  tr.querySelectorAll('input,select').forEach(el => el.disabled=true);
+  tr.querySelectorAll('select').forEach(el => el.disabled=true);
 }
-
-function updateJudgeLevel(uid, val) {
-  const u = allUsers.find(x => x.user_id == uid);
-  if (!u) return;
+function updateJudgeLevel(uid,val){
+  const u = allUsers.find(x => x.user_id==uid);
   u.level = val;
   pendingUserUpdates[uid] = pendingUserUpdates[uid] || {};
   pendingUserUpdates[uid].level = val;
 }
-
-function updateRecordLevel(uid, val) {
-  const u = allUsers.find(x => x.user_id == uid);
-  if (!u) return;
+function updateRecordLevel(uid,val){
+  const u = allUsers.find(x => x.user_id==uid);
   u.record_level = val;
-  // ❌ 不送後端（暫存）
 }
 
-function saveUser(uid) {
+/* =====================================================
+   Save
+   ===================================================== */
+function saveUser(uid){
   const data = pendingUserUpdates[uid];
-  if (!data) return showToast('尚未修改','warn');
+  if(!data) return;
 
-  // 🔒 防呆：裁判長 / 紀錄長 必須有證照
-  const u = allUsers.find(x => x.user_id == uid);
-  if (u.role.includes('chief_judge') && normalizeLevel(u.level)==='N')
-    return showToast('裁判長必須有裁判證照','warn');
-
-  if (u.role.includes('record_chief') && normalizeLevel(u.record_level)==='N')
-    return showToast('紀錄長必須有紀錄證照','warn');
-
-  callApi({ action:'updateUser', user_id: uid, ...data }, res => {
-    if (!res || res.result !== 'ok') return showToast('更新失敗','error');
-    showToast('更新完成');
-    pendingUserUpdates[uid] = null;
+  callApi({ action:'updateUser', user_id:uid, ...data }, ()=>{
+    pendingUserUpdates[uid]=null;
     loadUsers();
   });
-}
-
-/* =========================================================
-   新增使用者（含雙證照防呆）
-   ========================================================= */
-function createUser() {
-  const roles = [];
-  if (r_judge.checked) roles.push('judge');
-  if (r_chief_judge.checked) roles.push('chief_judge');
-  if (r_record.checked) roles.push('record');
-  if (r_record_chief.checked) roles.push('record_chief');
-  if (r_admin.checked) roles.push('admin');
-
-  const judgeLevel = new_judge_level.value;
-  const recordLevel = new_record_level.value;
-
-  if (roles.includes('chief_judge') && judgeLevel === 'N')
-    return showToast('裁判長必須選裁判證照','warn');
-
-  if (roles.includes('record_chief') && recordLevel === 'N')
-    return showToast('紀錄長必須選紀錄證照','warn');
-
-  callApi({
-    action: 'createUser',
-    username: new_username.value.trim(),
-    name: new_name.value.trim(),
-    phone: new_phone.value.trim(),
-    email: new_email.value.trim(),
-    level: judgeLevel,
-    role: roles.join(','),
-    active: 'Y'
-  }, res => {
-    if (!res || res.result !== 'ok') return showToast('新增失敗','error');
-    showToast('新增成功');
-    loadUsers();
-  });
-}
-
-function logout() {
-  localStorage.clear();
-  location.href='login.html';
 }
 </script>
 </body>
