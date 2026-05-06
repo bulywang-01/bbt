@@ -443,33 +443,43 @@ function setLevel(uid,type,val){
   pendingUserUpdates[uid].level=u.level;
 }
   
-function saveUser(uid){
+function saveUser(uid) {
   const data = pendingUserUpdates[uid];
-  if(!data) {
+  if (!data) {
     showToast('尚未修改','warn');
     return;
   }
 
-  callApi(
-    { action:'updateUser', user_id: uid, ...data },
-    function(res){
+  const entries = Object.entries(data);
+  let finished = 0;
+  let hasError = false;
 
-      // ✅ 只在「明確 error」才視為失敗
-      if (res && res.result === 'error') {
-        showToast(res.message || '儲存失敗','error');
-        return;
+  entries.forEach(([field, value]) => {
+    callApi(
+      {
+        action: 'updateUserField',  // ✅ 換這個
+        user_id: uid,
+        field,
+        value
+      },
+      function(res) {
+
+        if (res && res.result === 'error') {
+          hasError = true;
+          showToast(res.message || `更新 ${field} 失敗`,'error');
+        }
+
+        finished++;
+
+        // ✅ 全部欄位送完後才 refresh
+        if (finished === entries.length && !hasError) {
+          showToast('儲存成功','success');
+          pendingUserUpdates[uid] = null;
+          loadUsers();
+        }
       }
-
-      showToast('儲存成功','success');
-      
-      setTimeout(() => {
-        loadUsers();
-      }, 300);
-
-      pendingUserUpdates[uid] = null;
-      loadUsers();
-    }
-  );
+    );
+  });
 }
 
 /* create */
