@@ -226,6 +226,7 @@ table td {
 <thead>
 <tr>
   <th>帳號</th>
+  <th>狀態</th>
   <th>背號</th>
   <th>姓名</th>
   <th>Email</th>
@@ -278,6 +279,25 @@ function displayLevel(v) {
 let allUsers = [];
 let pendingUserUpdates = {};
 let currentTab = 'account';
+
+// ===== 帳號狀態 =====
+function toggleActive(userId, checked) {
+  callApi(
+    {
+      action: 'toggleUserActive',
+      user_id: userId,
+      active: checked ? 1 : 0
+    },
+    function (res) {
+      if (res && res.result === 'error') {
+        showToast(res.message || '狀態更新失敗', 'error');
+        return;
+      }
+      showToast('狀態已更新', 'success');
+      loadUsers(); // 重載以同步各清單顯示
+    }
+  );
+}
 
 // ===== 專門為頁籤算人數 =====
 function updateTabCounts() {
@@ -395,6 +415,16 @@ function renderAccountList(){
     
     tr.innerHTML=`
 <td>${u.username}</td>
+<td style="text-align:center;">
+  <label style="cursor:pointer;">
+    <input
+      type="checkbox"
+      ${u.active ? 'checked' : ''}
+      onchange="toggleActive('${u.user_id}', this.checked)"
+    >
+    ${u.active ? '啟用' : '停用'}
+  </label>
+</td>
 <td>
   <input
     value="${u.note || ''}"
