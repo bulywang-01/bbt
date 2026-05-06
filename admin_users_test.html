@@ -336,7 +336,7 @@ function renderAccountList(){
 
 
       <td>
-        <button class="primary" onclick="saveUser('${u.user_id}')">儲存</button>
+        <button class="primary" onclick="('${u.user_id}')">儲存</button>
         ${u.username === 'admin'
             ? ''
             : `<button onclick="deleteUser('${u.user_id}','${u.username}')">🗑 刪除</button>`
@@ -444,18 +444,27 @@ function setLevel(uid,type,val){
 }
   
 function saveUser(uid){
-  const data=pendingUserUpdates[uid];
-  if(!data) return alert('尚未修改');
-  
-  callApi({ action:'updateUser', user_id:uid, ...data }, res=>{
-    if (!res || res.result !== 'ok') {
-      showToast('儲存失敗','error');
-      return;
+  const data = pendingUserUpdates[uid];
+  if(!data) {
+    showToast('尚未修改','warn');
+    return;
+  }
+
+  callApi(
+    { action:'updateUser', user_id: uid, ...data },
+    function(res){
+
+      // ✅ 只在「明確 error」才視為失敗
+      if (res && res.result === 'error') {
+        showToast(res.message || '儲存失敗','error');
+        return;
+      }
+
+      showToast('儲存成功','success');
+      pendingUserUpdates[uid] = null;
+      loadUsers();
     }
-    showToast('儲存成功');
-    pendingUserUpdates[uid]=null;
-    loadUsers();
-  });
+  );
 }
 
 /* create */
