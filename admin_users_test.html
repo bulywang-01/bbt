@@ -266,14 +266,21 @@ function switchTab(type, btn) {
    Load users
    ===================================================== */
 function loadUsers() {
-  callApi({ action:'getUsers' }, res => {
-    allUsers = (res.users || []).map(u => {
+  callApi({ action: 'getUsers' }, res => {
+    allUsers = res.data.map(u => {
+      // ✅ 確保角色不被吃掉
+      if (!u.role) u.role = '';
+
+      // ✅ 前端才有的紀錄證照，補預設
       if (!u.record_level) u.record_level = 'N';
+
       return u;
     });
+
     renderLists();
   });
 }
+
 
 /* =====================================================
    Render lists
@@ -386,20 +393,22 @@ function renderEditableRow(u) {
     </td>
     
     <td>
-      <select class="small-select edit" disabled
-        onchange="updateJudgeLevel('${u.user_id}',this.value)">
-        ${['N','A','B','C'].map(v =>
-          `<option value="${v}" ${u.level===v?'selected':''}>${displayLevel(v)}</option>`
-        ).join('')}
+      <select
+        onchange="markJudgeLevelChanged('${u.user_id}', this.value)">
+        <option value="N" ${u.level === 'N' ? 'selected' : ''}>暫無</option>
+        <option value="A" ${u.level === 'A' ? 'selected' : ''}>A</option>
+        <option value="B" ${u.level === 'B' ? 'selected' : ''}>B</option>
+        <option value="C" ${u.level === 'C' ? 'selected' : ''}>C</option>
       </select>
     </td>
 
     <td>
-      <select class="small-select edit" disabled
-        onchange="updateRecordLevel('${u.user_id}',this.value)">
-        ${['N','A','B','C'].map(v =>
-          `<option value="${v}" ${u.record_level===v?'selected':''}>${displayLevel(v)}</option>`
-        ).join('')}
+      <select
+        onchange="markRecordLevelChanged('${u.user_id}', this.value)">
+        <option value="N" ${u.record_level === 'N' ? 'selected' : ''}>暫無</option>
+        <option value="A" ${u.record_level === 'A' ? 'selected' : ''}>A</option>
+        <option value="B" ${u.record_level === 'B' ? 'selected' : ''}>B</option>
+        <option value="C" ${u.record_level === 'C' ? 'selected' : ''}>C</option>
       </select>
     </td>
 
@@ -416,6 +425,20 @@ function renderEditableRow(u) {
     </td>
   `;
   return tr;
+}
+
+function markJudgeLevelChanged(uid, value) {
+  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
+  pendingUserUpdates[uid].level = value;
+}
+
+function markRecordLevelChanged(uid, value) {
+  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
+  pendingUserUpdates[uid].record_level = value;
+
+  // ✅ 同步到 allUsers，避免畫面重 render 又消失
+  const u = allUsers.find(x => x.user_id === uid);
+  if (u) u.record_level = value;
 }
 
 /* =====================================================
@@ -475,33 +498,33 @@ function updateRecordLevel(uid,val){
 /* =====================================================
    Save
    ===================================================== */
-function saveUser(uid){
+function saveUser(uid) {
   const data = pendingUserUpdates[uid];
-  if(!data) return showToast('尚未修改','warn');
+  if (!data) return showToast('尚未修改','warn');
 
   callApi({
-    action:'updateUser',
+    action: 'updateUser',
     user_id: uid,
     ...data
   }, res => {
-    if(!res || res.result !== 'ok'){
+
+    if (!res || res.result !== 'ok') {
       showToast('更新失敗','error');
       return;
     }
 
-    showToast('更新完成');
+    // ✅ 合併回前端狀態
+    const u = allUsers.find(x => x.user_id === uid);
+    if (u) {
+      Object.assign(u, data);
+    }
+
     pendingUserUpdates[uid] = null;
 
-    // ✅ 重新載入資料
-    loadUsers();
+    showToast('更新成功');
 
-    // ✅【第 5 項】跳回剛剛的頁籤
-    setTimeout(() => {
-      const tabBtn = document.querySelector(
-        `.tab[onclick*="${currentTab}"]`
-      );
-      if (tabBtn) tabBtn.click();
-    }, 0);
+    // ✅ 再 render，不要立刻洗資料
+    renderLists();
   });
 }
 
