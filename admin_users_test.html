@@ -485,9 +485,10 @@ function saveUser(uid){
 function createUser(){
   callApi({
     action: 'createUser',
-    ...
+    // 其他欄位...
   }, res => {
-    if(!res || res.result !== 'ok'){
+
+    if (!res || res.result !== 'ok') {
       showToast('新增失敗','error');
       return;
     }
@@ -495,13 +496,14 @@ function createUser(){
     showToast('新增成功');
     loadUsers();
 
-    // ✅ 同樣套用第 5 項
+    // ✅ 第 5 項：回到原頁籤
     setTimeout(() => {
       const tabBtn = document.querySelector(
         `.tab[onclick*="${currentTab}"]`
       );
       if (tabBtn) tabBtn.click();
     }, 0);
+
   });
 }
 
