@@ -130,7 +130,7 @@ button {
 </div>
 
 <!-- ================= 裁判 / 紀錄 ================= -->
-<table class="user-table" id="table-judge">
+<table id="table-judge">
 <thead>
 <tr>
   <th>帳號</th>
@@ -148,7 +148,7 @@ button {
 <tbody id="tbody-judge"></tbody>
 </table>
 
-<table class="hidden" id="table-record">
+<table id="table-record" class="hidden">
 <thead>
 <tr>
   <th>帳號</th>
@@ -166,7 +166,7 @@ button {
 <tbody id="tbody-record"></tbody>
 </table>
 
-<table class="hidden" id="table-admin">
+<table id="table-admin" class="hidden">
 <thead>
 <tr>
   <th>帳號</th>
@@ -327,7 +327,13 @@ function renderRecordRow(u) {
 }
 
 function renderEditableRow(u) {
-  const roleList = (u.role || '').split(',').map(r => r.trim());
+ // const roleList = (u.role || '').split(',').map(r => r.trim());
+  const roleList = (u.role || '').split(',').map(r => r.trim()).filter(Boolean);
+
+  // ✅ fallback：如果後端暫時沒 role，但之前是 admin
+  if (!roleList.length && u.is_admin === true) {
+    roleList.push('admin');
+  }
   
   const tr = document.createElement('tr');
   tr.setAttribute('data-uid', u.user_id); // ✅ 關鍵！
