@@ -349,43 +349,65 @@ function renderAccountList(){
 }
 
 /* 只讀名單 */
-function renderReadonlyLists(){
-  const clear = id=>document.getElementById(id).innerHTML='';
+function renderReadonlyLists() {
+  const clear = id => document.getElementById(id).innerHTML = '';
+
   clear('tbody-judge');
   clear('tbody-record');
   clear('tbody-chief_judge');
   clear('tbody-record_chief');
   clear('tbody-admin');
 
-  allUsers.forEach(u=>{
-    const roles=(u.role||'').split(',');
-    const [jLv,rLv]=splitLevel(u.level);
+  allUsers.forEach(u => {
+    const roles = (u.role || '').split(',').filter(Boolean);
 
-    if(roles.includes('judge')||roles.includes('chief_judge'))
-     // addRow('tbody-judge',[u.username,u.name||'',jLv]);
-        addRow('tbody-judge', [
-          u.username,
-          u.name || '',
-          displayLevel(judgeLv)
-        ]);
+    // ✅ ★★ 這一行一定要有 ★★
+    const [judgeLv, recordLv] = splitLevel(u.level);
 
-    if(roles.includes('record')||roles.includes('record_chief'))
-     // addRow('tbody-record',[u.username,u.name||'',rLv]);
-        addRow('tbody-record', [
-          u.username,
-          u.name || '',
-          displayLevel(recordLv)
-        ]);
+    // ✅ 裁判名單
+    if (roles.includes('judge') || roles.includes('chief_judge')) {
+      addRow('tbody-judge', [
+        u.username,
+        u.name || '',
+        displayLevel(judgeLv)
+      ]);
+    }
 
+    // ✅ 紀錄名單
+    if (roles.includes('record') || roles.includes('record_chief')) {
+      addRow('tbody-record', [
+        u.username,
+        u.name || '',
+        displayLevel(recordLv)
+      ]);
+    }
 
-    if(roles.includes('chief_judge'))
-      addRow('tbody-chief_judge',[u.username,u.name||'',jLv]);
+    // ✅ 裁判長名單
+    if (roles.includes('chief_judge')) {
+      addRow('tbody-chief_judge', [
+        u.username,
+        u.name || '',
+        displayLevel(judgeLv)
+      ]);
+    }
 
-    if(roles.includes('record_chief'))
-      addRow('tbody-record_chief',[u.username,u.name||'',rLv]);
+    // ✅ 紀錄長名單
+    if (roles.includes('record_chief')) {
+      addRow('tbody-record_chief', [
+        u.username,
+        u.name || '',
+        displayLevel(recordLv)
+      ]);
+    }
 
-    if(roles.includes('admin'))
-      addRow('tbody-admin',[u.username,u.name||'',u.email||'']);
+    // ✅ 管理員名單
+    if (roles.includes('admin')) {
+      addRow('tbody-admin', [
+        u.username,
+        u.name || '',
+        u.email || ''
+      ]);
+    }
   });
 }
 
