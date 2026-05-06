@@ -461,6 +461,11 @@ function saveUser(uid){
       }
 
       showToast('儲存成功','success');
+      
+      setTimeout(() => {
+        loadUsers();
+      }, 300);
+
       pendingUserUpdates[uid] = null;
       loadUsers();
     }
@@ -486,6 +491,11 @@ function openCreateUser(){
     }
   
     showToast('新增成功','success');
+    
+    setTimeout(() => {
+      loadUsers();
+    }, 300);
+
     loadUsers();
   });
 }
@@ -518,9 +528,10 @@ function deleteUser(uid, username) {
         showToast(res.message || '刪除失敗','error');
         return;
       }
-
-      showToast('刪除成功','success');
-      loadUsers();
+        showToast('刪除成功','success');
+        setTimeout(() => {
+          loadUsers();
+        }, 300);
     }
   );
 }
