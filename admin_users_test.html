@@ -308,6 +308,7 @@ function renderLists() {
    Row renderer（裁判 / 紀錄）
    ===================================================== */
 function renderRow(u) {
+  const roleList = (u.role || '').split(',').map(r => r.trim());
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td>${u.username}</td>
@@ -322,7 +323,7 @@ function renderRow(u) {
         <label>
           <input type="radio"
             name="judge_${u.user_id}"
-            ${u.role.includes('judge') || u.role.includes('chief_judge') ? 'checked' : ''}
+            ${roleList.includes('judge') ? 'checked' : ''}
             disabled>
           裁判
         </label>
@@ -330,7 +331,7 @@ function renderRow(u) {
         <label>
           <input type="radio"
             name="judge_${u.user_id}"
-            ${u.role.includes('chief_judge') ? 'checked' : ''}
+            ${roleList.includes('chief_judge') ? 'checked' : ''}
             disabled>
           裁判長
         </label>
@@ -339,7 +340,7 @@ function renderRow(u) {
         <label>
           <input type="radio"
             name="record_${u.user_id}"
-            ${u.role.includes('record') || u.role.includes('record_chief') ? 'checked' : ''}
+            ${roleList.includes('record') ? 'checked' : ''}
             disabled>
           紀錄
         </label>
@@ -347,15 +348,15 @@ function renderRow(u) {
         <label>
           <input type="radio"
             name="record_${u.user_id}"
-            ${u.role.includes('record_chief') ? 'checked' : ''}
+            ${roleList.includes('record_chief') ? 'checked' : ''}
             disabled>
           紀錄長
         </label>
     
-        <!-- 管理員 -->
+        <!-- 系統管理員 -->
         <label>
           <input type="checkbox"
-            ${u.role.includes('admin') ? 'checked' : ''}
+            ${roleList.includes('admin') ? 'checked' : ''}
             disabled>
           系統管理員
         </label>
