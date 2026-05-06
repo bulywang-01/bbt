@@ -292,6 +292,7 @@ function renderAll(){
   renderReadonlyLists();
 }
 
+
 /* 帳號清單（唯一可編輯） */
 function renderAccountList(){
   const tb = document.getElementById('tbody-account');
@@ -336,7 +337,13 @@ function renderAccountList(){
 
 
       <td>
-        <button class="primary" onclick="('${u.user_id}')">儲存</button>
+
+        <!-- ✅ 重點：不寫 onclick -->
+        <button class="primary save-btn"
+                data-uid="${u.user_id}">
+          儲存
+        </button>
+
         ${u.username === 'admin'
             ? ''
             : `<button onclick="deleteUser('${u.user_id}','${u.username}')">🗑 刪除</button>`
@@ -464,9 +471,10 @@ function setLevel(uid, type, val) {
   
   
 function saveUser(uid) {
+  console.log('✅ saveUser triggered:', uid);
+
   const data = pendingUserUpdates[uid];
 
-  // ✅ 沒任何欄位變更
   if (!data || Object.keys(data).length === 0) {
     showToast('尚未修改','warn');
     return;
@@ -479,12 +487,13 @@ function saveUser(uid) {
   entries.forEach(([field, value]) => {
     callApi(
       {
-        action: 'updateUserField',  // ✅ 換這個
+        action: 'updateUserField',
         user_id: uid,
         field,
         value
       },
       function(res) {
+        console.log('[updateUserField]', uid, field, value, res);
 
         if (res && res.result === 'error') {
           hasError = true;
@@ -493,16 +502,16 @@ function saveUser(uid) {
 
         finished++;
 
-        // ✅ 全部欄位送完後才 refresh
         if (finished === entries.length && !hasError) {
           showToast('儲存成功','success');
-          pendingUserUpdates[uid] = null;
+          pendingUserUpdates[uid] = {};
           loadUsers();
         }
       }
     );
   });
 }
+
 
 /* create */
 function openCreateUser(){
@@ -574,7 +583,14 @@ function deleteUser(uid, username) {
   );
 }
 
+// ===== 不確定是不是放在這裏 =====
+document.addEventListener('click', function (e) {document.addEventListener('click', function const btn = e.target.closest('.save-btn');
+  if (!btn) return;
 
+  const uid = btn.dataset.uid;
+  console.log('✅ Save button clicked, uid =', uid);
+  saveUser(uid);
+});
 
 
 </script>
