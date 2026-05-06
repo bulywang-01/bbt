@@ -251,14 +251,17 @@ function renderLists(){
 
     const roles=(u.role||'').split(',');
 
+    if (roles.includes('admin')) {
+      adminBody.appendChild(renderRowAdmin(u));
+    }
     if (roles.includes('judge') || roles.includes('chief_judge'))
       bodies.judge.appendChild(renderRow(u));
 
     if (roles.includes('record') || roles.includes('record_chief'))
       bodies.record.appendChild(renderRow(u));
 
-    if (roles.includes('admin'))
-      bodies.admin.appendChild(renderRow(u));
+    //if (roles.includes('admin'))
+    //  bodies.admin.appendChild(renderRow(u));
   });
 }
 
@@ -286,9 +289,10 @@ function renderRow(u){
     </td>
     <td>
       <div class="role-group">
-        <!-- 裁判群組 -->
+        <!-- 裁判群組：judge / chief_judge（二選一） -->
         <label>
-          <input type="radio" name="judge_${u.user_id}"
+          <input type="radio"
+            name="judge_${u.user_id}"
             value="judge"
             ${u.role.includes('judge') ? 'checked' : ''}
             disabled
@@ -297,7 +301,8 @@ function renderRow(u){
         </label>
     
         <label>
-          <input type="radio" name="judge_${u.user_id}"
+          <input type="radio"
+            name="judge_${u.user_id}"
             value="chief_judge"
             ${u.role.includes('chief_judge') ? 'checked' : ''}
             disabled
@@ -305,9 +310,10 @@ function renderRow(u){
           裁判長
         </label>
     
-        <!-- 紀錄群組 -->
+        <!-- 紀錄群組：record / record_chief（二選一） -->
         <label>
-          <input type="radio" name="record_${u.user_id}"
+          <input type="radio"
+            name="record_${u.user_id}"
             value="record"
             ${u.role.includes('record') ? 'checked' : ''}
             disabled
@@ -316,7 +322,8 @@ function renderRow(u){
         </label>
     
         <label>
-          <input type="radio" name="record_${u.user_id}"
+          <input type="radio"
+            name="record_${u.user_id}"
             value="record_chief"
             ${u.role.includes('record_chief') ? 'checked' : ''}
             disabled
@@ -324,12 +331,12 @@ function renderRow(u){
           紀錄長
         </label>
     
-        <!-- 系統管理員 -->
+        <!-- 系統管理員（可並存） -->
         <label>
           <input type="checkbox"
             ${u.role.includes('admin') ? 'checked' : ''}
             disabled
-            onchange="toggleAdmin('${u.user_id}',this.checked)">
+            onchange="toggleAdmin('${u.user_id}', this.checked)">
           管理員
         </label>
       </div>
@@ -345,9 +352,9 @@ function renderRow(u){
     </td>
     <td>
       <select class="small-select" disabled
-        onchange="updateField('${u.user_id}','active',this.value)">
-        <option value="Y" ${u.active==='Y'?'selected':''}>啟用</option>
-        <option value="N" ${u.active==='N'?'selected':''}>停用</option>
+        onchange="handleActiveChange('${u.user_id}', this.value)">
+        <option value="Y" ${u.active === 'Y' ? 'selected' : ''}>啟用</option>
+        <option value="N" ${u.active === 'N' ? 'selected' : ''}>停用</option>
       </select>
     </td>
     <td>
@@ -457,35 +464,36 @@ function toggleRole(uid, role, checked) {
 }
 
 // 裁判 / 紀錄（群組互斥）
-  
 function toggleRoleGroup(uid, roleA, roleB, selected) {
   const u = allUsers.find(x => String(x.user_id) === String(uid));
   if (!u) {
-    console.error('toggleRoleGroup: user not found', uid);
     showToast('找不到使用者資料，請重新整理', 'error');
     return;
   }
 
+  // 目前角色轉成陣列
   let roles = (u.role || '').split(',').filter(Boolean);
 
-  // ✅ 同群組互斥（裁判 / 裁判長、紀錄 / 紀錄長）
+  // 🔒 同群組互斥（先移除 judge/chief_judge 或 record/record_chief）
   roles = roles.filter(r => r !== roleA && r !== roleB);
+
+  // 加上新的角色
   roles.push(selected);
 
   const newRole = roles.join(',');
 
-  // ✅ 同步資料層（很重要）
+  // ✅ 同步畫面狀態
   u.role = newRole;
 
-  // ✅ 標記為已修改（儲存才會有資料）
+  // ✅ 記錄待儲存資料（儲存才不會顯示「尚未修改」）
   updateField(uid, 'role', newRole);
 
-  // ✅ 不要 renderLists()！
+  // ❗ 重點：不要 renderLists()，否則會被 disabled
 }
 
 
+
 // 系統管理員（可並存）
-  
 function toggleAdmin(uid, checked) {
   const u = allUsers.find(x => String(x.user_id) === String(uid));
   if (!u) {
@@ -495,34 +503,63 @@ function toggleAdmin(uid, checked) {
 
   let roles = (u.role || '').split(',').filter(Boolean);
 
-  // ===== 核心防呆：最後一個 admin 不可取消 =====
+  // 🔒 最後一個 admin 不可取消
   if (!checked && roles.includes('admin')) {
-    // 計算目前「啟用中的 admin 數量」
     const activeAdminCount = allUsers.filter(x => {
       if (x.active !== 'Y') return false;
-      const r = (x.role || '').split(',').filter(Boolean);
-      return r.includes('admin');
+      return (x.role || '').split(',').includes('admin');
     }).length;
 
     if (activeAdminCount <= 1) {
       showToast('至少需保留一位系統管理員', 'warn');
-      return; // ❌ 阻止取消
+      return;
     }
   }
 
-  // ===== 正常處理 =====
   if (checked && !roles.includes('admin')) roles.push('admin');
   if (!checked) roles = roles.filter(r => r !== 'admin');
 
   const newRole = roles.join(',');
-
-  // 同步資料
   u.role = newRole;
   updateField(uid, 'role', newRole);
 }
 
 
+// ===== 只給管理員頁籤用 =====
+function renderRowAdmin(u) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${u.username}</td>
+    <td>${u.name || '（未填姓名）'}</td>
+    <td>${u.note || ''}</td>
+    <td>${u.phone || ''}</td>
+    <td>${u.email || ''}</td>
+    <td>${u.role}</td>
+    <td>${u.level || 'NONE'}</td>
+    <td>${u.active === 'Y' ? '啟用' : '停用'}</td>
+  `;
+  return tr;
+}
 
+// ===== 裁判長 / 紀錄長 必須 active =====
+function handleActiveChange(uid, newValue) {
+  const u = allUsers.find(x => String(x.user_id) === String(uid));
+  if (!u) return;
+
+  const roles = (u.role || '').split(',').filter(Boolean);
+
+  // 🔒 裁判長 / 紀錄長 必須為啟用
+  if (newValue === 'N' &&
+      (roles.includes('chief_judge') || roles.includes('record_chief'))) {
+    showToast('裁判長 / 紀錄長 必須為啟用狀態', 'warn');
+    return;
+  }
+
+  // ✅ 合法才更新
+  u.active = newValue;
+  updateField(uid, 'active', newValue);
+}
+  
 function logout(){
   localStorage.clear();
   location.href='login.html';
