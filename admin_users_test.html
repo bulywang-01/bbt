@@ -339,15 +339,28 @@ function renderRecordRow(u) {
 
 function renderEditableRow(u) {
   const roleList = (u.role || '').split(',').map(r => r.trim());
+  
   const tr = document.createElement('tr');
   tr.setAttribute('data-uid', u.user_id); // ✅ 關鍵！
 
   tr.innerHTML = `
     <td>${u.username}</td>
     <td>${u.name || ''}</td>
-    <td>${u.note || ''}</td>
-    <td>${u.phone || ''}</td>
-    <td>${u.email || ''}</td>
+    <td>
+        <input type="text"
+        value="${u.note || ''}"
+        onchange="markFieldChanged('${u.user_id}', 'note', this.value)">
+    </td>
+    <td>
+        <input type="text"
+        value="${u.phone || ''}"
+        onchange="markFieldChanged('${u.user_id}', 'phone', this.value)">
+    </td>
+    <td>
+        <input type="text"
+        value="${u.email || ''}"
+        onchange="markFieldChanged('${u.user_id}', 'email', this.value)">
+    </td>
     
     <td>
       <div class="role-group">
@@ -449,6 +462,11 @@ function markRecordLevelChanged(uid, value) {
   if (u) u.record_level = value;
 }
 
+function markFieldChanged(uid, field, value) {
+  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
+  pendingUserUpdates[uid][field] = value;
+}
+
 /* =====================================================
    Row renderer（系統管理員唯讀）
    ===================================================== */
@@ -508,7 +526,10 @@ function updateRecordLevel(uid,val){
    ===================================================== */
 function saveUser(uid) {
   const data = pendingUserUpdates[uid];
-  if (!data) return showToast('尚未修改','warn');
+  if (!data) {
+    showToast('尚未修改', 'warn');
+    return;
+  }
 
   callApi({
     action: 'updateUser',
@@ -517,21 +538,23 @@ function saveUser(uid) {
   }, res => {
 
     if (!res || res.result !== 'ok') {
-      showToast('更新失敗','error');
+      showToast('更新失敗', 'error');
       return;
     }
 
-    // ✅ 合併回前端狀態
-    const u = allUsers.find(x => x.user_id === uid);
+    // ✅ 關鍵：把剛剛送出的資料「合併回前端狀態」
+    const u = allUsers.find(x => String(x.user_id) === String(uid));
     if (u) {
-      Object.assign(u, data);
+      Object.keys(data).forEach(k => {
+        u[k] = data[k];
+      });
     }
 
     pendingUserUpdates[uid] = null;
 
     showToast('更新成功');
 
-    // ✅ 再 render，不要立刻洗資料
+    // ✅ 直接用最新前端狀態重新 render
     renderLists();
   });
 }
