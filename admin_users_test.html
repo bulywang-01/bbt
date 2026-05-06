@@ -90,6 +90,55 @@ button {
   color: #555;
   margin-bottom: 4px;
 }
+
+/* ===== 表格優化 ===== */
+table th {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+table td {
+  vertical-align: top;
+}
+
+/* ===== 角色 badge ===== */
+.role-badges {
+  margin-bottom: 6px;
+}
+.role-badge {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-right: 4px;
+  background: #e5e7eb;
+  color: #333;
+}
+.role-badge.judge { background:#e0f2fe; color:#0369a1; }
+.role-badge.record { background:#ede9fe; color:#5b21b6; }
+.role-badge.chief { background:#fde68a; color:#92400e; }
+.role-badge.admin { background:#fee2e2; color:#991b1b; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #333;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: .3s;
+  z-index: 9999;
+}
+.toast.show {
+  opacity: 1;
+}
+.toast.success { background:#15803d; }
+.toast.error { background:#b91c1c; }
+
 </style>
 </head>
 
@@ -135,7 +184,8 @@ button {
   <th>Email</th>
   <th>電話</th>
   <th>身份</th>
-  <th>證照（裁判 / 紀錄）</th>
+  <th>裁判證</th>
+  <th>紀錄證</th>
   <th>操作</th>
 </tr>
 </thead>
@@ -173,6 +223,11 @@ button {
 <script src="js/config.js"></script>
   
 <script>
+  
+function displayLevel(v) {
+  return (!v || v === 'N') ? '無' : v;
+}
+
 let allUsers = [];
 let pendingUserUpdates = {};
 let currentTab = 'account';
@@ -236,6 +291,8 @@ function renderAccountList(){
     const roles = (u.role||'').split(',').filter(Boolean);
     const [jLv,rLv] = splitLevel(u.level);
     const tr=document.createElement('tr');
+    const [judgeLv, recordLv] = splitLevel(u.level || 'N,N');
+    
     tr.innerHTML=`
 <td>${u.username}</td>
 <td><input value="${u.name||''}" onchange="markField('${u.user_id}','name',this.value)"></td>
@@ -249,18 +306,33 @@ function renderAccountList(){
   <label><input type="checkbox" ${roles.includes('record_chief')?'checked':''} onchange="toggleRole('${u.user_id}','record_chief',this.checked)">紀錄長</label>
   <label><input type="checkbox" ${roles.includes('admin')?'checked':''} onchange="toggleRole('${u.user_id}','admin',this.checked)">系統管理員</label>
 </td>
+
 <td>
   <select onchange="setLevel('${u.user_id}','judge',this.value)">
-    ${['N','A','B','C'].map(v=>`<option ${v===jLv?'selected':''}>${v}</option>`).join('')}
-  </select>
-  /
-  <select onchange="setLevel('${u.user_id}','record',this.value)">
-    ${['N','A','B','C'].map(v=>`<option ${v===rLv?'selected':''}>${v}</option>`).join('')}
+    ${['N','A','B','C'].map(v =>
+      `<option value="${v}" ${v===judgeLv?'selected':''}>${displayLevel(v)}</option>`
+    ).join('')}
   </select>
 </td>
+
 <td>
-  <button class="primary" onclick="saveUser('${u.user_id}')">儲存</button>
+  <select onchange="setLevel('${u.user_id}','record',this.value)">
+    ${['N','A','B','C'].map(v =>
+      `<option value="${v}" ${v===recordLv?'selected':''}>${displayLevel(v)}</option>`
+    ).join('')}
+  </select>
 </td>
+
+
+      <td>
+        <button class="primary" onclick="saveUser('${u.user_id}')">儲存</button>
+        ${
+          roles.includes('admin')
+            ? ''
+            : `<button onclick="deleteUser('${u.user_id}','${u.username}')">🗑 刪除</button>`
+        }
+      </td>
+
 `;
     tb.appendChild(tr);
   });
@@ -280,10 +352,21 @@ function renderReadonlyLists(){
     const [jLv,rLv]=splitLevel(u.level);
 
     if(roles.includes('judge')||roles.includes('chief_judge'))
-      addRow('tbody-judge',[u.username,u.name||'',jLv]);
+     // addRow('tbody-judge',[u.username,u.name||'',jLv]);
+      addRow('tbody-judge', [
+        u.username,
+        u.name || '',
+        displayLevel(judgeLv)
+      ]);
+
 
     if(roles.includes('record')||roles.includes('record_chief'))
-      addRow('tbody-record',[u.username,u.name||'',rLv]);
+     // addRow('tbody-record',[u.username,u.name||'',rLv]);
+      addRow('tbody-record', [
+        u.username,
+        u.name || '',
+        displayLevel(recordLv)
+      ]);
 
     if(roles.includes('chief_judge'))
       addRow('tbody-chief_judge',[u.username,u.name||'',jLv]);
@@ -307,6 +390,7 @@ function markField(uid,key,val){
   if(!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
   pendingUserUpdates[uid][key]=val;
 }
+  
 function toggleRole(uid,role,on){
   const u=allUsers.find(x=>x.user_id==uid);
   let roles=(u.role||'').split(',').filter(Boolean);
@@ -317,6 +401,7 @@ function toggleRole(uid,role,on){
   if(!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
   pendingUserUpdates[uid].role=rStr;
 }
+  
 function setLevel(uid,type,val){
   const u=allUsers.find(x=>x.user_id==uid);
   let [j,r]=splitLevel(u.level);
@@ -325,10 +410,17 @@ function setLevel(uid,type,val){
   if(!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
   pendingUserUpdates[uid].level=u.level;
 }
+  
 function saveUser(uid){
   const data=pendingUserUpdates[uid];
   if(!data) return alert('尚未修改');
-  callApi({action:'updateUser',user_id:uid,...data},()=>{
+  
+  callApi({ action:'updateUser', user_id:uid, ...data }, res=>{
+    if (!res || res.result !== 'ok') {
+      showToast('儲存失敗','error');
+      return;
+    }
+    showToast('儲存成功');
     pendingUserUpdates[uid]=null;
     loadUsers();
   });
@@ -339,11 +431,44 @@ function openCreateUser(){
   const username=prompt('帳號'); if(!username) return;
   const name=prompt('姓名'); if(!name) return;
   const email=prompt('Email'); if(!email) return;
-  callApi({action:'createUser',username,name,email},res=>{
-    if(!res||res.result!=='ok') return alert('新增失敗');
+  
+  callApi({ action:'createUser', username, name, email }, res=>{
+    if (!res || res.result !== 'ok') {
+      showToast('新增失敗','error');
+      return;
+    }
+    showToast('新增成功');
     loadUsers();
   });
 }
+
+
+function showToast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.classList.add('show'),10);
+  setTimeout(()=>{
+    t.classList.remove('show');
+    setTimeout(()=>t.remove(),300);
+  },2500);
+}
+
+function deleteUser(uid, username) {
+  if (!confirm(`確定要刪除使用者「${username}」？`)) return;
+
+  callApi({ action:'deleteUser', user_id: uid }, res=>{
+    if (!res || res.result !== 'ok') {
+      showToast('刪除失敗','error');
+      return;
+    }
+    showToast('刪除成功');
+    loadUsers();
+  });
+}
+
+
 </script>
 </body>
 </html>
