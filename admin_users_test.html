@@ -523,18 +523,28 @@ function deleteUser(uid, username) {
     { action: 'deleteUser', user_id: uid },
     function(res) {
 
-      // ✅ 只在「明確 error」時視為失敗
+      console.log('[deleteUser response]', res);
+
+      // ✅ 特例：後端已刪但回 callback is not defined
+      if (res && res.message === 'callback is not defined') {
+        showToast('刪除成功','success');
+        loadUsers();
+        return;
+      }
+
+      // ✅ 明確 error 才當失敗
       if (res && res.result === 'error') {
         showToast(res.message || '刪除失敗','error');
         return;
       }
-        showToast('刪除成功','success');
-        setTimeout(() => {
-          loadUsers();
-        }, 300);
+
+      // ✅ 其餘全部視為成功
+      showToast('刪除成功','success');
+      loadUsers();
     }
   );
 }
+
 
 
 </script>
