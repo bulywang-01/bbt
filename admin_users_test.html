@@ -104,6 +104,7 @@ tr.editing .action-edit { display: inline-block; }
 <div class="main">
 
 <div class="tabs">
+  <button onclick="openCreateUser()">＋ 新增使用者</button>
   <button class="tab active" onclick="switchTab('judge',this)">⚖️ 裁判</button>
   <button class="tab" onclick="switchTab('record',this)">📝 紀錄</button>
   <button class="tab" onclick="switchTab('admin',this)">🛠 系統管理員</button>
@@ -355,26 +356,55 @@ function markFieldChanged(uid, field, value) {
   
 // JS 防呆 + 組 role 字串
 function markRoleChanged(uid) {
+  const u = allUsers.find(x => String(x.user_id) === String(uid));
+  if (!u) return;
+
+  // ✅ 先從「目前使用者完整 role」拆出狀態
+  let roles = (u.role || '').split(',').filter(Boolean);
+
   const row = document.querySelector(`tr[data-uid="${uid}"]`);
   if (!row) return;
 
-  const roles = [];
-
-  // 裁判群組（二選一）
+  // ===== 裁判群組 =====
   const judgeChecked = row.querySelector(`input[name="judge_${uid}"]:checked`);
+  roles = roles.filter(r => r !== 'judge' && r !== 'chief_judge');
   if (judgeChecked) roles.push(judgeChecked.value);
 
-  // 紀錄群組（二選一）
+  // ===== 紀錄群組 =====
   const recordChecked = row.querySelector(`input[name="record_${uid}"]:checked`);
+  roles = roles.filter(r => r !== 'record' && r !== 'record_chief');
   if (recordChecked) roles.push(recordChecked.value);
 
-  // admin（獨立）
-  if (row.querySelector('input[data-role="admin"]')?.checked) {
-    roles.push('admin');
-  }
+  // ===== admin =====
+  const adminChecked = row.querySelector('input[data-role="admin"]');
+  roles = roles.filter(r => r !== 'admin');
+  if (adminChecked && adminChecked.checked) roles.push('admin');
+
+  const newRole = roles.join(',');
 
   if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
-  pendingUserUpdates[uid].role = roles.join(',');
+  pendingUserUpdates[uid].role = newRole;
+
+  // ✅ 同步回 allUsers，避免另一頁蓋掉
+  u.role = newRole;
+}
+
+// ===== 新增User =====
+function openCreateUser(){
+  const username = prompt('帳號');
+  if (!username) return;
+
+  callApi({
+    action: 'createUser',
+    username: username
+  }, res => {
+    if (!res || res.result !== 'ok') {
+      showToast('新增失敗');
+      return;
+    }
+    showToast('新增成功');
+    loadUsers(); // 重新載入即可
+  });
 }
 </script>
 </body>
