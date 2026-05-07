@@ -163,20 +163,7 @@ table td {
 
 <body>
   
-<div class="header">
-  <div class="nav">
-    🏠<a href="index.html">首頁</a>　
-    📋<a href="judge_dashboard.html">出勤班表</a>　
-    <!--
-    <a href="files.html">📂 下載</a>
-    ✅<a href="review_dashboard.html">審核</a>　
-    -->
-    ⚙️<a href="admin_dashboard.html">管理</a>　
-    🔐<a href="change_password.html" class="change-pwd">改密碼</a>　
-    <a href="#" class="logout" onclick="logout()">登出</a>
-         <span id="u_name" class="user-name"></span> 
-  </div>
-</div>
+<div id="header-container"></div>
   
 <div class="header">
   <b>使用者管理</b>
@@ -271,6 +258,16 @@ table td {
 <script src="js/config.js"></script>
   
 <script>
+
+// ✅ 載入共用 Header
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('header.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+    });
+});
+
 
 function displayLevel(v) {
   return (!v || v === 'N') ? '無' : v;
@@ -386,11 +383,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
 });
 
 function loadUsers(){
-  callApi({action:'getUsers'}, res=>{
+  callApi({action:'getUsers'}, res => {
+    if (!res || res.result === 'error') {
+      showToast(res?.message || '載入使用者失敗','error');
+      return;
+    }
     allUsers = res.users || [];
     renderAll();
   });
 }
+
 
 /* render all tables */
 function renderAll() {
@@ -727,6 +729,17 @@ document.addEventListener('click', function (e) {
   switchTab(type, tabBtn);
 });
 
+// ✅ 儲存按鈕（事件代理）
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.save-btn');
+  if (!btn) return;
+
+  const uid = btn.dataset.uid;
+  if (!uid) return;
+
+  console.log('✅ save clicked:', uid);
+  saveUser(uid);
+});
 
 </script>
 </body>
