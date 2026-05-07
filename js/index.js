@@ -27,10 +27,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (!session.user_id) return;
 
-  // ✅ roles 統一用陣列（你現在的新規格）
-  const roles = session.roles || [];
-  const isJudge = roles.includes('judge') || roles.includes('chief_judge');
-  const isRecord = roles.includes('record') || roles.includes('record_admin');
+  // ✅ 全系統統一用 role 字串
+  const roles = (session.role || '').split(',').map(r => r.trim());
+  
+  const isJudge =
+    roles.includes('judge') ||
+    roles.includes('chief_judge') ||
+    roles.includes('admin');   // admin 也要能看到裁判班表
+  
+  const isRecord =
+    roles.includes('record') ||
+    roles.includes('record_chief');
+
+  const roleMap = {
+    admin: '系統管理員',
+    judge: '裁判員',
+    chief_judge: '裁判長',
+    record: '紀錄員',
+    record_chief: '紀錄長'
+  };
 
   // ✅ 先決定要顯示哪些區塊（畫面層）
   const judgePanel = document.getElementById('judge-schedule');
