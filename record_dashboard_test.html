@@ -133,7 +133,39 @@ select.locked {
 .toast.error {
   background: #c62828;
 }
-  
+
+/* ===== 報名狀態 ===== */
+.signup-btn {
+  color: #1565c0;          /* 藍：可操作 */
+  font-weight: 700;
+  cursor: pointer;
+}
+.signup-btn:hover {
+  text-decoration: underline;
+}
+
+.signup-me {
+  color: #2e7d32;          /* 綠：自己 */
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.signup-other {
+  color: #555;             /* 灰：他人 */
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* 取消按鈕（小而明確） */
+.cancel-btn {
+  margin-left: 8px;
+  font-size: 12px;
+  color: #c62828;          /* 紅：危險操作 */
+  cursor: pointer;
+}
+.cancel-btn:hover {
+  text-decoration: underline;
+}
 </style>
 </head>
 
@@ -280,10 +312,8 @@ function renderSignupCell(g, role) {
     `;
   }
 
-  const isMe = slot.user_id === session.user_id;
-
-  // ② 我自己
-  if (isMe) {
+  // ② 是我自己
+  if (slot.user_id === session.user_id) {
     return `
       <span class="signup-me">
         ${slot.name || '我'}
@@ -295,7 +325,7 @@ function renderSignupCell(g, role) {
     `;
   }
 
-  // ③ 其他人
+  // ③ 他人
   return `
     <span class="signup-other">
       ${slot.name}
