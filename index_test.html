@@ -286,6 +286,15 @@ if (session) {
     nameEl.textContent = `${session.name} 您好`;
   }
 
+  // ✅ 角色中文對照（全頁共用）
+    const roleMap = {
+      admin: '系統管理員',
+      judge: '裁判員',
+      chief_judge: '裁判長',
+      record: '紀錄員',
+      record_chief: '紀錄長'
+    };
+
   if (roleEl) {
     const roles = (session.role || '')
       .split(',')
