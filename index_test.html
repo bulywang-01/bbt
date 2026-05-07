@@ -44,6 +44,69 @@
       background:#e9ecf4; font-weight:600; cursor:pointer;
     }
     .tabs button.active { background:#4a7ef5; color:#fff; }
+
+    /* ===== Schedule Cards ===== */
+    .schedule-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+    }
+    
+    .schedule-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.10);
+      font-size: 14px;
+      position: relative;
+    }
+    
+    /* 裁判 / 紀錄配色 */
+    .schedule-card.judge {
+      border-left: 6px solid #4a7ef5;
+    }
+    .schedule-card.record {
+      border-left: 6px solid #2e7d32;
+    }
+    
+    /* 日期 */
+    .card-date {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1a237e;
+      margin-bottom: 6px;
+    }
+    
+    /* 每一行 */
+    .card-line {
+      margin: 3px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    /* 今日 / 明日 */
+    .card-badge {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      color: #fff;
+    }
+    .badge-today { background: #d32f2f; }
+    .badge-tomorrow { background: #f57c00; }
+    
+    /* 空狀態 */
+    .schedule-empty {
+      color: #777;
+      font-style: italic;
+      margin-top: 8px;
+    }
+
   </style>
 </head>
 
@@ -185,7 +248,99 @@ function renderList(elId, list){
   });
 }
 
-setRange('week');
+setRange('week');  // 預設本週
+
+function renderSchedule(){
+  // ✅ 1. 取得資料（你剛剛貼的那段）
+  const judge = typeof getJudgeSchedule === 'function'
+    ? getJudgeSchedule(currentRange)
+    : [];
+
+  const record = typeof getRecordSchedule === 'function'
+    ? getRecordSchedule(currentRange)
+    : [];
+
+  // ✅ 2. 控制哪些區塊要顯示（身分關鍵）
+  document.getElementById('judge-schedule').style.display =
+    judge.length ? 'block' : 'none';
+
+  document.getElementById('record-schedule').style.display =
+    record.length ? 'block' : 'none';
+
+  document.getElementById('no-schedule').style.display =
+    (!judge.length && !record.length) ? 'block' : 'none';
+
+  // ✅ 3. 用「產品級卡片 UI」render（剛剛給你的）
+  renderScheduleCards('judge-list', judge, 'judge');
+  renderScheduleCards('record-list', record, 'record');
+}
+
+
+/* 共用工具 */
+function isToday(dateStr) {
+  const d = new Date(dateStr);
+  const t = new Date();
+  return d.toDateString() === t.toDateString();
+}
+
+function isTomorrow(dateStr) {
+  const d = new Date(dateStr);
+  const t = new Date();
+  t.setDate(t.getDate() + 1);
+  return d.toDateString() === t.toDateString();
+}
+
+function formatZhDate(dateStr) {
+  const d = new Date(dateStr);
+  const week = ['日','一','二','三','四','五','六'];
+  return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${week[d.getDay()]}）`;
+}
+
+/* 裁判  紀錄卡片 render */
+function renderScheduleCards(containerId, list, type) {
+  const box = document.getElementById(containerId);
+  box.innerHTML = '';
+
+  if (!list || list.length === 0) {
+    box.innerHTML = `<div class="schedule-empty">此期間尚無班表</div>`;
+    return;
+  }
+
+  // ✅ 排序：日期 → 時間
+  list.sort((a,b) => {
+    if (a.date === b.date) {
+      return a.time.localeCompare(b.time);
+    }
+    return a.date.localeCompare(b.date);
+  });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'schedule-cards';
+
+  list.forEach(g => {
+    const card = document.createElement('div');
+    card.className = `schedule-card ${type}`;
+
+    let badge = '';
+    if (isToday(g.date)) badge = `<div class="card-badge badge-today">今日</div>`;
+    else if (isTomorrow(g.date)) badge = `<div class="card-badge badge-tomorrow">明日</div>`;
+
+    card.innerHTML = `
+      ${badge}
+      <div class="card-date">${formatZhDate(g.date)}</div>
+      <div class="card-line">⏰ ${g.time}</div>
+      <div class="card-line">📍 ${g.field}</div>
+      <div class="card-line">
+        ${type === 'judge' ? '🧑‍⚖️ 裁判' : '📝 紀錄'}｜${g.role}
+      </div>
+    `;
+
+    wrap.appendChild(card);
+  });
+
+  box.appendChild(wrap);
+}
+
 </script>
 
 </body>
