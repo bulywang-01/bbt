@@ -1,12 +1,23 @@
-<header class="header">
-  <div class="nav-left">
-    <a href="index.html">🏠 首頁</a>
+<!-- ===== Header ===== -->
+<div class="header">
+  <div class="nav">
 
-    <!-- ✅ 依角色顯示 -->
-    <a href="judge_dashboard.html" class="role-judge role-chief">🧑‍⚖️ 裁判報名</a>
-    <a href="record_dashboard.html" class="role-record role-record-chief">📝 紀錄報名</a>
-    <a href="admin_dashboard.html" class="role-admin">⚙️ 管理</a>
-    <a href="#" onclick="logout()">登出</a>
-    <span id="u_name"></span>
+    🏠 <a href="index.html">首頁</a>
+
+    <!-- 裁判班表 -->
+    📋 <a href="judge_dashboard.html" class="nav-judge">裁判班表</a>
+
+    <!-- 紀錄班表 -->
+    🎥 <a href="record_dashboard.html" class="nav-record">紀錄班表</a>
+
+    <!-- 系統管理 -->
+    ⚙️ <a href="admin_dashboard.html" class="nav-admin">管理</a>
+
+    🔐 <a href="change_password.html" class="change-pwd">改密碼</a>
+
+    <a href="#" class="logout" onclick="logout()">登出</a>
+
+    <span id="u_name" class="user-name"></span>
+
   </div>
-</header>
+</div>
