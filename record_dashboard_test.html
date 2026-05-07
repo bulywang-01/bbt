@@ -212,14 +212,16 @@ select.locked {
 <div id="recordContainer"></div>
 
 <script src="js/config.js"></script>
+
 <script>
-/* ===== 初始化 ===== */
+/* ===== 全域 ===== */
 let session;
 let games = [];
 
+/* ===== 初始化 ===== */
 document.addEventListener('DOMContentLoaded', () => {
-  initHeader();   // ✅ 只管 header
-  initPage();     // ✅ 只管登入與資料
+  initHeader();   // 只管 header
+  initPage();     // 只管登入與資料
 });
 
 /* ===== Header ===== */
@@ -228,15 +230,6 @@ function initHeader() {
     .then(res => res.text())
     .then(html => {
       document.getElementById('header-container').innerHTML = html;
-
-      // optional：active 標示
-      document
-        .querySelectorAll('#header-container a')
-        .forEach(a => {
-          if (a.getAttribute('href') === 'record_dashboard.html') {
-            a.classList.add('active');
-          }
-        });
     });
 }
 
@@ -248,24 +241,21 @@ function initPage() {
     return;
   }
 
-  const session = JSON.parse(raw);
+  session = JSON.parse(raw);          // ✅ 關鍵修正：指定給全域
   if (!session.user_id) {
     location.replace('login.html');
     return;
   }
 
-  // ✅ 關鍵：資料真正從這裡開始
   loadGames();
 }
 
-/* JS helper（顯示訊息） */
+/* ===== Toast ===== */
 function showToast(msg, type = 'success') {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.className = `toast show ${type}`;
-  setTimeout(() => {
-    el.className = 'toast';
-  }, 2000);
+  setTimeout(() => el.className = 'toast', 2000);
 }
 
 /* ===== 取資料 ===== */
@@ -275,55 +265,53 @@ function loadGames() {
     user_id: session.user_id
   }, res => {
     if (!res || res.result !== 'ok') {
-      alert('載入賽事失敗');
+      showToast('載入賽事失敗', 'error');
       return;
     }
+
     games = Array.isArray(res.games) ? res.games : [];
     renderRecordDashboard(games);
   });
 }
 
-/* ===== 分組（日期 → 組別 → 時間） ===== */
-function groupGames(games) {
+/* ===== 分組 ===== */
+function groupGames(list) {
   const map = {};
-  games.forEach(g => {
-    const d = formatDateTW(g.date);
-    const c = g.category || '未分類';
-    if (!map[d]) map[d] = {};
-    if (!map[d][c]) map[d][c] = [];
-    map[d][c].push(g);
+  list.forEach(g => {
+    const date = formatDateTW(g.date);
+    const cat  = g.category || '未分類';
+
+    if (!map[date]) map[date] = {};
+    if (!map[date][cat]) map[date][cat] = [];
+    map[date][cat].push(g);
   });
-  Object.values(map).forEach(groupMap => {
-    Object.values(groupMap).forEach(list => {
-      list.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+  Object.values(map).forEach(catMap => {
+    Object.values(catMap).forEach(arr => {
+      arr.sort((a, b) => a.time.localeCompare(b.time)); // ✅ 正確排序
     });
   });
+
   return map;
 }
 
-/* ===== Render 主畫面 ===== */
-function renderRecordDashboard(games) {
+/* ===== Render ===== */
+function renderRecordDashboard(list) {
   const root = document.getElementById('recordContainer');
   root.innerHTML = '';
 
-  const grouped = groupGames(games);
+  const grouped = groupGames(list);
   Object.keys(grouped).sort().forEach(date => {
-    root.insertAdjacentHTML('beforeend',
-      `<div class="date-title">${date}</div>`
-    );
+    root.insertAdjacentHTML('beforeend', `<div class="date-title">${date}</div>`);
 
-    Object.keys(grouped[date]).forEach(group => {
-      root.insertAdjacentHTML('beforeend',
-        `<div class="group-title">│ ${group}</div>`
-      );
-      root.insertAdjacentHTML('beforeend',
-        buildGroupTable(grouped[date][group])
-      );
+    Object.keys(grouped[date]).forEach(cat => {
+      root.insertAdjacentHTML('beforeend', `<div class="group-title">│ ${cat}</div>`);
+      root.insertAdjacentHTML('beforeend', buildGroupTable(grouped[date][cat]));
     });
   });
 }
 
-/* ===== 組別 table ===== */
+/* ===== Table ===== */
 function buildGroupTable(list) {
   return `
   <table class="record-table">
@@ -346,108 +334,70 @@ function buildGroupTable(list) {
 
 function buildRow(g) {
   return `
-    <tr>
-      <td>${formatTimeTW(g.time)}</td>
-      <td>${g.away_team}</td>
-      <td>${g.home_team}</td>
-      <td>${g.field}</td>
-      <td>${renderSignupCell(g, 'REC_MAIN')}</td>
-      <td>${renderSignupCell(g, 'REC_TRAINEE')}</td>
-      <td>${renderSignupCell(g, 'REC_VIDEO')}</td>
-    </tr>`;
+  <tr>
+    <td>${formatTimeTW(g.time)}</td>
+    <td>${g.away_team}</td>
+    <td>${g.home_team}</td>
+    <td>${g.field}</td>
+    <td>${renderSignupCell(g,'REC_MAIN')}</td>
+    <td>${renderSignupCell(g,'REC_TRAINEE')}</td>
+    <td>${renderSignupCell(g,'REC_VIDEO')}</td>
+  </tr>`;
 }
 
-/* ===== 紀錄員報名 ===== */
+/* ===== Signup UI ===== */
 function renderSignupCell(g, role) {
   const slot = g.record_slots?.[role];
 
-  // ① 尚未有人報名
   if (!slot) {
-    return `
-      <span class="signup-btn"
-        onclick="signup('${g.game_id}','${role}')">
-        ＋報名
-      </span>
-    `;
+    return `<span class="signup-btn" onclick="signup('${g.game_id}','${role}')">＋報名</span>`;
   }
 
-  // ② 是我自己
   if (slot.user_id === session.user_id) {
-    return `
-      <span class="signup-me">
-        ${slot.name || '我'}
-        <span class="cancel-btn"
-          onclick="cancelSignup('${g.game_id}','${role}')">
-          取消
-        </span>
-      </span>
-    `;
+    return `<span class="signup-me">${slot.name || '我'}
+      <span class="cancel-btn" onclick="cancelSignup('${g.game_id}','${role}')">取消</span>
+    </span>`;
   }
 
-  // ③ 他人
-  return `
-    <span class="signup-other">
-      ${slot.name}
-    </span>
-  `;
+  return `<span class="signup-other">${slot.name}</span>`;
 }
 
-/* ✅ 2️⃣ 點一下就送出的行為（比照裁判頁） */
+/* ===== Actions ===== */
 function signup(gameId, role) {
   showToast('報名中...');
   callApi({
-    action: 'recordSignup',
+    action:'recordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
   }, res => {
-    if (res && res.result === 'ok') {
-      showToast('報名成功', 'success');
-      loadGames();
-    } else {
-      showToast(res?.message || '報名失敗', 'error');
-    }
+    res?.result === 'ok' ? (showToast('報名成功'), loadGames())
+                         : showToast(res?.message||'報名失敗','error');
   });
 }
 
 function cancelSignup(gameId, role) {
   if (!confirm('確定取消此場紀錄？')) return;
-
   showToast('取消中...');
   callApi({
-    action: 'cancelRecordSignup',
+    action:'cancelRecordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
   }, res => {
-    if (res && res.result === 'ok') {
-      showToast('已取消報名', 'success');
-      loadGames();
-    } else {
-      showToast(res?.message || '取消失敗', 'error');
-    }
+    res?.result === 'ok' ? (showToast('已取消'), loadGames())
+                         : showToast(res?.message||'取消失敗','error');
   });
 }
 
-
-function onChange(gameId, role, val) {
-  callApi({
-    action: val ? 'recordSignup' : 'cancelRecordSignup',
-    user_id: session.user_id,
-    game_id: gameId,
-    record_role: role
-  }, loadGames);
-}
-
-/* ===== 台灣時間 ===== */
+/* ===== 時間 ===== */
 function formatDateTW(v) {
-  return new Date(v).toLocaleDateString('zh-TW',
-    { timeZone:'Asia/Taipei' });
+  return new Date(v).toLocaleDateString('zh-TW',{timeZone:'Asia/Taipei'});
 }
 function formatTimeTW(v) {
-  return new Date(v).toLocaleTimeString('zh-TW',
-    { timeZone:'Asia/Taipei', hour:'2-digit', minute:'2-digit', hour12:false });
+  return v; // 已是 HH:mm
 }
 </script>
+
 </body>
 </html>
