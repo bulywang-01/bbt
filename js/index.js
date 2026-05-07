@@ -1,0 +1,126 @@
+/**
+ * index.js（Dashboard 版）
+ * - 統一管理首頁資料
+ * - 支援裁判 / 紀錄 / 雙重身份
+ * - 搭配 config.js 的期間定義
+ */
+
+/* =========================
+ * 資料暫存（資料層）
+ * ========================= */
+let judgeGames = [];
+let recordGames = [];
+
+/* =========================
+ * 初始化
+ * ========================= */
+document.addEventListener('DOMContentLoaded', () => {
+  const sessionRaw = localStorage.getItem('session_user');
+  if (!sessionRaw) return;
+
+  let session;
+  try {
+    session = JSON.parse(sessionRaw);
+  } catch (e) {
+    return;
+  }
+  if (!session.user_id) return;
+
+  // ✅ roles 統一用陣列（你現在的新規格）
+  const roles = session.roles || [];
+  const isJudge = roles.includes('judge') || roles.includes('chief_judge');
+  const isRecord = roles.includes('record') || roles.includes('record_admin');
+
+  // ✅ 先決定要顯示哪些區塊（畫面層）
+  const judgePanel = document.getElementById('judge-schedule');
+  const recordPanel = document.getElementById('record-schedule');
+
+  if (judgePanel) judgePanel.style.display = 'none';
+  if (recordPanel) recordPanel.style.display = 'none';
+
+  // ✅ 取資料（資料層）
+  loadDashboardGames(session.user_id, isJudge, isRecord);
+});
+
+/* =========================
+ * 取得首頁資料（核心）
+ * ========================= */
+function loadDashboardGames(userId, needJudge, needRecord) {
+  judgeGames = [];
+  recordGames = [];
+
+  // ✅ 裁判
+  if (needJudge) {
+    callApi(
+      { action: 'getMyUpcomingGames', user_id: userId },
+      res => {
+        if (res && res.result === 'ok' && Array.isArray(res.games)) {
+          judgeGames = res.games;
+        }
+        afterDataLoaded(needJudge, needRecord);
+      }
+    );
+  }
+
+  // ✅ 紀錄
+  if (needRecord) {
+    callApi(
+      { action: 'getMyRecordUpcomingGames', user_id: userId },
+      res => {
+        if (res && res.result === 'ok' && Array.isArray(res.games)) {
+          recordGames = res.games;
+        }
+        afterDataLoaded(needJudge, needRecord);
+      }
+    );
+  }
+
+  // 如果只有單一身份
+  if (needJudge && !needRecord) {
+    // 等裁判資料
+    return;
+  }
+  if (!needJudge && needRecord) {
+    // 等紀錄資料
+    return;
+  }
+}
+
+/* =========================
+ * 資料完成後 → render
+ * ========================= */
+let renderLock = false;
+function afterDataLoaded(needJudge, needRecord) {
+  // ✅ 等到該來的資料都來了
+  if (needJudge && judgeGames.length === 0 && needRecord) return;
+  if (needRecord && recordGames.length === 0 && needJudge) return;
+
+  if (renderLock) return;
+  renderLock = true;
+
+  // ✅ 預設本週
+  if (typeof setRange === 'function') {
+    setRange('week');
+  } else if (typeof renderSchedule === 'function') {
+    renderSchedule();
+  }
+}
+
+/* =========================
+ * 提供給 index.html 的資料介面
+ * ========================= */
+function getJudgeSchedule(range) {
+  const { start, end } = getPeriodRange(range);
+  return judgeGames.filter(g => {
+    const t = new Date(`${g.date}T${g.time || '00:00'}`);
+    return t >= start && t <= end;
+  });
+}
+
+function getRecordSchedule(range) {
+  const { start, end } = getPeriodRange(range);
+  return recordGames.filter(g => {
+    const t = new Date(`${g.date}T${g.time || '00:00'}`);
+    return t >= start && t <= end;
+  });
+}
