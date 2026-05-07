@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>紀錄員報名</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:#f3f5f7;
+}
+
+/* ===== Header 佔位（沿用你既有 header.html）===== */
+#header{}
+
+/* ===== 標題 ===== */
+.page-title{
+  background:#0d4c63;
+  color:#fff;
+  padding:12px;
+  font-size:20px;
+  font-weight:800;
+  text-align:center;
+}
+
+/* ===== 說明 ===== */
+.hint{
+  font-size:13px;
+  color:#555;
+  margin:8px 12px;
+}
+
+/* ===== 表格 ===== */
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+}
+th, td{
+  border:2px solid #000;
+  padding:6px 8px;
+  text-align:center;
+  font-size:14px;
+}
+th{
+  background:#0d4c63;
+  color:#fff;
+  font-weight:700;
+}
+
+/* ===== 下拉選單 ===== */
+select{
+  width:100%;
+  padding:4px 6px;
+  border-radius:14px;
+  font-weight:600;
+  cursor:pointer;
+}
+select.locked{
+  background:#e0e0e0;
+  cursor:not-allowed;
+}
+select.me{
+  border:2px solid #2e7d32;
+  background:#e8f5e9;
+}
+</style>
+</head>
+
+<body>
+
+<div id="header"></div>
+
+<div class="page-title">
+  BBT 軟式棒球聯盟｜紀錄員報名表
+</div>
+
+<div class="hint">
+  ※ 僅能在「無」的欄位選擇自己；已被安排者無法異動
+</div>
+
+<table id="recordTable">
+<thead>
+<tr>
+  <th>賽制</th>
+  <th>組別</th>
+  <th>日期</th>
+  <th>時間</th>
+  <th>客隊（三壘）</th>
+  <th>主隊（一壘）</th>
+  <th>地點</th>
+  <th>記錄員</th>
+  <th>見習記錄員</th>
+  <th>影像記錄員</th>
+  <th>備註</th>
+</tr>
+</thead>
+<tbody>
+<!-- JS 動態產生 -->
+</tbody>
+</table>
+
+<script src="js/config.js"></script>
+<script>
+/* ========== 狀態 ========== */
+let session;
+let games = [];
+
+/* ========== 初始化 ========== */
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('header.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('header').innerHTML = html;
+
+      session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (!session.user_id) {
+        location.replace('login.html');
+        return;
+      }
+
+      loadGames();
+    });
+});
+
+/* ========== 載入可報名賽事 ========== */
+function loadGames(){
+  callApi({
+    action: 'getRecordSignableGames',
+    user_id: session.user_id
+  }, res => {
+    if (!res || res.result !== 'ok') {
+      alert('載入賽事失敗');
+      return;
+    }
+    games = res.games || [];
+    renderTable();
+  });
+}
+
+/* ========== 畫表格 ========== */
+function renderTable(){
+  const tbody = document.querySelector('#recordTable tbody');
+  tbody.innerHTML = '';
+
+  if (!games.length) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="11">目前沒有可報名的賽事</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+
+  games.forEach(g => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${g.game_type || ''}</td>
+      <td>${g.category || ''}</td>
+      <td>${g.date || ''}</td>
+      <td>${g.time || ''}</td>
+      <td>${g.away_team || ''}</td>
+      <td>${g.home_team || ''}</td>
+      <td>${g.field || ''}</td>
+      <td>${renderSelect(g, 'REC_MAIN')}</td>
+      <td>${renderSelect(g, 'REC_TRAINEE')}</td>
+      <td>${renderSelect(g, 'REC_VIDEO')}</td>
+      <td>${g.note || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ========== 產生下拉選單 ========== */
+function renderSelect(g, role){
+  const slot = (g.record_slots || {})[role];
+  const isMe = slot && slot.user_id === session.user_id;
+
+  // 已被他人或自己佔用
+  if (slot) {
+    return `
+      <select class="${isMe ? 'me' : 'locked'}" ${isMe ? '' : 'disabled'}
+        onchange="onChange('${g.game_id}','${role}', this.value)">
+        <option value="${slot.user_id}">
+          ${slot.name}${isMe ? '（我）' : ''}
+        </option>
+        ${isMe ? '<option value="">無</option>' : ''}
+      </select>
+    `;
+  }
+
+  // 空位
+  return `
+    <select onchange="onChange('${g.game_id}','${role}', this.value)">
+      <option value="">無</option>
+      <option value="${session.user_id}">我</option>
+    </select>
+  `;
+}
+
+/* ========== 異動 ========== */
+function onChange(gameId, role, value){
+  if (value === '') {
+    // 取消
+    callApi({
+      action: 'cancelRecordSignup',
+      user_id: session.user_id,
+      game_id: gameId,
+      record_role: role
+    }, () => loadGames());
+    return;
+  }
+
+  // 報名
+  callApi({
+    action: 'recordSignup',
+    user_id: session.user_id,
+    game_id: gameId,
+    record_role: role
+  }, () => loadGames());
+}
+</script>
+
+</body>
+</html>
