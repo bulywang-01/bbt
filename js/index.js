@@ -39,14 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     roles.includes('record') ||
     roles.includes('record_chief');
 
-  const roleMap = {
-    admin: '系統管理員',
-    judge: '裁判員',
-    chief_judge: '裁判長',
-    record: '紀錄員',
-    record_chief: '紀錄長'
-  };
-
   // ✅ 先決定要顯示哪些區塊（畫面層）
   const judgePanel = document.getElementById('judge-schedule');
   const recordPanel = document.getElementById('record-schedule');
