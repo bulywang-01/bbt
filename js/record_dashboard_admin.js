@@ -23,37 +23,85 @@ function loadAdminGames() {
   });
 }
 
+//✅ 前端 grouping（admin.js 新增 / 取代原本 render）
+//✅ 1️⃣ 先把 games 分組（日期 → 組別 → 排時間）
+function groupAdminGames(games) {
+  const map = {};
+
+  games.forEach(g => {
+    const d = g.date;        // 已經是 yyyy/MM/dd
+    const c = g.category;    // 組別
+
+    if (!map[d]) map[d] = {};
+    if (!map[d][c]) map[d][c] = [];
+
+    map[d][c].push(g);
+  });
+
+  // ✅ 每個組別裡依時間排序
+  Object.values(map).forEach(catMap => {
+    Object.values(catMap).forEach(list => {
+      list.sort((a, b) => a.time.localeCompare(b.time));
+    });
+  });
+
+  return map;
+}
+
 function renderAdminGames(games) {
   const root = document.getElementById('content');
   root.innerHTML = '';
 
-  games.forEach(g=>{
-    const panel = document.createElement('div');
-    panel.className='panel';
-    panel.innerHTML = `
-      <div class="game-header">
-        ${g.date} ${g.time}｜${g.category}<br>
-        ${g.away_team} vs ${g.home_team}（${g.field}）
-      </div>
-      <div class="pos-grid">
-        ${renderPos(g,'REC_MAIN','記錄員')}
-        ${renderPos(g,'REC_TRAINEE','見習記錄員')}
-        ${renderPos(g,'REC_VIDEO','影像記錄員')}
-      </div>
-    `;
-    root.appendChild(panel);
+  const grouped = groupAdminGames(games);
+
+  Object.keys(grouped).sort().forEach(date => {
+    const dateBlock = document.createElement('div');
+    dateBlock.className = 'panel';
+    dateBlock.innerHTML = `<h2>${date}</h2>`;
+
+    const categories = grouped[date];
+    Object.keys(categories).forEach(cat => {
+      const catBlock = document.createElement('div');
+      catBlock.innerHTML = `<h3 style="margin-top:12px;">${cat}</h3>`;
+
+      categories[cat].forEach(g => {
+        catBlock.appendChild(buildGameCard(g));
+      });
+
+      dateBlock.appendChild(catBlock);
+    });
+
+    root.appendChild(dateBlock);
   });
+}
+
+function buildGameCard(g) {
+  const div = document.createElement('div');
+  div.className = 'game-card';
+
+  div.innerHTML = `
+    <div class="game-header">
+      ${g.time}｜${g.away_team} vs ${g.home_team}（${g.field}）
+    </div>
+    <div class="pos-grid">
+      ${renderPos(g, 'REC_MAIN', '記錄員')}
+      ${renderPos(g, 'REC_TRAINEE', '見習記錄員')}
+      ${renderPos(g, 'REC_VIDEO', '影像記錄員')}
+    </div>
+  `;
+  return div;
 }
 
 function renderPos(g, role, label) {
   const assign = g.record_assignments?.[role];
   const signups = g.record_signups?.[role] || [];
 
+  // ✅ 有指派（最高優先）
   if (assign) {
     return `
       <div class="pos-cell assigned">
         <div class="role">${label}</div>
-        <div class="name">${assign.name}</div>
+        <div class="signup-name assigned">${assign.name}</div>
         <button class="btn-change"
           onclick="openRecordModal('${g.game_id}','${role}')">
           變更
@@ -62,19 +110,24 @@ function renderPos(g, role, label) {
     `;
   }
 
+  // ✅ 尚未指派，但有人報名
+  const signupNames = signups.map(s => s.name).join('、');
   return `
     <div class="pos-cell">
       <div class="role">${label}</div>
+      ${
+        signupNames
+          ? `<div class="signup-name signup">${signupNames}</div>`
+          : ''
+      }
       <button class="btn-assign"
         onclick="openRecordModal('${g.game_id}','${role}')">
         指派
       </button>
-      <div class="signup-list">
-        ${signups.length ? '報名：'+signups.map(s=>s.name).join('、') : ''}
-      </div>
     </div>
   `;
 }
+
 
 /* ===== Modal ===== */
 
