@@ -37,7 +37,6 @@
 <div id="header">
   <nav>
     <a href="index.html">🏠 首頁</a>
-
     <a href="judge_dashboard.html" class="nav-judge">📋 裁判班表</a>
     <a href="record_dashboard.html" class="nav-record">🎥 紀錄班表</a>
     <a href="admin_dashboard.html" class="nav-admin">⚙️ 管理</a>
@@ -48,34 +47,3 @@
 </div>
 
 <script src="js/auth.js"></script>
-
-<script>
-(function applyHeader() {
-  const session = getSession();
-  if (!session) return;
-  const roles = getRoles(session);
-
-  document.getElementById('u_name').textContent = session.name || '';
-
-  if (hasJudge(roles) || hasAdmin(roles)) {
-    document.querySelectorAll('.nav-judge')
-      .forEach(el => el.style.display = 'inline-flex');
-  }
-
-  if (hasRecord(roles) || hasAdmin(roles)) {
-    document.querySelectorAll('.nav-record')
-      .forEach(el => el.style.display = 'inline-flex');
-  }
-
-  if (hasManage(roles)) {
-    document.querySelectorAll('.nav-admin')
-      .forEach(el => el.style.display = 'inline-flex');
-  }
-})();
-
-function logout() {
-  if (!confirm('確定要登出？')) return;
-  localStorage.clear();
-  location.replace('login.html');
-}
-</script>
