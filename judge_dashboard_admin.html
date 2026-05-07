@@ -239,6 +239,7 @@ button {
 
 <script>
    document.addEventListener('DOMContentLoaded', () => {
+     guardAdminPage();     // ✅ 權限
      fetch('header.html')
        .then(res => res.text())
        .then(html => {
@@ -262,6 +263,7 @@ button {
 
 <script src="js/config.js"></script>
 <script src="js/judge_dashboard_admin.js"></script>
+<script src="js/auth.js"></script>
 
 </body>
 </html>
