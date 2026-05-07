@@ -116,6 +116,7 @@ select.me{
 <body>
 
 <div id="header"></div>
+  <div id="recordContainer"></div>
 
 <div class="page-title">
   BBT 軟式棒球聯盟｜紀錄員報名表
@@ -125,6 +126,7 @@ select.me{
   ※ 僅能在「無」的欄位選擇自己；已被安排者無法異動
 </div>
 
+<!--
 <table id="recordTable">
 <thead>
 <tr>
@@ -142,9 +144,12 @@ select.me{
 </tr>
 </thead>
 <tbody>
+-->
 <!-- JS 動態產生 -->
+<!--
 </tbody>
 </table>
+-->
 
 <script src="js/config.js"></script>
 <script>
@@ -180,7 +185,7 @@ function loadGames(){
       return;
     }
     games = res.games || [];
-    renderTable();
+    renderRecordDashboard();
   });
 }
 
