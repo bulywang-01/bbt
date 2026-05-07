@@ -287,15 +287,10 @@ if (session) {
   }
 
   if (roleEl) {
-    const roleMap = {
-      admin: '系統管理員',
-      judge: '裁判員',
-      chief_judge: '裁判長',
-      record: '紀錄員',
-      record_admin: '紀錄長'
-    };
+    const roles = (session.role || '')
+      .split(',')
+      .map(r => r.trim());
 
-    const roles = getRoles(session);
     const roleText = roles
       .map(r => roleMap[r])
       .filter(Boolean)
