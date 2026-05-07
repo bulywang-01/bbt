@@ -456,8 +456,16 @@ function formatZhDate(dateStr) {
 }
 
 /* 裁判  紀錄卡片 render */
+/* 裁判 / 紀錄卡片 render */
 function renderScheduleCards(containerId, list, type) {
   const box = document.getElementById(containerId);
+
+  // ✅ 關鍵保護：容器不存在直接中止（並留下證據）
+  if (!box) {
+    console.error('❌ renderScheduleCards: container not found ->', containerId);
+    return;
+  }
+
   box.innerHTML = '';
 
   if (!list || list.length === 0) {
@@ -466,7 +474,7 @@ function renderScheduleCards(containerId, list, type) {
   }
 
   // ✅ 排序：日期 → 時間
-  list.sort((a,b) => {
+  list.sort((a, b) => {
     if (a.date === b.date) {
       return a.time.localeCompare(b.time);
     }
