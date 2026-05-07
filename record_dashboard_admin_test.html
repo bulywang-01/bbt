@@ -196,11 +196,44 @@ button {
 .signup-name.other {
   color: #555;      /* 灰：他人 */
 }
+
+/* ===== 操作提示 Toast ===== */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 260px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  background: #323232;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 9999;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+.toast.success {
+  background: #2e7d32; /* 綠：成功 */
+}
+
+.toast.error {
+  background: #c62828; /* 紅：失敗 */
+}
 </style>
 </head>
 
 <body>
 <div id="header"></div>
+<div id="toast" class="toast"></div>
 
 <div class="main">
   <div id="content"></div>
@@ -233,6 +266,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 });
+
+//✅ 3️⃣ JS helper（一次寫好，全頁可用）
+function showToast(message, type = 'success', duration = 2000) {
+  const el = document.getElementById('toast');
+  el.textContent = message;
+  el.className = `toast show ${type}`;
+  setTimeout(() => {
+    el.className = 'toast';
+  }, duration);
+}
 </script>
 </body>
 </html>
