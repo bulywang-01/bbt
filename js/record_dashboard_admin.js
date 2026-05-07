@@ -4,7 +4,14 @@ let currentRole = '';
 
 document.addEventListener('DOMContentLoaded', () => {
   adminSession = JSON.parse(localStorage.getItem('session_user') || '{}');
-  loadAdminGames();
+
+  if (!adminSession.user_id) {
+    alert('尚未登入，請重新登入');
+    location.replace('login.html');
+    return; // ✅ 關鍵：不要再往下跑
+  }
+
+  loadAdminGames(); // ✅ 只在 session OK 時才打 API
 });
 
 function loadAdminGames() {
