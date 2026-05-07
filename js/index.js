@@ -60,16 +60,15 @@ function loadDashboardGames(userId, needJudge, needRecord) {
     callApi(
       { action: 'getMyUpcomingGames', user_id: userId },
       res => {
-        
-    console.error('📦 judge API response =', res);
+        console.error('🧑‍⚖️ judge API response =', res);
 
         if (res && res.result === 'ok' && Array.isArray(res.games)) {
           judgeGames = res.games;
         } else {
           judgeGames = [];
         }
-    
-        // ✅ 關鍵：資料一回來就畫
+
+        // ✅ 關鍵：資料一來就 render
         renderSchedule();
       }
     );
@@ -80,31 +79,21 @@ function loadDashboardGames(userId, needJudge, needRecord) {
     callApi(
       { action: 'getMyRecordUpcomingGames', user_id: userId },
       res => {
-        
-    console.error('📦 record API response =', res);
+        console.error('📝 record API response =', res);
 
         if (res && res.result === 'ok' && Array.isArray(res.games)) {
           recordGames = res.games;
         } else {
           recordGames = [];
         }
-    
-        // ✅ 關鍵：資料一回來就畫
+
+        // ✅ 關鍵：資料一來就 render
         renderSchedule();
       }
     );
   }
-
-  // 如果只有單一身份
-  if (needJudge && !needRecord) {
-    // 等裁判資料
-    return;
-  }
-  if (!needJudge && needRecord) {
-    // 等紀錄資料
-    return;
-  }
 }
+
 
 /* =========================
  * 資料完成後 → render
