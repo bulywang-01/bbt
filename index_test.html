@@ -275,12 +275,33 @@ fetch('header.html').then(r=>r.text()).then(h=>{
   initHeaderVisibility();
 });
 
-/* ===== Welcome ===== */
-const s = getSession();
-if (s) {
-  document.getElementById('welcome-name').textContent = `${s.name} 您好`;
-  document.getElementById('welcome-role').textContent = s.role;
-  if (s.level) document.getElementById('license-bg').textContent = s.level;
+// ===== Welcome 區：身份顯示（中文）=====
+const session = getSession();
+if (session) {
+  const nameEl = document.getElementById('welcome-name');
+  const roleEl = document.getElementById('welcome-role');
+
+  if (nameEl) {
+    nameEl.textContent = `${session.name} 您好`;
+  }
+
+  if (roleEl) {
+    const roleMap = {
+      admin: '系統管理員',
+      judge: '裁判員',
+      chief_judge: '裁判長',
+      record: '紀錄員',
+      record_admin: '紀錄長'
+    };
+
+    const roles = getRoles(session);
+    const roleText = roles
+      .map(r => roleMap[r])
+      .filter(Boolean)
+      .join('／');
+
+    roleEl.textContent = roleText;
+  }
 }
 
 /* ===== Schedule Render（核心，index.js 給資料） ===== */
@@ -295,23 +316,41 @@ index.js 請提供：
 */
 let currentRange = 'week';
 
-function setRange(r){
-  currentRange = r;
-  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
-  document.getElementById(`tab-${r}`).classList.add('active');
-  renderSchedule();
+function setRange(range) {
+  currentRange = range;
+
+  // tab active 樣式
+  document.querySelectorAll('.schedule-tabs button')
+    .forEach(b => b.classList.remove('active'));
+
+  const btn = document.getElementById(`tab-${range}`);
+  if (btn) btn.classList.add('active');
+
+  // ✅ 關鍵：一定要呼叫 render
+  if (typeof renderSchedule === 'function') {
+    renderSchedule();
+  }
 }
 
-function renderSchedule(){
-  const judge = typeof getJudgeSchedule === 'function' ? getJudgeSchedule(currentRange) : [];
-  const record = typeof getRecordSchedule === 'function' ? getRecordSchedule(currentRange) : [];
 
-  document.getElementById('judge-schedule').style.display = judge.length ? 'block':'none';
-  document.getElementById('record-schedule').style.display = record.length ? 'block':'none';
-  document.getElementById('no-schedule').style.display = (!judge.length && !record.length) ? 'block':'none';
+function renderSchedule() {
+  const judge = getJudgeSchedule(currentRange);
+  const record = getRecordSchedule(currentRange);
 
-  renderList('judge-list', judge);
-  renderList('record-list', record);
+  console.log('judge schedule', judge);
+  console.log('record schedule', record);
+
+  document.getElementById('judge-schedule').style.display =
+    judge.length ? 'block' : 'none';
+
+  document.getElementById('record-schedule').style.display =
+    record.length ? 'block' : 'none';
+
+  document.getElementById('no-schedule').style.display =
+    (!judge.length && !record.length) ? 'block' : 'none';
+
+  renderScheduleCards('judge-list', judge, 'judge');
+  renderScheduleCards('record-list', record, 'record');
 }
 
 function renderList(elId, list){
