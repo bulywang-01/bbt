@@ -5,73 +5,66 @@
   <title>管理中心</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ 樣式：完全保留你原本的 UI 結構 -->
+  <!-- ✅ 一定要用標準 script tag 載入 -->
+  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+
   <style>
     body{
       margin:0;
       font-family:system-ui,-apple-system;
       background:#f5f6f8;
     }
-
     .main{
       max-width:1100px;
       margin:0 auto;
       padding:20px;
     }
-
     .section-title{
       margin:24px 0 8px;
       font-size:18px;
       font-weight:800;
     }
-
     .cards{
       display:grid;
       grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
       gap:16px;
     }
-
     .card{
       background:#fff;
       border-radius:10px;
       padding:16px;
       box-shadow:0 2px 8px rgba(0,0,0,.08);
     }
-
     .card h4{margin:0 0 8px}
     .card p{margin:4px 0;color:#555;font-size:14px}
     .card a{color:#0066cc;font-weight:600;text-decoration:none}
     .card a:hover{text-decoration:underline}
 
-    /* ✅ 管理頁卡片角色控制（預設全隱藏） */
+    /* ✅ 角色卡片（預設隱藏） */
     .role-admin{display:none}
     .role-chief-judge{display:none}
     .role-record-chief{display:none}
   </style>
-
-  <!-- ✅ 一定要先載 auth.js（header 也會用到） -->
-  <script src="js/auth.js"></script>
-  <script src="js/config.js"></script>
 </head>
 
 <body>
 
-  <!-- ✅ 共用 Header -->
+  <!-- ✅ 共用 Header 容器 -->
   <div id="header-container"></div>
 
   <div class="main">
     <h2>管理中心</h2>
     <p style="color:#666;margin-top:-6px">請依身份選擇可用的管理功能</p>
 
-    <!-- ===== 班表與年度統計 ===== -->
     <div class="section-title">📊 班表與年度統計</div>
     <div class="cards">
 
       <div class="card role-admin role-chief-judge">
         <h4>📈 裁判員年度統計</h4>
         <p>裁判員年度站場數、站位分佈與月份趨勢。</p>
-        <p><a href="#" onclick="openSelectJudge()">個別裁判員 →</a></p>
-        <p><a href="#" onclick="openJudgeAnnualSummary()">裁判員年度總表 →</a></p>
+        <p><a href="#">個別裁判員 →</a></p>
+        <p><a href="#">裁判員年度總表 →</a></p>
       </div>
 
       <div class="card role-admin role-record-chief">
@@ -89,63 +82,54 @@
 
       <div class="card role-admin role-record-chief">
         <h4>📊 紀錄員班表安排</h4>
-        <p>由紀錄長指派記錄、見習與影像紀錄員。</p>
+        <p>由紀錄長指派紀錄相關人員。</p>
         <p><a href="record_dashboard_admin.html">前往安排 →</a></p>
       </div>
 
     </div>
 
-    <!-- ===== 系統管理 ===== -->
     <div class="section-title">⚙️ 系統管理</div>
     <div class="cards">
-
       <div class="card role-admin">
         <h4>👤 帳號管理</h4>
-        <p>管理使用者帳號、角色與狀態。</p>
         <p><a href="admin_users.html">前往管理 →</a></p>
       </div>
-
       <div class="card role-admin">
         <h4>⚾ 賽事管理</h4>
-        <p>新增、編輯、刪除賽事與場次。</p>
         <p><a href="admin_games.html">前往管理 →</a></p>
       </div>
-
     </div>
   </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-  /* ✅ 1. 頁面門禁（admin / 裁判長 / 紀錄長） */
+  /* ✅ 1. 頁面門禁 */
   guardAdminPage();
 
   const session = getSession();
   const roles = getRoles(session);
 
-  /* ✅ 2. 載入共用 header（admin_dashboard 不再碰 header DOM） */
+  /* ✅ 2. 載入共用 Header（這時 auth.js 已存在） */
   fetch('header.html')
     .then(r => r.text())
     .then(html => {
       document.getElementById('header-container').innerHTML = html;
     });
 
-  /* ✅ 3. 僅管理頁自己的卡片顯示邏輯 */
+  /* ✅ 3. 管理頁卡片顯示 */
   if (hasAdmin(roles)) {
     document.querySelectorAll('.role-admin')
       .forEach(el => el.style.display = 'block');
   }
-
   if (roles.includes('chief_judge')) {
     document.querySelectorAll('.role-chief-judge')
       .forEach(el => el.style.display = 'block');
   }
-
   if (roles.includes('record_chief')) {
     document.querySelectorAll('.role-record-chief')
       .forEach(el => el.style.display = 'block');
   }
-
 });
 </script>
 
