@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch('header.html')
     .then(r=>r.text())
     .then(html=>{
-      document.getElementById('header').innerHTML = html;
+      document.getElementById('header-container').innerHTML = html;
       document.querySelectorAll('#header a').forEach(a=>{
         if (a.getAttribute('href') === 'record_dashboard_admin.html') {
           a.classList.add('active');
