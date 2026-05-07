@@ -1,167 +1,74 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
+<!DOCTYPE html><html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<title>管理中心</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>管理中心</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-body{
-  margin:0;
-  font-family:system-ui,-apple-system;
-  background:#f5f6f8;
-}
-
-/* ===== Header ===== */
-#header{
-  display:flex;
-  align-items:center;
-  padding:10px 20px;
-  background:#fff;
-  border-bottom:1px solid #ddd;
-}
-#header a{
-  margin-right:16px;
-  color:#0066cc;
-  text-decoration:none;
-  font-weight:500;
-}
-#header a:hover{background:#f2f5fa;border-radius:6px;padding:6px 10px}
-#u_name{margin-left:auto;font-weight:600;color:#333}
-
-/* ===== Layout ===== */
-.main{max-width:1100px;margin:0 auto;padding:20px}
-.section-title{margin:24px 0 8px;font-size:18px;font-weight:800}
-
-/* ===== Cards ===== */
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:16px;
-}
-.card{
-  background:#fff;
-  border-radius:10px;
-  padding:16px;
-  box-shadow:0 2px 8px rgba(0,0,0,.08);
-}
-.card h4{margin:0 0 8px}
-.card p{margin:4px 0;color:#555;font-size:14px}
-.card a{color:#0066cc;font-weight:600;text-decoration:none}
-.card a:hover{text-decoration:underline}
-
-/* ===== Role display ===== */
-.role-admin{display:none}
-.role-chief-judge{display:none}
-.role-record-chief{display:none}
-</style>
+  <!-- ✅ 一定要先載 auth.js -->
+  <script src="js/auth.js"></script>
 </head>
 <body>
 
+  <!-- ✅ 共用 Header -->
+  <div id="header-container"></div>
 
-<script src="js/config.js"></script>
-<script src="js/auth.js"></script>
+  <!-- ===== 內容 ===== -->
+  <div style="padding:20px;">
+    <h2>管理中心</h2>
+    <p>請依身份選擇可用的管理功能</p>
 
-<div id="header-container"></div>
-
-<div class="main">
-  <h2>管理中心</h2>
-  <p style="color:#666;margin-top:-6px">請依身份選擇可用的管理功能</p>
-
-  <!-- ===== 班表與年度統計 ===== -->
-  <div class="section-title">📊 班表與年度統計</div>
-  <div class="cards">
-
-    <!-- 裁判年度統計 -->
-    <div class="card role-admin role-chief-judge">
-      <h4>📈 裁判員年度統計</h4>
-      <p>裁判員年度站場數、站位分佈與月份趨勢。</p>
-      <p><a href="#" onclick="openSelectJudge()">個別裁判員 →</a></p>
-      <p><a href="#" onclick="openJudgeAnnualSummary()">裁判員年度總表 →</a></p>
+    <!-- 班表與統計 -->
+    <div class="role-admin role-chief-judge role-record-chief" style="display:none;">
+      <h3>📊 班表與年度統計</h3>
+      <ul>
+        <li><a href="judge_dashboard_admin.html">裁判班表安排</a></li>
+        <li><a href="record_dashboard_admin.html">紀錄班表安排</a></li>
+      </ul>
     </div>
 
-    <!-- 紀錄員年度統計 -->
-    <div class="card role-admin role-record-chief">
-      <h4>📈 紀錄員年度統計</h4>
-      <p>紀錄員年度出席數與角色分佈。</p>
-      <p><a href="record_annual_dashboard.html">個別紀錄員 →</a></p>
-      <p><a href="record_annual_summary.html">紀錄員年度總表 →</a></p>
+    <!-- 系統管理 -->
+    <div class="role-admin" style="display:none;">
+      <h3>⚙️ 系統管理</h3>
+      <ul>
+        <li><a href="admin_users.html">帳號管理</a></li>
+        <li><a href="admin_games.html">賽事管理</a></li>
+      </ul>
     </div>
-
-    <!-- 裁判長班表 -->
-    <div class="card role-admin role-chief-judge">
-      <h4>📊 裁判員班表安排</h4>
-      <p>由裁判長進行場次與站位指派。</p>
-      <p><a href="judge_dashboard_admin.html">前往安排 →</a></p>
-    </div>
-
-    <!-- 紀錄長班表 -->
-    <div class="card role-admin role-record-chief">
-      <h4>📊 紀錄員班表安排</h4>
-      <p>由紀錄長指派記錄、見習與影像紀錄員。</p>
-      <p><a href="record_dashboard_admin.html">前往安排 →</a></p>
-    </div>
-
   </div>
 
-  <!-- ===== 系統管理 ===== -->
-  <div class="section-title">⚙️ 系統管理</div>
-  <div class="cards">
-
-    <div class="card role-admin">
-      <h4>👤 帳號管理</h4>
-      <p>管理使用者帳號、角色與狀態。</p>
-      <p><a href="admin_users.html">前往管理 →</a></p>
-    </div>
-
-    <div class="card role-admin">
-      <h4>⚾ 賽事管理</h4>
-      <p>新增、編輯、刪除賽事與場次。</p>
-      <p><a href="admin_games.html">前往管理 →</a></p>
-    </div>
-
-  </div>
-</div>
-
- 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  guardAdminPage();     // ✅ 權限
+  // ✅ 先門禁
+  guardAdminPage();
+
+  const session = getSession();
+  const roles = getRoles(session);
+
+  // ✅ 載入 header（header DOM 建好後才會操作 u_name）
   fetch('header.html')
     .then(r => r.text())
     .then(html => {
       document.getElementById('header-container').innerHTML = html;
+
+      // ✅ 顯示管理頁區塊
+      if (hasAdmin(roles)) {
+        document
+          .querySelectorAll('.role-admin')
+          .forEach(el => el.style.display = 'block');
+      }
+
+      if (roles.includes('chief_judge')) {
+        document
+          .querySelectorAll('.role-chief-judge')
+          .forEach(el => el.style.display = 'block');
+      }
+
+      if (roles.includes('record_chief')) {
+        document
+          .querySelectorAll('.role-record-chief')
+          .forEach(el => el.style.display = 'block');
+      }
     });
-
-  // ✅ 原本管理頁邏輯
-});
-
-
-function logout(){
-  if(!confirm('確定要登出系統？'))return;
-  localStorage.clear();
-  location.replace('login.html');
-}
-
-document.addEventListener('DOMContentLoaded',()=>{
-  const raw=localStorage.getItem('session_user');
-  if(!raw){location.replace('login.html');return;}
-  let session;
-  try{session=JSON.parse(raw)}catch(e){location.replace('login.html');return;}
-  if(!session.user_id){location.replace('login.html');return;}
-
-  document.getElementById('u_name').textContent=session.name||'';
-  const role=session.role;
-
-  if(role==='admin'){
-    document.querySelectorAll('.role-admin').forEach(el=>el.style.display='block');
-  }
-  if(role==='chief_judge'){
-    document.querySelectorAll('.role-chief-judge').forEach(el=>el.style.display='block');
-  }
-  if(role==='record_chief'){
-    document.querySelectorAll('.role-record-chief').forEach(el=>el.style.display='block');
-  }
 });
 </script>
 
