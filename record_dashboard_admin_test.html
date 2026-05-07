@@ -232,7 +232,7 @@ button {
 </head>
 
 <body>
-<div id="header"></div>
+<div id="header-container"></div>
 <div id="toast" class="toast"></div>
 
 <div class="main">
@@ -252,9 +252,11 @@ button {
 
 <script src="js/config.js"></script>
 <script src="js/record_dashboard_admin.js"></script>
+<script src="js/auth.js"></script>
 <script>
    
 document.addEventListener('DOMContentLoaded', () => {
+   guardAdminPage();     // ✅ 權限
   fetch('header.html')
     .then(r=>r.text())
     .then(html=>{
