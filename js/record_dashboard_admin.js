@@ -153,16 +153,21 @@ function closeRecordModal() {
 }
 
 function assignRecord(userId) {
+  showToast('指派中…');
+
   callApi({
-    action:'assignRecord_admin',
+    action: 'assignRecord_admin',   // ✅ 注意這裡是 action 名稱
     game_id: currentGameId,
     record_role: currentRole,
     user_id: userId,
     assigned_by: adminSession.user_id
-  }, res=>{
-    if (res.result==='ok') {
+  }, res => {
+    if (res && res.result === 'ok') {
       closeRecordModal();
+      showToast('指派完成', 'success');
       loadAdminGames();
-    } else alert(res.message);
+    } else {
+      showToast(res?.message || '指派失敗', 'error');
+    }
   });
 }
