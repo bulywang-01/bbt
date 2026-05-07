@@ -715,14 +715,16 @@ function deleteUser(uid, username) {
   );
 }
 
-// ===== 不確定是不是放在這裏 =====
+// ===== 頁籤點擊（事件代理）=====
 document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.save-btn');
-  if (!btn) return;
+  const tabBtn = e.target.closest('.tab');
+  if (!tabBtn) return;
 
-  const uid = btn.dataset.uid;
-  console.log('✅ Save button clicked, uid =', uid);
-  saveUser(uid);
+  const type = tabBtn.dataset.tab;
+  if (!type) return;
+
+  console.log('✅ tab clicked:', type);
+  switchTab(type, tabBtn);
 });
 
 
