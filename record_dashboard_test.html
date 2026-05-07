@@ -12,26 +12,6 @@ body {
   background: #f3f5f7;
 }
 
-/* ===== Header 保命橫向 ===== */
-#header {
-  width: 100%;
-  background: #fff;
-}
-
-#header nav {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 8px 16px;
-  gap: 20px;
-}
-
-#header nav a {
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-}
-
 /* ===== 標題 ===== */
 .page-title {
   background: #0d4c63;
@@ -122,11 +102,44 @@ select.locked {
   color: #555;
   font-weight: 700;
 }
+
+/* ===== 操作提示 toast ===== */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 200px;
+  background: #323232;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 9999;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+.toast.success {
+  background: #2e7d32;
+}
+
+.toast.error {
+  background: #c62828;
+}
+  
 </style>
 </head>
 
 <body>
 <div id="header"></div>
+<div id="toast" class="toast"></div>
 
 <div class="page-title">BBT 軟式棒球聯盟｜紀錄員報名表</div>
 <div class="hint">※ 只能在「無」的欄位選擇自己</div>
@@ -153,6 +166,16 @@ document.addEventListener('DOMContentLoaded', () => {
       loadGames();
     });
 });
+
+/* JS helper（顯示訊息） */
+function showToast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  setTimeout(() => {
+    el.className = 'toast';
+  }, 2000);
+}
 
 /* ===== 取資料 ===== */
 function loadGames() {
@@ -282,23 +305,39 @@ function renderSignupCell(g, role) {
 
 /* ✅ 2️⃣ 點一下就送出的行為（比照裁判頁） */
 function signup(gameId, role) {
+  showToast('報名中...');
   callApi({
     action: 'recordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
-  }, () => loadGames());
+  }, res => {
+    if (res && res.result === 'ok') {
+      showToast('報名成功', 'success');
+      loadGames();
+    } else {
+      showToast(res?.message || '報名失敗', 'error');
+    }
+  });
 }
 
 function cancelSignup(gameId, role) {
   if (!confirm('確定取消此場紀錄？')) return;
 
+  showToast('取消中...');
   callApi({
     action: 'cancelRecordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
-  }, () => loadGames());
+  }, res => {
+    if (res && res.result === 'ok') {
+      showToast('已取消報名', 'success');
+      loadGames();
+    } else {
+      showToast(res?.message || '取消失敗', 'error');
+    }
+  });
 }
 
 
