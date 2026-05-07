@@ -1,137 +1,80 @@
 <style>
-/* ===== Header 統一樣式 ===== */
 #header {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 6px 12px;
-  background: #ffffff;
-  border-bottom: 1px solid #ddd;
-  box-sizing: border-box;
+  display:flex;
+  align-items:center;
+  padding:6px 12px;
+  background:#fff;
+  border-bottom:1px solid #ddd;
 }
-
 #header nav {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:100%;
 }
-
 #header a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  font-weight: 500;
-  padding: 10px 14px;
-  min-height: 40px;
-  color: #0066cc;
-  text-decoration: none;
-  border-radius: 6px;
-  white-space: nowrap;
+  padding:10px 14px;
+  min-height:40px;
+  text-decoration:none;
+  color:#0066cc;
+  border-radius:6px;
 }
-
-#header a:hover {
-  background: #f2f5fa;
-}
-
-#header a.active {
-  background: #e3f2fd;
-  color: #1565c0;
-  font-weight: 700;
-}
+#header a:hover { background:#f2f5fa; }
 
 #u_name {
-  margin-left: auto;
-  padding: 10px 14px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #333;
-  white-space: nowrap;
+  margin-left:auto;
+  font-weight:600;
 }
 
-/* ===== 權限控制（預設全隱藏） ===== */
+/* 預設全隱藏 */
 .nav-judge,
 .nav-record,
 .nav-admin {
-  display: none;
+  display:none;
 }
 </style>
 
-<!-- ===== Header ===== -->
 <div id="header">
   <nav>
-    🏠 <a href="index.html">首頁</a>
+    <a href="index.html">🏠 首頁</a>
 
-    📋 <a href="judge_dashboard.html" class="nav-judge">裁判班表</a>
-
-    🎥 <a href="record_dashboard.html" class="nav-record">紀錄班表</a>
-
-    ⚙️ <a href="admin_dashboard.html" class="nav-admin">管理</a>
-
-    🔐 <a href="change_password.html">改密碼</a>
-
+    <a href="judge_dashboard.html" class="nav-judge">📋 裁判班表</a>
+    <a href="record_dashboard.html" class="nav-record">🎥 紀錄班表</a>
+    <a href="admin_dashboard.html" class="nav-admin">⚙️ 管理</a>
+    <a href="change_password.html">🔐 改密碼</a>
     <a href="#" onclick="logout()">登出</a>
-
     <span id="u_name"></span>
   </nav>
 </div>
 
+<script src="common/auth.js"></script>
+
 <script>
-/* ===== Header 權限顯示邏輯（共用） ===== */
-(function applyHeaderRoleVisibility() {
-  const raw = localStorage.getItem('session_user');
-  if (!raw) return;
+(function applyHeader() {
+  const session = getSession();
+  if (!session) return;
+  const roles = getRoles(session);
 
-  let session;
-  try {
-    session = JSON.parse(raw);
-  } catch (e) {
-    return;
-  }
+  document.getElementById('u_name').textContent = session.name || '';
 
-  const role = session.role;
-  const roles = Array.isArray(role) ? role : [role];
-
-  // ✅ 顯示使用者名稱
-  if (session.name) {
-    const el = document.getElementById('u_name');
-    if (el) el.textContent = session.name;
-  }
-
-  // ✅ admin：全部顯示
-  if (roles.includes('admin')) {
-    document
-      .querySelectorAll('.nav-judge, .nav-record, .nav-admin')
-      .forEach(el => el.style.display = 'inline-flex');
-    return;
-  }
-
-  // ✅ 裁判身份
-  if (roles.includes('judge') || roles.includes('chief_judge')) {
-    document
-      .querySelectorAll('.nav-judge')
+  if (hasJudge(roles) || hasAdmin(roles)) {
+    document.querySelectorAll('.nav-judge')
       .forEach(el => el.style.display = 'inline-flex');
   }
 
-  // ✅ 紀錄身份
-  if (roles.includes('record') || roles.includes('record_chief')) {
-    document
-      .querySelectorAll('.nav-record')
+  if (hasRecord(roles) || hasAdmin(roles)) {
+    document.querySelectorAll('.nav-record')
       .forEach(el => el.style.display = 'inline-flex');
   }
 
-  // ✅ 有管理權限者（裁判長／紀錄長）
-  if (roles.includes('chief_judge') || roles.includes('record_chief')) {
-    document
-      .querySelectorAll('.nav-admin')
+  if (hasManage(roles)) {
+    document.querySelectorAll('.nav-admin')
       .forEach(el => el.style.display = 'inline-flex');
   }
 })();
 
-/* ===== 登出 ===== */
 function logout() {
-  if (!confirm('確定要登出系統？')) return;
+  if (!confirm('確定要登出？')) return;
   localStorage.clear();
   location.replace('login.html');
 }
