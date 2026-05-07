@@ -6,175 +6,119 @@
 <title>紀錄員報名</title>
 
 <style>
-body{
-  margin:0;
-  font-family:system-ui,-apple-system;
-  background:#f3f5f7;
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system;
+  background: #f3f5f7;
 }
 
-/* ===== Header 佔位（沿用你既有 header.html）===== */
-#header{}
-
-/* ===== 標題 ===== */
-.page-title{
-  background:#0d4c63;
-  color:#fff;
-  padding:12px;
-  font-size:20px;
-  font-weight:800;
-  text-align:center;
-}
-
-/* ===== Header 強制橫向 ===== */
+/* ===== Header 保命橫向 ===== */
 #header nav {
   display: flex !important;
   flex-direction: row !important;
   align-items: center;
   gap: 16px;
 }
-
-#header a {
+#header nav a {
   display: inline-flex;
   align-items: center;
-  text-decoration: none;
 }
 
-
-
-/* ===== 說明 ===== */
-.hint{
-  font-size:13px;
-  color:#555;
-  margin:8px 12px;
+/* ===== 標題 ===== */
+.page-title {
+  background: #0d4c63;
+  color: #fff;
+  padding: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
 }
 
-/* ===== 表格 ===== */
-table{
-  width:100%;
-  border-collapse:collapse;
-  background:#fff;
-}
-th, td{
-  border:2px solid #000;
-  padding:6px 8px;
-  text-align:center;
-  font-size:14px;
-}
-th{
-  background:#0d4c63;
-  color:#fff;
-  font-weight:700;
+.hint {
+  font-size: 13px;
+  color: #555;
+  margin: 8px 12px;
 }
 
-/* ===== 下拉選單 ===== */
-select{
-  width:100%;
-  padding:4px 6px;
-  border-radius:14px;
-  font-weight:600;
-  cursor:pointer;
-}
-select.locked{
-  background:#e0e0e0;
-  cursor:not-allowed;
-}
-select.me{
-  border:2px solid #2e7d32;
-  background:#e8f5e9;
-}
-
-// ✅ 四、CSS（讓它看起來像裁判頁）
+/* ===== 日期 / 組別 ===== */
 .date-title {
-  margin: 24px 0 8px;
+  margin: 20px 12px 8px;
   font-size: 20px;
   font-weight: 800;
 }
-
 .group-title {
-  margin: 12px 0 4px;
+  margin: 10px 12px 6px;
+  font-weight: 700;
   border-left: 4px solid #1976d2;
   padding-left: 8px;
-  font-weight: 700;
 }
 
+/* ===== 表格 ===== */
 .record-table {
-  width: 100%;
+  width: calc(100% - 24px);
+  margin: 0 12px 16px;
   border-collapse: collapse;
-  margin-bottom: 16px;
+  background: #fff;
 }
-
 .record-table th,
 .record-table td {
   border: 1px solid #ccc;
   padding: 6px 8px;
+  text-align: center;
+}
+.record-table th {
+  background: #0d4c63;
+  color: #fff;
 }
 
+/* ===== select ===== */
+select {
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+select.me {
+  background: #e8f5e9;
+  border: 2px solid #2e7d32;
+}
+select.locked {
+  background: #e0e0e0;
+}
 </style>
 </head>
 
 <body>
-
 <div id="header"></div>
-  <div id="recordContainer"></div>
 
-<div class="page-title">
-  BBT 軟式棒球聯盟｜紀錄員報名表
-</div>
+<div class="page-title">BBT 軟式棒球聯盟｜紀錄員報名表</div>
+<div class="hint">※ 只能在「無」的欄位選擇自己</div>
 
-<div class="hint">
-  ※ 僅能在「無」的欄位選擇自己；已被安排者無法異動
-</div>
-
-<!--
-<table id="recordTable">
-<thead>
-<tr>
-  <th>賽制</th>
-  <th>組別</th>
-  <th>日期</th>
-  <th>時間</th>
-  <th>客隊（三壘）</th>
-  <th>主隊（一壘）</th>
-  <th>地點</th>
-  <th>記錄員</th>
-  <th>見習記錄員</th>
-  <th>影像記錄員</th>
-  <th>備註</th>
-</tr>
-</thead>
-<tbody>
--->
-<!-- JS 動態產生 -->
-<!--
-</tbody>
-</table>
--->
+<!-- ✅ 唯一主容器 -->
+<div id="recordContainer"></div>
 
 <script src="js/config.js"></script>
 <script>
-/* ========== 狀態 ========== */
 let session;
 let games = [];
 
-/* ========== 初始化 ========== */
+/* ===== 初始化 ===== */
 document.addEventListener('DOMContentLoaded', () => {
   fetch('header.html')
     .then(r => r.text())
     .then(html => {
       document.getElementById('header').innerHTML = html;
-
       session = JSON.parse(localStorage.getItem('session_user') || '{}');
       if (!session.user_id) {
         location.replace('login.html');
         return;
       }
-
       loadGames();
     });
 });
 
-/* ========== 載入可報名賽事 ========== */
-function loadGames(){
+/* ===== 取資料 ===== */
+function loadGames() {
   callApi({
     action: 'getRecordSignableGames',
     user_id: session.user_id
@@ -188,151 +132,68 @@ function loadGames(){
   });
 }
 
-/* ========== 先把 games 分組 ===========*/
-function groupGamesForDisplay(games) {
-  const byDate = {};
-
-  games.forEach(g => {
-    const dateKey = formatDateTW(g.date); // 2026/05/10
-    if (!byDate[dateKey]) byDate[dateKey] = {};
-
-    const groupKey = g.category || '未分類';
-    if (!byDate[dateKey][groupKey]) byDate[dateKey][groupKey] = [];
-
-    byDate[dateKey][groupKey].push(g);
-  });
-
-  // ✅ 組內依時間排序
-  Object.values(byDate).forEach(groupMap => {
-    Object.values(groupMap).forEach(list => {
-      list.sort(
-        (a, b) => new Date(a.time) - new Date(b.time)
-      );
-    });
-  });
-
-  return byDate;
-}
-
-function renderByDateGroup(games) {
-  const root = document.getElementById('recordTableBody');
-  root.innerHTML = '';
-
-  const grouped = ForDisplay(games);
-
-  Object.keys(grouped).sort().forEach(date => {
-
-    // ===== 日期標題 =====
-    root.insertAdjacentHTML('beforeend', `
-      <tr class="date-row">
-        <td colspan="11" class="date-title">${date}</td>
-      </tr>
-    `);
-
-    const groups = grouped[date];
-    Object.keys(groups).forEach(groupName => {
-
-      // ===== 組別標題 =====
-      root.insertAdjacentHTML('beforeend', `
-        <tr class="group-row">
-          <td colspan="11" class="group-title">│ ${groupName}</td>
-        </tr>
-      `);
-
-      // ===== 該組所有比賽 =====
-      groups[groupName].forEach(g => {
-        root.insertAdjacentHTML('beforeend', buildRecordRow(g));
-      });
-    });
-  });
-}
-
-/* ✅ 1️⃣ 先分組＋排序（日期 ✅ 組別 ✅ 時間 ✅） */
+/* ===== 分組（日期 → 組別 → 時間） ===== */
 function groupGames(games) {
-  if (!Array.isArray(games)) return {};   // ✅ 保命
-
   const map = {};
-
   games.forEach(g => {
-    const dateKey = formatDateTW(g.date); // 2026/05/03
-    const groupKey = g.category || '未分類';
-
-    if (!map[dateKey]) map[dateKey] = {};
-    if (!map[dateKey][groupKey]) map[dateKey][groupKey] = [];
-
-    map[dateKey][groupKey].push(g);
+    const d = formatDateTW(g.date);
+    const c = g.category || '未分類';
+    if (!map[d]) map[d] = {};
+    if (!map[d][c]) map[d][c] = [];
+    map[d][c].push(g);
   });
-
-  // ✅ 各組別內，依時間排序
   Object.values(map).forEach(groupMap => {
     Object.values(groupMap).forEach(list => {
       list.sort((a, b) => new Date(a.time) - new Date(b.time));
     });
   });
-
   return map;
 }
 
-
-/* ✅ 2️⃣ Render：日期 → 組別 → 內表格 */
+/* ===== Render 主畫面 ===== */
 function renderRecordDashboard(games) {
   const root = document.getElementById('recordContainer');
   root.innerHTML = '';
 
   const grouped = groupGames(games);
+  Object.keys(grouped).sort().forEach(date => {
+    root.insertAdjacentHTML('beforeend',
+      `<div class="date-title">${date}</div>`
+    );
 
-  // ✅ 日期排序
-  const dates = Object.keys(grouped).sort((a, b) =>
-    new Date(a) - new Date(b)
-  );
-
-  dates.forEach(date => {
-    const dateBlock = document.createElement('div');
-    dateBlock.className = 'date-block';
-
-    dateBlock.innerHTML = `<h3 class="date-title">${date}</h3>`;
-
-    const groupMap = grouped[date];
-    Object.keys(groupMap).forEach(groupName => {
-
-      const groupBlock = document.createElement('div');
-      groupBlock.className = 'group-block';
-
-      groupBlock.innerHTML = `
-        <h4 class="group-title">│ ${groupName}</h4>
-        ${buildGroupTable(groupMap[groupName])}
-      `;
-
-      dateBlock.appendChild(groupBlock);
+    Object.keys(grouped[date]).forEach(group => {
+      root.insertAdjacentHTML('beforeend',
+        `<div class="group-title">│ ${group}</div>`
+      );
+      root.insertAdjacentHTML('beforeend',
+        buildGroupTable(grouped[date][group])
+      );
     });
-
-    root.appendChild(dateBlock);
   });
 }
 
-/* ✅ 3️⃣ 組別內的小 table（重用你既有欄位） */
-function buildGroupTable(games) {
+/* ===== 組別 table ===== */
+function buildGroupTable(list) {
   return `
-    <table class="record-table">
-      <thead>
-        <tr>
-          <th>時間</th>
-          <th>客隊（三壘）</th>
-          <th>主隊（一壘）</th>
-          <th>地點</th>
-          <th>記錄員</th>
-          <th>見習記錄員</th>
-          <th>影像記錄員</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${games.map(buildRecordRow).join('')}
-      </tbody>
-    </table>
-  `;
+  <table class="record-table">
+    <thead>
+      <tr>
+        <th>時間</th>
+        <th>客隊（三壘）</th>
+        <th>主隊（一壘）</th>
+        <th>地點</th>
+        <th>記錄員</th>
+        <th>見習記錄員</th>
+        <th>影像記錄員</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${list.map(buildRow).join('')}
+    </tbody>
+  </table>`;
 }
 
-function buildRecordRow(g) {
+function buildRow(g) {
   return `
     <tr>
       <td>${formatTimeTW(g.time)}</td>
@@ -342,116 +203,50 @@ function buildRecordRow(g) {
       <td>${renderSelect(g, 'REC_MAIN')}</td>
       <td>${renderSelect(g, 'REC_TRAINEE')}</td>
       <td>${renderSelect(g, 'REC_VIDEO')}</td>
-    </tr>
-  `;
+    </tr>`;
 }
 
-
-/* ===== 台灣時間 日期 ===== */
-function formatDateTW(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('zh-TW', {
-    timeZone: 'Asia/Taipei',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
-}
-
-/* ===== 台灣時間 時間 ===== */
-function formatTimeTW(timeStr) {
-  if (!timeStr) return '';
-  const d = new Date(timeStr);
-  return d.toLocaleTimeString('zh-TW', {
-    timeZone: 'Asia/Taipei',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
-}
-
-
-/* ========== 畫表格 ========== */
-function renderTable(){
-  const tbody = document.querySelector('#recordTable tbody');
-  tbody.innerHTML = '';
-
-  if (!games.length) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="11">目前沒有可報名的賽事</td>`;
-    tbody.appendChild(tr);
-    return;
-  }
-
-  games.forEach(g => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${g.game_type || ''}</td>
-      <td>${g.category || ''}</td>
-      <td>${formatDateTW(g.date)}</td>
-      <td>${formatTimeTW(g.time)}</td>
-      <td>${g.away_team || ''}</td>
-      <td>${g.home_team || ''}</td>
-      <td>${g.field || ''}</td>
-      <td>${renderSelect(g, 'REC_MAIN')}</td>
-      <td>${renderSelect(g, 'REC_TRAINEE')}</td>
-      <td>${renderSelect(g, 'REC_VIDEO')}</td>
-      <td>${g.note || ''}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-/* ========== 產生下拉選單 ========== */
-function renderSelect(g, role){
-  const slot = (g.record_slots || {})[role];
+/* ===== 紀錄員帶入自己 ===== */
+function renderSelect(g, role) {
+  const slot = g.record_slots?.[role];
   const isMe = slot && slot.user_id === session.user_id;
 
-  // 已被他人或自己佔用
   if (slot) {
     return `
       <select class="${isMe ? 'me' : 'locked'}" ${isMe ? '' : 'disabled'}
-        onchange="onChange('${g.game_id}','${role}', this.value)">
+        onchange="onChange('${g.game_id}','${role}',this.value)">
         <option value="${slot.user_id}">
           ${slot.name}${isMe ? '（我）' : ''}
         </option>
-        ${isMe ? '<option value="">無</option>' : ''}
-      </select>
-    `;
+        ${isMe ? '<option value="">取消</option>' : ''}
+      </select>`;
   }
 
-  // 空位
   return `
-    <select onchange="onChange('${g.game_id}','${role}', this.value)">
+    <select onchange="onChange('${g.game_id}','${role}',this.value)">
       <option value="">無</option>
       <option value="${session.user_id}">我</option>
-    </select>
-  `;
+    </select>`;
 }
 
-/* ========== 異動 ========== */
-function onChange(gameId, role, value){
-  if (value === '') {
-    // 取消
-    callApi({
-      action: 'cancelRecordSignup',
-      user_id: session.user_id,
-      game_id: gameId,
-      record_role: role
-    }, () => loadGames());
-    return;
-  }
-
-  // 報名
+function onChange(gameId, role, val) {
   callApi({
-    action: 'recordSignup',
+    action: val ? 'recordSignup' : 'cancelRecordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
-  }, () => loadGames());
+  }, loadGames);
+}
+
+/* ===== 台灣時間 ===== */
+function formatDateTW(v) {
+  return new Date(v).toLocaleDateString('zh-TW',
+    { timeZone:'Asia/Taipei' });
+}
+function formatTimeTW(v) {
+  return new Date(v).toLocaleTimeString('zh-TW',
+    { timeZone:'Asia/Taipei', hour:'2-digit', minute:'2-digit', hour12:false });
 }
 </script>
-
 </body>
 </html>
