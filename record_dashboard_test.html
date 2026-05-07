@@ -13,15 +13,23 @@ body {
 }
 
 /* ===== Header 保命橫向 ===== */
-#header nav {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center;
-  gap: 16px;
+#header {
+  width: 100%;
+  background: #fff;
 }
+
+#header nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 16px;
+  gap: 20px;
+}
+
 #header nav a {
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
 }
 
 /* ===== 標題 ===== */
@@ -84,6 +92,35 @@ select.me {
 }
 select.locked {
   background: #e0e0e0;
+}
+
+/* ✅ 四、搭配的 CSS（視覺就是裁判頁）*/
+.signup-btn {
+  color: #1976d2;
+  cursor: pointer;
+  font-weight: 700;
+}
+.signup-btn:hover {
+  text-decoration: underline;
+}
+
+.signup-me {
+  color: #2e7d32;
+  font-weight: 700;
+}
+.cancel-btn {
+  margin-left: 8px;
+  color: #c62828;
+  cursor: pointer;
+  font-size: 12px;
+}
+.cancel-btn:hover {
+  text-decoration: underline;
+}
+
+.signup-other {
+  color: #555;
+  font-weight: 700;
 }
 </style>
 </head>
@@ -200,34 +237,70 @@ function buildRow(g) {
       <td>${g.away_team}</td>
       <td>${g.home_team}</td>
       <td>${g.field}</td>
-      <td>${renderSelect(g, 'REC_MAIN')}</td>
-      <td>${renderSelect(g, 'REC_TRAINEE')}</td>
-      <td>${renderSelect(g, 'REC_VIDEO')}</td>
+      <td>${renderSignupCell(g, 'REC_MAIN')}</td>
+      <td>${renderSignupCell(g, 'REC_TRAINEE')}</td>
+      <td>${renderSignupCell(g, 'REC_VIDEO')}</td>
     </tr>`;
 }
 
-/* ===== 紀錄員帶入自己 ===== */
-function renderSelect(g, role) {
+/* ===== 紀錄員報名 ===== */
+function renderSignupCell(g, role) {
   const slot = g.record_slots?.[role];
-  const isMe = slot && slot.user_id === session.user_id;
 
-  if (slot) {
+  // ① 尚未有人報名
+  if (!slot) {
     return `
-      <select class="${isMe ? 'me' : 'locked'}" ${isMe ? '' : 'disabled'}
-        onchange="onChange('${g.game_id}','${role}',this.value)">
-        <option value="${slot.user_id}">
-          ${slot.name}${isMe ? '（我）' : ''}
-        </option>
-        ${isMe ? '<option value="">取消</option>' : ''}
-      </select>`;
+      <span class="signup-btn"
+        onclick="signup('${g.game_id}','${role}')">
+        ＋報名
+      </span>
+    `;
   }
 
+  const isMe = slot.user_id === session.user_id;
+
+  // ② 我自己
+  if (isMe) {
+    return `
+      <span class="signup-me">
+        ${slot.name || '我'}
+        <span class="cancel-btn"
+          onclick="cancelSignup('${g.game_id}','${role}')">
+          取消
+        </span>
+      </span>
+    `;
+  }
+
+  // ③ 其他人
   return `
-    <select onchange="onChange('${g.game_id}','${role}',this.value)">
-      <option value="">無</option>
-      <option value="${session.user_id}">我</option>
-    </select>`;
+    <span class="signup-other">
+      ${slot.name}
+    </span>
+  `;
 }
+
+/* ✅ 2️⃣ 點一下就送出的行為（比照裁判頁） */
+function signup(gameId, role) {
+  callApi({
+    action: 'recordSignup',
+    user_id: session.user_id,
+    game_id: gameId,
+    record_role: role
+  }, () => loadGames());
+}
+
+function cancelSignup(gameId, role) {
+  if (!confirm('確定取消此場紀錄？')) return;
+
+  callApi({
+    action: 'cancelRecordSignup',
+    user_id: session.user_id,
+    game_id: gameId,
+    record_role: role
+  }, () => loadGames());
+}
+
 
 function onChange(gameId, role, val) {
   callApi({
