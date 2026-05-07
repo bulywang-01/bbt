@@ -3,265 +3,279 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>紀錄長排班</title>
+<title>紀錄長指派</title>
 
 <style>
-/* ===== 全域 ===== */
-/* ==================================================
-   ✅ Header 樣式對齊 index.html（Admin 專用）
-   目的：導覽列字體、寬度、高度完全一致
-   ================================================== */
+/* ===============================
+   ✅ Header：強制橫版（覆蓋 sidebar）
+   =============================== */
 
-#header {
-  display: flex;
+#header nav {
+  display: flex !important;
+  flex-direction: row !important;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  background: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
+  width: 100%;
 }
 
-/* 左邊導覽連結（首頁 / 出勤報名 / 管理 / 變更密碼 / 登出） */
-#header a {
-  display: flex;              /* ✅ 跟 index 一樣 */
+/* ✅ 關鍵：ul 一定要橫 */
+#header nav ul {
+  display: flex !important;
+  flex-direction: row !important;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: auto;
+}
+
+/* ✅ 關鍵：li 不准 block 撐整行 */
+#header nav li {
+  display: flex !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* ✅ 關鍵：a 不准 100% 寬 */
+#header nav li a {
+  display: inline-flex !important;
   align-items: center;
-  gap: 6px;
-
-  font-size: 15px;            /* ✅ 字體大小對齊 */
-  font-weight: 500;
-  line-height: 1;
-
-  padding: 10px 14px;         /* ✅ 寬度、高度來源 */
-  min-height: 40px;           /* ✅ 視覺高度一致 */
-
-  color: #0066cc;
-  text-decoration: none;
-  border-radius: 6px;
-
-  margin-right: 0;            /* ❗不用舊的 margin 撐 */
+  padding: 10px 14px;
+  width: auto !important;
+  white-space: nowrap;
   box-sizing: border-box;
 }
 
-/* hover 效果（index 有） */
-#header a:hover {
-  background: #f2f5fa;
-}
-
-/* 右側使用者名稱（王韶文） */
-#header #u_name {
-  margin-left: auto;          /* ✅ 右推 */
-  padding: 10px 14px;
-
-  font-size: 15px;
-  font-weight: 600;
-  color: #333;
-  white-space: nowrap;
-}
-
-body {
-  margin: 0;
-  background: #f5f6f8;
-  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC";
-}
-
-/* ===== Header ===== */
-#header-container {
+/* ===== Header（與 judge_dashboard_admin 對齊） ===== */
+#header {
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  padding:12px 20px;
-  background:#ffffff;
-  border-bottom:1px solid #ddd;
+  gap:4px;
+  padding:6px 12px;
+  background:#fff;
+  border-bottom:1px solid #e0e0e0;
 }
-
-/* ==================================================
-   ✅ Header active 狀態（對齊 index.html）
-   ================================================== */
-
-/* 目前頁面 active */
+#header a {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:15px;
+  padding:10px 14px;
+  color:#0066cc;
+  text-decoration:none;
+  border-radius:6px;
+}
+#header a:hover { background:#f2f5fa; }
 #header a.active {
-  background: #e3f2fd;     /* ✅ 跟 index 一樣的淡藍 */
-  color: #1565c0;
-  font-weight: 700;
+  background:#e3f2fd;
+  color:#1565c0;
+  font-weight:700;
+}
+#header #u_name {
+  margin-left:auto;
+  padding:10px 14px;
+  font-weight:600;
 }
 
-/* hover + active 不打架 */
-#header a.active:hover {
-  background: #e3f2fd;
-}
-   
 /* ===== 主內容 ===== */
+body {
+  margin:0;
+  background:#f5f6f8;
+  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC";
+}
 .main {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 16px;
+  max-width:1100px;
+  margin:0 auto;
+  padding:16px;
 }
 
-/* ===== 比賽卡片 ===== */
+/* ===== 卡片 ===== */
 .panel {
-  background: #fff;
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 18px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+  background:#fff;
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:18px;
+  box-shadow:0 4px 14px rgba(0,0,0,0.1);
 }
-
 .game-header {
-  font-weight: 800;
-  font-size: 16px;
-  margin-bottom: 12px;
+  font-size:16px;
+  font-weight:800;
+  margin-bottom:12px;
 }
 
-/* ===== 紀錄站位 ===== */
+/* ===== Grid ===== */
 .pos-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr)); /* 永遠 4 格 */
-  gap: 14px;
-  overflow-x: auto;                 /* 手機橫向滑 */
-  -webkit-overflow-scrolling: touch;
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0,1fr));
+  gap:14px;
 }
-
 .pos-cell {
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 12px;
-  text-align: center;
+  border:1px solid #e0e0e0;
+  border-radius:10px;
+  padding:12px;
+  text-align:center;
 }
-
 .pos-cell.assigned {
-  background: #eef5ff;
-  border-color: #4a7ef5;
+  background:#eef5ff;
+  border-color:#4a7ef5;
 }
-
 .role {
-  font-weight: 700;
-  font-size: 15px;
+  font-weight:700;
 }
-
-.judge {
-  margin: 6px 0;
+.name {
+  margin:6px 0;
+  font-weight:700;
 }
-
-.judge.preferred {
-  font-size: 15px;
-  color: #777;
+.signup-list {
+  font-size:13px;
+  color:#777;
 }
 
 /* ===== 按鈕 ===== */
 button {
-  border: none;
-  border-radius: 8px;
-  padding: 6px 14px;
-  font-size: 14px;
-  cursor: pointer;
+  border:none;
+  border-radius:8px;
+  padding:6px 14px;
+  font-size:14px;
+  cursor:pointer;
 }
-
-.btn-assign {
-  background: #4a7ef5;
-  color: #fff;
-}
-
-.btn-change {
-  background: #f39c12;
-  color: #fff;
-}
+.btn-assign { background:#4a7ef5;color:#fff; }
+.btn-change { background:#f39c12;color:#fff; }
 
 /* ===== Modal ===== */
-#judgeModal.hidden { display: none; }
+#recordModal.hidden { display:none; }
+#recordModal {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.modal-box {
+  background:#fff;
+  border-radius:14px;
+  padding:20px;
+  width:90%;
+  max-width:420px;
+}
+.record-grid {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:12px;
+}
+.record-card {
+  border:1px solid #ddd;
+  border-radius:10px;
+  padding:10px;
+  text-align:center;
+  font-weight:700;
+  cursor:pointer;
+}
+.record-card:hover {
+  background:#eef5ff;
+  border-color:#4a7ef5;
+}
 
-#judgeModal {
+/* 報名姓名放在按鈕上方、放大、加顏色 */
+   
+.signup-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.signup-name.assigned {
+  color: #1565c0;   /* 深藍：指派 */
+}
+
+.signup-name.signup {
+  color: #2e7d32;   /* 綠：自行報名 */
+}
+
+.signup-name.other {
+  color: #555;      /* 灰：他人 */
+}
+
+/* ===== 操作提示 Toast ===== */
+.toast {
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 260px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  background: #323232;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
   z-index: 9999;
 }
 
-.modal-box {
-  background: #fff;
-  border-radius: 14px;
-  padding: 20px;
-  max-width: 420px;
-  width: 90%;
+.toast.show {
+  opacity: 1;
 }
 
-.judge-grid {
-  display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 12px;
-  margin-top: 12px;
+.toast.success {
+  background: #2e7d32; /* 綠：成功 */
 }
 
-.judge-card {
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 10px;
-  text-align: center;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.judge-card:hover {
-  background: #eef5ff;
-  border-color: #4a7ef5;
+.toast.error {
+  background: #c62828; /* 紅：失敗 */
 }
 </style>
 </head>
 
 <body>
+<div id="header"></div>
+<div id="toast" class="toast"></div>
 
-<!-- ✅ Header（滿版） -->
-<div id="header-container"></div>
-
-<!-- ✅ 主內容 -->
 <div class="main">
   <div id="content"></div>
 </div>
 
-<!-- ✅ 紀錄選擇 Modal -->
-<div id="judgeModal" class="hidden">
+<!-- ===== 指派 Modal ===== -->
+<div id="recordModal" class="hidden">
   <div class="modal-box">
-    <h3 id="judgeModalTitle">選擇紀錄</h3>
-    <div id="judgeList" class="judge-grid"></div>
+    <h3 id="recordModalTitle">指派紀錄員</h3>
+    <div id="recordList" class="record-grid"></div>
     <div style="margin-top:12px;text-align:right;">
-      <button onclick="closeJudgeModal()">取消</button>
+      <button onclick="closeRecordModal()">取消</button>
     </div>
   </div>
 </div>
 
- <!--
-   ===============================
-   ✅ 共用載入程式區
-   ===============================
--->
-
-<script>
-   document.addEventListener('DOMContentLoaded', () => {
-     fetch('header.html')
-       .then(res => res.text())
-       .then(html => {
-         // ✅ 改這一行（關鍵）
-         document.getElementById('header-container').innerHTML = html;
-   
-         // ✅ active（對齊 index.html）
-         const page = location.pathname.split('/').pop();
-   
-         document
-           .querySelectorAll('#header-container a')
-           .forEach(a => {
-             const href = a.getAttribute('href');
-             if (href === page) {
-               a.classList.add('active');
-             }
-           });
-       });
-   });
-</script>
-
 <script src="js/config.js"></script>
 <script src="js/record_dashboard_admin.js"></script>
+<script>
+   
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('header.html')
+    .then(r=>r.text())
+    .then(html=>{
+      document.getElementById('header').innerHTML = html;
+      document.querySelectorAll('#header a').forEach(a=>{
+        if (a.getAttribute('href') === 'record_dashboard_admin.html') {
+          a.classList.add('active');
+        }
+      });
+    });
+});
 
+//✅ 3️⃣ JS helper（一次寫好，全頁可用）
+function showToast(message, type = 'success', duration = 2000) {
+  const el = document.getElementById('toast');
+  el.textContent = message;
+  el.className = `toast show ${type}`;
+  setTimeout(() => {
+    el.className = 'toast';
+  }, duration);
+}
+</script>
 </body>
 </html>
