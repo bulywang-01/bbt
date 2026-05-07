@@ -53,6 +53,9 @@ function loadDashboardGames(userId, needJudge, needRecord) {
     callApi(
       { action: 'getMyUpcomingGames', user_id: userId },
       res => {
+        
+    console.error('📦 judge API response =', res);
+
         if (res && res.result === 'ok' && Array.isArray(res.games)) {
           judgeGames = res.games;
         } else {
@@ -70,6 +73,9 @@ function loadDashboardGames(userId, needJudge, needRecord) {
     callApi(
       { action: 'getMyRecordUpcomingGames', user_id: userId },
       res => {
+        
+    console.error('📦 record API response =', res);
+
         if (res && res.result === 'ok' && Array.isArray(res.games)) {
           recordGames = res.games;
         } else {
@@ -118,6 +124,9 @@ function afterDataLoaded(needJudge, needRecord) {
  * 提供給 index.html 的資料介面
  * ========================= */
 function getJudgeSchedule(range) {
+  
+  console.error('⚠️ BYPASS period filter, judgeGames =', judgeGames.length);
+
   const { start, end } = getPeriodRange(range);
   return judgeGames.filter(g => {
     const t = new Date(`${g.date}T${g.time || '00:00'}`);
@@ -126,6 +135,9 @@ function getJudgeSchedule(range) {
 }
 
 function getRecordSchedule(range) {
+  
+  console.error('⚠️ BYPASS period filter, recordGames =', recordGames.length);
+
   const { start, end } = getPeriodRange(range);
   return recordGames.filter(g => {
     const t = new Date(`${g.date}T${g.time || '00:00'}`);
@@ -135,8 +147,14 @@ function getRecordSchedule(range) {
 
 /**/
 function renderSchedule() {
+  
+  console.error('🔥 renderSchedule() CALLED, range =', currentRange);
+
   const judge = getJudgeSchedule(currentRange) || [];
   const record = getRecordSchedule(currentRange) || [];
+
+  console.error('🧑‍⚖️ judge.len =', judge.length);
+  console.error('📝 record.len =', record.length);
 
   const judgeBlock = document.getElementById('judge-schedule');
   const recordBlock = document.getElementById('record-schedule');
