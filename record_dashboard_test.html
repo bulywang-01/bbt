@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<link rel="stylesheet" href="css/header.css">
+<link rel="stylesheet" href="./css/common.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>紀錄員報名</title>
@@ -83,6 +83,33 @@ select.me{
   border:2px solid #2e7d32;
   background:#e8f5e9;
 }
+
+// ✅ 四、CSS（讓它看起來像裁判頁）
+.date-title {
+  margin: 24px 0 8px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.group-title {
+  margin: 12px 0 4px;
+  border-left: 4px solid #1976d2;
+  padding-left: 8px;
+  font-weight: 700;
+}
+
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.record-table th,
+.record-table td {
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+}
+
 </style>
 </head>
 
@@ -215,6 +242,104 @@ function renderByDateGroup(games) {
     });
   });
 }
+
+/* ✅ 1️⃣ 先分組＋排序（日期 ✅ 組別 ✅ 時間 ✅） */
+function groupGames(games) {
+  const map = {};
+
+  games.forEach(g => {
+    const dateKey = formatDateTW(g.date); // 2026/05/03
+    const groupKey = g.category || '未分類';
+
+    if (!map[dateKey]) map[dateKey] = {};
+    if (!map[dateKey][groupKey]) map[dateKey][groupKey] = [];
+
+    map[dateKey][groupKey].push(g);
+  });
+
+  // ✅ 各組別內，依時間排序
+  Object.values(map).forEach(groupMap => {
+    Object.values(groupMap).forEach(list => {
+      list.sort((a, b) => new Date(a.time) - new Date(b.time));
+    });
+  });
+
+  return map;
+}
+
+
+/* ✅ 2️⃣ Render：日期 → 組別 → 內表格 */
+function renderRecordDashboard(games) {
+  const root = document.getElementById('recordContainer');
+  root.innerHTML = '';
+
+  const grouped = groupGames(games);
+
+  // ✅ 日期排序
+  const dates = Object.keys(grouped).sort((a, b) =>
+    new Date(a) - new Date(b)
+  );
+
+  dates.forEach(date => {
+    const dateBlock = document.createElement('div');
+    dateBlock.className = 'date-block';
+
+    dateBlock.innerHTML = `<h3 class="date-title">${date}</h3>`;
+
+    const groupMap = grouped[date];
+    Object.keys(groupMap).forEach(groupName => {
+
+      const groupBlock = document.createElement('div');
+      groupBlock.className = 'group-block';
+
+      groupBlock.innerHTML = `
+        <h4 class="group-title">│ ${groupName}</h4>
+        ${buildGroupTable(groupMap[groupName])}
+      `;
+
+      dateBlock.appendChild(groupBlock);
+    });
+
+    root.appendChild(dateBlock);
+  });
+}
+
+/* ✅ 3️⃣ 組別內的小 table（重用你既有欄位） */
+function buildGroupTable(games) {
+  return `
+    <table class="record-table">
+      <thead>
+        <tr>
+          <th>時間</th>
+          <th>客隊（三壘）</th>
+          <th>主隊（一壘）</th>
+          <th>地點</th>
+          <th>記錄員</th>
+          <th>見習記錄員</th>
+          <th>影像記錄員</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${games.map(buildRecordRow).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function buildRecordRow(g) {
+  return `
+    <tr>
+      <td>${formatTimeTW(g.time)}</td>
+      <td>${g.away_team}</td>
+      <td>${g.home_team}</td>
+      <td>${g.field}</td>
+      <td>${renderSelect(g, 'REC_MAIN')}</td>
+      <td>${renderSelect(g, 'REC_TRAINEE')}</td>
+      <td>${renderSelect(g, 'REC_VIDEO')}</td>
+    </tr>
+  `;
+}
+
 
 /* ===== 台灣時間 日期 ===== */
 function formatDateTW(dateStr) {
