@@ -212,8 +212,21 @@ select.locked {
 <div id="recordContainer"></div>
 
 <script src="js/config.js"></script>
-
+<script src="js/auth.js"></script>
+  
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+  guardRecordPage();    // ✅ 權限
+  fetch('header.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+    });
+
+  // ✅ 原本你的紀錄班表邏輯
+});
+
+
 /* ===== 全域 ===== */
 let session;
 let games = [];
