@@ -359,6 +359,14 @@ function renderSchedule(){
 
 /* 共用工具 */
 
+const { start, end } = getPeriodRange(currentRange);
+
+// 然後「只負責過濾資料」
+const filteredGames = allGames.filter(g => {
+  const gameTime = new Date(`${g.date}T${g.time || '00:00'}`);
+  return gameTime >= start && gameTime <= end;
+});
+
 // ✅ 依身份決定「查看完整班表」要去哪
 (function initFullScheduleLink(){
   const link = document.getElementById('view-full-schedule');
