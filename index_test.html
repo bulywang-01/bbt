@@ -357,30 +357,46 @@ function renderList(elId, list){
 
 setRange('week');  // 預設本週
 
-function renderSchedule(){
-  // ✅ 1. 取得資料（你剛剛貼的那段）
-  const judge = typeof getJudgeSchedule === 'function'
-    ? getJudgeSchedule(currentRange)
-    : [];
+function renderSchedule() {
+  const judge = getJudgeSchedule(currentRange) || [];
+  const record = getRecordSchedule(currentRange) || [];
 
-  const record = typeof getRecordSchedule === 'function'
-    ? getRecordSchedule(currentRange)
-    : [];
+  const judgeBlock = document.getElementById('judge-schedule');
+  const recordBlock = document.getElementById('record-schedule');
+  const noBlock = document.getElementById('no-schedule');
+  const loadingBlock = document.getElementById('schedule-loading');
 
-  // ✅ 2. 控制哪些區塊要顯示（身分關鍵）
-  document.getElementById('judge-schedule').style.display =
-    judge.length ? 'block' : 'none';
+  // 關閉 loading
+  if (loadingBlock) loadingBlock.style.display = 'none';
 
-  document.getElementById('record-schedule').style.display =
-    record.length ? 'block' : 'none';
+  // 先關掉所有區塊
+  if (judgeBlock) judgeBlock.style.display = 'none';
+  if (recordBlock) recordBlock.style.display = 'none';
+  if (noBlock) noBlock.style.display = 'none';
 
-  document.getElementById('no-schedule').style.display =
-    (!judge.length && !record.length) ? 'block' : 'none';
+  let hasAny = false;
 
-  // ✅ 3. 用「產品級卡片 UI」render（剛剛給你的）
-  renderScheduleCards('judge-list', judge, 'judge');
-  renderScheduleCards('record-list', record, 'record');
+  // ✅ 有裁判班表 → 一定顯示
+  if (judge.length > 0) {
+    judgeBlock.style.display = 'block';
+    renderScheduleCards('judge-list', judge, 'judge');
+    hasAny = true;
+  }
+
+  // ✅ 有紀錄班表才顯示（你現在沒有，很正常）
+  if (record.length > 0) {
+    recordBlock.style.display = 'block';
+    renderScheduleCards('record-list', record, 'record');
+    hasAny = true;
+  }
+
+  // ✅ 兩者都沒有，才顯示「尚無班表」
+  if (!hasAny) {
+    noBlock.textContent = '目前此期間尚無排定班表。';
+    noBlock.style.display = 'block';
+  }
 }
+
 
 
 /* 共用工具 */
