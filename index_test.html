@@ -132,7 +132,8 @@
       <button onclick="setRange('next')" id="tab-next">下週</button>
       <button onclick="setRange('month')" id="tab-month">本月</button>
       <span style="flex:1"></span>
-      <a href="javascript:void(0)" onclick="openFullSchedule()">查看完整班表 ▶</a>
+      <a href="#" id="view-full-schedule">查看完整班表 ▶</a>
+
     </div>
 
     <!-- 裁判 -->
@@ -277,6 +278,34 @@ function renderSchedule(){
 
 
 /* 共用工具 */
+
+// ✅ 依身份決定「查看完整班表」要去哪
+(function initFullScheduleLink(){
+  const link = document.getElementById('view-full-schedule');
+  if (!link) return;
+
+  const session = getSession?.();
+  if (!session) return;
+
+  const roles = getRoles(session);
+
+  // 僅裁判
+  if (roles.includes('judge') && !roles.includes('record') && !roles.includes('admin')) {
+    link.href = 'judge_dashboard.html';
+    return;
+  }
+
+  // 僅紀錄
+  if (roles.includes('record') && !roles.includes('judge') && !roles.includes('admin')) {
+    link.href = 'record_dashboard.html';
+    return;
+  }
+
+  // 兼具身份或 admin → 導到管理／整合頁（你可再優化）
+  link.href = 'index.html'; // 或之後的整合頁
+})();
+
+
 function isToday(dateStr) {
   const d = new Date(dateStr);
   const t = new Date();
