@@ -2,7 +2,7 @@
  * index.js
  * 首頁附加邏輯：
  * - 依身份顯示裁判 / 紀錄員班表
- * - 支援雙重身份
+ * - 支援雙重身份 
  */
 
 document.addEventListener('DOMContentLoaded', () => {
