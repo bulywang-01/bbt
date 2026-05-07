@@ -46,8 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
  * 取得首頁資料（核心）
  * ========================= */
 function loadDashboardGames(userId, needJudge, needRecord) {
-  judgeGames = [];
-  recordGames = [];
 
   // ✅ 裁判
   if (needJudge) {
