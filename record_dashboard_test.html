@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<link rel="stylesheet" href="css/header.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>紀錄員報名</title>
@@ -25,14 +26,20 @@ body{
   text-align:center;
 }
 
+/* ===== Header 強制橫向 ===== */
 #header nav {
-  display: flex;
-  flex-direction: row;
+  display: flex !important;
+  flex-direction: row !important;
   align-items: center;
+  gap: 16px;
 }
+
 #header a {
-  margin-right: 16px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
+
 
 
 /* ===== 說明 ===== */
@@ -150,6 +157,90 @@ function loadGames(){
   });
 }
 
+/* ========== 先把 games 分組 ===========*/
+function groupGamesForDisplay(games) {
+  const byDate = {};
+
+  games.forEach(g => {
+    const dateKey = formatDateTW(g.date); // 2026/05/10
+    if (!byDate[dateKey]) byDate[dateKey] = {};
+
+    const groupKey = g.category || '未分類';
+    if (!byDate[dateKey][groupKey]) byDate[dateKey][groupKey] = [];
+
+    byDate[dateKey][groupKey].push(g);
+  });
+
+  // ✅ 組內依時間排序
+  Object.values(byDate).forEach(groupMap => {
+    Object.values(groupMap).forEach(list => {
+      list.sort(
+        (a, b) => new Date(a.time) - new Date(b.time)
+      );
+    });
+  });
+
+  return byDate;
+}
+
+function renderByDateGroup(games) {
+  const root = document.getElementById('recordTableBody');
+  root.innerHTML = '';
+
+  const grouped = groupGamesForDisplay(games);
+
+  Object.keys(grouped).sort().forEach(date => {
+
+    // ===== 日期標題 =====
+    root.insertAdjacentHTML('beforeend', `
+      <tr class="date-row">
+        <td colspan="11" class="date-title">${date}</td>
+      </tr>
+    `);
+
+    const groups = grouped[date];
+    Object.keys(groups).forEach(groupName => {
+
+      // ===== 組別標題 =====
+      root.insertAdjacentHTML('beforeend', `
+        <tr class="group-row">
+          <td colspan="11" class="group-title">│ ${groupName}</td>
+        </tr>
+      `);
+
+      // ===== 該組所有比賽 =====
+      groups[groupName].forEach(g => {
+        root.insertAdjacentHTML('beforeend', buildRecordRow(g));
+      });
+    });
+  });
+}
+
+/* ===== 台灣時間 日期 ===== */
+function formatDateTW(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+}
+
+/* ===== 台灣時間 時間 ===== */
+function formatTimeTW(timeStr) {
+  if (!timeStr) return '';
+  const d = new Date(timeStr);
+  return d.toLocaleTimeString('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+}
+
+
 /* ========== 畫表格 ========== */
 function renderTable(){
   const tbody = document.querySelector('#recordTable tbody');
@@ -167,8 +258,8 @@ function renderTable(){
     tr.innerHTML = `
       <td>${g.game_type || ''}</td>
       <td>${g.category || ''}</td>
-      <td>${g.date || ''}</td>
-      <td>${g.time || ''}</td>
+      <td>${formatDateTW(g.date)}</td>
+      <td>${formatTimeTW(g.time)}</td>
       <td>${g.away_team || ''}</td>
       <td>${g.home_team || ''}</td>
       <td>${g.field || ''}</td>
