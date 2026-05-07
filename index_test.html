@@ -8,9 +8,9 @@
   <link rel="stylesheet" href="common.css">
   
 <!-- ================= Script ================= -->
-  <script src="js/index.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/index.js"></script>
 
   <style>
     body { margin:0; background:#f5f6f8; font-family:system-ui,-apple-system; }
@@ -319,8 +319,8 @@ index.js 請提供：
   { date:'2026-05-18', time:'18:30', field:'天母', role:'主審' }
 ]
 */
-let currentRange = 'week';
-
+// let currentRange = 'week'; // 刪
+/*
 function setRange(range) {
   currentRange = range;
 
@@ -337,6 +337,7 @@ function setRange(range) {
   // ✅ 再 render
   renderSchedule();
 }
+*/
 
 function renderList(elId, list){
   const el = document.getElementById(elId);
@@ -357,6 +358,7 @@ function renderList(elId, list){
 
 setRange('week');  // 預設本週
 
+/*
 function renderSchedule() {
   const judge = getJudgeSchedule(currentRange) || [];
   const record = getRecordSchedule(currentRange) || [];
@@ -396,11 +398,11 @@ function renderSchedule() {
     noBlock.style.display = 'block';
   }
 }
-
+*/
 
 
 /* 共用工具 */
-
+/*
 function getJudgeSchedule(range){
   const { start, end } = getPeriodRange(range);
   return judgeGames.filter(g => {
@@ -408,6 +410,7 @@ function getJudgeSchedule(range){
     return t >= start && t <= end;
   });
 }
+*/
 
 // ✅ 依身份決定「查看完整班表」要去哪
 (function initFullScheduleLink(){
