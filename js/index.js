@@ -11,6 +11,7 @@
  * ========================= */
 let judgeGames = [];
 let recordGames = [];
+let currentRange = 'week';
 
 /* =========================
  * 初始化
@@ -116,6 +117,7 @@ function afterDataLoaded(needJudge, needRecord) {
   }
 }
 */
+
 /* =========================
  * 提供給 index.html 的資料介面
  * ========================= */
@@ -185,3 +187,10 @@ function renderSchedule() {
     noBlock.style.display = 'none';
   }
 }
+
+
+function setRange(range) {
+  currentRange = range;
+  renderSchedule();
+}
+
