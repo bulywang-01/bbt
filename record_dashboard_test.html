@@ -166,12 +166,44 @@ select.locked {
 .cancel-btn:hover {
   text-decoration: underline;
 }
+
+/* ✅ 3️⃣ CSS：直接共用「裁判長頁的 header CSS」*/
+#header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+#header a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  padding: 10px 14px;
+  color: #0066cc;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+#header a:hover {
+  background: #f2f5fa;
+}
+
+#header #u_name {
+  margin-left: auto;
+  padding: 10px 14px;
+  font-weight: 600;
+}
+
 </style>
 </head>
 
 <body>
-<div id="header"></div>
-<div id="toast" class="toast"></div>
+<div id="header-container"></div>
+  <div id="toast" class="toast"></div>
 
 <div class="page-title">BBT 軟式棒球聯盟｜紀錄員報名表</div>
 <div class="hint">※ 只能在「無」的欄位選擇自己</div>
@@ -187,15 +219,31 @@ let games = [];
 /* ===== 初始化 ===== */
 document.addEventListener('DOMContentLoaded', () => {
   fetch('header.html')
-    .then(r => r.text())
+    .then(res => res.text())
     .then(html => {
-      document.getElementById('header').innerHTML = html;
-      session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      document.getElementById('header-container').innerHTML = html;
+
+      // session 檢查
+      const raw = localStorage.getItem('session_user');
+      if (!raw) {
+        location.replace('login.html');
+        return;
+      }
+
+      const session = JSON.parse(raw);
       if (!session.user_id) {
         location.replace('login.html');
         return;
       }
-      loadGames();
+
+      // optional：active 標示
+      document
+        .querySelectorAll('#header-container a')
+        .forEach(a => {
+          if (a.getAttribute('href') === 'record_dashboard.html') {
+            a.classList.add('active');
+          }
+        });
     });
 });
 
