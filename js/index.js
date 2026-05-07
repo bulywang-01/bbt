@@ -54,8 +54,12 @@ function loadDashboardGames(userId, needJudge, needRecord) {
       res => {
         if (res && res.result === 'ok' && Array.isArray(res.games)) {
           judgeGames = res.games;
+        } else {
+          judgeGames = [];
         }
-        afterDataLoaded(needJudge, needRecord);
+    
+        // ✅ 關鍵：資料一回來就畫
+        renderSchedule();
       }
     );
   }
@@ -67,8 +71,12 @@ function loadDashboardGames(userId, needJudge, needRecord) {
       res => {
         if (res && res.result === 'ok' && Array.isArray(res.games)) {
           recordGames = res.games;
+        } else {
+          recordGames = [];
         }
-        afterDataLoaded(needJudge, needRecord);
+    
+        // ✅ 關鍵：資料一回來就畫
+        renderSchedule();
       }
     );
   }
@@ -87,6 +95,7 @@ function loadDashboardGames(userId, needJudge, needRecord) {
 /* =========================
  * 資料完成後 → render
  * ========================= */
+/*
 let renderLock = false;
 function afterDataLoaded(needJudge, needRecord) {
   // ✅ 等到該來的資料都來了
@@ -103,7 +112,7 @@ function afterDataLoaded(needJudge, needRecord) {
     renderSchedule();
   }
 }
-
+*/
 /* =========================
  * 提供給 index.html 的資料介面
  * ========================= */
@@ -121,4 +130,43 @@ function getRecordSchedule(range) {
     const t = new Date(`${g.date}T${g.time || '00:00'}`);
     return t >= start && t <= end;
   });
+}
+
+/**/
+function renderSchedule() {
+  const judge = getJudgeSchedule(currentRange) || [];
+  const record = getRecordSchedule(currentRange) || [];
+
+  const judgeBlock = document.getElementById('judge-schedule');
+  const recordBlock = document.getElementById('record-schedule');
+  const noBlock = document.getElementById('no-schedule');
+  const loadingBlock = document.getElementById('schedule-loading');
+
+  // 關 loading
+  if (loadingBlock) loadingBlock.style.display = 'none';
+
+  let hasAny = false;
+
+  if (judge.length > 0) {
+    judgeBlock.style.display = 'block';
+    renderScheduleCards('judge-list', judge, 'judge');
+    hasAny = true;
+  } else {
+    judgeBlock.style.display = 'none';
+  }
+
+  if (record.length > 0) {
+    recordBlock.style.display = 'block';
+    renderScheduleCards('record-list', record, 'record');
+    hasAny = true;
+  } else {
+    recordBlock.style.display = 'none';
+  }
+
+  if (!hasAny) {
+    noBlock.textContent = '目前此期間尚無排定班表。';
+    noBlock.style.display = 'block';
+  } else {
+    noBlock.style.display = 'none';
+  }
 }
