@@ -217,18 +217,33 @@ let session;
 let games = [];
 
 /* ===== 初始化 ===== */
-document.addEventListener('DOMContentLoaded', () => {document.add只管 header
-  initPage();       // 只管資料
+let games = [];
+
+/* ===== 初始化 ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  initHeader();   // ✅ 只管 header
+  initPage();     // ✅ 只管登入與資料
 });
 
+/* ===== Header ===== */
 function initHeader() {
   fetch('header.html')
     .then(res => res.text())
     .then(html => {
       document.getElementById('header-container').innerHTML = html;
+
+      // optional：active 標示
+      document
+        .querySelectorAll('#header-container a')
+        .forEach(a => {
+          if (a.getAttribute('href') === 'record_dashboard.html') {
+            a.classList.add('active');
+          }
+        });
     });
 }
 
+/* ===== Page / Data ===== */
 function initPage() {
   const raw = localStorage.getItem('session_user');
   if (!raw) {
@@ -242,10 +257,9 @@ function initPage() {
     return;
   }
 
-  // ✅ 關鍵：資料從這裡才開始跑
-  loadGames();   // 或 renderRecordDashboard()
+  // ✅ 關鍵：資料真正從這裡開始
+  loadGames();
 }
-
 
 /* JS helper（顯示訊息） */
 function showToast(msg, type = 'success') {
