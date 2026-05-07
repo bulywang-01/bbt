@@ -6,6 +6,44 @@
 <title>紀錄長指派</title>
 
 <style>
+/* ===============================
+   ✅ Header：強制橫版（覆蓋 sidebar）
+   =============================== */
+
+#header nav {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  width: 100%;
+}
+
+/* ✅ 關鍵：ul 一定要橫 */
+#header nav ul {
+  display: flex !important;
+  flex-direction: row !important;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: auto;
+}
+
+/* ✅ 關鍵：li 不准 block 撐整行 */
+#header nav li {
+  display: flex !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* ✅ 關鍵：a 不准 100% 寬 */
+#header nav li a {
+  display: inline-flex !important;
+  align-items: center;
+  padding: 10px 14px;
+  width: auto !important;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
 /* ===== Header（與 judge_dashboard_admin 對齊） ===== */
 #header {
   display:flex;
