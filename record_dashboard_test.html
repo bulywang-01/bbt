@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<link rel="stylesheet" href="./css/common.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>紀錄員報名</title>
@@ -184,8 +183,8 @@ function loadGames(){
       alert('載入賽事失敗');
       return;
     }
-    games = res.games || [];
-    renderRecordDashboard();
+    games = Array.isArray(res.games) ? res.games : [];
+    renderRecordDashboard(games);
   });
 }
 
@@ -219,7 +218,7 @@ function renderByDateGroup(games) {
   const root = document.getElementById('recordTableBody');
   root.innerHTML = '';
 
-  const grouped = groupGamesForDisplay(games);
+  const grouped = ForDisplay(games);
 
   Object.keys(grouped).sort().forEach(date => {
 
@@ -250,6 +249,8 @@ function renderByDateGroup(games) {
 
 /* ✅ 1️⃣ 先分組＋排序（日期 ✅ 組別 ✅ 時間 ✅） */
 function groupGames(games) {
+  if (!Array.isArray(games)) return {};   // ✅ 保命
+
   const map = {};
 
   games.forEach(g => {
