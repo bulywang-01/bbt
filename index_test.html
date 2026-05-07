@@ -107,12 +107,92 @@
       margin-top: 8px;
     }
 
+    /* ===== Modal Overlay ===== */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    
+    .overlay-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 24px;
+      width: 90%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,.3);
+    }
+    
+    /* ===== Role Buttons ===== */
+    .role-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    
+    .role-btn.judge {
+      background: #eaf1ff;
+      color: #1a237e;
+    }
+    
+    .role-btn.record {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .role-btn:hover {
+      opacity: 0.9;
+    }
+    
+    .close-btn {
+      margin-top: 16px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #e0e0e0;
+      font-weight: 600;
+      cursor: pointer;
+    }
   </style>
 </head>
 
 <body>
 
 <div id="header-container"></div>
+
+<!-- ✅ 雙重身份：查看完整班表選擇框 -->
+<div id="fullScheduleRoleModal" class="overlay" style="display:none;">
+  <div class="overlay-box">
+    <h3>查看完整班表</h3>
+    <p style="color:#555;margin-bottom:16px;">
+      請選擇要查看的班表類型
+    </p>
+
+    <div style="display:flex;gap:12px;">
+      <button onclick="goFullSchedule('judge')" class="role-btn judge">
+        🧑‍⚖️ 裁判班表
+      </button>
+      <button onclick="goFullSchedule('record')" class="role-btn record">
+        📝 紀錄班表
+      </button>
+    </div>
+
+    <button onclick="closeFullScheduleModal()" class="close-btn">
+      取消
+    </button>
+  </div>
+</div>
+
 
 <div class="main">
 
@@ -132,7 +212,7 @@
       <button onclick="setRange('next')" id="tab-next">下週</button>
       <button onclick="setRange('month')" id="tab-month">本月</button>
       <span style="flex:1"></span>
-      <a href="#" id="view-full-schedule">查看完整班表 ▶</a>
+      <a javascript:void(0)onClickViewFullSchedule()">查看完整班表 ▶</a>
 
     </div>
 
@@ -368,6 +448,54 @@ function renderScheduleCards(containerId, list, type) {
   });
 
   box.appendChild(wrap);
+}
+
+/* 1️⃣ 點「查看完整班表」時的統一入口 */
+function onClickViewFullSchedule(){
+  const session = getSession();
+  const roles = getRoles(session);
+
+  const hasJudge = roles.includes('judge');
+  const hasRecord = roles.includes('record');
+
+  // ✅ 雙重身份 → 跳選單
+  if (hasJudge && hasRecord) {
+    document.getElementById('fullScheduleRoleModal').style.display = 'flex';
+    return;
+  }
+
+  // ✅ 單一身份 → 直接跳正確頁面
+  if (hasJudge) {
+    location.href = buildScheduleUrl('judge');
+    return;
+  }
+
+  if (hasRecord) {
+    location.href = buildScheduleUrl('record');
+    return;
+  }
+}
+
+/* 2️⃣ 關閉選單 */
+function closeFullScheduleModal(){
+  document.getElementById('fullScheduleRoleModal').style.display = 'none';
+}
+
+/* 3️⃣ 依角色跳轉（含期間參數）*/
+function goFullSchedule(type){
+  location.href = buildScheduleUrl(type);
+}
+
+function buildScheduleUrl(type){
+  const range = currentRange || 'week';
+
+  if (type === 'judge') {
+    return `judge_dashboard.html?range=${range}`;
+  }
+
+  if (type === 'record') {
+    return `record_dashboard.html?range=${range}`;
+  }
 }
 
 </script>
