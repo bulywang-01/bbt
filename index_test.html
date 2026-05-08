@@ -357,60 +357,6 @@ function renderList(elId, list){
 
 setRange('week');  // 預設本週
 
-/*
-function renderSchedule() {
-  const judge = getJudgeSchedule(currentRange) || [];
-  const record = getRecordSchedule(currentRange) || [];
-
-  const judgeBlock = document.getElementById('judge-schedule');
-  const recordBlock = document.getElementById('record-schedule');
-  const noBlock = document.getElementById('no-schedule');
-  const loadingBlock = document.getElementById('schedule-loading');
-
-  // 關閉 loading
-  if (loadingBlock) loadingBlock.style.display = 'none';
-
-  // 先關掉所有區塊
-  if (judgeBlock) judgeBlock.style.display = 'none';
-  if (recordBlock) recordBlock.style.display = 'none';
-  if (noBlock) noBlock.style.display = 'none';
-
-  let hasAny = false;
-
-  // ✅ 有裁判班表 → 一定顯示
-  if (judge.length > 0) {
-    judgeBlock.style.display = 'block';
-    renderScheduleCards('judge-list', judge, 'judge');
-    hasAny = true;
-  }
-
-  // ✅ 有紀錄班表才顯示（你現在沒有，很正常）
-  if (record.length > 0) {
-    recordBlock.style.display = 'block';
-    renderScheduleCards('record-list', record, 'record');
-    hasAny = true;
-  }
-
-  // ✅ 兩者都沒有，才顯示「尚無班表」
-  if (!hasAny) {
-    noBlock.textContent = '目前此期間尚無排定班表。';
-    noBlock.style.display = 'block';
-  }
-}
-*/
-
-
-/* 共用工具 */
-/*
-function getJudgeSchedule(range){
-  const { start, end } = getPeriodRange(range);
-  return judgeGames.filter(g => {
-    const t = new Date(`${g.date}T${g.time || '00:00'}`);
-    return t >= start && t <= end;
-  });
-}
-*/
-
 // ✅ 依身份決定「查看完整班表」要去哪
 (function initFullScheduleLink(){
   const link = document.getElementById('view-full-schedule');
@@ -457,28 +403,22 @@ function formatZhDate(dateStr) {
   return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${week[d.getDay()]}）`;
 }
 
-/* 裁判  紀錄卡片 render */
 /* 裁判 / 紀錄卡片 render */
 function renderScheduleCards(containerId, list, type) {
   const box = document.getElementById(containerId);
-
-  // ✅ 關鍵保護：容器不存在直接中止（並留下證據）
-  if (!box) {
-    console.error('❌ renderScheduleCards: container not found ->', containerId);
-    return;
-  }
+  if (!box) return;
 
   box.innerHTML = '';
 
-  if (!list || list.length === 0) {
+  if (!Array.isArray(list) || list.length === 0) {
     box.innerHTML = `<div class="schedule-empty">此期間尚無班表</div>`;
     return;
   }
 
-  // ✅ 排序：日期 → 時間
+  // ✅ 依日期 → 時間排序
   list.sort((a, b) => {
     if (a.date === b.date) {
-      return a.time.localeCompare(b.time);
+      return formatTimeOnly(a.time).localeCompare(formatTimeOnly(b.time));
     }
     return a.date.localeCompare(b.date);
   });
@@ -490,18 +430,19 @@ function renderScheduleCards(containerId, list, type) {
     const card = document.createElement('div');
     card.className = `schedule-card ${type}`;
 
-    let badge = '';
-    if (isToday(g.date)) badge = `<div class="card-badge badge-today">今日</div>`;
-    else if (isTomorrow(g.date)) badge = `<div class="card-badge badge-tomorrow">明日</div>`;
+    // ✅ 身份與角色文字（關鍵）
+    let roleText = '';
+    if (type === 'judge') {
+      roleText = `🧑‍⚖️ 裁判｜${g.role || '未指定'}`;
+    } else if (type === 'record') {
+      roleText = `📝 紀錄｜${g.record_role || g.role || '未指定'}`;
+    }
 
     card.innerHTML = `
-      ${badge}
       <div class="card-date">${formatZhDate(g.date)}</div>
-      <div class="card-line">⏰ ${g.time}</div>
-      <div class="card-line">📍 ${g.field}</div>
-      <div class="card-line">
-        ${type === 'judge' ? '🧑‍⚖️ 裁判' : '📝 紀錄'}｜${g.role}
-      </div>
+      <div class="card-line">⏰ ${formatTimeOnly(g.time)}</div>
+      <div class="card-line">📍 ${g.field || ''}</div>
+      <div class="card-line">${roleText}</div>
     `;
 
     wrap.appendChild(card);
@@ -556,6 +497,24 @@ function buildScheduleUrl(type){
   if (type === 'record') {
     return `record_dashboard.html?range=${range}`;
   }
+}
+
+function formatTimeOnly(t) {
+  if (!t) return '';
+
+  // 已經是 HH:mm 字串
+  if (typeof t === 'string' && /^\d{1,2}:\d{2}$/.test(t)) {
+    return t;
+  }
+
+  const d = new Date(t);
+  if (isNaN(d)) return String(t);
+
+  return (
+    String(d.getHours()).padStart(2, '0') +
+    ':' +
+    String(d.getMinutes()).padStart(2, '0')
+  );
 }
 
 </script>
