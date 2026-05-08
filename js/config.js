@@ -97,6 +97,7 @@ function getThisMonth() {
 }
 
 // ✅ 統一依 range 取得期間
+// ✅ 期間計算（本週 / 下週 / 本月）
 function getPeriodRange(range) {
   switch (range) {
     case 'week':
