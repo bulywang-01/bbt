@@ -308,36 +308,6 @@ if (session) {
   }
 }
 
-/* ===== Schedule Render（核心，index.js 給資料） ===== */
-/*
-index.js 請提供：
-- getJudgeSchedule(range)
-- getRecordSchedule(range)
-回傳格式：
-[
-  { date:'2026-05-18', time:'18:30', field:'天母', role:'主審' }
-]
-*/
-// let currentRange = 'week'; // 刪
-/*
-function setRange(range) {
-  currentRange = range;
-
-  document.querySelectorAll('.schedule-tabs button')
-    .forEach(btn => btn.classList.remove('active'));
-
-  const activeBtn = document.getElementById(`tab-${range}`);
-  if (activeBtn) activeBtn.classList.add('active');
-
-  // ✅ 立刻顯示 loading
-  const loading = document.getElementById('schedule-loading');
-  if (loading) loading.style.display = 'block';
-
-  // ✅ 再 render
-  renderSchedule();
-}
-*/
-
 function renderList(elId, list){
   const el = document.getElementById(elId);
   el.innerHTML = '';
@@ -469,9 +439,7 @@ function renderScheduleCards(containerId, list, type) {
 
     card.innerHTML = `
       <div class="card-date">${formatZhDate(g.date)}</div>
-      <div class="card-line">⏰ ${formatTimeOnly(g.time)}</div>
-      <div class="card-line">📍 ${g.field || ''}</div>
-      <div class="card-line">${roleText}</div>
+      <div class="card-line">⏰ ${formatTimeOnly(g.time)}｜📍 ${g.field || ''}｜${roleText}</div>
     `;
 
     wrap.appendChild(card);
