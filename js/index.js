@@ -1,17 +1,20 @@
 /**
- * index.js – 首頁班表 Dashboard（最終定案版）
- * 規則：
- * - admin = 最大權限，可看裁判 + 紀錄
- * - chief_judge = judge
- * - record_chief = record
- * - 個人班表共用 API，不另生 API
+ * index.js – 首頁「我的班表」
+ *
+ * ✅ 設計原則（非常重要）：
+ * 1. 裁判 / 紀錄 都是「個人最終結果視角」
+ * 2. 同一場比賽：
+ *    - 若有指派（Assignment）→ 以指派為準
+ *    - 再補報名（Signup）
+ * 3. 同一場比賽，裁判 + 紀錄 → 合併成「一張卡片」
+ * 4. 週期定義：週一～週日
  */
 
 /* =========================
  * 全域狀態
  * ========================= */
-let judgeGames = [];
-let recordGames = [];
+let judgeGames = [];    // 裁判資料（已合併指派＋報名）
+let recordGames = [];   // 紀錄資料（已合併指派＋報名）
 let currentRange = 'week';
 
 /* =========================
@@ -44,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const loading = document.getElementById('schedule-loading');
   if (loading) loading.style.display = 'block';
 
-  // ===== 裁判班表 =====
+  /* ===== 裁判班表 ===== */
   if (isJudge) {
     callApi(
       { action: 'getMyUpcomingGames', user_id: session.user_id },
@@ -59,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
-  // ===== 紀錄班表 =====
+  /* ===== 紀錄班表 ===== */
   if (isRecord) {
     callApi(
       { action: 'getMyRecordUpcomingGames', user_id: session.user_id },
@@ -76,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* =========================
- * Tab 切換（HTML 呼叫）
+ * 週期切換（HTML tab 會呼叫）
  * ========================= */
 function setRange(range) {
   currentRange = range;
@@ -91,7 +94,7 @@ function setRange(range) {
 }
 
 /* =========================
- * Render（先不做期間過濾，確保一定顯示）
+ * Render 主入口
  * ========================= */
 function renderSchedule() {
   console.log('🔥 renderSchedule()', {
@@ -99,32 +102,175 @@ function renderSchedule() {
     recordGames: recordGames.length
   });
 
-  const judgeBlock = document.getElementById('judge-schedule');
-  const recordBlock = document.getElementById('record-schedule');
-  const noBlock = document.getElementById('no-schedule');
+  const container = document.getElementById('schedule-list');
   const loading = document.getElementById('schedule-loading');
+  const noBlock = document.getElementById('no-schedule');
 
   if (loading) loading.style.display = 'none';
-  if (judgeBlock) judgeBlock.style.display = 'none';
-  if (recordBlock) recordBlock.style.display = 'none';
+  if (container) container.innerHTML = '';
   if (noBlock) noBlock.style.display = 'none';
 
-  let hasAny = false;
+  /* ✅ 依你定義的規則，先合併裁判 + 紀錄 */
+  const merged = mergeMySchedules(judgeGames, recordGames);
 
-  if (judgeGames.length > 0 && judgeBlock) {
-    judgeBlock.style.display = 'block';
-    renderScheduleCards('judge-list', judgeGames, 'judge');
-    hasAny = true;
+  /* ✅ 再依「本週 / 下週 / 本月」過濾 */
+  const { start, end } = getPeriodRange(currentRange);
+  const filtered = merged.filter(g => {
+    const t = new Date(`${g.date} ${formatTimeOnly(g.time)}`);
+    return t >= start && t <= end;
+  });
+
+  if (!filtered.length) {
+    if (noBlock) {
+      noBlock.textContent = '此期間尚無班表';
+      noBlock.style.display = 'block';
+    }
+    return;
   }
 
-  if (recordGames.length > 0 && recordBlock) {
-    recordBlock.style.display = 'block';
-    renderScheduleCards('record-list', recordGames, 'record');
-    hasAny = true;
+  renderMergedScheduleCards('schedule-list', filtered);
+}
+
+/* =========================
+ * 合併裁判＋紀錄（同一場一張）
+ * ========================= */
+function mergeMySchedules(judgeGames, recordGames) {
+  const map = {};
+
+  function ensure(g) {
+    if (!map[g.game_id]) {
+      map[g.game_id] = {
+        game_id: g.game_id,
+        date: g.date,
+        time: g.time,
+        field: g.field,
+        roles: []   // [{ type:'judge', role }, { type:'record', role }]
+      };
+    }
+    return map[g.game_id];
   }
 
-  if (!hasAny && noBlock) {
-    noBlock.textContent = '目前尚未安排任何班表。';
-    noBlock.style.display = 'block';
+  // 裁判
+  judgeGames.forEach(g => {
+    const game = ensure(g);
+    game.roles.push({
+      type: 'judge',
+      role: g.role || null   // null = 尚未指派
+    });
+  });
+
+  // 紀錄
+  recordGames.forEach(g => {
+    const game = ensure(g);
+    game.roles.push({
+      type: 'record',
+      role: g.record_role || null
+    });
+  });
+
+  return Object.values(map);
+}
+
+/* =========================
+ * 合併後卡片 render
+ * ========================= */
+function renderMergedScheduleCards(containerId, games) {
+  const box = document.getElementById(containerId);
+  if (!box) return;
+
+  games
+    .sort((a, b) => {
+      if (a.date === b.date) {
+        return formatTimeOnly(a.time).localeCompare(formatTimeOnly(b.time));
+      }
+      return a.date.localeCompare(b.date);
+    })
+    .forEach(g => {
+      const card = document.createElement('div');
+      card.className = 'schedule-card';
+
+      const roleLines = g.roles.map(r => {
+        if (r.type === 'judge') {
+          const JUDGE_ROLE = { PU:'主審', U1:'一壘', U2:'二壘', U3:'三壘' };
+          return `🧑‍⚖️ 裁判｜${JUDGE_ROLE[r.role] || '待指派'}`;
+        }
+        if (r.type === 'record') {
+          const RECORD_ROLE = {
+            REC_MAIN:'主紀錄',
+            REC_TRAINEE:'見習紀錄',
+            REC_VIDEO:'影像紀錄'
+          };
+          return `📝 紀錄｜${RECORD_ROLE[r.role] || '待指派'}`;
+        }
+      }).join('<br>');
+
+      card.innerHTML = `
+        <div class="card-date">${formatZhDate(g.date)}</div>
+        <div class="card-line">⏰ ${formatTimeOnly(g.time)}</div>
+        <div class="card-line">📍 ${g.field || ''}</div>
+        <div class="card-line">${roleLines}</div>
+      `;
+
+      box.appendChild(card);
+    });
+}
+
+/* =========================
+ * 週期計算（週一～週日）
+ * ========================= */
+function getPeriodRange(range) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  let start, end;
+
+  if (range === 'week') {
+    const day = today.getDay(); // 0=日
+    const diffToMon = day === 0 ? -6 : 1 - day;
+    start = new Date(today);
+    start.setDate(today.getDate() + diffToMon);
+    end = new Date(start);
+    end.setDate(start.getDate() + 6);
   }
+
+  if (range === 'next') {
+    const day = today.getDay();
+    const diffToNextMon = day === 0 ? 1 : 8 - day;
+    start = new Date(today);
+    start.setDate(today.getDate() + diffToNextMon);
+    end = new Date(start);
+    end.setDate(start.getDate() + 6);
+  }
+
+  if (range === 'month') {
+    start = new Date(today.getFullYear(), today.getMonth(), 1);
+    end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  }
+
+  start.setHours(0,0,0,0);
+  end.setHours(23,59,59,999);
+
+  return { start, end };
+}
+
+/* =========================
+ * Helper：時間顯示（解 1899-12-30）
+ * ========================= */
+function formatTimeOnly(t) {
+  if (!t) return '';
+  if (typeof t === 'string' && /^\d{1,2}:\d{2}$/.test(t)) return t;
+
+  const d = new Date(t);
+  if (isNaN(d)) return String(t);
+
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+/* =========================
+ * Helper：日期顯示（05/10（日））
+ * ========================= */
+function formatZhDate(dateStr) {
+  const d = new Date(dateStr.replace(/\//g, '-'));
+  const w = ['日','一','二','三','四','五','六'];
+  return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${w[d.getDay()]}）`;
 }
