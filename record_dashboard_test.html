@@ -461,6 +461,31 @@ function loadGames() {
   });
 }
 
+/* ===============================
+ * 共用排序工具
+ * =============================== */
+
+// ✅ 日期排序（字串 yyyy/mm/dd ➜ Date）
+function sortDatesAsc(dates) {
+  return dates.sort((a, b) => new Date(a) - new Date(b));
+}
+
+// ✅ 組別排序（桌機用：大 ➜ 中 ➜ 小，其餘放後面）
+const CATEGORY_ORDER = ['大聯盟組', '中聯盟組', '小聯盟組'];
+
+function sortCategoriesForDesktop(categories) {
+  return categories.sort((a, b) => {
+    const ia = CATEGORY_ORDER.indexOf(a);
+    const ib = CATEGORY_ORDER.indexOf(b);
+
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+}
+
+
 /* ===== 分組 ===== */
 function groupGames(list) {
   const map = {};
@@ -483,16 +508,15 @@ function groupGames(list) {
 }
 
 /* ===== Render ===== */
+/* ===== Render（桌機） ===== */
 function renderRecordDashboard(list) {
   const root = document.getElementById('recordContainer');
   root.innerHTML = '';
 
   const grouped = groupGames(list);
 
-  // ✅【重點修正】日期一定要轉成 Date 再排序
-  const dates = Object.keys(grouped).sort((a, b) => {
-    return new Date(a) - new Date(b);
-  });
+  // ⭐ 日期排序（共用）
+  const dates = sortDatesAsc(Object.keys(grouped));
 
   dates.forEach(date => {
     root.insertAdjacentHTML(
@@ -500,7 +524,12 @@ function renderRecordDashboard(list) {
       `<div class="date-title">${date}</div>`
     );
 
-    Object.keys(grouped[date]).forEach(cat => {
+    // ⭐ 組別排序（桌機專用：大中小）
+    const categories = sortCategoriesForDesktop(
+      Object.keys(grouped[date])
+    );
+
+    categories.forEach(cat => {
       root.insertAdjacentHTML(
         'beforeend',
         `<div class="group-title">│ ${cat}</div>`
@@ -731,6 +760,7 @@ function groupGamesForMobile(games) {
 
 
 // 手機版 render（一次跑完三層）
+/* ===== Render（手機） ===== */
 function renderMobileByDate(games) {
   const root = document.getElementById('mobileView');
   if (!root) return;
@@ -739,26 +769,22 @@ function renderMobileByDate(games) {
 
   const grouped = groupGamesForMobile(games);
 
-  // ✅【手機版關鍵修正】日期用 Date 排序
-  const dates = Object.keys(grouped).sort((a, b) => {
-    return new Date(a) - new Date(b);
-  });
+  // ⭐ 只共用日期排序
+  const dates = sortDatesAsc(Object.keys(grouped));
 
   dates.forEach(date => {
-    // 📅 日期大格
     const dateBox = document.createElement('div');
     dateBox.className = 'm-date-box';
     dateBox.innerHTML = `<div class="m-date-title">📅 ${date}</div>`;
     root.appendChild(dateBox);
 
-    // ✅ 同一天：依組別
+    // ✅ 手機：保持你原本的 category 順序（不強制）
     Object.keys(grouped[date]).forEach(category => {
       const groupBox = document.createElement('div');
       groupBox.className = 'm-group-box';
       groupBox.innerHTML = `<div class="m-group-title">${category}</div>`;
       dateBox.appendChild(groupBox);
 
-      // ✅ 同組別：依時間（你在 groupGamesForMobile 已排好）
       grouped[date][category].forEach(g => {
         groupBox.insertAdjacentHTML('beforeend', `
           <div class="m-game-card">
@@ -767,17 +793,13 @@ function renderMobileByDate(games) {
               ${g.away_team} vs ${g.home_team}
             </div>
             <div class="m-game-field">📍 ${g.field}</div>
-            <div class="m-game-roles">
-              ${renderRecordMobileRole(g,'REC_MAIN','主紀錄')}
-              ${renderRecordMobileRole(g,'REC_TRAINEE','見習')}
-              ${renderRecordMobileRole(g,'REC_VIDEO','影像')}
-            </div>
           </div>
         `);
       });
     });
   });
 }
+
 
 </script>
 
