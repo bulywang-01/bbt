@@ -154,6 +154,7 @@ function mergeMySchedules(judgeGames, recordGames) {
  * ========================= */
 function renderMergedCards(games) {
   const box = document.getElementById('schedule-list');
+  box.innerHTML = '';
 
   const JUDGE_ROLE = { PU:'主審', U1:'一壘', U2:'二壘', U3:'三壘' };
   const RECORD_ROLE = {
@@ -162,35 +163,48 @@ function renderMergedCards(games) {
     REC_VIDEO:'影像紀錄'
   };
 
-  games
-    .sort((a,b) => a.date.localeCompare(b.date))
-    .forEach(g => {
+  // ✅ 依日期分組
+  const groups = {};
+  games.forEach(g => {
+    if (!groups[g.date]) groups[g.date] = [];
+    groups[g.date].push(g);
+  });
 
-      const roleSpans = g.roles.map(r => {
-        if (r.type === 'judge') {
-          return `<span class="role role-judge">🧑‍⚖️ 裁判｜${JUDGE_ROLE[r.role] || '待指派'}</span>`;
-        }
-        if (r.type === 'record') {
-          return `<span class="role role-record">📝 紀錄｜${RECORD_ROLE[r.role] || '待指派'}</span>`;
-        }
-        return '';
-      }).join(' ');
+  Object.keys(groups)
+    .sort()
+    .forEach(date => {
+      // ✅ 日期標題只顯示一次
+      const dateTitle = document.createElement('div');
+      dateTitle.className = 'schedule-date-title';
+      dateTitle.textContent = formatZhDate(date);
+      box.appendChild(dateTitle);
 
-      const card = document.createElement('div');
-      card.className = 'schedule-card';
+      groups[date]
+        .sort((a,b) => formatTimeOnly(a.time).localeCompare(formatTimeOnly(b.time)))
+        .forEach(g => {
+          const roleSpans = g.roles.map(r => {
+            if (r.type === 'judge') {
+              return `<span class="role role-judge">🧑‍⚖️ 裁判｜${JUDGE_ROLE[r.role] || '待指派'}</span>`;
+            }
+            if (r.type === 'record') {
+              return `<span class="role role-record">📝 紀錄｜${RECORD_ROLE[r.role] || '待指派'}</span>`;
+            }
+          }).join(' ');
 
-      card.innerHTML = `
-        <div class="card-date">${formatZhDate(g.date)}</div>
-        <div class="card-row">
-          <span>⏰ ${formatTimeOnly(g.time)}</span>
-          <span class="sep">｜</span>
-          <span>📍 ${g.field || ''}</span>
-          <span class="sep">｜</span>
-          ${roleSpans}
-        </div>
-      `;
+          const card = document.createElement('div');
+          card.className = 'schedule-card';
 
-      box.appendChild(card);
+          card.innerHTML = `
+            <div class="card-row">
+              <span>⏰ ${formatTimeOnly(g.time)}</span>
+              <span class="sep">｜</span>
+              <span>📍 ${g.field}</span>
+              <span class="sep">｜</span>
+              ${roleSpans}
+            </div>
+          `;
+          box.appendChild(card);
+        });
     });
 }
 
