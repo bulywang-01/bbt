@@ -13,15 +13,6 @@ body {
 }
 
 /* ===== 標題 ===== */
-.page-title {
-  background: #0d4c63;
-  color: #fff;
-  padding: 12px;
-  font-size: 20px;
-  font-weight: 800;
-  text-align: center;
-}
-
 .hint {
   font-size: 13px;
   color: #555;
@@ -178,6 +169,13 @@ select.locked {
   #mobileView { display: block; padding: 12px; }
 }
 
+.section-title {
+  margin: 16px 12px 8px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a237e;
+}
+
 /* ===============================
  手機卡片
 ================================ */
@@ -237,6 +235,70 @@ select.locked {
 .record-role.action {
   cursor: pointer;
 }
+
+/* ===== 日期大框 ===== */
+.m-date-box {
+  background: #f5f8ff;
+  border-radius: 14px;
+  padding: 10px;
+  margin-bottom: 16px;
+}
+
+.m-date-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a237e;
+  margin-bottom: 6px;
+}
+
+/* ===== 群組中框 ===== */
+.m-group-box {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+
+.m-group-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0d47a1;
+  border-left: 4px solid #0d47a1;
+  padding-left: 8px;
+  margin-bottom: 6px;
+}
+
+/* ===== 單場賽事卡片 ===== */
+.m-game-card {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.m-game-time {
+  font-weight: 700;
+  color: #d32f2f;
+  margin-bottom: 4px;
+}
+
+.m-game-teams {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.m-game-field {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.m-game-action {
+  margin-top: 4px;
+}
+
 </style>
 </head>
 
@@ -244,12 +306,13 @@ select.locked {
 <div id="header-container"></div>
   <div id="toast" class="toast"></div>
 
-<div class="page-title">BBT 軟式棒球聯盟｜紀錄員班表</div>
 <!--
+<div class="page-title">BBT 軟式棒球聯盟｜紀錄員班表</div>
 <div class="hint">※ 只能在「無」的欄位選擇自己</div>
 -->
 <!-- ✅ 唯一主容器 -->
 <div id="desktopView">
+  <h2 class="section-title">紀錄員班表</h2>
   <div id="recordContainer"></div>
 </div>
 
@@ -464,9 +527,9 @@ function renderMobileRecord(list) {
               <div>📍 ${g.field}</div>
             </div>
             <div class="record-roles">
-              ${renderRecordMobileRole(g,'REC_MAIN','主紀錄')}
-              ${renderRecordMobileRole(g,'REC_TRAINEE','見習')}
-              ${renderRecordMobileRole(g,'REC_VIDEO','影像')}
+              ${renderRecordMobileRole(g,'REC_MAIN','紀錄員')}
+              ${renderRecordMobileRole(g,'REC_TRAINEE','見習紀錄')}
+              ${renderRecordMobileRole(g,'REC_VIDEO','影像紀錄')}
             </div>
           </div>
         `);
@@ -486,6 +549,78 @@ function renderRecordMobileRole(g, role, label) {
   return `<div class="record-role other">${label}<br>${slot.name}</div>`;
 }
 
+// 先「日期 → 群組 → 賽事（排序）」
+function groupGamesForMobile(games) {
+  const map = {};
+
+  games.forEach(g => {
+    const date = g.date;                      // e.g. 2026/05/10
+    const group = g.category || '未分類';    // 大聯盟組 / 小聯盟組
+
+    if (!map[date]) map[date] = {};
+    if (!map[date][group]) map[date][group] = [];
+
+    map[date][group].push(g);
+  });
+
+  // 每個群組內依時間排序
+  Object.keys(map).forEach(date => {
+    Object.keys(map[date]).forEach(group => {
+      map[date][group].sort(
+        (a, b) => a.time.localeCompare(b.time)
+      );
+    });
+  });
+
+  return map;
+}
+
+// 手機版 render（一次跑完三層）
+function renderMobileByDate(games) {
+  const root = document.getElementById('mobileView');
+  if (!root) return;
+
+  root.innerHTML = '';
+  const grouped = groupGamesForMobile(games);
+
+  Object.keys(grouped).sort().forEach(date => {
+    // ✅ 日期大框
+    root.insertAdjacentHTML('beforeend', `
+      <div class="m-date-box">
+        <div class="m-date-title">📅 ${date}</div>
+      </div>
+    `);
+
+    const dateBox = root.lastElementChild;
+
+    Object.keys(grouped[date]).forEach(group => {
+      // ✅ 群組中框
+      dateBox.insertAdjacentHTML('beforeend', `
+        <div class="m-group-box">
+          <div class="m-group-title">│ ${group}</div>
+        </div>
+      `);
+
+      const groupBox = dateBox.lastElementChild;
+
+      grouped[date][group].forEach(g => {
+        // ✅ 單場賽事卡片（時間已排序）
+        groupBox.insertAdjacentHTML('beforeend', `
+          <div class="m-game-card">
+            <div class="m-game-time">⏰ ${g.time}</div>
+            <div class="m-game-teams">
+              ${g.away_team} vs ${g.home_team}
+            </div>
+            <div class="m-game-field">📍 ${g.field}</div>
+            <div class="m-game-action">
+              ${renderMobileAction(g)}
+            </div>
+          </div>
+        `);
+      });
+    });
+  });
+}
 </script>
 
 </body>
