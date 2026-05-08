@@ -256,8 +256,15 @@
   <div class="panel welcome-box">
     <div class="welcome-role" id="welcome-role"></div>
     <div class="welcome-name" id="welcome-name"></div>
+    <div class="welcome-line">
+      歡迎使用 <strong>出勤管理系統</strong>｜
+        <a href="javascript:void(0)" class="open-info" data-target="league">聯盟賽制</a>｜
+        <a href="javascript:void(0)" class="open-info" data-target="umpire">裁判守則</a>｜
+        <a href="javascript:void(0)" class="open-info" data-target="record">紀錄原則</a>
+    </div>
     <div class="welcome-bg" id="license-bg"></div>
   </div>
+
 
   <!-- ✅ 我的班表 -->
   <div class="panel">
@@ -289,9 +296,9 @@
     </div>
   </div>
 
-  <!-- ✅ 聯盟賽制 -->
+  <!-- ✅ 聯盟公告 -->
   <div class="panel">
-    <h3>📢 聯盟賽制</h3>
+    <h3>📢 聯盟公告</h3>
     <ul>
       <li>例行賽七局制或 2.5 小時制。</li>
       <li>第五局起分差達 10 分（含）提早結束。</li>
@@ -300,22 +307,67 @@
     </ul>
   </div>
 
-  <!-- ✅ 裁判守則 -->
-  <div class="panel">
-    <h3>🧑‍⚖️ 裁判守則</h3>
-    <ul>
-      <li>請穿著聯盟裁判制服及裁判帽。</li>
-      <li>主審須確認先發單與換人規定。</li>
-      <li>投手累計觸身球達規定須強制更換。</li>
-    </ul>
-  </div>
+  <!-- ===============================
+       📘 說明內容（隱藏，用於 overlay）
+       =============================== -->
+      
+      <div id="content-league" style="display:none;">
+        <!-- ✅ 直接把「聯盟賽制」那一整段 HTML 剪貼進來 -->
+      </div>
+      
+      <div id="content-umpire" style="display:none;">
+        <!-- ✅ 你現在 rules-overlay 裡的裁判守則內容 -->
+      </div>
+      
+      <div id="content-record" style="display:none;">
+        <h3>📝 紀錄原則</h3>
+        <p>（內容建置中）</p>
+      </div>
 
-  <!-- ✅ 文件 -->
+  <!-- ===============================
+       ✅ 共用說明 Overlay
+       =============================== -->
+      <div id="info-overlay" class="overlay">
+        <div class="overlay-box">
+          <div id="info-content"></div>
+          <button id="info-close-btn">關閉</button>
+        </div>
+      </div>
+
+  <!-- ✅ 文件下載 -->
   <div class="panel">
     <h3>📄 文件下載</h3>
-    <ul>
-      <li><a href="ctba_rules.pdf" target="_blank">中華民國棒球規則</a></li>
-      <li><a href="umpire_2man_rotation.pdf" target="_blank">兩人制裁判移補位</a></li>
+    <ul class="">
+      <li>
+        <a href="https://bbtls.com/a03.php" target="_blank">
+          BBT 軟式棒球大聯盟賽事規章
+        </a>
+      </li>
+      <li>
+        <a href="https://bbtls.com/" target="_blank">
+          BBT 軟式棒球大聯盟官網
+        </a>
+      </li>
+      <li>
+        <a href="ctba_rules.pdf" target="_blank">
+          📘 中華民國棒球規則（2024）
+        </a>
+      </li>
+      <li>
+        <a href="umpire_2man_rotation.pdf" target="_blank">
+          🧑‍⚖️ 兩人制裁判移補位（WBSC 英文版）
+        </a>
+      </li>
+      <li>
+        <a href="umpire_3man_rotation.pdf" target="_blank">
+          🧑‍⚖️ 三人制裁判移補位（CTBA 中文版）
+        </a>
+      </li>
+      <li>
+        <a href="umpire_4man_rotation.pdf" target="_blank">
+          🧑‍⚖️ 四人制裁判移補位（WBSC 英文版）
+        </a>
+      </li>
     </ul>
   </div>
 
@@ -577,6 +629,38 @@ function formatTimeOnly(t) {
   );
 }
 
+//
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('info-overlay');
+  const contentBox = document.getElementById('info-content');
+  const closeBtn = document.getElementById('info-close-btn');
+
+  // ✅ 點擊三個入口
+  document.querySelectorAll('.open-info').forEach(link => {
+    link.addEventListener('click', () => {
+      const target = link.dataset.target; // league / umpire / record
+      const src = document.getElementById(`content-${target}`);
+      if (!src) return;
+
+      contentBox.innerHTML = src.innerHTML;
+      overlay.classList.add('show');
+    });
+  });
+
+  // ✅ 關閉
+  closeBtn.addEventListener('click', () => {
+    overlay.classList.remove('show');
+    contentBox.innerHTML = '';
+  });
+
+  // ✅ 點遮罩關閉（UX 加分）
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) {
+      overlay.classList.remove('show');
+      contentBox.innerHTML = '';
+    }
+  });
+});
 </script>
 
 </body>
