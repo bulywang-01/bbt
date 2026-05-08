@@ -577,6 +577,28 @@ function cancelSignup(gameId, role) {
   });
 }
 
+function recordSignup(gameId, role) {
+  const session = getSession();
+  if (!session) {
+    alert('登入狀態失效，請重新登入');
+    location.replace('../login.html');
+    return;
+  }
+
+  callApi({
+    action: 'recordSignup',
+    user_id: session.user_id,   // ✅ 唯一正解
+    game_id: gameId,
+    record_role: role
+  }, res => {
+    if (res.result === 'ok') {
+      location.reload();
+    } else {
+      alert(res.message || '報名失敗');
+    }
+  });
+}
+
 /* ===== 時間 ===== */
 function formatDateTW(v) {
   return new Date(v).toLocaleDateString('zh-TW',{timeZone:'Asia/Taipei'});
