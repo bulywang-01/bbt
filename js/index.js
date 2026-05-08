@@ -7,7 +7,10 @@
 
 
 /* =========================
- * 資料暫存（資料層）
+ * ✅ 定義全域資料
+ * ✅ call API 把資料塞進 judgeGames
+ * ✅ 決定什麼時候 render
+ * ✅ 真正畫出班表（呼叫 renderScheduleCards）
  * ========================= */
 let judgeGames = [];
 let recordGames = [];
