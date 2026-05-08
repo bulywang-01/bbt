@@ -388,16 +388,29 @@
 
 <script>
 /* ===== Header ===== */
-function loadHeader(){
-  fetch('header.html')
-    .then(res => res.text())
+function loadHeader() {
+  fetch('header.html') // ✅ 如果不在同層，這裡請修正路徑
+    .then(res => {
+      if (!res.ok) {
+        throw new Error('header.html 載入失敗');
+      }
+      return res.text();
+    })
     .then(html => {
-      document.getElementById('header-container').innerHTML = html;
+      const container = document.getElementById('header-container');
+      if (!container) return;
 
-      // ✅ 關鍵：header 載入完成後，再綁 overlay 開關
+      container.innerHTML = html;
+
+      // ✅ header 載入成功後，再綁 overlay
       bindAllOverlays();
+    })
+    .catch(err => {
+      console.error(err);
+      console.warn('Header 未載入，overlay 不會綁定');
     });
 }
+
 
 // ===== Welcome 區：身份顯示（中文）=====
 const session = getSession();
