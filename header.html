@@ -116,6 +116,7 @@
 </div>
 
 <script src="js/auth.js"></script>
+
 <script>
 (function applyHeaderRole(){
   const session = getSession?.();
@@ -123,20 +124,30 @@
 
   const roles = (session.role || '').split(',').map(r => r.trim());
 
-  if (roles.includes('judge')) {
-    document.querySelectorAll('.nav-judge').forEach(el => el.style.display = 'flex');
-  }
-  if (roles.includes('record')) {
-    document.querySelectorAll('.nav-record').forEach(el => el.style.display = 'flex');
-  }
+  const judgeItems  = document.querySelectorAll('.nav-judge');
+  const recordItems = document.querySelectorAll('.nav-record');
+  const adminItems  = document.querySelectorAll('.nav-admin');
+
+  // ✅ 系統管理員：全部開
   if (roles.includes('admin')) {
-    document.querySelectorAll('.nav-admin').forEach(el => el.style.display = 'flex');
+    judgeItems.forEach(el => el.style.display = 'flex');
+    recordItems.forEach(el => el.style.display = 'flex');
+    adminItems.forEach(el => el.style.display = 'flex');
+  } else {
+    // ✅ 裁判
+    if (roles.includes('judge')) {
+      judgeItems.forEach(el => el.style.display = 'flex');
+    }
+    // ✅ 紀錄
+    if (roles.includes('record')) {
+      recordItems.forEach(el => el.style.display = 'flex');
+    }
   }
 
+  // 顯示使用者名稱
   const nameEl = document.getElementById('u_name');
   if (nameEl && session.name) {
     nameEl.textContent = session.name;
   }
 })();
 </script>
-``
