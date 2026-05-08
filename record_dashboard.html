@@ -639,6 +639,7 @@ function renderMobileRecord(list) {
   });
 }
 
+/*
 function renderRecordMobileRole(g, role, label) {
   const slot = g.record_slots?.[role];
   if (!slot) {
@@ -649,6 +650,44 @@ function renderRecordMobileRole(g, role, label) {
   }
   return `<div class="record-role other">${label}<br>${slot.name}</div>`;
 }
+*/
+
+function renderRecordMobileRole(g, role, label) {
+  const slot = g.record_slots && g.record_slots[role];
+
+  // ✅ 尚未有人報名
+  if (!slot) {
+    return `
+      <div class="record-role action"
+           onclick="signup('${g.game_id}','${role}')">
+        ＋${label}
+      </div>
+    `;
+  }
+
+  // ✅ 統一型別再比較（關鍵）
+  const isMe =
+    String(slot.user_id) === String(session.user_id);
+
+  // ✅ 我自己
+  if (isMe) {
+    return `
+      <div class="record-role me">
+        ${label}<br>我
+      </div>
+    `;
+  }
+
+  // ✅ 他人（防呆）
+  const name = slot.name || '';
+
+  return `
+    <div class="record-role other">
+      ${label}<br>${name}
+    </div>
+  `;
+}
+
 
 // 先「日期 → 群組 → 賽事（排序）」
 function groupGamesForMobile(games) {
