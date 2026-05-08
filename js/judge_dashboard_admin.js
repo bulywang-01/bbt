@@ -234,28 +234,29 @@ window.openAssignJudge = function (gameId, role) {
   currentAssignContext = { gameId, role };
 
   const modal = document.getElementById('judgeModal');
-  const list  = document.getElementById('judgeList');
+  const list = document.getElementById('judgeList');
   const title = document.getElementById('judgeModalTitle');
 
   title.textContent = `指派 ${ROLE_LABEL[role]}`;
   list.innerHTML = '載入中...';
 
-  // ✅ 改成用後端算好的名單
   callApi(
     {
       action: 'getAssignableJudges_admin',
       game_id: gameId,
       role: role,
-      user_id: CURRENT_USER_ID   // ✅ 關鍵這一行
-
+      user_id: CURRENT_USER_ID // ✅ 裁判長身分
     },
     res => {
       list.innerHTML = '';
 
-      // if (!res || res.result !== 'ok' || !res.judges || res.judges.length === 0) {
-      if (!res || res.result !== 'ok' || !Array.isArray(res.judges) || res.judges.length === 0) {
-
-        list.innerHTML = `<div style="color:#999;text-align:center;">目前無可指派裁判</div>`;
+      if (
+        !res ||
+        res.result !== 'ok' ||
+        !Array.isArray(res.judges) ||
+        res.judges.length === 0
+      ) {
+        list.innerHTML = `<div style="text-align:center;color:#777;">目前無可指派裁判</div>`;
         modal.classList.remove('hidden');
         return;
       }
@@ -269,11 +270,10 @@ window.openAssignJudge = function (gameId, role) {
       });
 
       modal.classList.remove('hidden');
-      openJudgeModal(res.judges, gameId, role);
-
     }
   );
 };
+
 
 /*
 function closeJudgeModal() {
@@ -299,29 +299,27 @@ window.handleModalBackdrop = function (e) {
 
 function assignJudge(judge) {
   if (!currentAssignContext) return;
-  console.log('assign judge object =', judge);
+
   callApi(
     {
       action: 'assignJudgeToPosition_admin',
       game_id: currentAssignContext.gameId,
       role: currentAssignContext.role,
-      // judge_id: judge.user_id
-      judge_id: judge.judge_id   // ✅ 改成這個
+      judge_id: judge.user_id   // ✅ 正確欄位
     },
-      res => {
-          if (res && res.result === 'ok') {
-            alert('✅ 指派成功');
-            closeJudgeModal();
-            loadGames();
-            return; // ✅ 非常重要：直接結束
-          }
-          
-          // 只有「真的有 error 結果」才顯示失敗
-          if (res && res.result === 'error') {
-            alert(`❌ 指派失敗：${res.message || '未知錯誤'}`);
-          }
-        }
-    );
+    res => {
+      if (res && res.result === 'ok') {
+        alert('✅ 指派成功');
+        closeJudgeModal();
+        loadGames(); // 重新載入
+        return;
+      }
+
+      if (res && res.result === 'error') {
+        alert(`❌ 指派失敗：${res.message || '未知錯誤'}`);
+      }
+    }
+  );
 }
 
 /*
