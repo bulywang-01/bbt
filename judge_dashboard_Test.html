@@ -6,30 +6,6 @@
 <title>裁判報名</title>
 
 <style>
-/* ===============================
-   Header 導覽列保護修正
-   （避免被內文樣式影響）
-================================ */
-#header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 20px;
-  background:#ffffff;
-  border-bottom:1px solid #ddd;
-}
-
-#header a {
-  color: #0066cc;
-  text-decoration: none;
-  margin-right: 14px;
-  font-weight: 500;
-}
-
-#header a:hover {
-  text-decoration: underline;
-}
-
 /* Header 裡的工具列對齊 */
 #header .nav,
 #header .header,
@@ -464,6 +440,12 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(res => res.text())
     .then(html => {
       document.getElementById('header').innerHTML = html;
+      
+       // ✅ 關鍵：初始化 header 行為（權限 / 排序 / 高亮）
+       if (typeof applyHeaderRole === 'function') applyHeaderRole();
+       if (typeof highlightCurrentNav === 'function') highlightCurrentNav();
+       if (typeof reorderNavByRole === 'function') reorderNavByRole();
+
 
       // 2️⃣ 設定頁面標題（從 body data-page-title）
       const title = document.body.dataset.pageTitle;
