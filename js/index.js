@@ -158,6 +158,15 @@ function mergeMySchedules(judgeGames, recordGames) {
  * 合併卡片 render（橫式）
  * ========================= */
 function renderMergedCards(games) {
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const gameDate = new Date(g.date.replace(/\//g, '-'));
+  gameDate.setHours(0, 0, 0, 0);
+  
+  const isExpired = (currentRange === 'month' && gameDate < today);
+    
   const box = document.getElementById('schedule-list');
   box.innerHTML = '';
 
@@ -197,7 +206,7 @@ function renderMergedCards(games) {
           }).join(' ');
 
           const card = document.createElement('div');
-          card.className = 'schedule-card';
+          card.className = 'schedule-card' + (isExpired ? ' expired' : '');
 
           card.innerHTML = `
             <div class="card-row">
