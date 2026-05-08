@@ -68,86 +68,131 @@
     overflow-x: auto;
   }
 }
+
+.nav-tile.active {
+  box-shadow: 0 0 0 2px #4a7ef5 inset;
+  background: #dfeaff;
+}
+
+/* 裁判 */
+.nav-judge {
+  background: #e8f1ff;
+  color: #1a237e;
+}
+
+/* 紀錄 */
+.nav-record {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+/* 管理 */
+.nav-admin {
+  background: #ede7f6;
+  color: #4a148c;
+}
+
+/* 其他（首頁 / 改密碼 / 登出） */
+.nav-home,
+.nav-password,
+.nav-logout {
+  background: #f5f5f5;
+  color: #333;
+}
 </style>
 
 <div id="header">
   <nav>
 
-    <!-- 首頁 -->
-    <a href="index.html" class="nav-tile">
+    <!-- 🏠 首頁 -->
+    <a href="index.html" class="nav-tile nav-home">
       <div class="nav-icon">🏠</div>
       <div class="nav-text">首頁</div>
     </a>
 
-    <!-- 裁判 -->
+    <!-- 🧑‍⚖️ 裁判班表 -->
     <a href="judge_dashboard.html" class="nav-tile nav-judge">
       <div class="nav-icon">🧑‍⚖️</div>
       <div class="nav-text">裁判<br>班表</div>
     </a>
 
-    <!-- 紀錄 -->
+    <!-- 📝 紀錄班表 -->
     <a href="record_dashboard.html" class="nav-tile nav-record">
       <div class="nav-icon">📝</div>
       <div class="nav-text">紀錄<br>班表</div>
     </a>
 
-    <!-- 管理 -->
+    <!-- ⚙️ 管理介面 -->
     <a href="admin_dashboard.html" class="nav-tile nav-admin">
       <div class="nav-icon">⚙️</div>
       <div class="nav-text">管理<br>介面</div>
     </a>
 
-    <!-- 改密碼 -->
-    <a href="change_password.html" class="nav-tile">
+    <!-- 🔐 改密碼 -->
+    <a href="change_password.html" class="nav-tile nav-password">
       <div class="nav-icon">🔐</div>
-      <div class="nav-text">修改<br>密碼</div>
+      <div class="nav-text">改<br>密碼</div>
     </a>
 
-    <!-- 登出 -->
-    <a href="#" onclick="logout()" class="nav-tile">
+    <!-- 🚪 登出 -->
+    <a href="#" onclick="logout()" class="nav-tile nav-logout">
       <div class="nav-icon">🚪</div>
       <div class="nav-text">登出</div>
     </a>
 
-    <!-- 使用者名稱 -->
-    <span id="u_name"></span>
+    <!-- 使用者名稱（靠右）
+    <span id="u_name"></span> -->
 
   </nav>
 </div>
 
+
 <script src="js/auth.js"></script>
 
 <script>
-(function applyHeaderRole(){
+(function highlightCurrentNav(){
+  const path = location.pathname;
+
+  const map = {
+    'index.html': 'nav-home',
+    'judge_dashboard.html': 'nav-judge',
+    'record_dashboard.html': 'nav-record',
+    'admin_dashboard.html': 'nav-admin',
+    'change_password.html': 'nav-password'
+  };
+
+  Object.keys(map).forEach(file => {
+    if (path.endsWith(file)) {
+      document.querySelectorAll(`.${map[file]}`).forEach(el => {
+        el.classList.add('active');
+      });
+    }
+  });
+})();
+
+(function reorderNavByRole() {
   const session = getSession?.();
   if (!session) return;
 
   const roles = (session.role || '').split(',').map(r => r.trim());
+  const nav = document.querySelector('#header nav');
+  if (!nav) return;
 
-  const judgeItems  = document.querySelectorAll('.nav-judge');
-  const recordItems = document.querySelectorAll('.nav-record');
-  const adminItems  = document.querySelectorAll('.nav-admin');
+  const orderMap = [];
 
-  // ✅ 系統管理員：全部開
   if (roles.includes('admin')) {
-    judgeItems.forEach(el => el.style.display = 'flex');
-    recordItems.forEach(el => el.style.display = 'flex');
-    adminItems.forEach(el => el.style.display = 'flex');
-  } else {
-    // ✅ 裁判
-    if (roles.includes('judge')) {
-      judgeItems.forEach(el => el.style.display = 'flex');
-    }
-    // ✅ 紀錄
-    if (roles.includes('record')) {
-      recordItems.forEach(el => el.style.display = 'flex');
-    }
+    orderMap.push('.nav-admin', '.nav-judge', '.nav-record');
+  } else if (roles.includes('judge')) {
+    orderMap.push('.nav-judge', '.nav-record', '.nav-admin');
+  } else if (roles.includes('record')) {
+    orderMap.push('.nav-record', '.nav-judge', '.nav-admin');
   }
 
-  // 顯示使用者名稱
-  const nameEl = document.getElementById('u_name');
-  if (nameEl && session.name) {
-    nameEl.textContent = session.name;
-  }
+  // 固定放在最後
+  orderMap.push('.nav-home', '.nav-password', '.nav-logout');
+
+  orderMap.forEach(selector => {
+    nav.querySelectorAll(selector).forEach(el => nav.appendChild(el));
+  });
 })();
 </script>
