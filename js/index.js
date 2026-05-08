@@ -1,9 +1,12 @@
 /**
  * index.js – 首頁「我的班表」
- * ✅ 穩定版（避免 Date parsing 地雷）
- * ✅ 合併裁判＋紀錄
- * ✅ 正確處理 本週 / 下週 / 本月
- * ✅ 查看完整班表可用
+ * 最終穩定版 ✅
+ *
+ * 設計原則：
+ * - 個人最終結果視角（指派 > 報名）
+ * - 同一場比賽可同時有裁判 + 紀錄
+ * - 週期：週一～週日
+ * - 避開 Date parsing 地雷
  */
 
 /* =========================
@@ -25,8 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const roles = (session.role || '').split(',').map(r => r.trim());
 
-  const isJudge = roles.includes('judge') || roles.includes('chief_judge') || roles.includes('admin');
-  const isRecord = roles.includes('record') || roles.includes('record_chief') || roles.includes('admin');
+  const isJudge =
+    roles.includes('judge') ||
+    roles.includes('chief_judge') ||
+    roles.includes('admin');
+
+  const isRecord =
+    roles.includes('record') ||
+    roles.includes('record_chief') ||
+    roles.includes('admin');
 
   document.getElementById('schedule-loading')?.style.setProperty('display', 'block');
 
@@ -34,7 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
     callApi(
       { action: 'getMyUpcomingGames', user_id: session.user_id },
       res => {
-        judgeGames = (res && res.result === 'ok' && Array.isArray(res.games)) ? res.games : [];
+        judgeGames = (res && res.result === 'ok' && Array.isArray(res.games))
+          ? res.games
+          : [];
         renderSchedule();
       }
     );
@@ -44,7 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
     callApi(
       { action: 'getMyRecordUpcomingGames', user_id: session.user_id },
       res => {
-        recordGames = (res && res.result === 'ok' && Array.isArray(res.games)) ? res.games : [];
+        recordGames = (res && res.result === 'ok' && Array.isArray(res.games))
+          ? res.games
+          : [];
         renderSchedule();
       }
     );
@@ -69,14 +83,17 @@ function setRange(range) {
 function renderSchedule() {
   const box = document.getElementById('schedule-list');
   const noBlock = document.getElementById('no-schedule');
+
   document.getElementById('schedule-loading')?.style.setProperty('display', 'none');
+  if (!box) return;
 
   box.innerHTML = '';
   noBlock.style.display = 'none';
 
+  // ✅ 合併裁判＋紀錄（同一場）
   const merged = mergeMySchedules(judgeGames, recordGames);
 
-  // ✅ 只用「日期」做週期過濾（不碰時間）
+  // ✅ 只用日期做區間判斷（避開時間地雷）
   const { start, end } = getPeriodRange(currentRange);
 
   const filtered = merged.filter(g => {
@@ -100,7 +117,7 @@ function renderSchedule() {
 function mergeMySchedules(judgeGames, recordGames) {
   const map = {};
 
-  function ensureGame(g) {
+  function ensure(g) {
     if (!map[g.game_id]) {
       map[g.game_id] = {
         game_id: g.game_id,
@@ -113,19 +130,17 @@ function mergeMySchedules(judgeGames, recordGames) {
     return map[g.game_id];
   }
 
-  // ✅ 裁判資料 → 永遠 push
+  // ✅ 裁判（永遠 push，不覆蓋）
   judgeGames.forEach(g => {
-    const game = ensureGame(g);
-    game.roles.push({
+    ensure(g).roles.push({
       type: 'judge',
       role: g.role || null
     });
   });
 
-  // ✅ 紀錄資料 → 永遠 push（即使同一場）
+  // ✅ 紀錄（永遠 push，即使同一場）
   recordGames.forEach(g => {
-    const game = ensureGame(g);
-    game.roles.push({
+    ensure(g).roles.push({
       type: 'record',
       role: g.record_role || null
     });
@@ -135,46 +150,46 @@ function mergeMySchedules(judgeGames, recordGames) {
 }
 
 /* =========================
- * 合併卡片 render
+ * 合併卡片 render（橫式）
  * ========================= */
 function renderMergedCards(games) {
   const box = document.getElementById('schedule-list');
 
   const JUDGE_ROLE = { PU:'主審', U1:'一壘', U2:'二壘', U3:'三壘' };
-  const RECORD_ROLE = { REC_MAIN:'主紀錄', REC_TRAINEE:'見習紀錄', REC_VIDEO:'影像紀錄' };
+  const RECORD_ROLE = {
+    REC_MAIN:'主紀錄',
+    REC_TRAINEE:'見習紀錄',
+    REC_VIDEO:'影像紀錄'
+  };
 
   games
     .sort((a,b) => a.date.localeCompare(b.date))
     .forEach(g => {
-      const roleLines = g.roles.map(r => {
+
+      const roleSpans = g.roles.map(r => {
         if (r.type === 'judge') {
-          const JUDGE_ROLE = { PU:'主審', U1:'一壘', U2:'二壘', U3:'三壘' };
           return `<span class="role role-judge">🧑‍⚖️ 裁判｜${JUDGE_ROLE[r.role] || '待指派'}</span>`;
         }
-      
         if (r.type === 'record') {
-          const RECORD_ROLE = {
-            REC_MAIN:'主紀錄',
-            REC_TRAINEE:'見習紀錄',
-            REC_VIDEO:'影像紀錄'
-          };
           return `<span class="role role-record">📝 紀錄｜${RECORD_ROLE[r.role] || '待指派'}</span>`;
         }
+        return '';
       }).join(' ');
 
       const card = document.createElement('div');
       card.className = 'schedule-card';
+
       card.innerHTML = `
         <div class="card-date">${formatZhDate(g.date)}</div>
-      
         <div class="card-row">
           <span>⏰ ${formatTimeOnly(g.time)}</span>
           <span class="sep">｜</span>
-          <span>📍 ${g.field}</span>
+          <span>📍 ${g.field || ''}</span>
           <span class="sep">｜</span>
-          ${roleLines}
+          ${roleSpans}
         </div>
       `;
+
       box.appendChild(card);
     });
 }
@@ -215,7 +230,7 @@ function getPeriodRange(range) {
 }
 
 /* =========================
- * 查看完整班表（終於不是廢的）
+ * 查看完整班表
  * ========================= */
 function setupViewFullSchedule(session) {
   const link = document.getElementById('view-full-schedule');
@@ -228,7 +243,6 @@ function setupViewFullSchedule(session) {
     const hasRecord = roles.some(r => ['record','record_chief','admin'].includes(r));
 
     if (hasJudge && hasRecord) {
-      // ✅ 雙重身份，跳選擇
       document.getElementById('fullScheduleRoleModal')?.style.setProperty('display','flex');
       return;
     }
@@ -245,7 +259,8 @@ function formatTimeOnly(t) {
   if (!t) return '';
   if (typeof t === 'string' && /^\d{1,2}:\d{2}$/.test(t)) return t;
   const d = new Date(t);
-  return isNaN(d) ? String(t) : `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  return isNaN(d) ? String(t) :
+    `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
 function formatZhDate(dateStr) {
