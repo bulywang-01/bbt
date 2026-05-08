@@ -219,6 +219,19 @@
     .schedule-card.expired .sep {
       color: #bdbdbd;
     }
+
+    .open-link {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #4a7ef5;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .open-link:hover {
+      text-decoration: underline;
+    }
+
   </style>
 </head>
 
@@ -258,9 +271,9 @@
     <div class="welcome-name" id="welcome-name"></div>
     <div class="welcome-line">
       歡迎使用 <strong>出勤管理系統</strong>｜
-      <span id="open-league" class="open-link">聯盟賽制</span>｜
-      <a href="javascript:void(0)" id="open-rules"  style="color:#4a7ef5;font-weight:600;">裁判守則</a>｜
-      <a href="javascript:void(0)" id="open-record" style="color:#4a7ef5;font-weight:600;">紀錄原則</a>
+      <button type="button" id="open-league" class="open-link">聯盟賽制</button>
+      <button type="button" id="open-rules"  class="open-link">裁判守則</button>
+      <button type="button" id="open-record" class="open-link">紀錄原則</button>
     </div>
     <div class="welcome-bg" id="license-bg"></div>
   </div>
@@ -313,13 +326,14 @@
       
       <!-- 聯盟賽制 -->
         <div id="league-overlay" class="overlay" style="display:none;">
-          <div class="overlay-box" onclick="event.stopPropagation()">
+          <div class="overlay-box">
             <h2>📘 聯盟賽制</h2>
-            <!-- 你的賽制內容 -->
+            <!-- 聯盟賽制內容 -->
             <p>（內容建置中）</p>
             <button id="league-close-btn">關閉</button>
           </div>
         </div>
+
 
         
         <!-- 裁判守則 -->
@@ -650,24 +664,32 @@ function formatTimeOnly(t) {
 // overlay 
 document.addEventListener('DOMContentLoaded', () => {
 
-  const openLeague = document.getElementById('open-league');
-  const leagueBox  = document.getElementById('league-overlay');
-  const closeBtn   = document.getElementById('league-close-btn');
+  function bindOverlay(openId, overlayId, closeId) {
+    const openBtn  = document.getElementById(openId);
+    const overlay  = document.getElementById(overlayId);
+    const closeBtn = document.getElementById(closeId);
 
-  openLeague.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    leagueBox.style.display = 'flex';
-  });
+    if (!openBtn || !overlay || !closeBtn) return;
 
-  closeBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    leagueBox.style.display = 'none';
-  });
+    openBtn.addEventListener('click', () => {
+      overlay.style.display = 'flex';
+    });
 
-  leagueBox.addEventListener('click', () => {
-    leagueBox.style.display = 'none';
-  });
+    closeBtn.addEventListener('click', () => {
+      overlay.style.display = 'none';
+    });
+
+    // 點背景關閉
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) {
+        overlay.style.display = 'none';
+      }
+    });
+  }
+
+  bindOverlay('open-league', 'league-overlay', 'league-close-btn');
+  bindOverlay('open-rules',  'rules-overlay',  'rules-close-btn');
+  bindOverlay('open-record', 'record-overlay', 'record-close-btn');
 
 });
 
