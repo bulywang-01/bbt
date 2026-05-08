@@ -300,35 +300,68 @@ window.handleModalBackdrop = function (e) {
 function assignJudge(judge) {
   if (!currentAssignContext) return;
 
+  // ✅ 防呆：避免重複點擊
+  const modal = document.getElementById('judgeModal');
+  modal.style.pointerEvents = 'none';
+
   callApi(
     {
       action: 'assignJudgeToPosition_admin',
       game_id: currentAssignContext.gameId,
       role: currentAssignContext.role,
-      judge_id: judge.user_id   // ✅ 正確欄位
+      judge_id: judge.user_id
     },
     res => {
+      modal.style.pointerEvents = 'auto';
+
+      // ✅ 成功
       if (res && res.result === 'ok') {
-        alert('✅ 指派成功');
+        showAssignMessage('✅ 指派成功');
+
+        // ✅ 關閉 modal
         closeJudgeModal();
-        loadGames(); // 重新載入
+
+        // ✅ 重新載入資料（畫面立即更新）
+        loadGames();
         return;
       }
 
-      if (res && res.result === 'error') {
-        alert(`❌ 指派失敗：${res.message || '未知錯誤'}`);
-      }
+      // ✅ 明確失敗訊息
+      const msg =
+        (res && res.message) ?
+          `❌ 指派失敗：${res.message}` :
+          '❌ 指派失敗，請稍後再試';
+
+      showAssignMessage(msg);
     }
   );
 }
 
-/*
-function logout() {
-  if (!confirm('確定要登出？')) return;
-  localStorage.clear();
-  location.replace('login.html');
+function showAssignMessage(msg) {
+  const box = document.createElement('div');
+  box.textContent = msg;
+
+  Object.assign(box.style, {
+    position: 'fixed',
+    top: '20px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: '#323232',
+    color: '#fff',
+    padding: '10px 18px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    zIndex: 10000,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+  });
+
+  document.body.appendChild(box);
+
+  setTimeout(() => {
+    box.remove();
+  }, 1600);
 }
-*/
+
 
 /* 改成掛在 window */
 window.logout = function () {
