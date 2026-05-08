@@ -639,6 +639,7 @@ function renderMobileRecord(list) {
   });
 }
 
+/*
 function renderRecordMobileRole(g, role, label) {
   const slot = g.record_slots?.[role];
   if (!slot) {
@@ -648,6 +649,22 @@ function renderRecordMobileRole(g, role, label) {
     return `<div class="record-role me">${label}<br>我</div>`;
   }
   return `<div class="record-role other">${label}<br>${slot.name}</div>`;
+}
+*/
+
+function renderRecordMobileRole(slot, label) {
+  if (!slot) {
+    return `<div class="record-role action">＋${label}</div>`;
+  }
+
+  const isMe =
+    String(slot.user_id) === String(session.user_id);
+
+  return `
+    <div class="record-role ${isMe ? 'me' : 'other'}">
+      ${label}<br>${isMe ? '我' : slot.name}
+    </div>
+  `;
 }
 
 // 先「日期 → 群組 → 賽事（排序）」
