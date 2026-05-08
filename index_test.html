@@ -258,9 +258,9 @@
     <div class="welcome-name" id="welcome-name"></div>
     <div class="welcome-line">
       歡迎使用 <strong>出勤管理系統</strong>｜
-        <a href="javascript:void(0)" class="open-info" data-target="league">聯盟賽制</a>｜
-        <a href="javascript:void(0)" class="open-info" data-target="umpire">裁判守則</a>｜
-        <a href="javascript:void(0)" class="open-info" data-target="record">紀錄原則</a>
+      <a href="javascript:void(0)" id="open-league" style="color:#4a7ef5;font-weight:600;">聯盟賽制</a>｜
+      <a href="javascript:void(0)" id="open-rules"  style="color:#4a7ef5;font-weight:600;">裁判守則</a>｜
+      <a href="javascript:void(0)" id="open-record" style="color:#4a7ef5;font-weight:600;">紀錄原則</a>
     </div>
     <div class="welcome-bg" id="license-bg"></div>
   </div>
@@ -311,17 +311,51 @@
        📘 說明內容（隱藏，用於 overlay）
        =============================== -->
       
-      <div id="content-league" style="display:none;">
-        <!-- ✅ 直接把「聯盟賽制」那一整段 HTML 剪貼進來 -->
+      <!-- ===============================
+       📘 聯盟賽制 Overlay
+       =============================== -->
+      <div id="league-overlay" class="overlay" style="display:none;">
+        <div class="overlay-box">
+          <h2>📘 BBT 聯盟賽制</h2>
+      
+          <!-- ✅ 直接貼你原本 index.html 的賽制內容 -->
+          <div class="rules-section">
+            <!-- 原本的 賽制規定 / Postseason / 迴避原則 -->
+            <!-- 完全不用改內容 -->
+          </div>
+      
+          <button id="league-close-btn">關閉</button>
+        </div>
       </div>
       
-      <div id="content-umpire" style="display:none;">
-        <!-- ✅ 你現在 rules-overlay 裡的裁判守則內容 -->
+      <!-- ===============================
+       📘 裁判守則 Overlay
+       =============================== -->
+      <div id="rules-overlay" class="overlay" style="display:none;">
+        <div class="overlay-box">
+          <h2>🧑‍⚖️ BBT 聯盟例行賽｜裁判守則</h2>
+      
+          <div class="rules-section">
+            <!-- 你原本那一整段裁判守則 -->
+          </div>
+      
+          <button id="rules-close-btn">關閉</button>
+        </div>
       </div>
       
-      <div id="content-record" style="display:none;">
-        <h3>📝 紀錄原則</h3>
-        <p>（內容建置中）</p>
+      <!-- ===============================
+       📝 紀錄原則 Overlay
+       =============================== -->
+      <div id="record-overlay" class="overlay" style="display:none;">
+        <div class="overlay-box">
+          <h2>📝 紀錄原則</h2>
+      
+          <div class="rules-section">
+            <p>（內容建置中）</p>
+          </div>
+      
+          <button id="record-close-btn">關閉</button>
+        </div>
       </div>
 
   <!-- ===============================
@@ -629,38 +663,54 @@ function formatTimeOnly(t) {
   );
 }
 
-//
+// overlay 
 document.addEventListener('DOMContentLoaded', () => {
-  const overlay = document.getElementById('info-overlay');
-  const contentBox = document.getElementById('info-content');
-  const closeBtn = document.getElementById('info-close-btn');
+  // ===== 聯盟賽制 =====
+  const leagueOpen  = document.getElementById('open-league');
+  const leagueBox   = document.getElementById('league-overlay');
+  const leagueClose = document.getElementById('league-close-btn');
 
-  // ✅ 點擊三個入口
-  document.querySelectorAll('.open-info').forEach(link => {
-    link.addEventListener('click', () => {
-      const target = link.dataset.target; // league / umpire / record
-      const src = document.getElementById(`content-${target}`);
-      if (!src) return;
+  leagueOpen?.addEventListener('click', () => {
+    leagueBox.style.display = 'flex';
+  });
+  leagueClose?.addEventListener('click', () => {
+    leagueBox.style.display = 'none';
+  });
 
-      contentBox.innerHTML = src.innerHTML;
-      overlay.classList.add('show');
+  // ===== 裁判守則（你原本就有）=====
+  const rulesOpen  = document.getElementById('open-rules');
+  const rulesBox   = document.getElementById('rules-overlay');
+  const rulesClose = document.getElementById('rules-close-btn');
+
+  rulesOpen?.addEventListener('click', () => {
+    rulesBox.style.display = 'flex';
+  });
+  rulesClose?.addEventListener('click', () => {
+    rulesBox.style.display = 'none';
+  });
+
+  // ===== 紀錄原則 =====
+  const recordOpen  = document.getElementById('open-record');
+  const recordBox   = document.getElementById('record-overlay');
+  const recordClose = document.getElementById('record-close-btn');
+
+  recordOpen?.addEventListener('click', () => {
+    recordBox.style.display = 'flex';
+  });
+  recordClose?.addEventListener('click', () => {
+    recordBox.style.display = 'none';
+  });
+
+  // ✅ 點背景關閉（三個共用）
+  document.querySelectorAll('.overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) {
+        overlay.style.display = 'none';
+      }
     });
   });
-
-  // ✅ 關閉
-  closeBtn.addEventListener('click', () => {
-    overlay.classList.remove('show');
-    contentBox.innerHTML = '';
-  });
-
-  // ✅ 點遮罩關閉（UX 加分）
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) {
-      overlay.classList.remove('show');
-      contentBox.innerHTML = '';
-    }
-  });
 });
+
 </script>
 
 </body>
