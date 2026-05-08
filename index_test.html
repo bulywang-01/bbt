@@ -110,27 +110,7 @@
       margin-top: 8px;
     }
 
-    /* ===== Modal Overlay ===== */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-    
-    .overlay-box {
-      background: #fff;
-      border-radius: 14px;
-      padding: 24px;
-      width: 90%;
-      max-width: 420px;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,.3);
-    }
-    
+   
     /* ===== Role Buttons ===== */
     .role-btn {
       flex: 1;
@@ -269,12 +249,14 @@
   <div class="panel welcome-box">
     <div class="welcome-role" id="welcome-role"></div>
     <div class="welcome-name" id="welcome-name"></div>
+    
     <div class="welcome-line">
       歡迎使用 <strong>出勤管理系統</strong>｜
-      <button type="button" id="open-league" class="open-link">聯盟賽制</button>
-      <button type="button" id="open-rules"  class="open-link">裁判守則</button>
-      <button type="button" id="open-record" class="open-link">紀錄原則</button>
+      <button id="open-league" class="open-link">聯盟賽制</button>｜
+      <button id="open-rules" class="open-link">裁判守則</button>｜
+      <button id="open-record" class="open-link">紀錄原則</button>
     </div>
+    
     <div class="welcome-bg" id="license-bg"></div>
   </div>
 
@@ -323,37 +305,45 @@
   <!-- ===============================
        📘 說明內容（隱藏，用於 overlay）
        =============================== -->
+      <!-- ===============================
+       📘 聯盟賽制 Overlay
+       =============================== -->
+      <div id="league-overlay" class="overlay" style="display:none;">
+        <div class="overlay-box">
+          <h2>📘 聯盟賽制</h2>
       
-      <!-- 聯盟賽制 -->
-        <div id="league-overlay" class="overlay" style="display:none;">
-          <div class="overlay-box">
-            <h2>📘 聯盟賽制</h2>
-            <!-- 聯盟賽制內容 -->
-            <p>（內容建置中）</p>
-            <button id="league-close-btn">關閉</button>
-          </div>
-        </div>
+          <!-- ✅ 這裡貼你的聯盟賽制內容 -->
+          <p>（內容建置中）</p>
 
+          <button id="league-close-btn">關閉</button>
+        </div>
+      </div>
+      
+      <!-- ===============================
+       🧑‍⚖️ 裁判守則 Overlay
+       =============================== -->
+      <div id="rules-overlay" class="overlay" style="display:none;">
+        <div class="overlay-box">
+          <h2>🧑‍⚖️ 裁判守則</h2>
+      
+          <!-- ✅ 你原本的裁判守則內容 -->
+          <p>（內容建置中）</p>
 
-        
-        <!-- 裁判守則 -->
-        <div id="rules-overlay" class="overlay" style="display:none;">
-          <div class="overlay-box">
-            <h2>🧑‍⚖️ 裁判守則</h2>
-            <!-- 裁判守則內容 -->
-            <p>（內容建置中）</p>
-            <button id="rules-close-btn">關閉</button>
-          </div>
+          <button id="rules-close-btn">關閉</button>
         </div>
-        
-        <!-- 紀錄原則 -->
-        <div id="record-overlay" class="overlay" style="display:none;">
-          <div class="overlay-box">
-            <h2>📝 紀錄原則</h2>
-            <p>（內容建置中）</p>
-            <button id="record-close-btn">關閉</button>
-          </div>
+      </div>
+      
+      <!-- ===============================
+       📝 紀錄原則 Overlay
+       =============================== -->
+      <div id="record-overlay" class="overlay" style="display:none;">
+        <div class="overlay-box">
+          <h2>📝 紀錄原則</h2>
+          <p>（內容建置中）</p>
+          <button id="record-close-btn">關閉</button>
         </div>
+      </div>
+
 
 
   <!-- ===============================
@@ -662,14 +652,16 @@ function formatTimeOnly(t) {
 }
 
 // overlay 
+
 document.addEventListener('DOMContentLoaded', () => {
 
   function bindOverlay(openId, overlayId, closeId) {
     const openBtn  = document.getElementById(openId);
     const overlay  = document.getElementById(overlayId);
     const closeBtn = document.getElementById(closeId);
+    const box      = overlay?.querySelector('.overlay-box');
 
-    if (!openBtn || !overlay || !closeBtn) return;
+    if (!openBtn || !overlay || !closeBtn || !box) return;
 
     openBtn.addEventListener('click', () => {
       overlay.style.display = 'flex';
@@ -680,10 +672,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 點背景關閉
-    overlay.addEventListener('click', e => {
-      if (e.target === overlay) {
-        overlay.style.display = 'none';
-      }
+    overlay.addEventListener('click', () => {
+      overlay.style.display = 'none';
+    });
+
+    // ✅ 阻止白框冒泡（關鍵）
+    box.addEventListener('click', e => {
+      e.stopPropagation();
     });
   }
 
