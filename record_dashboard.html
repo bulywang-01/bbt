@@ -488,12 +488,28 @@ function renderRecordDashboard(list) {
   root.innerHTML = '';
 
   const grouped = groupGames(list);
-  Object.keys(grouped).sort().forEach(date => {
-    root.insertAdjacentHTML('beforeend', `<div class="date-title">${date}</div>`);
+
+  // ✅【重點修正】日期一定要轉成 Date 再排序
+  const dates = Object.keys(grouped).sort((a, b) => {
+    return new Date(a) - new Date(b);
+  });
+
+  dates.forEach(date => {
+    root.insertAdjacentHTML(
+      'beforeend',
+      `<div class="date-title">${date}</div>`
+    );
 
     Object.keys(grouped[date]).forEach(cat => {
-      root.insertAdjacentHTML('beforeend', `<div class="group-title">│ ${cat}</div>`);
-      root.insertAdjacentHTML('beforeend', buildGroupTable(grouped[date][cat]));
+      root.insertAdjacentHTML(
+        'beforeend',
+        `<div class="group-title">│ ${cat}</div>`
+      );
+
+      root.insertAdjacentHTML(
+        'beforeend',
+        buildGroupTable(grouped[date][cat])
+      );
     });
   });
 }
@@ -509,8 +525,8 @@ function buildGroupTable(list) {
         <th>主隊（一壘）</th>
         <th>地點</th>
         <th>記錄員</th>
-        <th>見習記錄員</th>
-        <th>影像記錄員</th>
+        <th>見習記錄</th>
+        <th>影像記錄</th>
       </tr>
     </thead>
     <tbody>
@@ -694,26 +710,25 @@ function groupGamesForMobile(games) {
   const map = {};
 
   games.forEach(g => {
-    const date = g.date;                      // e.g. 2026/05/10
-    const group = g.category || '未分類';    // 大聯盟組 / 小聯盟組
+    const date = g.date;                 // yyyy/mm/dd
+    const category = g.category || '未分類';
 
     if (!map[date]) map[date] = {};
-    if (!map[date][group]) map[date][group] = [];
+    if (!map[date][category]) map[date][category] = [];
 
-    map[date][group].push(g);
+    map[date][category].push(g);
   });
 
-  // 每個群組內依時間排序
-  Object.keys(map).forEach(date => {
-    Object.keys(map[date]).forEach(group => {
-      map[date][group].sort(
-        (a, b) => a.time.localeCompare(b.time)
-      );
+  // ✅ 每個組別內依時間排序
+  Object.values(map).forEach(catMap => {
+    Object.values(catMap).forEach(list => {
+      list.sort((a, b) => a.time.localeCompare(b.time));
     });
   });
 
   return map;
 }
+
 
 // 手機版 render（一次跑完三層）
 function renderMobileByDate(games) {
@@ -721,30 +736,30 @@ function renderMobileByDate(games) {
   if (!root) return;
 
   root.innerHTML = '';
+
   const grouped = groupGamesForMobile(games);
 
-  Object.keys(grouped).sort().forEach(date => {
-    // ✅ 日期大框
-    root.insertAdjacentHTML('beforeend', `
-      <div class="m-date-box">
-        <div class="m-date-title">📅 ${date}</div>
-      </div>
-    `);
+  // ✅ 日期排序（修掉 5/3 跑下面的問題）
+  const dates = Object.keys(grouped).sort(
+    (a, b) => new Date(a) - new Date(b)
+  );
 
-    const dateBox = root.lastElementChild;
+  dates.forEach(date => {
+    // 📅 日期大格
+    const dateBox = document.createElement('div');
+    dateBox.className = 'm-date-box';
+    dateBox.innerHTML = `<div class="m-date-title">📅 ${date}</div>`;
+    root.appendChild(dateBox);
 
-    Object.keys(grouped[date]).forEach(group => {
-      // ✅ 群組中框
-      dateBox.insertAdjacentHTML('beforeend', `
-        <div class="m-group-box">
-          <div class="m-group-title">│ ${group}</div>
-        </div>
-      `);
+    Object.keys(grouped[date]).forEach(category => {
+      // 🏷 組別中格
+      const groupBox = document.createElement('div');
+      groupBox.className = 'm-group-box';
+      groupBox.innerHTML = `<div class="m-group-title">${category}</div>`;
+      dateBox.appendChild(groupBox);
 
-      const groupBox = dateBox.lastElementChild;
-
-      grouped[date][group].forEach(g => {
-        // ✅ 單場賽事卡片（時間已排序）
+      // ⏰ 賽事（已排序）
+      grouped[date][category].forEach(g => {
         groupBox.insertAdjacentHTML('beforeend', `
           <div class="m-game-card">
             <div class="m-game-time">⏰ ${g.time}</div>
@@ -752,8 +767,10 @@ function renderMobileByDate(games) {
               ${g.away_team} vs ${g.home_team}
             </div>
             <div class="m-game-field">📍 ${g.field}</div>
-            <div class="m-game-action">
-              ${renderMobileAction(g)}
+            <div class="m-game-roles">
+              ${renderRecordMobileRole(g, 'REC_MAIN', '紀錄員')}
+              ${renderRecordMobileRole(g, 'REC_TRAINEE', '見習紀錄')}
+              ${renderRecordMobileRole(g, 'REC_VIDEO', '影像紀錄')}
             </div>
           </div>
         `);
@@ -761,6 +778,7 @@ function renderMobileByDate(games) {
     });
   });
 }
+
 </script>
 
 </body>
