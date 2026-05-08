@@ -430,13 +430,42 @@ function renderScheduleCards(containerId, list, type) {
     const card = document.createElement('div');
     card.className = `schedule-card ${type}`;
 
-    // ✅ 身份與角色文字（關鍵）
+    // ===== 角色顯示文字（最終版，乾淨且不互相污染）=====
     let roleText = '';
+    
     if (type === 'judge') {
-      roleText = `🧑‍⚖️ 裁判｜${g.role || '未指定'}`;
-    } else if (type === 'record') {
-      roleText = `📝 紀錄｜${g.record_role || g.role || '未指定'}`;
+      // ✅ 裁判站位（一定是 PU / U1 / U2 / U3）
+      const JUDGE_ROLE_NAME = {
+        PU: '主審',
+        U1: '一壘',
+        U2: '二壘',
+        U3: '三壘'
+      };
+    
+      if (g.role && JUDGE_ROLE_NAME[g.role]) {
+        roleText = `🧑‍⚖️ 裁判｜${JUDGE_ROLE_NAME[g.role]}`;
+      } else {
+        // 尚未被裁判長指派，但確實是裁判
+        roleText = '🧑‍⚖️ 裁判｜待指派';
+      }
     }
+    
+    if (type === 'record') {
+      // ✅ 紀錄站位（REC_MAIN / REC_TRAINEE / REC_VIDEO）
+      const RECORD_ROLE_NAME = {
+        REC_MAIN: '主紀錄',
+        REC_TRAINEE: '見習紀錄',
+        REC_VIDEO: '影像紀錄'
+      };
+    
+      if (g.record_role && RECORD_ROLE_NAME[g.record_role]) {
+        roleText = `📝 紀錄｜${RECORD_ROLE_NAME[g.record_role]}`;
+      } else {
+        // 理論上不該發生，但保險
+        roleText = '📝 紀錄｜待指派';
+      }
+    }
+
 
     card.innerHTML = `
       <div class="card-date">${formatZhDate(g.date)}</div>
