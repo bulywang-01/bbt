@@ -100,7 +100,7 @@ function renderSchedule() {
 function mergeMySchedules(judgeGames, recordGames) {
   const map = {};
 
-  function ensure(g) {
+  function ensureGame(g) {
     if (!map[g.game_id]) {
       map[g.game_id] = {
         game_id: g.game_id,
@@ -113,12 +113,22 @@ function mergeMySchedules(judgeGames, recordGames) {
     return map[g.game_id];
   }
 
+  // ✅ 裁判資料 → 永遠 push
   judgeGames.forEach(g => {
-    ensure(g).roles.push({ type: 'judge', role: g.role || null });
+    const game = ensureGame(g);
+    game.roles.push({
+      type: 'judge',
+      role: g.role || null
+    });
   });
 
+  // ✅ 紀錄資料 → 永遠 push（即使同一場）
   recordGames.forEach(g => {
-    ensure(g).roles.push({ type: 'record', role: g.record_role || null });
+    const game = ensureGame(g);
+    game.roles.push({
+      type: 'record',
+      role: g.record_role || null
+    });
   });
 
   return Object.values(map);
@@ -156,9 +166,14 @@ function renderMergedCards(games) {
       card.className = 'schedule-card';
       card.innerHTML = `
         <div class="card-date">${formatZhDate(g.date)}</div>
-        <div class="card-line">⏰ ${formatTimeOnly(g.time)}</div>
-        <div class="card-line">📍 ${g.field || ''}</div>
-        <div class="card-line">${roleLines}</div>
+      
+        <div class="card-row">
+          <span>⏰ ${formatTimeOnly(g.time)}</span>
+          <span class="sep">｜</span>
+          <span>📍 ${g.field}</span>
+          <span class="sep">｜</span>
+          ${roleLines}
+        </div>
       `;
       box.appendChild(card);
     });
