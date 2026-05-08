@@ -388,10 +388,16 @@
 
 <script>
 /* ===== Header ===== */
-fetch('header.html').then(r=>r.text()).then(h=>{
-  document.getElementById('header-container').innerHTML = h;
-  initHeaderVisibility();
-});
+function loadHeader(){
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+
+      // ✅ 關鍵：header 載入完成後，再綁 overlay 開關
+      bindAllOverlays();
+    });
+}
 
 // ===== Welcome 區：身份顯示（中文）=====
 const session = getSession();
@@ -644,6 +650,7 @@ function formatTimeOnly(t) {
 
 // overlay 
 
+/*
 document.addEventListener('DOMContentLoaded', () => {
 
   function bindOverlay(openId, overlayId, closeId) {
@@ -678,6 +685,39 @@ document.addEventListener('DOMContentLoaded', () => {
   bindOverlay('open-record', 'record-overlay', 'record-close-btn');
 
 });
+*/
+  
+function bindAllOverlays() {
+
+  function bindOverlay(openId, overlayId, closeId) {
+    const openBtn  = document.getElementById(openId);
+    const overlay  = document.getElementById(overlayId);
+    const closeBtn = document.getElementById(closeId);
+    const box      = overlay?.querySelector('.overlay-box');
+
+    if (!openBtn || !overlay || !closeBtn || !box) return;
+
+    openBtn.addEventListener('click', () => {
+      overlay.style.display = 'flex';
+    });
+
+    closeBtn.addEventListener('click', () => {
+      overlay.style.display = 'none';
+    });
+
+    overlay.addEventListener('click', () => {
+      overlay.style.display = 'none';
+    });
+
+    box.addEventListener('click', e => {
+      e.stopPropagation();
+    });
+  }
+
+  bindOverlay('open-league', 'league-overlay', 'league-close-btn');
+  bindOverlay('open-rules',  'rules-overlay',  'rules-close-btn');
+  bindOverlay('open-record', 'record-overlay', 'record-close-btn');
+}
 
 </script>
 
