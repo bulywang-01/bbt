@@ -226,6 +226,39 @@
       font-size: 14px;
       font-weight: 600;
     }
+    
+    .pill {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    /* 不同功能顏色 */
+    .pill-blue {
+      background: #e8f1ff;
+      color: #1a237e;
+    }
+    
+    .pill-green {
+      background: #e8f5e9;
+      color: #1b5e20;
+    }
+    
+    .pill-orange {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    
+    .pill:hover {
+      opacity: 0.85;
+    }
+
   </style>
 </head>
 
@@ -269,15 +302,56 @@
     </div>
     
     <div class="welcome-actions">
-      <button id="open-league" class="open-link">聯盟賽制</button>
-      <button id="open-rules"  class="open-link">裁判守則</button>
-      <button id="open-record" class="open-link">紀錄原則</button>
+      <button id="open-league" class="pill pill-blue">
+        📘 聯盟賽制
+      </button>
+      <button id="open-rules" class="pill pill-green">
+        🧑‍⚖️ 裁判守則
+      </button>
+      <button id="open-record" class="pill pill-orange">
+        📝 紀錄原則
+      </button>
     </div>
     
     <div class="welcome-bg" id="license-bg"></div>
   </div>
 
-
+// 在 welcome 區 JS 後面
+<script>
+  (function controlRulePills(){
+    const session = getSession?.();
+    if (!session) return;
+  
+    const roles = (session.role || '').split(',').map(r => r.trim());
+  
+    const leagueBtn = document.getElementById('open-league');
+    const judgeBtn  = document.getElementById('open-rules');
+    const recordBtn = document.getElementById('open-record');
+  
+    // 預設先隱藏
+    if (judgeBtn) judgeBtn.style.display = 'none';
+    if (recordBtn) recordBtn.style.display = 'none';
+  
+    // 管理者全開
+    if (roles.includes('admin')) {
+      if (judgeBtn) judgeBtn.style.display = 'inline-flex';
+      if (recordBtn) recordBtn.style.display = 'inline-flex';
+      return;
+    }
+  
+    // 裁判
+    if (roles.includes('judge')) {
+      if (judgeBtn) judgeBtn.style.display = 'inline-flex';
+    }
+  
+    // 紀錄
+    if (roles.includes('record')) {
+      if (recordBtn) recordBtn.style.display = 'inline-flex';
+    }
+  })();  
+</script>
+  
+  
   <!-- ✅ 我的班表 -->
   <div class="panel">
     <h3>📅 我的班表</h3>
