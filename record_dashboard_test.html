@@ -739,10 +739,10 @@ function renderMobileByDate(games) {
 
   const grouped = groupGamesForMobile(games);
 
-  // ✅ 日期排序（修掉 5/3 跑下面的問題）
-  const dates = Object.keys(grouped).sort(
-    (a, b) => new Date(a) - new Date(b)
-  );
+  // ✅【手機版關鍵修正】日期用 Date 排序
+  const dates = Object.keys(grouped).sort((a, b) => {
+    return new Date(a) - new Date(b);
+  });
 
   dates.forEach(date => {
     // 📅 日期大格
@@ -751,14 +751,14 @@ function renderMobileByDate(games) {
     dateBox.innerHTML = `<div class="m-date-title">📅 ${date}</div>`;
     root.appendChild(dateBox);
 
+    // ✅ 同一天：依組別
     Object.keys(grouped[date]).forEach(category => {
-      // 🏷 組別中格
       const groupBox = document.createElement('div');
       groupBox.className = 'm-group-box';
       groupBox.innerHTML = `<div class="m-group-title">${category}</div>`;
       dateBox.appendChild(groupBox);
 
-      // ⏰ 賽事（已排序）
+      // ✅ 同組別：依時間（你在 groupGamesForMobile 已排好）
       grouped[date][category].forEach(g => {
         groupBox.insertAdjacentHTML('beforeend', `
           <div class="m-game-card">
@@ -768,9 +768,9 @@ function renderMobileByDate(games) {
             </div>
             <div class="m-game-field">📍 ${g.field}</div>
             <div class="m-game-roles">
-              ${renderRecordMobileRole(g, 'REC_MAIN', '紀錄員')}
-              ${renderRecordMobileRole(g, 'REC_TRAINEE', '見習紀錄')}
-              ${renderRecordMobileRole(g, 'REC_VIDEO', '影像紀錄')}
+              ${renderRecordMobileRole(g,'REC_MAIN','主紀錄')}
+              ${renderRecordMobileRole(g,'REC_TRAINEE','見習')}
+              ${renderRecordMobileRole(g,'REC_VIDEO','影像')}
             </div>
           </div>
         `);
