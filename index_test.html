@@ -211,7 +211,21 @@
     .open-link:hover {
       text-decoration: underline;
     }
-
+    
+    .welcome-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .welcome-actions .open-link {
+      background: #eef3ff;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 14px;
+      font-weight: 600;
+    }
   </style>
 </head>
 
@@ -251,9 +265,12 @@
     <div class="welcome-name" id="welcome-name"></div>
     
     <div class="welcome-line">
-      歡迎使用 <strong>出勤管理系統</strong>｜
-      <button id="open-league" class="open-link">聯盟賽制</button>｜
-      <button id="open-rules" class="open-link">裁判守則</button>｜
+      歡迎使用 <strong>出勤管理系統</strong>
+    </div>
+    
+    <div class="welcome-actions">
+      <button id="open-league" class="open-link">聯盟賽制</button>
+      <button id="open-rules"  class="open-link">裁判守則</button>
       <button id="open-record" class="open-link">紀錄原則</button>
     </div>
     
@@ -264,15 +281,18 @@
   <!-- ✅ 我的班表 -->
   <div class="panel">
     <h3>📅 我的班表</h3>
-    <div id="schedule-loading" class="schedule-empty" style="display:none;">🔄 班表載入中…</div>
     <div id="schedule-list"></div>
     <div class="tabs">
       <button onclick="setRange('week')" id="tab-week">本週</button>
       <button onclick="setRange('next')" id="tab-next">下週</button>
       <button onclick="setRange('month')" id="tab-month">本月</button>
       <span style="flex:1"></span>
+      <!--
       <a javascript:void(0)onClickViewFullSchedule()">查看完整班表 ▶</a>
+      -->
     </div>
+      
+    <div id="schedule-loading" class="schedule-empty" style="display:none;">🔄 班表載入中…</div>
 
     <!-- 裁判 -->
     <div id="judge-schedule" class="schedule-block" style="display:none;">
