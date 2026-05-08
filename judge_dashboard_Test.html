@@ -465,7 +465,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userEl) {
         userEl.textContent = session.name || '';
       }
-
+   
+      // ✅ 這三行「一定要在這一頁跑」
+      applyHeaderRole();
+      reorderNavByRole();
+      highlightCurrentNav();
+      
       // 4️⃣ 載入頁面主要資料
       loadGames();
     });
@@ -990,53 +995,6 @@ function submitSignup(){
   );
 }
 
-/*
-    function showLoading(msg = '處理中...') {
-      const overlay = document.getElementById('overlay');
-      document.getElementById('overlay-text').textContent = msg;
-      document.getElementById('overlay-ok').style.display = 'none';
-      overlay.classList.add('show');
-    }
-    
-    function showMessage(msg, reload = true) {
-      const overlay = document.getElementById('overlay');
-      document.getElementById('overlay-text').textContent = msg;
-    
-      const ok = document.getElementById('overlay-ok');
-      ok.style.display = 'inline-block';
-      ok.onclick = () => {
-        overlay.classList.remove('show');
-        if (reload) location.reload();
-      };
-    
-      overlay.classList.add('show');
-    }
-    
-    function hideOverlay() {
-      document.getElementById('overlay').classList.remove('show');
-    }
-
-function showMessage(msg, reload = true) {
-  document.getElementById('overlay-text').textContent = msg;
-  const ok = document.getElementById('overlay-ok');
-  ok.style.display = 'inline-block';
-
-  ok.onclick = () => {
-    document.getElementById('overlay').style.display = 'none';
-    if (reload) {
-      location.reload();
-    }
-  };
-
-  // ✅ 重點：這裡一定要顯示 overlay
-  document.getElementById('overlay').style.display = 'flex';
-}
-
-function hideOverlay() {
-  document.getElementById('overlay').style.display = 'none';
-}
-*/
-
 function showLoading(msg) {
   const overlay = document.getElementById('overlay');
   document.getElementById('overlay-text').textContent = msg;
@@ -1100,6 +1058,75 @@ function cancelMySignup(signupId) {
       }
     }
   );
+}
+
+//✅ ① 權限顯示（admin 全開)
+function applyHeaderRole(){
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!session.role) return;
+
+  const roles = session.role.split(',').map(r => r.trim());
+
+  const show = cls =>
+    document.querySelectorAll(cls).forEach(el => el.style.display = 'flex');
+
+  if (roles.includes('admin')) {
+    show('.nav-judge');
+    show('.nav-record');
+    show('.nav-admin');
+  } else {
+    if (roles.includes('judge')) show('.nav-judge');
+    if (roles.includes('record')) show('.nav-record');
+  }
+
+  const nameEl = document.getElementById('u_name');
+  if (nameEl) nameEl.textContent = session.name || '';
+}
+
+//✅ ② 角色順序（裁判頁先裁判）
+function reorderNavByRole(){
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!session.role) return;
+
+  const roles = session.role.split(',').map(r => r.trim());
+  const nav = document.querySelector('#header nav');
+  if (!nav) return;
+
+  const orders = [];
+
+  if (roles.includes('admin')) {
+    orders.push('.nav-admin', '.nav-judge', '.nav-record');
+  } else if (roles.includes('judge')) {
+    orders.push('.nav-judge', '.nav-record', '.nav-admin');
+  } else if (roles.includes('record')) {
+    orders.push('.nav-record', '.nav-judge', '.nav-admin');
+  }
+
+  orders.push('.nav-home', '.nav-password', '.nav-logout');
+
+  orders.forEach(sel =>
+    nav.querySelectorAll(sel).forEach(el => nav.appendChild(el))
+  );
+}
+
+//✅ ③ 高亮目前頁面（重點）
+function highlightCurrentNav(){
+  const path = location.pathname;
+
+  const map = {
+    'index.html': '.nav-home',
+    'judge_dashboard': '.nav-judge',
+    'record_dashboard': '.nav-record',
+    'admin_dashboard': '.nav-admin',
+    'change_password': '.nav-password'
+  };
+
+  Object.keys(map).forEach(key => {
+    if (path.includes(key)) {
+      document.querySelectorAll(map[key])
+        .forEach(el => el.classList.add('active'));
+    }
+  });
 }
 
 </script>
