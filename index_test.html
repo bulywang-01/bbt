@@ -389,26 +389,14 @@
 <script>
 /* ===== Header ===== */
 function loadHeader() {
-  fetch('header.html') // ✅ 如果不在同層，這裡請修正路徑
-    .then(res => {
-      if (!res.ok) {
-        throw new Error('header.html 載入失敗');
-      }
-      return res.text();
-    })
+  fetch('header.html')
+    .then(res => res.text())
     .then(html => {
       const container = document.getElementById('header-container');
       if (!container) return;
-
       container.innerHTML = html;
-
-      // ✅ header 載入成功後，再綁 overlay
-      bindAllOverlays();
     })
-    .catch(err => {
-      console.error(err);
-      console.warn('Header 未載入，overlay 不會綁定');
-    });
+    .catch(err => console.error('Header 載入失敗', err));
 }
 
 
@@ -663,14 +651,13 @@ function formatTimeOnly(t) {
 
 // overlay 
 
-
 document.addEventListener('DOMContentLoaded', () => {
 
   function bindOverlay(openId, overlayId, closeId) {
-    const openBtn  = document.getElementById(openId);
-    const overlay  = document.getElementById(overlayId);
+    const openBtn = document.getElementById(openId);
+    const overlay = document.getElementById(overlayId);
     const closeBtn = document.getElementById(closeId);
-    const box      = overlay?.querySelector('.overlay-box');
+    const box = overlay?.querySelector('.overlay-box');
 
     if (!openBtn || !overlay || !closeBtn || !box) return;
 
@@ -682,12 +669,10 @@ document.addEventListener('DOMContentLoaded', () => {
       overlay.style.display = 'none';
     });
 
-    // 點背景關閉
     overlay.addEventListener('click', () => {
       overlay.style.display = 'none';
     });
 
-    // ✅ 阻止白框冒泡（關鍵）
     box.addEventListener('click', e => {
       e.stopPropagation();
     });
@@ -697,40 +682,9 @@ document.addEventListener('DOMContentLoaded', () => {
   bindOverlay('open-rules',  'rules-overlay',  'rules-close-btn');
   bindOverlay('open-record', 'record-overlay', 'record-close-btn');
 
+  // ✅ header 也在這裡載（同一個生命週期）
+  loadHeader();
 });
-
-  
-function bindAllOverlays() {
-
-  function bindOverlay(openId, overlayId, closeId) {
-    const openBtn  = document.getElementById(openId);
-    const overlay  = document.getElementById(overlayId);
-    const closeBtn = document.getElementById(closeId);
-    const box      = overlay?.querySelector('.overlay-box');
-
-    if (!openBtn || !overlay || !closeBtn || !box) return;
-
-    openBtn.addEventListener('click', () => {
-      overlay.style.display = 'flex';
-    });
-
-    closeBtn.addEventListener('click', () => {
-      overlay.style.display = 'none';
-    });
-
-    overlay.addEventListener('click', () => {
-      overlay.style.display = 'none';
-    });
-
-    box.addEventListener('click', e => {
-      e.stopPropagation();
-    });
-  }
-
-  bindOverlay('open-league', 'league-overlay', 'league-close-btn');
-  bindOverlay('open-rules',  'rules-overlay',  'rules-close-btn');
-  bindOverlay('open-record', 'record-overlay', 'record-close-btn');
-}
 
 </script>
 
