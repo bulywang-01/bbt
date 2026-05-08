@@ -17,6 +17,11 @@ const ROLE_LABEL = {
 /* =========================
  * 工具
  * ========================= */
+// ✅ 目前登入使用者（裁判長 / admin）
+const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+const CURRENT_USER_ID = session.user_id || '';
+
+
 function formatDate(d) {
   const x = new Date(d);
   return `${x.getFullYear()}/${x.getMonth() + 1}/${x.getDate()}`;
@@ -240,12 +245,16 @@ window.openAssignJudge = function (gameId, role) {
     {
       action: 'getAssignableJudges_admin',
       game_id: gameId,
-      role: role
+      role: role,
+      user_id: CURRENT_USER_ID   // ✅ 關鍵這一行
+
     },
     res => {
       list.innerHTML = '';
 
-      if (!res || res.result !== 'ok' || !res.judges || res.judges.length === 0) {
+      // if (!res || res.result !== 'ok' || !res.judges || res.judges.length === 0) {
+      if (!res || res.result !== 'ok' || !Array.isArray(res.judges) || res.judges.length === 0) {
+
         list.innerHTML = `<div style="color:#999;text-align:center;">目前無可指派裁判</div>`;
         modal.classList.remove('hidden');
         return;
@@ -260,6 +269,8 @@ window.openAssignJudge = function (gameId, role) {
       });
 
       modal.classList.remove('hidden');
+      openJudgeModal(res.judges, gameId, role);
+
     }
   );
 };
