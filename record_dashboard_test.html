@@ -210,30 +210,41 @@ select.locked {
   text-align: center;
 }
 
+/* ===== 手機版名單強化 ===== */
+
+/* 基本名單 */
 .record-role {
-  border: 1px solid #1976d2;
-  border-radius: 8px;
-  padding: 6px 4px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #1976d2;
-  background: #fff;
+  font-size: 17px;              /* ✅ 字稍微變大 */
+  font-weight: 800;
+  line-height: 1.3;
+  padding: 8px 6px;
+  border-radius: 10px;
 }
 
+/* ✅ 自己（我報名的 / 被指派） */
 .record-role.me {
-  background: #e8f5e9;
-  border-color: #2e7d32;
-  color: #2e7d32;
+  background: #e8f5e9;          /* 淡綠底 */
+  border: 2px solid #2e7d32;    /* 明確邊框 */
+  color: #1b5e20;
 }
 
+/* ✅ 他人 */
 .record-role.other {
-  background: #f2f2f2;
-  border-color: #aaa;
-  color: #555;
+  background: #f1f1f1;
+  border: 1px solid #cfcfcf;
+  color: #424242;
 }
 
+/* ✅ 可操作（尚未報名） */
 .record-role.action {
-  cursor: pointer;
+  background: #e3f2fd;
+  border: 2px dashed #1976d2;
+  color: #0d47a1;
+}
+
+/* 可選狀態 hover 回饋 */
+.record-role.action:active {
+  background: #bbdefb;
 }
 
 /* ===== 日期大框 ===== */
