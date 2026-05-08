@@ -131,20 +131,25 @@ function mergeMySchedules(judgeGames, recordGames) {
   }
 
   // ✅ 裁判（永遠 push，不覆蓋）
-  judgeGames.forEach(g => {
-    ensure(g).roles.push({
-      type: 'judge',
-      role: g.role || null
+    judgeGames.forEach(g => {
+      // ✅ 沒有 role 的裁判資料，代表「不屬於我」，直接忽略
+      if (!g.role) return;
+    
+      ensure(g).roles.push({
+        type: 'judge',
+        role: g.role
+      });
     });
-  });
 
   // ✅ 紀錄（永遠 push，即使同一場）
-  recordGames.forEach(g => {
-    ensure(g).roles.push({
-      type: 'record',
-      role: g.record_role || null
+    recordGames.forEach(g => {
+      if (!g.record_role) return;
+    
+      ensure(g).roles.push({
+        type: 'record',
+        role: g.record_role
+      });
     });
-  });
 
   return Object.values(map);
 }
