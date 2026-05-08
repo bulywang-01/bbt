@@ -158,15 +158,6 @@ function mergeMySchedules(judgeGames, recordGames) {
  * 合併卡片 render（橫式）
  * ========================= */
 function renderMergedCards(games) {
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const gameDate = new Date(g.date.replace(/\//g, '-'));
-  gameDate.setHours(0, 0, 0, 0);
-  
-  const isExpired = (currentRange === 'month' && gameDate < today);
-    
   const box = document.getElementById('schedule-list');
   box.innerHTML = '';
 
@@ -177,7 +168,10 @@ function renderMergedCards(games) {
     REC_VIDEO:'影像紀錄'
   };
 
-  // ✅ 依日期分組
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // ✅ 依日期分組（同一天只顯示一次日期）
   const groups = {};
   games.forEach(g => {
     if (!groups[g.date]) groups[g.date] = [];
@@ -187,7 +181,7 @@ function renderMergedCards(games) {
   Object.keys(groups)
     .sort()
     .forEach(date => {
-      // ✅ 日期標題只顯示一次
+      // 日期標題
       const dateTitle = document.createElement('div');
       dateTitle.className = 'schedule-date-title';
       dateTitle.textContent = formatZhDate(date);
@@ -196,6 +190,12 @@ function renderMergedCards(games) {
       groups[date]
         .sort((a,b) => formatTimeOnly(a.time).localeCompare(formatTimeOnly(b.time)))
         .forEach(g => {
+
+          // ✅ 每一張卡片都在這裡重新算是否過期
+          const gameDate = new Date(g.date.replace(/\//g, '-'));
+          gameDate.setHours(0, 0, 0, 0);
+          const isExpired = (currentRange === 'month' && gameDate < today);
+
           const roleSpans = g.roles.map(r => {
             if (r.type === 'judge') {
               return `<span class="role role-judge">🧑‍⚖️ 裁判｜${JUDGE_ROLE[r.role] || '待指派'}</span>`;
@@ -217,6 +217,7 @@ function renderMergedCards(games) {
               ${roleSpans}
             </div>
           `;
+
           box.appendChild(card);
         });
     });
