@@ -337,7 +337,75 @@ function initHeader() {
     .then(res => res.text())
     .then(html => {
       document.getElementById('header-container').innerHTML = html;
+
+      // ✅ 關鍵：行為在這一頁跑
+      applyHeaderRole();
+      reorderNavByRole();
+      highlightCurrentNav();
     });
+}
+
+
+function applyHeaderRole(){
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!session.role) return;
+
+  const roles = session.role.split(',').map(r => r.trim());
+  const show = cls =>
+    document.querySelectorAll(cls).forEach(el => el.style.display = 'flex');
+
+  if (roles.includes('admin')) {
+    show('.nav-judge');
+    show('.nav-record');
+    show('.nav-admin');
+  } else {
+    if (roles.includes('judge')) show('.nav-judge');
+    if (roles.includes('record')) show('.nav-record');
+  }
+
+  const nameEl = document.getElementById('u_name');
+  if (nameEl) nameEl.textContent = session.name || '';
+}
+
+function reorderNavByRole(){
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!session.role) return;
+
+  const roles = session.role.split(',').map(r => r.trim());
+  const nav = document.querySelector('#header-container nav');
+  if (!nav) return;
+
+  const order = [];
+  if (roles.includes('admin')) {
+    order.push('.nav-admin', '.nav-judge', '.nav-record');
+  } else if (roles.includes('judge')) {
+    order.push('.nav-judge', '.nav-record', '.nav-admin');
+  } else if (roles.includes('record')) {
+    order.push('.nav-record', '.nav-judge', '.nav-admin');
+  }
+  order.push('.nav-home', '.nav-password', '.nav-logout');
+
+  order.forEach(sel =>
+    nav.querySelectorAll(sel).forEach(el => nav.appendChild(el))
+  );
+}
+
+function highlightCurrentNav(){
+  const path = location.pathname;
+  const map = {
+    'index': '.nav-home',
+    'judge_dashboard': '.nav-judge',
+    'record_dashboard': '.nav-record',
+    'admin_dashboard': '.nav-admin',
+    'change_password': '.nav-password'
+  };
+  Object.keys(map).forEach(k => {
+    if (path.includes(k)) {
+      document.querySelectorAll(map[k]).forEach(el =>
+        el.classList.add('active')
+      );
+    }
+  });
 }
 
 /* ===== Page / Data ===== */
