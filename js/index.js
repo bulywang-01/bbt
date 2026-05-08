@@ -138,12 +138,19 @@ function renderMergedCards(games) {
     .forEach(g => {
       const roleLines = g.roles.map(r => {
         if (r.type === 'judge') {
-          return `🧑‍⚖️ 裁判｜${JUDGE_ROLE[r.role] || '待指派'}`;
+          const JUDGE_ROLE = { PU:'主審', U1:'一壘', U2:'二壘', U3:'三壘' };
+          return `<span class="role role-judge">🧑‍⚖️ 裁判｜${JUDGE_ROLE[r.role] || '待指派'}</span>`;
         }
+      
         if (r.type === 'record') {
-          return `📝 紀錄｜${RECORD_ROLE[r.role] || '待指派'}`;
+          const RECORD_ROLE = {
+            REC_MAIN:'主紀錄',
+            REC_TRAINEE:'見習紀錄',
+            REC_VIDEO:'影像紀錄'
+          };
+          return `<span class="role role-record">📝 紀錄｜${RECORD_ROLE[r.role] || '待指派'}</span>`;
         }
-      }).join('<br>');
+      }).join(' ');
 
       const card = document.createElement('div');
       card.className = 'schedule-card';
