@@ -166,6 +166,45 @@
       font-weight: 600;
       cursor: pointer;
     }
+
+  /* 一行橫式資訊 */
+    .card-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;       /* ✅ 螢幕窄時自動換行 */
+      gap: 4px;
+      margin-top: 6px;
+      font-size: 14px;
+    }
+    
+    /* 單一資訊項 */
+    .card-item {
+      white-space: nowrap;
+    }
+    
+    /* 分隔線 */
+    .card-sep {
+      color: #999;
+    }
+    
+    /* 角色標籤 */
+    .role {
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    
+    /* 裁判 / 紀錄不同底色 */
+    .role-judge {
+      background: #e3f2fd;
+      color: #0d47a1;
+    }
+    
+    .role-record {
+      background: #e8f5e9;
+      color: #1b5e20;
+    }
   </style>
 </head>
 
@@ -437,10 +476,20 @@ function renderScheduleCards(containerId, list, type) {
     }
 
 
-    card.innerHTML = `
-      <div class="card-date">${formatZhDate(g.date)}</div>
-      <div class="card-line">⏰ ${formatTimeOnly(g.time)}｜📍 ${g.field || ''}｜${roleText}</div>
-    `;
+      card.innerHTML = `
+        <div class="card-date">${formatZhDate(g.date)}</div>
+      
+        <!-- ✅ 同一行資訊容器 -->
+        <div class="card-row">
+          <span class="card-item">⏰ ${formatTimeOnly(g.time)}</span>
+          <span class="card-sep">｜</span>
+      
+          <span class="card-item">📍 ${g.field || ''}</span>
+          <span class="card-sep">｜</span>
+      
+          <span class="card-item">${roleLines}</span>
+        </div>
+      `;
 
     wrap.appendChild(card);
   });
