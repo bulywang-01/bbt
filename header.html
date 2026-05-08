@@ -1,49 +1,141 @@
 <style>
 #header {
-  display:flex;
-  align-items:center;
-  padding:6px 12px;
   background:#fff;
   border-bottom:1px solid #ddd;
+  padding:8px 12px;
 }
+
+/* ===== 容器 ===== */
 #header nav {
-  display:flex;
-  align-items:center;
-  gap:6px;
-  width:100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
-#header a {
-  padding:10px 14px;
-  min-height:40px;
-  text-decoration:none;
-  color:#0066cc;
-  border-radius:6px;
-}
-#header a:hover { background:#f2f5fa; }
 
+/* 推使用者名稱到最右 */
 #u_name {
-  margin-left:auto;
-  font-weight:600;
+  margin-left: auto;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-/* 預設全隱藏 */
+/* ===== 膠囊按鈕（正方形）===== */
+.nav-tile {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  text-decoration: none;
+  color: #1a237e;
+  font-size: 13px;
+  font-weight: 700;
+
+  border-radius: 14px;
+  background: #f5f8ff;
+  transition: background .2s, transform .1s;
+}
+
+.nav-tile:hover {
+  background: #e8f1ff;
+  transform: translateY(-1px);
+}
+
+.nav-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.nav-text {
+  line-height: 1.05;
+  text-align: center;
+}
+
+/* ===== 角色控制（預設全部隱藏）===== */
 .nav-judge,
 .nav-record,
 .nav-admin {
-  display:none;
+  display: none;
+}
+
+/* ✅ RWD：手機可橫向滾動 */
+@media (max-width: 720px) {
+  #header nav {
+    overflow-x: auto;
+  }
 }
 </style>
 
 <div id="header">
   <nav>
-    <a href="index.html">🏠 首頁</a>
-    <a href="judge_dashboard.html" class="nav-judge">📋 裁判班表</a>
-    <a href="record_dashboard.html" class="nav-record">🎥 紀錄班表</a>
-    <a href="admin_dashboard.html" class="nav-admin">⚙️ 管理</a>
-    <a href="change_password.html">🔐 改密碼</a>
-    <a href="#" onclick="logout()">登出</a>
+
+    <!-- 首頁 -->
+    <a href="index.html" class="nav-tile">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-text">首頁</div>
+    </a>
+
+    <!-- 裁判 -->
+    <a href="judge_dashboard.html" class="nav-tile nav-judge">
+      <div class="nav-icon">🧑‍⚖️</div>
+      <div class="nav-text">裁判<br>班表</div>
+    </a>
+
+    <!-- 紀錄 -->
+    <a href="record_dashboard.html" class="nav-tile nav-record">
+      <div class="nav-icon">📝</div>
+      <div class="nav-text">紀錄<br>班表</div>
+    </a>
+
+    <!-- 管理 -->
+    <a href="admin_dashboard.html" class="nav-tile nav-admin">
+      <div class="nav-icon">⚙️</div>
+      <div class="nav-text">管理<br>介面</div>
+    </a>
+
+    <!-- 改密碼 -->
+    <a href="change_password.html" class="nav-tile">
+      <div class="nav-icon">🔐</div>
+      <div class="nav-text">修改<br>密碼</div>
+    </a>
+
+    <!-- 登出 -->
+    <a href="#" onclick="logout()" class="nav-tile">
+      <div class="nav-icon">🚪</div>
+      <div class="nav-text">登出</div>
+    </a>
+
+    <!-- 使用者名稱 -->
     <span id="u_name"></span>
+
   </nav>
 </div>
 
 <script src="js/auth.js"></script>
+<script>
+(function applyHeaderRole(){
+  const session = getSession?.();
+  if (!session) return;
+
+  const roles = (session.role || '').split(',').map(r => r.trim());
+
+  if (roles.includes('judge')) {
+    document.querySelectorAll('.nav-judge').forEach(el => el.style.display = 'flex');
+  }
+  if (roles.includes('record')) {
+    document.querySelectorAll('.nav-record').forEach(el => el.style.display = 'flex');
+  }
+  if (roles.includes('admin')) {
+    document.querySelectorAll('.nav-admin').forEach(el => el.style.display = 'flex');
+  }
+
+  const nameEl = document.getElementById('u_name');
+  if (nameEl && session.name) {
+    nameEl.textContent = session.name;
+  }
+})();
+</script>
+``
