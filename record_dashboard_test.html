@@ -167,46 +167,76 @@ select.locked {
   text-decoration: underline;
 }
 
-/* ✅ 3️⃣ CSS：直接共用「裁判長頁的 header CSS」*/
-#header-container {
+/* ===============================
+ RWD：桌機 / 手機切換（比照裁判頁）
+================================ */
+#desktopView { display: block; }
+#mobileView { display: none; }
+
+@media (max-width: 768px) {
+  #desktopView { display: none; }
+  #mobileView { display: block; padding: 12px; }
+}
+
+/* ===============================
+ 手機卡片
+================================ */
+.record-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+
+.record-header {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 12px 20px;
-  background: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
+  justify-content: space-between;
+  font-size: 18px;
+  margin-bottom: 6px;
 }
 
-#header {
+.record-main {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 12px 20px;
-  background: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-#header a {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  padding: 10px 14px;
-  color: #0066cc;
-  text-decoration: none;
-  border-radius: 6px;
-}
-
-#header a:hover {
-  background: #f2f5fa;
-}
-
-#header #u_name {
-  margin-left: auto;
-  padding: 10px 14px;
+  justify-content: space-between;
+  font-size: 16px;
   font-weight: 600;
+  margin-bottom: 6px;
 }
 
+.record-roles {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.record-role {
+  border: 1px solid #1976d2;
+  border-radius: 8px;
+  padding: 6px 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1976d2;
+  background: #fff;
+}
+
+.record-role.me {
+  background: #e8f5e9;
+  border-color: #2e7d32;
+  color: #2e7d32;
+}
+
+.record-role.other {
+  background: #f2f2f2;
+  border-color: #aaa;
+  color: #555;
+}
+
+.record-role.action {
+  cursor: pointer;
+}
 </style>
 </head>
 
@@ -219,8 +249,12 @@ select.locked {
 <div class="hint">※ 只能在「無」的欄位選擇自己</div>
 -->
 <!-- ✅ 唯一主容器 -->
-<div id="recordContainer"></div>
+<div id="desktopView">
+  <div id="recordContainer"></div>
+</div>
 
+<div id="mobileView"></div>
+  
 <script src="js/config.js"></script>
 
 <script>
@@ -281,6 +315,7 @@ function loadGames() {
 
     games = Array.isArray(res.games) ? res.games : [];
     renderRecordDashboard(games);
+    renderMobileRecord(games);   // ✅ 新增
   });
 }
 
@@ -407,6 +442,50 @@ function formatDateTW(v) {
 function formatTimeTW(v) {
   return v; // 已是 HH:mm
 }
+
+/* ===== 手機版 render（完整）===== */
+function renderMobileRecord(list) {
+  const root = document.getElementById('mobileView');
+  if (!root) return;
+  root.innerHTML = '';
+
+  const grouped = groupGames(list);
+  Object.keys(grouped).sort().forEach(date => {
+    Object.keys(grouped[date]).forEach(cat => {
+      grouped[date][cat].forEach(g => {
+        root.insertAdjacentHTML('beforeend', `
+          <div class="record-card">
+            <div class="record-header">
+              <div>📅 ${date}</div>
+              <div>⏰ ${formatTimeTW(g.time)}</div>
+            </div>
+            <div class="record-main">
+              <div>${g.away_team} vs ${g.home_team}</div>
+              <div>📍 ${g.field}</div>
+            </div>
+            <div class="record-roles">
+              ${renderRecordMobileRole(g,'REC_MAIN','主紀錄')}
+              ${renderRecordMobileRole(g,'REC_TRAINEE','見習')}
+              ${renderRecordMobileRole(g,'REC_VIDEO','影像')}
+            </div>
+          </div>
+        `);
+      });
+    });
+  });
+}
+
+function renderRecordMobileRole(g, role, label) {
+  const slot = g.record_slots?.[role];
+  if (!slot) {
+    return `<div class="record-role action" onclick="signup('${g.game_id}','${role}')">＋${label}</div>`;
+  }
+  if (slot.user_id === session.user_id) {
+    return `<div class="record-role me">${label}<br>我</div>`;
+  }
+  return `<div class="record-role other">${label}<br>${slot.name}</div>`;
+}
+
 </script>
 
 </body>
