@@ -258,7 +258,7 @@
     <div class="welcome-name" id="welcome-name"></div>
     <div class="welcome-line">
       歡迎使用 <strong>出勤管理系統</strong>｜
-      <a href="javascript:void(0)" id="open-league" style="color:#4a7ef5;font-weight:600;">聯盟賽制</a>｜
+      <span id="open-league" class="open-link">聯盟賽制</span>｜
       <a href="javascript:void(0)" id="open-rules"  style="color:#4a7ef5;font-weight:600;">裁判守則</a>｜
       <a href="javascript:void(0)" id="open-record" style="color:#4a7ef5;font-weight:600;">紀錄原則</a>
     </div>
@@ -313,13 +313,14 @@
       
       <!-- 聯盟賽制 -->
         <div id="league-overlay" class="overlay" style="display:none;">
-          <div class="overlay-box">
+          <div class="overlay-box" onclick="event.stopPropagation()">
             <h2>📘 聯盟賽制</h2>
-            <!-- 聯盟賽制內容 -->
+            <!-- 你的賽制內容 -->
             <p>（內容建置中）</p>
             <button id="league-close-btn">關閉</button>
           </div>
         </div>
+
         
         <!-- 裁判守則 -->
         <div id="rules-overlay" class="overlay" style="display:none;">
@@ -649,37 +650,23 @@ function formatTimeOnly(t) {
 // overlay 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ===== 聯盟賽制 =====
-  document.getElementById('open-league')?.addEventListener('click', () => {
-    document.getElementById('league-overlay').style.display = 'flex';
-  });
-  document.getElementById('league-close-btn')?.addEventListener('click', () => {
-    document.getElementById('league-overlay').style.display = 'none';
+  const openLeague = document.getElementById('open-league');
+  const leagueBox  = document.getElementById('league-overlay');
+  const closeBtn   = document.getElementById('league-close-btn');
+
+  openLeague.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    leagueBox.style.display = 'flex';
   });
 
-  // ===== 裁判守則 =====
-  document.getElementById('open-rules')?.addEventListener('click', () => {
-    document.getElementById('rules-overlay').style.display = 'flex';
-  });
-  document.getElementById('rules-close-btn')?.addEventListener('click', () => {
-    document.getElementById('rules-overlay').style.display = 'none';
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    leagueBox.style.display = 'none';
   });
 
-  // ===== 紀錄原則 =====
-  document.getElementById('open-record')?.addEventListener('click', () => {
-    document.getElementById('record-overlay').style.display = 'flex';
-  });
-  document.getElementById('record-close-btn')?.addEventListener('click', () => {
-    document.getElementById('record-overlay').style.display = 'none';
-  });
-
-  // ✅ 點遮罩關閉（共用）
-  document.querySelectorAll('.overlay').forEach(overlay => {
-    overlay.addEventListener('click', e => {
-      if (e.target === overlay) {
-        overlay.style.display = 'none';
-      }
-    });
+  leagueBox.addEventListener('click', () => {
+    leagueBox.style.display = 'none';
   });
 
 });
