@@ -64,6 +64,22 @@
     .role-admin { display: none; }
     .role-chief-judge { display: none; }
     .role-record-chief { display: none; }
+
+    .modal{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.4);
+      display:flex; justify-content:center; align-items:center;
+      z-index:999;
+    }
+    .modal-content{
+      background:#fff;
+      width:90%;
+      max-width:960px;        /* ✅ 不超過視窗 */
+      max-height:90vh;
+      overflow-y:auto;        /* ✅ 可上下拉 */
+      border-radius:8px;
+    }
+    .hidden{display:none;}
   </style>
 </head>
 
@@ -85,14 +101,14 @@
         <h4>📈 裁判員年度統計</h4>
         <p>裁判員年度站場數、站位分佈與月份趨勢。</p>
         <p><a href="#">個別裁判員 →</a></p>
-        <p><a href="#">裁判員年度總表 →</a></p>
+        <a href="#" onclick="openAnnualModal('judge')">裁判員年度總表 →</a>
       </div>
 
       <div class="card role-admin role-record-chief">
         <h4>📈 紀錄員年度統計</h4>
         <p>紀錄員年度出席數與角色分佈。</p>
         <p><a href="record_annual_dashboard.html">個別紀錄員 →</a></p>
-        <p><a href="record_annual_summary.html">紀錄員年度總表 →</a></p>
+        <a href="#" onclick="openAnnualModal('record')">紀錄員年度總表 →</a>
       </div>
 
       <div class="card role-admin role-chief-judge">
@@ -106,7 +122,18 @@
         <p>由紀錄長指派紀錄相關人員。</p>
         <p><a href="record_dashboard_admin.html">前往安排 →</a></p>
       </div>
+    </div>
 
+    <div id="annualModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="annualModalTitle"></h3>
+          <button onclick="closeAnnualModal()">✕</button>
+        </div>
+        <div class="modal-body" id="annualModalBody">
+          載入中…
+        </div>
+      </div>
     </div>
 
     <!-- ===== 系統管理 ===== -->
@@ -166,6 +193,72 @@
           .forEach(function (el) { el.style.display = 'block'; });
       }
     });
+
+  // 開啟 / 關閉
+  function openAnnualModal(type){
+    const map={
+      judge:{ title:'全員裁判年度總表', action:'getJudgeAnnualSummary_' },
+      record:{ title:'全員紀錄員年度總表', action:'getRecordAnnualSummary_' }
+    };
+  
+    document.getElementById('annualModalTitle').textContent = map[type].title;
+    document.getElementById('annualModalBody').innerHTML='載入中…';
+    document.getElementById('annualModal').classList.remove('hidden');
+  
+    callApi({
+      action:map[type].action,
+      year:new Date().getFullYear()
+    }, res=>{
+      if(res.result!=='ok'){
+        document.getElementById('annualModalBody').textContent=res.message;
+        return;
+      }
+      renderAnnualTable(res.list,type);
+    });
+  }
+  
+  function closeAnnualModal(){
+    document.getElementById('annualModal').classList.add('hidden');
+  }
+
+  // 年度表 + ✅ 展開角色明細
+  function renderAnnualTable(list,type){
+    const rows=list.map(u=>`
+      <tr>
+        <td>${u.name}</td>
+        <td>${u.annual}</td>
+        <td>${u.career}</td>
+        <td>
+          <button onclick="toggleDetail('${u.user_id}')">明細</button>
+        </td>
+      </tr>
+      <tr id="d-${u.user_id}" class="hidden detail-row">
+        <td colspan="4">
+          ${u.positions 
+            ? Object.entries(u.positions).map(([k,v])=>`${k}:${v}`).join('｜')
+            : Object.entries(u.roles).map(([k,v])=>`${k}:${v}`).join('｜')}
+        </td>
+      </tr>
+    `).join('');
+  
+    document.getElementById('annualModalBody').innerHTML=`
+      <table class="annual-table">
+        <thead>
+          <tr>
+            <th>姓名</th>
+            <th>年度</th>
+            <th>生涯</th>
+            <th>細節</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+  
+  function toggleDetail(uid){
+    document.getElementById('d-'+uid).classList.toggle('hidden');
+  }
   </script>
 
 </body>
