@@ -233,36 +233,56 @@
       });
     }
 
+
     /**
-     * admin_dashboard 專用：
-     * 年度總表 render 的轉接器
-     *
-     * 實際畫表的邏輯仍然沿用你原本的年度頁 JS
+     * ✅ admin 專用：年度總表 render
+     * 不依賴任何其他檔案
      */
     function renderAnnualTable(list, type) {
-      // 先確保容器存在
       const box = document.getElementById('annualModalBody');
       if (!box) return;
     
-      // ✅ 如果你原本有共用 render（最理想）
-      if (typeof window.renderAnnualSummary === 'function') {
-        window.renderAnnualSummary(list, type, box);
+      if (!list || list.length === 0) {
+        box.innerHTML = '<p style="color:#888">此年度沒有資料</p>';
         return;
       }
     
-      // ✅ 如果你是裁判 / 紀錄分開 render（也支援）
-      if (type === 'judge' && typeof window.renderJudgeAnnualTable === 'function') {
-        window.renderJudgeAnnualTable(list, box);
-        return;
+      let headerExtra = '';
+      if (type === 'judge') {
+        headerExtra = '<th>站位分佈</th>';
+      } else {
+        headerExtra = '<th>角色分佈</th>';
       }
     
-      if (type === 'record' && typeof window.renderRecordAnnualTable === 'function') {
-        window.renderRecordAnnualTable(list, box);
-        return;
-      }
+      const rows = list.map(u => {
+        const detail =
+          type === 'judge'
+            ? Object.entries(u.positions || {}).map(([k,v]) => `${k}：${v}`).join(' ｜ ')
+            : Object.entries(u.roles || {}).map(([k,v]) => `${k}：${v}`).join(' ｜ ');
     
-      // ❗ 保底（至少不再爆錯）
-      box.innerHTML = '<p style="color:#999">⚠ 找不到年度表 render 函式</p>';
+        return `
+          <tr>
+            <td>${u.name}</td>
+            <td class="num">${u.annual}</td>
+            <td class="num">${u.career}</td>
+            <td style="font-size:13px">${detail}</td>
+          </tr>
+        `;
+      }).join('');
+    
+      box.innerHTML = `
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>姓名</th>
+              <th>年度</th>
+              <th>生涯</th>
+              ${headerExtra}
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
     }
   </script>
 </body>
