@@ -268,33 +268,48 @@
     }
 
     function renderAnnualTable(list, type){
-      const rows = list.map(u => `
-        <tr>
-          <td>${u.name}</td>
-          <td class="num">${u.annual}</td>
-          <td class="num">${u.career}</td>
-          <td>
-            <button class="detail-btn"
-              onclick="toggleDetail('${u.user_id}')">詳細</button>
-          </td>
-        </tr>
-        <tr id="detail-${u.user_id}" class="detail-row hidden">
-          <td colspan="4">
-            ${(type==='judge'
-              ? Object.entries(u.positions)
-              : Object.entries(u.roles)
-            ).map(([k,v])=>\`\${k}：\${v}\`).join(' ｜ ')}
-          </td>
-        </tr>
-      `).join('');
-
+      const rows = list.map(u => {
+        // ✅ 先把明細文字算好（不要塞在模板裡）
+        let detailText = '';
+        if (type === 'judge') {
+          detailText = Object.entries(u.positions || {})
+            .map(([k,v]) => `${k}：${v}`)
+            .join(' ｜ ');
+        } else {
+          detailText = Object.entries(u.roles || {})
+            .map(([k,v]) => `${k}：${v}`)
+            .join(' ｜ ');
+        }
+    
+        return `
+          <tr>
+            <td>${u.name}</td>
+            <td class="num">${u.annual}</td>
+            <td class="num">${u.career}</td>
+            <td>
+              <button class="detail-btn"
+                onclick="toggleDetail('${u.user_id}')">詳細</button>
+            </td>
+          </tr>
+          <tr id="detail-${u.user_id}" class="detail-row hidden">
+            <td colspan="4">${detailText}</td>
+          </tr>
+        `;
+      }).join('');
+    
       document.getElementById('annualModalBody').innerHTML = `
         <table class="admin-table">
           <thead>
-            <tr><th>姓名</th><th>年度</th><th>生涯</th><th>明細</th></tr>
+            <tr>
+              <th>姓名</th>
+              <th>年度</th>
+              <th>生涯</th>
+              <th>明細</th>
+            </tr>
           </thead>
           <tbody>${rows}</tbody>
-        </table>`;
+        </table>
+      `;
     }
 
     function toggleDetail(uid){
