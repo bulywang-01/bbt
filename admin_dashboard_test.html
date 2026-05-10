@@ -233,17 +233,21 @@
       document.getElementById('annualModal').classList.add('hidden');
     }
 
-    function buildYearSelect(selectedYear){
-      const sel = document.getElementById('annualYearSelect');
-      sel.innerHTML = '';
-      const now = new Date().getFullYear();
-      for(let y=now; y>=now-5; y--){
-        const opt=document.createElement('option');
-        opt.value=y;
-        opt.textContent=y+' 年';
-        if(y===Number(selectedYear)) opt.selected=true;
-        sel.appendChild(opt);
-      }
+    function buildYearSelect(selectedYear) {
+      callApi({ action: 'getAvailableGameYears' }, res => {
+        if (res.result !== 'ok') return;
+    
+        const sel = document.getElementById('annualYearSelect');
+        sel.innerHTML = '';
+    
+        res.years.forEach(y => {
+          const opt = document.createElement('option');
+          opt.value = y;
+          opt.textContent = y + ' 年';
+          if (String(y) === String(selectedYear)) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      });
     }
 
     function reloadAnnualByYear(){
