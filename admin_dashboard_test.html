@@ -219,17 +219,17 @@
     function reloadAnnualByYear(){
       const year = document.getElementById('annualYearSelect').value;
       callApi({
-        action: currentAnnualType==='judge'
+        action: currentAnnualType === 'judge'
           ? 'getJudgeAnnualSummary_'
           : 'getRecordAnnualSummary_',
         year
-      }, res=>{
-        if(res.result!=='ok'){
-          document.getElementById('annualModalBody').textContent=res.message;
+      }, res => {
+        if (res.result !== 'ok') {
+          document.getElementById('annualModalBody').textContent = res.message;
           return;
         }
-        document.getElementById('annualModalBody').textContent =
-          '（此處顯示年度表，沿用你現有 render）';
+      
+        renderAnnualTable(res.list, currentAnnualType);
       });
     }
   </script>
