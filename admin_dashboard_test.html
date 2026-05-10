@@ -232,6 +232,38 @@
         renderAnnualTable(res.list, currentAnnualType);
       });
     }
+
+    /**
+     * admin_dashboard 專用：
+     * 年度總表 render 的轉接器
+     *
+     * 實際畫表的邏輯仍然沿用你原本的年度頁 JS
+     */
+    function renderAnnualTable(list, type) {
+      // 先確保容器存在
+      const box = document.getElementById('annualModalBody');
+      if (!box) return;
+    
+      // ✅ 如果你原本有共用 render（最理想）
+      if (typeof window.renderAnnualSummary === 'function') {
+        window.renderAnnualSummary(list, type, box);
+        return;
+      }
+    
+      // ✅ 如果你是裁判 / 紀錄分開 render（也支援）
+      if (type === 'judge' && typeof window.renderJudgeAnnualTable === 'function') {
+        window.renderJudgeAnnualTable(list, box);
+        return;
+      }
+    
+      if (type === 'record' && typeof window.renderRecordAnnualTable === 'function') {
+        window.renderRecordAnnualTable(list, box);
+        return;
+      }
+    
+      // ❗ 保底（至少不再爆錯）
+      box.innerHTML = '<p style="color:#999">⚠ 找不到年度表 render 函式</p>';
+    }
   </script>
 </body>
 </html>
