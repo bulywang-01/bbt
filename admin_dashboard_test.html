@@ -153,6 +153,14 @@
     .admin-table tbody tr:nth-child(even) {
       background: #fafafa;
     }
+
+    td.name.link {
+      cursor: pointer;
+      color: #0066cc;
+    }
+    td.name.link:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 
@@ -168,7 +176,7 @@
 
       <div class="card role-admin role-chief-judge">
         <h4>📈 裁判員年度統計</h4>
-        <p>裁判員年度站場數、站位分佈與月份趨勢。</p>
+        <p>裁判員年度站場數與站位分佈。</p>
         <a href="judge_annual_dashboard.html">個別裁判員 →</a><br>
         <a href="#" onclick="openAnnualModal('judge')">裁判員年度總表 →</a>
       </div>
@@ -209,7 +217,19 @@
       </div>
     </div>
   </div>
-
+  <button onclick="exportAnnualTable()">匯出 Excel</button>
+  <div id="personModal" class="modal hidden">
+    <div class="modal-content" style="max-width:720px">
+      <div class="modal-header">
+        <h3 id="personModalTitle"></h3>
+        <button onclick="closePersonModal()">✕</button>
+      </div>
+      <div class="modal-body" id="personModalBody">
+        載入中…
+      </div>
+    </div>
+  </div>
+  
   <!-- 年度 Modal -->
   <div id="annualModal" class="modal hidden">
     <div class="modal-content">
@@ -223,6 +243,14 @@
       <div class="modal-body" id="annualModalBody">載入中…</div>
     </div>
   </div>
+  
+  <input
+  type="text"
+  id="annualSearchInput"
+  placeholder="搜尋姓名…"
+  oninput="filterAnnualTable()"
+  style="padding:6px 8px;font-size:14px"
+  />
 
   <script>
     let currentAnnualType = null;
@@ -319,7 +347,9 @@
     
         return `
           <tr>
-            <td class="name">${u.name}</td>
+            <td class="name link" onclick="openPersonAnnual('${u.user_id}','${u.name}')">
+              ${u.name}
+            </td>
             <td class="num">${u.annual}</td>
             <td class="num">${u.career}</td>
             <td class="detail">${detailText || '—'}</td>
@@ -332,8 +362,8 @@
           <thead>
             <tr>
               <th>姓名</th>
-              <th>年度</th>
-              <th>生涯</th>
+              <th onclick="sortAnnualTable('annual')" style="cursor:pointer">年度 ⬍</th>
+              <th onclick="sortAnnualTable('career')" style="cursor:pointer">生涯 ⬍</th>
               <th>${detailTitle}</th>
             </tr>
           </thead>
@@ -341,6 +371,85 @@
         </table>
       `;
     }
+
+    function filterAnnualTable() {
+      const keyword = document.getElementById('annualSearchInput').value.trim();
+      const rows = document.querySelectorAll('.admin-table tbody tr');
+    
+      rows.forEach(tr => {
+        const nameCell = tr.querySelector('td.name');
+        if (!nameCell) return;
+    
+        const match = nameCell.textContent.includes(keyword);
+        tr.style.display = match ? '' : 'none';
+      });
+    }
+
+    // 排序用
+    let currentSortKey = null;
+    let currentSortAsc = false;
+    
+    function sortAnnualTable(key) {
+      const tbody = document.querySelector('.admin-table tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+      if (currentSortKey === key) {
+        currentSortAsc = !currentSortAsc;
+      } else {
+        currentSortKey = key;
+        currentSortAsc = false;
+      }
+    
+      rows.sort((a, b) => {
+        const av = Number(a.querySelector(`td.num.${key}`)?.textContent || 0);
+        const bv = Number(b.querySelector(`td.num.${key}`)?.textContent || 0);
+        return currentSortAsc ? av - bv : bv - av;
+      });
+    
+      rows.forEach(tr => tbody.appendChild(tr));
+    }
+
+    function openPersonAnnual(userId, name) {
+      document.getElementById('personModalTitle').textContent = name + ' 年度明細';
+      document.getElementById('personModalBody').textContent = '載入中…';
+      document.getElementById('personModal').classList.remove('hidden');
+    
+      // ✅ 使用你現有的年度 API，或你原來「個別頁」用的 API
+      callApi({
+        action: 'getPersonAnnualDetail',
+        user_id: userId,
+        year: document.getElementById('annualYearSelect').value
+      }, res => {
+        document.getElementById('personModalBody').innerHTML =
+          res.result === 'ok'
+            ? renderPersonAnnualDetail(res)
+            : res.message;
+      });
+    }
+    
+    function closePersonModal() {
+      document.getElementById('personModal').classList.add('hidden');
+    }
+
+    // 匯出Excel
+    function exportAnnualTable() {
+      const table = document.querySelector('.admin-table');
+      let csv = [];
+    
+      table.querySelectorAll('tr').forEach(tr => {
+        const row = Array.from(tr.children)
+          .map(td => `"${td.textContent.trim()}"`)
+          .join(',');
+        csv.push(row);
+      });
+    
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '年度總表.csv';
+      a.click();
+    }
+
   </script>
 </body>
 </html>
