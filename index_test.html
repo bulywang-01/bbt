@@ -250,37 +250,48 @@
         // ✅ 1. 插入 header HTML
         container.innerHTML = html;
   
-        // ✅ 2. 原本你的 admin 判斷（保留）
+        // ✅ 2. 直接在這裡做角色顯示（不再用 header.js）
         const session = (typeof getSession === 'function') ? getSession() : null;
-        if (session && session.role && session.role.includes('admin')) {
-          document.body.classList.add('is-admin');
+        if (!session || !session.role) return;
+  
+        const roles = session.role.split(',').map(r => r.trim());
+        const isAdmin = roles.includes('admin');
+  
+        const header = document.getElementById('app-header');
+        if (!header) {
+          console.error('app-header not found');
+          return;
         }
   
-        // ✅✅✅ 3. 關鍵：載入 header.js，並在載完後初始化
-        const script = document.createElement('script');
-        script.src = 'header.js';
+        // ✅ admin：全開（你現在就是這個）
+        if (isAdmin) {
+          header.querySelectorAll('.item').forEach(el => {
+            el.style.display = 'flex';
+          });
+          return;
+        }
   
-        script.onload = () => {
-          // ✅ 一定要在這裡呼叫
-          if (typeof window.initHeader === 'function') {
-            window.initHeader();
-          } else {
-            console.error('initHeader not found');
-          }
-        };
+        // 裁判 / 裁判長
+        if (roles.includes('judge') || roles.includes('chief_judge')) {
+          header.querySelectorAll('.item.judge').forEach(el => {
+            el.style.display = 'flex';
+          });
+        }
   
-        document.body.appendChild(script);
+        // 紀錄 / 紀錄長
+        if (roles.includes('record') || roles.includes('record_chief')) {
+          header.querySelectorAll('.item.record').forEach(el => {
+            el.style.display = 'flex';
+          });
+        }
       })
       .catch(err => {
         console.error('Header 載入失敗', err);
       });
-  }
-  
-  // ✅ 這一行你已經寫對了
-  document.addEventListener('DOMContentLoaded', loadHeader);
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadHeader);
   </script>
-
-
 
   <div class="main">
 
