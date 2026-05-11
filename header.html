@@ -28,7 +28,7 @@
   color: #1a237e;
 }
 
-/* Admin 橫向 */
+/* Admin 專用橫向 */
 body.is-admin .nav-tile {
   width: auto;
   height: 40px;
@@ -41,7 +41,7 @@ body.is-admin .nav-tile {
 .nav-icon { font-size: 24px; }
 .nav-text { font-size: 14px; text-align: center; }
 
-/* 預設隱藏 */
+/* 預設隱藏（由 JS 控制） */
 .nav-judge,
 .nav-record,
 .nav-admin {
@@ -51,48 +51,41 @@ body.is-admin .nav-tile {
 
 <div id="header">
   <nav>
-    <!-- 首頁 -->
-    <a href="index.html" class="nav-tile nav-home">
-      <div class="nav-icon">🏠</div>
+    <a href="index.html" class="nav-tile nav�</div>
       <div class="nav-text">首頁</div>
     </a>
 
-    <!-- 裁判班表 -->
-    <a href="judge_dashboard.html" class="nav-tile nav-judge">
-      <div class="nav-icon">🧑‍⚖️</div>
+    <a href="judge_dashboard.html" class="nav-tile nav-‍⚖️</div>
       <div class="nav-text">裁判<br>班表</div>
     </a>
 
-    <!-- 紀錄班表 -->
-    <a href="record_dashboard.html" class="nav-tile nav-record">
-      <div class="nav-icon">📝</div>
+    <a href="record_dashboard.html" class="nav-ticon">📝</div>
       <div class="nav-text">紀錄<br>班表</div>
     </a>
 
-    <!-- 管理介面 -->
-    <a href="admin_dashboard.html" class="nav-tile nav-admin">
-      <div class="nav-icon">⚙️</div>
+    <a href="admin_dashboard.html" class="nav-ticon">⚙️</div>
       <div class="nav-text">管理<br>介面</div>
     </a>
 
-    <!-- 改密碼 -->
-    <a href="change_password.html" class="nav-tile">
+    <hange_password.html
       <div class="nav-icon">🔐</div>
       <div class="nav-text">改<br>密碼</div>
     </a>
 
-    <!-- 登出 -->
-    <a href="#" class="nav-tile" onclick="logout()">
-      <div class="nav-icon">🚪</div>
-      <div class="nav-text">登出</div>
+    <a href="#" class="nav-tile" onclick="logout()div class="nav-text">登出</div>
     </a>
   </nav>
 </div>
 
-<script src="js/auth.js"></script>
-<script>
+<!-- ✅ 這一行一定要真的存在 -->
+<script src="js/auth.jscript>
 (function initHeader() {
-  const session = typeof getSession === 'function' ? getSession() : null;
+  if (typeof getSession !== 'function') {
+    console.error('getSession not found');
+    return;
+  }
+
+  const session = getSession();
   if (!session || !session.role) return;
 
   const roles = session.role.split(',').map(r => r.trim());
