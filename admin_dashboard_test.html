@@ -142,6 +142,76 @@
       gap:8px;
       align-items:center;
     }
+
+  /* ===== Admin Tile Grid（header 風格） ===== */
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-top: 12px;
+    }
+    
+    /* 單一功能 Tile */
+    .admin-tile {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,.08);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    
+    .admin-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,.14);
+    }
+    
+    /* Icon 區 */
+    .admin-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: #eef3ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+    
+    /* 文字區 */
+    .admin-text {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .admin-text .title {
+      font-size: 18px;       /* ✅ 字體放大 */
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    
+    .admin-text .desc {
+      font-size: 14px;       /* ✅ 手機也清楚 */
+      color: #555;
+      margin-top: 4px;
+    }
+    
+    /* 區塊標題加大 */
+    .section-title {
+      margin: 32px 0 12px;
+      font-size: 20px;       /* ✅ 比原本更大 */
+      font-weight: 900;
+    }
+    
+    /* 權限控制（沿用你原本） */
+    .role-admin,
+    .role-chief-judge,
+    .role-record-chief {
+      display: none;
+    }
   </style>
 </head>
 
@@ -152,47 +222,60 @@
   <h2>管理中心</h2>
   <p style="color:#666;margin-top:-6px">請依身份選擇可用的管理功能</p>
 
-  <div class="section-title">📊 班表與年度統計</div>
-  <div class="cards">
-    <div class="card role-admin role-chief-judge">
-      <h4>📈 裁判員年度統計</h4>
-      <p>裁判員年度站場數、站位分佈與月份趨勢。</p>
-      <a href="#" onclick="openAnnualModal('judge');return false;">裁判員年度總表 →</a>
-    </div>
+<div class="section-title">📊 班表與年度統計</div>
 
-    <div class="card role-admin role-record-chief">
-      <h4>📈 紀錄員年度統計</h4>
-      <p>紀錄員年度出勤與角色分佈。</p>
-      <a href="#" onclick="openAnnualModal('record');return false;">紀錄員年度總表 →</a>
-    </div>
+<div class="admin-grid">
 
-    <div class="card role-admin role-chief-judge">
-      <h4>📊 裁判員班表安排</h4>
-      <p>由裁判長進行場次與站位指派。</p>
-      <a href="judge_dashboard_admin.html">前往安排 →</a>
-    </div>
-
-    <div class="card role-admin role-record-chief">
-      <h4>📊 紀錄員班表安排</h4>
-      <p>由紀錄長指派紀錄相關人員。</p>
-      <a href="record_dashboard_admin.html">前往安排 →</a>
+  <div class="admin-tile role-admin role-chief-judge"
+       onclick="openAnnualModal('judge')">
+    <div class="admin-icon">📈</div>
+    <div class="admin-text">
+      <div class="title">全員裁判年度總表</div>
+      <div class="desc">裁判年度站場數與站位分佈</div>
     </div>
   </div>
 
-  <div class="section-title">⚙️ 系統管理</div>
-  <div class="cards">
-    <div class="card role-admin">
-      <h4>👤 帳號管理</h4>
-      <p>管理使用者帳號、角色與狀態。</p>
-      <a href="admin_users.html">前往管理 →</a>
-    </div>
-
-    <div class="card role-admin">
-      <h4>⚾ 賽事管理</h4>
-      <p>新增、編輯、刪除賽事與場次。</p>
-      <a href="admin_games.html">前往管理 →</a>
+  <div class="admin-tile role-admin role-record-chief"
+       onclick="openAnnualModal('record')">
+    <div class="admin-icon">📝</div>
+    <div class="admin-text">
+      <div class="title">全員紀錄員年度總表</div>
+      <div class="desc">紀錄員年度出勤與角色分佈</div>
     </div>
   </div>
+
+  <div class="admin-tile role-admin role-chief-judge"
+       onclick="location.href='judge_dashboard_adminlass="title">裁判員班表安排</div>
+      <div class="desc">場次與站位指派</div>
+    </div>
+  </div>
+
+  <div class="admin-tile role-admin role-record-chief"
+       onclick="location.href='record_dashboard_admin.html'title">紀錄員班表安排</div>
+      <div class="desc">指派紀錄相關人員</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section-title">⚙️ 系統管理</div>
+
+<div class="admin-grid">
+
+  <div class="admin-tile role-admin"
+       onclick="location.href='admindmin-text">
+      <div class="title">帳號管理</div>
+      <div class="desc">使用者、角色與狀態</div>
+    </div>
+  </div>
+
+  <div class="admin-tile role-admin"
+       onclick="location.href='admin_games.html>
+      <div class="title">賽事管理</div>
+      <div class="desc">新增、編輯、刪除賽事</div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ========== 年度 Modal ========== -->
