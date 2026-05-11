@@ -692,31 +692,23 @@ function loadGames() {
 
 // 儲存功能
 function updateGame(id, field, value) {
-  callApiPost({
+  callApi({
     action: 'updateGame',
     game_id: id,
     field_name: field,
     value: value
-  })
-  .then(res => {
-    // ✅ 相容多種後端回傳
+  }, function (res) {
     const ok =
       res === 'ok' ||
-      res === true ||
-      res?.result === 'ok' ||
-      res?.status === 'ok';
+      res?.result === 'ok';
 
     if (!ok) {
       console.warn('updateGame failed:', res);
-      showToast('❌ 儲存失敗');
+      showToast('❌ 儲存失敗', 2500, 'error');
       return;
     }
 
-    showToast('✅ 已儲存');
-  })
-  .catch(err => {
-    console.error(err);
-    showToast('❌ 儲存發生錯誤');
+    showToast('✅ 已儲存', 1500, 'success');
   });
 }
 
