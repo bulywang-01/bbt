@@ -98,3 +98,35 @@
     </a>
   </nav>
 </div>
+
+<script src="js/auth.js"></script>
+
+<script>
+(function () {
+  if (typeof getSession !== 'function') return;
+
+  const session = getSession();
+  if (!session || !session.role) return;
+
+  const roles = session.role.split(',').map(r => r.trim());
+  const isAdmin = roles.includes('admin');
+
+  const allItems = document.querySelectorAll('#app-header .item');
+
+  // ✅ admin = 全開（最重要，別再繞）
+  if (isAdmin) {
+    allItems.forEach(el => (el.style.display = 'flex'));
+    return;
+  }
+
+  if (roles.includes('judge') || roles.includes('chief_judge')) {
+    document.querySelectorAll('#app-header .judge')
+      .forEach(el => (el.style.display = 'flex'));
+  }
+
+  if (roles.includes('record') || roles.includes('record_chief')) {
+    document.querySelectorAll('#app-header .record')
+      .forEach(el => (el.style.display = 'flex'));
+  }
+})();
+</script>
