@@ -5,12 +5,10 @@
   <title>BBT 出勤管理系統｜首頁</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- 共用樣式 -->
   <link rel="stylesheet" href="common.css" />
-
-  <!-- Auth / Config -->
   <script src="js/auth.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/index.js"></script>
 
   <style>
     body {
@@ -41,10 +39,9 @@
 
     /* ===== Welcome ===== */
     .welcome-box {
-      position: relative;
-      padding: 26px;
+      background: linear-gradient(135deg,#f5f8ff,#fff);
       border-radius: 16px;
-      background: linear-gradient(135deg, #f5f8ff, #fff);
+      padding: 26px;
     }
 
     .welcome-role {
@@ -78,11 +75,37 @@
       gap: 6px;
     }
 
-    .pill-blue { background: #e8f1ff; color: #1a237e; }
-    .pill-green { background: #e8f5e9; color: #1b5e20; }
-    .pill-orange { background: #fff3e0; color: #e65100; }
+    .pill-blue   { background:#e8f1ff; color:#1a237e; }
+    .pill-green  { background:#e8f5e9; color:#1b5e20; }
+    .pill-orange { background:#fff3e0; color:#e65100; }
 
-    /* ===== Overlay（裁判守則 / 聯盟賽制 共用） ===== */
+    /* ===== Tabs ===== */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .tabs button {
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      background: #e9ecf4;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tabs button.active {
+      background: #4a7ef5;
+      color: #fff;
+    }
+
+    .empty {
+      color: #777;
+      font-style: italic;
+    }
+
+    /* ===== Overlay（裁判守則 / 聯盟賽制 同款）===== */
     .overlay {
       position: fixed;
       inset: 0;
@@ -105,10 +128,6 @@
     .overlay-box h2 {
       margin-top: 0;
       color: #1a237e;
-    }
-
-    .overlay-box h3 {
-      margin-top: 22px;
     }
 
     .overlay-box ul {
@@ -142,19 +161,15 @@
   <div id="header-container"></div>
 
   <script>
-    function loadHeader() {
-      fetch('header.html')
-        .then(r => r.text())
-        .then(html => {
-          document.getElementById('header-container').innerHTML = html;
-
-          const session = getSession?.();
-          if (session?.role?.includes('admin')) {
-            document.body.classList.add('is-admin');
-          }
-        });
-    }
-    loadHeader();
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('header-container').innerHTML = html;
+        const s = getSession?.();
+        if (s?.role?.includes('admin')) {
+          document.body.classList.add('is-admin');
+        }
+      });
   </script>
 
   <div class="main">
@@ -171,85 +186,126 @@
       </div>
     </div>
 
+    <!-- ✅ 我的班表 -->
+    <div class="panel">
+      <h3>📅 我的班表</h3>
+
+      <div class="tabs">
+        <button onclick="setRange('week')" id="tab-week">本週</button>
+        <button onclick="setRange('next')" id="tab-next">下週</button>
+        <button onclick="setRange('month')" id="tab-month">本月</button>
+      </div>
+
+      <div id="schedule-loading" class="empty" style="display:none;">
+        班表載入中…
+      </div>
+
+      <div id="schedule-list"></div>
+
+      <div id="no-schedule" class="empty" style="display:none;">
+        此期間尚無班表
+      </div>
+    </div>
+
     <!-- ✅ 聯盟公告 -->
     <div class="panel">
       <h3>📢 聯盟公告</h3>
       <ul>
-        <li>例行賽採七局制或 2.5 小時制。</li>
-        <li>第五局起分差達 10 分（含）提早結束。</li>
-        <li>裁判不得執法所屬母隊賽事。</li>
+        <li>例行賽七局制或 2.5 小時制。</li>
+        <li>第五局起分差達 10 分（含）提前結束。</li>
+        <li>平手且時間到，進入突破僵局制（二壘有人）。</li>
+        <li>裁判不得執法所屬母隊之正式賽。</li>
+      </ul>
+    </div>
+
+    <!-- ✅ 文件下載 -->
+    <div class="panel">
+      <h3>📄 文件下載</h3>
+      <ul>
+        <li>
+          <a href="https://bbtls.com/a03.php" target="_blank">
+            BBT 軟式棒球大聯盟賽事規章
+          </a>
+        </li>
+        <li>
+          <a href="https://bbtls.com/" target="_blank">
+            BBT 軟式棒球大聯盟官網
+          </a>
+        </li>
+        <li>
+          <a href="ctba_rules_2024.pdf" target="_blank">
+            📘 中華民國棒球規則（2024）
+          </a>
+        </li>
+        <li>
+          <a href="umpire_2man_rotation.pdf" target="_blank">
+            🧑‍⚖️ 兩人制裁判移補位（WBSC 英文版）
+          </a>
+        </li>
+        <li>
+          <a href="umpire_3man_rotation.pdf" target="_blank">
+            🧑‍⚖️ 三人制裁判移補位（CTBA 中文版）
+          </a>
+        </li>
+        <li>
+          <a href="umpire_4man_rotation.pdf" target="_blank">
+            🧑‍⚖️ 四人制裁判移補位（WBSC 英文版）
+          </a>
+        </li>
       </ul>
     </div>
   </div>
 
-  <!-- ================= 裁判守則 Overlay ================= -->
+  <!-- 裁判守則 Overlay -->
   <div id="rules-overlay" class="overlay">
     <div class="overlay-box">
       <h2>🧑‍⚖️ BBT 聯盟裁判守則</h2>
 
-      <h3>一、賽前</h3>
+      <h3>賽前</h3>
       <ul>
         <li>請穿著 BBT 裁判制服並配戴裁判帽。</li>
-        <li>主審須向雙方球隊各領取一張已填寫完成的先發單。</li>
+        <li>主審需向雙方球隊各索取一張完成之先發單。</li>
       </ul>
 
-      <h3>二、比賽中</h3>
+      <h3>比賽中</h3>
       <ul>
         <li>比賽 7 局制或 2.5 小時制。</li>
-        <li class="important">第五局起，雙方分數差達 10 分（含）以上，判定提前結束比賽。</li>
-        <li>單一投手累計超過 3 次觸身球，或 2 次頭部觸身球，須立即更換投手。</li>
+        <li class="important">第五局起分差達 10 分（含）以上提前結束。</li>
+        <li>單投手累計 3 次觸身球或 2 次頭部觸身球須更換。</li>
       </ul>
 
-      <h3>三、比賽結束</h3>
-      <ul>
-        <li>比賽用球全數收回。</li>
-        <li>請協助雙方球隊列隊，清楚告知比賽結果。</li>
-      </ul>
-
-      <button class="close-btn" onclick="closeOverlay('rules-overlay')">關閉</button>
+      <button class="close-btn" onclick="hideOverlay('rules-overlay')">關閉</button>
     </div>
   </div>
 
-  <!-- ================= 聯盟賽制 Overlay（同款） ================= -->
+  <!-- 聯盟賽制 Overlay -->
   <div id="league-overlay" class="overlay">
     <div class="overlay-box">
-      <h2>📘 BBT 聯盟賽制規定</h2>
+      <h2>📘 BBT 聯盟賽制</h2>
 
-      <h3>一、例行賽</h3>
       <ul>
-        <li>大聯盟組 8 隊、小聯盟組 8 隊。</li>
-        <li>雙循環制，共 112 場賽事。</li>
+        <li>大聯盟、小聯盟各 8 隊。</li>
+        <li>雙循環賽制，每隊 14 場例行賽。</li>
+        <li class="important">例行賽、季後賽、冠軍賽分差 10 分（含）提前結束。</li>
+        <li>裁判不得執法所屬母隊賽事。</li>
       </ul>
 
-      <h3>二、比賽時間</h3>
-      <ul>
-        <li>7 局制或 2.5 小時制。</li>
-        <li>時間到且平手，進入突破僵局制。</li>
-      </ul>
-
-      <h3>三、提前結束</h3>
-      <ul>
-        <li class="important">例行賽、季後賽、冠軍賽，分差 10 分（含）以上提前結束。</li>
-      </ul>
-
-      <h3>四、迴避原則</h3>
-      <ul>
-        <li class="important">裁判不得執法所屬母隊賽事。</li>
-      </ul>
-
-      <button class="close-btn" onclick="closeOverlay('league-overlay')">關閉</button>
+      <button class="close-btn" onclick="hideOverlay('league-overlay')">關閉</button>
     </div>
   </div>
 
   <script>
     const session = getSession?.();
     if (session) {
-      document.getElementById('welcome-name').textContent = `${session.name} 您好`;
+      document.getElementById('welcome-name').textContent =
+        session.name + ' 您好';
+
       const roleMap = {
         admin: '系統管理員',
         judge: '裁判員',
         record: '紀錄員'
       };
+
       document.getElementById('welcome-role').textContent =
         (session.role || '')
           .split(',')
@@ -258,18 +314,16 @@
           .join('／');
     }
 
-    function closeOverlay(id) {
+    function hideOverlay(id) {
       document.getElementById(id).style.display = 'none';
     }
 
-    document.getElementById('open-rules').onclick = () => {
+    document.getElementById('open-rules').onclick = () =>
       document.getElementById('rules-overlay').style.display = 'flex';
-    };
-    document.getElementById('open-league').onclick = () => {
+
+    document.getElementById('open-league').onclick = () =>
       document.getElementById('league-overlay').style.display = 'flex';
-    };
   </script>
 
 </body>
 </html>
-``
