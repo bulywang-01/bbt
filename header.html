@@ -3,54 +3,61 @@
 #app-header {
   background: #fff;
   border-bottom: 1px solid #ddd;
-  padding: 12px 18px;
+  padding: 16px 20px;
 }
 
-/* Header 容器 */
+/* 導覽列 */
 #app-header .nav {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-/* 預設：卡片式 */
+/* ===== 大卡片（所有角色共用） ===== */
 #app-header .item {
-  width: 80px;
-  height: 80px;
+  width: 96px;
+  height: 96px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  font-size: 15px;          /* ✅ 放大 */
-  font-weight: 700;
-  border-radius: 14px;
+
+  font-size: 16px;          /* ✅ 明顯放大 */
+  font-weight: 800;
+
+  border-radius: 18px;
   background: #f5f8ff;
   color: #1a237e;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+  transition: transform .15s, box-shadow .15s;
 }
 
+#app-header .item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,.18);
+}
+
+/* icon / text */
 #app-header .icon {
-  font-size: 26px;          /* ✅ 放大 */
+  font-size: 34px;          /* ✅ 很大 */
 }
 
 #app-header .text {
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
-/* 管理員：橫向工具列 */
-body.is-admin #app-header .item {
-  width: auto;
-  height: 44px;
-  flex-direction: row;
-  padding: 6px 16px;
-  border-radius: 10px;
-  background: transparent;
-  font-size: 16px;          /* ✅ 再放大一點 */
-}
+/* ===== 顏色分組 ===== */
+#app-header .home   { background:#f5f5f5; color:#333; }
+#app-header .judge  { background:#e8f1ff; color:#1a237e; }
+#app-header .record { background:#e8f5e9; color:#1b5e20; }
+#app-header .admin  { background:#ede7f6; color:#4a148c; }
 
-/* 預設隱藏（由 JS 控制） */
+/* 預設隱藏（JS 控制） */
 #app-header .judge,
 #app-header .record,
 #app-header .admin {
@@ -60,44 +67,42 @@ body.is-admin #app-header .item {
 
 <div id="app-header">
   <nav class="nav">
-    <a href="index   <span class="icon">🏠</span>
+    <a href="index.html" class="item home">
+      <span class="icon">🏠</span>
       <span class="text">首頁</span>
     </a>
 
-    <a href="hboard.html
+    <a href="judge_dashboard.html" class="item judge">
       <span class="icon">🧑‍⚖️</span>
       <span class="text">裁判<br>班表</span>
     </a>
 
-    <ecord_dashboard.html
+    <a href="record_dashboard.html" class="item record">
       <span class="icon">📝</span>
       <span class="text">紀錄<br>班表</span>
     </a>
 
-    admin_dashboard.html
+    <a href="admin_dashboard.html" class="item admin">
       <span class="icon">⚙️</span>
       <span class="text">管理<br>介面</span>
     </a>
 
-    change_password.html
+    <a href="change_password.html" class="item home">
       <span class="icon">🔐</span>
       <span class="text">修改<br>密碼</span>
     </a>
 
-    <a href="#" class="item" onclick="n>
+    <a href="#" class="item home" onclick="logout()">
+      <span class="icon">🚪</span>
       <span class="text">登出</span>
     </a>
   </nav>
 </div>
 
-<script src="jsipt>
-
+<script src="js/auth.js"></script>
 <script>
 (function () {
-  if (typeof getSession !== 'function') {
-    console.error('getSession not found');
-    return;
-  }
+  if (typeof getSession !== 'function') return;
 
   const session = getSession();
   if (!session || !session.role) return;
@@ -107,23 +112,19 @@ body.is-admin #app-header .item {
 
   const allItems = document.querySelectorAll('#app-header .item');
 
-  // ✅ 管理員：全部顯示（這是系統正確行為）
+  // ✅ admin = 全開（最重要，別再繞）
   if (isAdmin) {
-    document.body.classList.add('is-admin');
-    allItems.forEach(el => {
-      el.style.display = 'flex';
-    });
+    allItems.forEach(el => (el.style.display = 'flex'));
     return;
   }
 
-  // 非 admin 才判斷角色
   if (roles.includes('judge') || roles.includes('chief_judge')) {
-    document.querySelectorAll('#app-header .item.judge')
+    document.querySelectorAll('#app-header .judge')
       .forEach(el => (el.style.display = 'flex'));
   }
 
   if (roles.includes('record') || roles.includes('record_chief')) {
-    document.querySelectorAll('#app-header .item.record')
+    document.querySelectorAll('#app-header .record')
       .forEach(el => (el.style.display = 'flex'));
   }
 })();
