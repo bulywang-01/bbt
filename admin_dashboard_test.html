@@ -40,27 +40,81 @@
       gap: 18px;
     }
 
-    /* ===== Tile（header 風格） ===== */
+    /* ===== 管理中心卡片區背景 ===== */
+    .cards {
+      background: linear-gradient(180deg, #f7f9fc 0%, #f1f4f9 100%);
+      padding: 24px;
+      border-radius: 20px;
+    }
+    
+    /* ===== 功能卡片（升級版） ===== */
     .card {
+      position: relative;
       background: #ffffff;
-      border-radius: 14px;
-      min-height: 96px;
+      border-radius: 18px;
+      min-height: 110px;
+      font-size: 18px;
+      font-weight: 800;
+      color: #2c2c2c;
+    
       display: flex;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      font-size: 18px;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(0,0,0,.08);
-      transition: transform .15s ease, box-shadow .15s ease;
-      user-select: none;
+    
+      box-shadow:
+        0 6px 18px rgba(0,0,0,.08),
+        0 2px 6px rgba(0,0,0,.04);
+    
+      transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+    }
+    
+    /* hover 回饋更明顯 */
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 12px 28px rgba(0,0,0,.12),
+        0 4px 10px rgba(0,0,0,.06);
+    }
+    
+    /* ===== 左上角色條（專業感關鍵） ===== */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      width: 8px;
+      height: 32px;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #6a8cff, #8fb0ff);
+    }
+    
+    /* ===== 不同類型卡片給不同色調 ===== */
+    .card:nth-child(1)::before { background: linear-gradient(#6a8cff, #8fb0ff); } /* 裁判年度 */
+    .card:nth-child(2)::before { background: linear-gradient(#ff9f6a, #ffc29f); } /* 紀錄年度 */
+    .card:nth-child(3)::before { background: linear-gradient(#6ad1a8, #9ee5c8); } /* 裁判安排 */
+    .card:nth-child(4)::before { background: linear-gradient(#8b7cf6, #b5abff); } /* 紀錄安排 */
+    .card:nth-child(5)::before { background: linear-gradient(#f6c36a, #ffe0a3); } /* 帳號 */
+    .card:nth-child(6)::before { background: linear-gradient(#6adcf6, #a6efff); } /* 賽事 */
+    
+    /* ===== Emoji + 文字間距優化 ===== */
+    .card {
+      gap: 10px;
+      line-height: 1.25;
+    }
+    
+    /* ===== 手機版微調 ===== */
+    @media (max-width: 640px) {
+      .cards {
+        padding: 16px;
+      }
+      .card {
+        min-height: 96px;
+        font-size: 17px;
+      }
     }
 
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(0,0,0,.14);
-    }
 
     /* ===== Modal ===== */
     .modal {
