@@ -178,73 +178,89 @@
       font-weight: 600;
     }
 
-  /* ===== 管理中心：Header 同風格卡片 ===== */
-
-.cards {
-  background: none;               /* header 沒有整塊底色 */
-  padding: 0;
-}
-
-/* 單一卡片 */
-.card {
-  background: #f4f6fb;            /* ✅ 淡色底 */
-  border-radius: 22px;            /* ✅ 大圓角 */
-  min-height: 96px;
-
-  font-size: 18px;
-  font-weight: 700;
-  color: #2b2b2b;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-
-  box-shadow: none;               /* ✅ header 是扁平的 */
-  border: 1px solid #e3e7f0;      /* ✅ 淡邊框 */
-
-  transition:
-    background-color .15s ease,
-    border-color .15s ease;
-}
-
-  /* hover：像 header 那樣微亮 */
-  .card:hover {
-    background: #eef2ff;
-    border-color: #cfd8ff;
-    transform: none;                /* ✅ 不浮起 */
-    box-shadow: none;
-  }
-  
-  /* emoji / icon 與文字距離 */
-  .card {
-    gap: 10px;
-    line-height: 1.3;
-  }
-  
-  /* ===== 不同功能給不同淡色（像 header icon 背板） ===== */
-  .card:nth-child(1) { background: #eef2ff; } /* 裁判年度 */
-  .card:nth-child(2) { background: #fff1e6; } /* 紀錄年度 */
-  .card:nth-child(3) { background: #eefaf4; } /* 裁判安排 */
-  .card:nth-child(4) { background: #f1efff; } /* 紀錄安排 */
-  .card:nth-child(5) { background: #fff9e6; } /* 帳號 */
-  .card:nth-child(6) { background: #e6f7ff; } /* 賽事 */
-  
-  /* hover 時仍保持同色系 */
-  .card:nth-child(1):hover { background: #e3e9ff; }
-  .card:nth-child(2):hover { background: #ffe7d4; }
-  .card:nth-child(3):hover { background: #e3f6ed; }
-  .card:nth-child(4):hover { background: #e5e2ff; }
-  .card:nth-child(5):hover { background: #fff2cc; }
-  .card:nth-child(6):hover { background: #d9f1ff; }
-  
-  /* ===== 手機版微調 ===== */
-  @media (max-width: 640px) {
-    .card {
-      min-height: 88px;
-      font-size: 17px;
+    /* =====================================================
+       管理中心卡片：Header 同 FU + 三類顏色 + 縮小尺寸
+       ===================================================== */
+    
+    /* Grid 不要撐太開 */
+    .cards {
+      gap: 14px;
     }
-  }
+    
+    /* 卡片本體：接近正方形 */
+    .card {
+      background: #f4f6fb;        /* 預設淡底 */
+      border-radius: 18px;        /* header 同級圓角 */
+      min-height: 84px;           /* ✅ 明顯縮小 */
+      padding: 12px;
+    
+      font-size: 16px;            /* ✅ 字縮一點 */
+      font-weight: 700;
+      color: #2b2b2b;
+    
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    
+      border: 1px solid #e3e7f0;
+      box-shadow: none;           /* ✅ 扁平 */
+      transition: background-color .15s ease, border-color .15s ease;
+    }
+    
+    /* hover：像 header 一樣微亮 */
+    .card:hover {
+      background: #eef2ff;
+      border-color: #cfd8ff;
+    }
+    
+    /* =====================================================
+       三大類顏色分組（靠順序，不改 HTML）
+       1-2：年度總表
+       3-4：班表
+       5-6：其它
+       ===================================================== */
+    
+    /* 🟦 年度總表 */
+    .card:nth-child(1),
+    .card:nth-child(2) {
+      background: #eef2ff;
+    }
+    .card:nth-child(1):hover,
+    .card:nth-child(2):hover {
+      background: #e3e9ff;
+    }
+    
+    /* 🟩 班表 */
+    .card:nth-child(3),
+    .card:nth-child(4) {
+      background: #eefaf4;
+    }
+    .card:nth-child(3):hover,
+    .card:nth-child(4):hover {
+      background: #e3f6ed;
+    }
+    
+    /* 🟨 其它（帳號 / 賽事） */
+    .card:nth-child(5),
+    .card:nth-child(6) {
+      background: #fff9e6;
+    }
+    .card:nth-child(5):hover,
+    .card:nth-child(6):hover {
+      background: #fff2cc;
+    }
+    
+    /* =====================================================
+       手機版再壓一點，像 header 那樣密
+       ===================================================== */
+    @media (max-width: 640px) {
+      .card {
+        min-height: 76px;
+        font-size: 15px;
+        padding: 10px;
+      }
+    }
   </style>
 </head>
 
