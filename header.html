@@ -91,25 +91,31 @@ body.is-admin #app-header .item {
 </div>
 
 <script src="js/auth.js"></script>
+
 <script>
 (function () {
   if (typeof getSession !== 'function') return;
-  const s = getSession();
-  if (!s || !s.role) return;
 
-  const roles = s.role.split(',').map(r => r.trim());
+  const session = getSession();
+  if (!session || !session.role) return;
 
-  if (roles.includes('judge') || roles.includes('chief_judge')) {
+  const roles = session.role.split(',').map(r => r.trim());
+  const isAdmin = roles.includes('admin');
+
+  // ✅ 裁判（裁判 / 裁判長 / 管理員）
+  if (isAdmin || roles.includes('judge') || roles.includes('chief_judge')) {
     document.querySelectorAll('#app-header .judge')
       .forEach(el => el.style.display = 'flex');
   }
 
-  if (roles.includes('record') || roles.includes('record_chief')) {
+  // ✅ 紀錄（紀錄 / 紀錄長 / 管理員）
+  if (isAdmin || roles.includes('record') || roles.includes('record_chief')) {
     document.querySelectorAll('#app-header .record')
       .forEach(el => el.style.display = 'flex');
   }
 
-  if (roles.includes('admin')) {
+  // ✅ 管理介面（僅管理員）
+  if (isAdmin) {
     document.body.classList.add('is-admin');
     document.querySelectorAll('#app-header .admin')
       .forEach(el => el.style.display = 'flex');
