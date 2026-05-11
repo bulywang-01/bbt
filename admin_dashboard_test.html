@@ -88,6 +88,14 @@
       height: 32px;
       border-radius: 6px;
       background: linear-gradient(180deg, #6a8cff, #8fb0ff);
+      
+      font-size: 19px;        /* ✅ 桌機明顯放大 */
+      font-weight: 800;
+      letter-spacing: .5px;  /* ✅ header 感的小細節 */
+      
+      gap: 12px;  /* emoji / icon 與文字距離 */
+
+
     }
     
     /* ===== 不同類型卡片給不同色調 ===== */
@@ -194,8 +202,6 @@
       min-height: 84px;           /* ✅ 明顯縮小 */
       padding: 12px;
     
-      font-size: 16px;            /* ✅ 字縮一點 */
-      font-weight: 700;
       color: #2b2b2b;
     
       display: flex;
@@ -206,6 +212,13 @@
       border: 1px solid #e3e7f0;
       box-shadow: none;           /* ✅ 扁平 */
       transition: background-color .15s ease, border-color .15s ease;
+      
+      font-size: 19px;        /* ✅ 桌機明顯放大 */
+      font-weight: 800;
+      letter-spacing: .5px;  /* ✅ header 感的小細節 */
+    
+      gap: 12px;  /* emoji / icon 與文字距離 */
+
     }
     
     /* hover：像 header 一樣微亮 */
@@ -257,8 +270,9 @@
     @media (max-width: 640px) {
       .card {
         min-height: 76px;
-        font-size: 15px;
+        font-size: 16px;
         padding: 10px;
+        gap: 12px;  /* emoji / icon 與文字距離 */
       }
     }
   </style>
