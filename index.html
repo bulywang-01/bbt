@@ -236,16 +236,38 @@
   <div id="header-container"></div>
 
   <script>
-    fetch('header.html')
-      .then(r => r.text())
-      .then(html => {
-        document.getElementById('header-container').innerHTML = html;
-        const s = getSession?.();
-        if (s?.role?.includes('admin')) {
-          document.body.classList.add('is-admin');
-        }
-      });
-  </script>
+    function loadHeader() {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+          // 1️⃣ 插入 header
+          document.getElementById('header-container').innerHTML = html;
+    
+          // 2️⃣ 設定身分 → 只影響 body class
+          const session = (typeof getSession === 'function') ? getSession() : null;
+          document.body.classList.remove(
+            'role-admin','role-judge','role-record'
+          );
+    
+          if (session && session.role) {
+            const roles = session.role.split(',').map(r => r.trim());
+    
+            if (roles.includes('admin')) {
+              document.body.classList.add('role-admin');
+            }
+            if (roles.includes('judge') || roles.includes('chief_judge')) {
+              document.body.classList.add('role-judge');
+            }
+            if (roles.includes('record') || roles.includes('record_chief')) {
+              document.body.classList.add('role-record');
+            }
+          }
+        })
+        .catch(err => console.error('Header 載入失敗', err));
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadHeader);
+</script>
 
   <div class="main">
 
