@@ -1,228 +1,154 @@
 <style>
+/* ================= Header 基本 ================= */
 #header {
   background:#fff;
   border-bottom:1px solid #ddd;
   padding:8px 12px;
 }
 
-/* ===== 容器 ===== */
 #header nav {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+  display:flex;
+  gap:10px;
+  align-items:center;
 }
 
-/* 推使用者名稱到最右 */
-#u_name {
-  margin-left: auto;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* ===== 膠囊按鈕（正方形）===== */
+/* ================= Nav Tile（預設：卡片） ================= */
 .nav-tile {
-  width: 72px;
-  height: 72px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-
-  text-decoration: none;
-  color: #1a237e;
-  font-size: 13px;
-  font-weight: 700;
-
-  border-radius: 14px;
-  background: #f5f8ff;
-  transition: background .2s, transform .1s;
+  width:72px;
+  height:72px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  text-decoration:none;
+  color:#1a237e;
+  font-size:13px;
+  font-weight:700;
+  border-radius:14px;
+  background:#f5f8ff;
+  transition:background .2s, transform .1s;
 }
 
 .nav-tile:hover {
-  background: #e8f1ff;
-  transform: translateY(-1px);
+  background:#e8f1ff;
+  transform:translateY(-1px);
 }
 
 .nav-icon {
-  font-size: 24px;
-  line-height: 1;
+  font-size:24px;
+  line-height:1;
 }
 
 .nav-text {
-  font-size: 16px;
-  line-height: 1.05;
-  text-align: center;
+  font-size:16px;
+  line-height:1.05;
+  text-align:center;
 }
 
-/* ===== 角色控制（預設全部隱藏）===== */
-.nav-judge,
-.nav-record,
-.nav-admin {
-  display: none;
-}
-
-/* ✅ RWD：手機可橫向滾動 */
-@media (max-width: 720px) {
-  #header nav {
-    overflow-x: auto;
-  }
-}
-
+/* ================= Active ================= */
 .nav-tile.active {
-  box-shadow: 0 0 0 2px #4a7ef5 inset;
-  background: #dfeaff;
+  box-shadow:0 0 0 2px #4a7ef5 inset;
+  background:#dfeaff;
 }
 
-/* 裁判 */
-.nav-judge {
-  background: #e8f1ff;
-  color: #1a237e;
+/* ================= Role Colors ================= */
+.nav-home { background:#f5f5f5; color:#333; }
+.nav-password { background:#f5f5f5; color:#333; }
+.nav-logout { background:#f5f5f5; color:#333; }
+.nav-judge { background:#e8f1ff; color:#1a237e; display:none; }
+.nav-record { background:#e8f5e9; color:#1b5e20; display:none; }
+.nav-admin { background:#ede7f6; color:#4a148c; display:none; }
+
+/* ================= ✅ Admin：切換成後台 Navbar 模式 ================= */
+body.is-admin #header nav {
+  gap:6px;
 }
 
-/* 紀錄 */
-.nav-record {
-  background: #e8f5e9;
-  color: #1b5e20;
+body.is-admin .nav-tile {
+  width:auto;
+  height:40px;
+  flex-direction:row;
+  padding:6px 12px;
+  border-radius:8px;
+  background:transparent;
+  box-shadow:none;
 }
 
-/* 管理 */
-.nav-admin {
-  background: #ede7f6;
-  color: #4a148c;
+body.is-admin .nav-icon {
+  font-size:18px;
 }
 
-/* 其他（首頁 / 改密碼 / 登出） */
-.nav-home,
-.nav-password,
-.nav-logout {
-  background: #f5f5f5;
-  color: #333;
+body.is-admin .nav-text {
+  font-size:14px;
 }
 
-/* ===============================
-   ✅ 管理員：切換成 navbar 風格
-   =============================== */
-  body.is-admin #header nav {
-    gap: 6px;
-  }
-  
-  body.is-admin .nav-tile {
-    width: auto;
-    height: 40px;
-    flex-direction: row;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background: transparent;
-    font-size: 14px;
-  }
-  
-  body.is-admin .nav-icon {
-    font-size: 18px;
-  }
-  
-  body.is-admin .nav-text {
-    font-size: 14px;
-  }
-  
-  body.is-admin .nav-tile:hover {
-    background: #f3f4f6;
-  }
+body.is-admin .nav-tile:hover {
+  background:#f3f4f6;
+  transform:none;
+}
 
+/* ================= RWD ================= */
+@media (max-width:720px) {
+  #header nav { overflow-x:auto; }
+}
 </style>
 
 <div id="header">
   <nav>
-
-    <!-- 🏠 首頁 -->
     <a href="index.html" class="nav-tile nav-home">
       <div class="nav-icon">🏠</div>
       <div class="nav-text">首頁</div>
     </a>
 
-    <!-- 🧑‍⚖️ 裁判班表 -->
     <a href="judge_dashboard.html" class="nav-tile nav-judge">
       <div class="nav-icon">🧑‍⚖️</div>
       <div class="nav-text">裁判<br>班表</div>
     </a>
 
-    <!-- 📝 紀錄班表 -->
     <a href="record_dashboard.html" class="nav-tile nav-record">
       <div class="nav-icon">📝</div>
       <div class="nav-text">紀錄<br>班表</div>
     </a>
 
-    <!-- ⚙️ 管理介面 -->
     <a href="admin_dashboard.html" class="nav-tile nav-admin">
       <div class="nav-icon">⚙️</div>
       <div class="nav-text">管理<br>介面</div>
     </a>
 
-    <!-- 🔐 改密碼 -->
     <a href="change_password.html" class="nav-tile nav-password">
       <div class="nav-icon">🔐</div>
       <div class="nav-text">改<br>密碼</div>
     </a>
 
-    <!-- 🚪 登出 -->
     <a href="#" onclick="logout()" class="nav-tile nav-logout">
       <div class="nav-icon">🚪</div>
       <div class="nav-text">登出</div>
     </a>
-
-    <!-- 使用者名稱（靠右）
-    <span id="u_name"></span> -->
-
   </nav>
 </div>
 
-
 <script src="js/auth.js"></script>
-
 <script>
-(function highlightCurrentNav(){
-  const path = location.pathname;
-
-  const map = {
-    'index.html': 'nav-home',
-    'judge_dashboard.html': 'nav-judge',
-    'record_dashboard.html': 'nav-record',
-    'admin_dashboard.html': 'nav-admin',
-    'change_password.html': 'nav-password'
-  };
-
-  Object.keys(map).forEach(file => {
-    if (path.endsWith(file)) {
-      document.querySelectorAll(`.${map[file]}`).forEach(el => {
-        el.classList.add('active');
-      });
-    }
-  });
-})();
-
-(function reorderNavByRole() {
+(function initHeader(){
   const session = getSession?.();
   if (!session) return;
 
-  const roles = (session.role || '').split(',').map(r => r.trim());
-  const nav = document.querySelector('#header nav');
-  if (!nav) return;
-
-  const orderMap = [];
-
-  if (roles.includes('admin')) {
-    orderMap.push('.nav-admin', '.nav-judge', '.nav-record');
-  } else if (roles.includes('judge')) {
-    orderMap.push('.nav-judge', '.nav-record', '.nav-admin');
-  } else if (roles.includes('record')) {
-    orderMap.push('.nav-record', '.nav-judge', '.nav-admin');
+  // ✅ admin 樣式切換
+  if (session.role && session.role.includes('admin')) {
+    document.body.classList.add('is-admin');
   }
 
-  // 固定放在最後
-  orderMap.push('.nav-home', '.nav-password', '.nav-logout');
-
-  orderMap.forEach(selector => {
-    nav.querySelectorAll(selector).forEach(el => nav.appendChild(el));
-  });
+  // ✅ 顯示角色按鈕
+  const roles = (session.role || '').split(',').map(r => r.trim());
+  if (roles.includes('judge')) {
+    document.querySelectorAll('.nav-judge').forEach(el => el.style.display='flex');
+  }
+  if (roles.includes('record')) {
+    document.querySelectorAll('.nav-record').forEach(el => el.style.display='flex');
+  }
+  if (roles.includes('admin')) {
+    document.querySelectorAll('.nav-admin').forEach(el => el.style.display='flex');
+  }
 })();
 </script>
