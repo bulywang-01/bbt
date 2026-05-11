@@ -1,236 +1,75 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>BBT 出勤管理系統｜首頁</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="stylesheet" href="common.css">
+  <!-- 共用樣式 -->
+  <link rel="stylesheet" href="common.css" />
 
-<!-- ================= Script ================= -->
+  <!-- Auth / Config -->
   <script src="js/auth.js"></script>
   <script src="js/config.js"></script>
-  <script src="js/index.js"></script>
 
   <style>
-    body { margin:0; background:#f5f6f8; font-family:system-ui,-apple-system; }
-    .main { max-width:1100px; margin:auto; padding:24px; }
+    body {
+      margin: 0;
+      background: #f5f6f8;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 24px;
+    }
+
     .panel {
-      background:#fff; border-radius:14px; padding:22px;
-      margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,.08);
-    }
-    h3 { margin-top:0; border-left:4px solid #4a7ef5; padding-left:10px; }
-
-    /* ===== Welcome ===== */
-    .welcome-box { position:relative; padding:26px; border-radius:16px;
-      background:linear-gradient(135deg,#f5f8ff,#fff); }
-    .welcome-role { font-size:22px; font-weight:800; color:#1a237e; }
-    .welcome-name { font-size:18px; font-weight:600; margin:6px 0; }
-    .welcome-bg {
-      position:absolute; right:18px; bottom:6px;
-      font-size:110px; font-weight:900; opacity:.06;
-    }
-
-    /* ===== Schedule ===== */
-    .schedule-block { margin-bottom:16px; }
-    .schedule-title { font-weight:700; margin-bottom:6px; }
-    .date-block { margin:10px 0; }
-    .date { font-weight:700; color:#1a237e; }
-    .item { padding:4px 0; font-size:14px; }
-
-    .empty { color:#777; font-style:italic; }
-
-    /* ===== Tabs ===== */
-    .tabs { display:flex; gap:8px; margin-bottom:10px; }
-    .tabs button {
-      border:none; padding:8px 14px; border-radius:6px;
-      background:#e9ecf4; font-weight:600; cursor:pointer;
-    }
-    .tabs button.active { background:#4a7ef5; color:#fff; }
-
-    /* ===== Schedule Cards ===== */
-    .schedule-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 14px;
-      margin-top: 10px;
-    }
-    
-    .schedule-card {
       background: #fff;
       border-radius: 14px;
-      padding: 14px 16px;
-      box-shadow: 0 3px 12px rgba(0,0,0,.10);
-      font-size: 14px;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    h3 {
+      margin-top: 0;
+      border-left: 4px solid #4a7ef5;
+      padding-left: 10px;
+    }
+
+    /* ===== Welcome ===== */
+    .welcome-box {
       position: relative;
+      padding: 26px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f5f8ff, #fff);
     }
-    
-    /* 裁判 / 紀錄配色 */
-    .schedule-card.judge {
-      border-left: 6px solid #4a7ef5;
-    }
-    .schedule-card.record {
-      border-left: 6px solid #2e7d32;
-    }
-    
-    /* 日期 */
-    .card-date {
-      font-size: 15px;
+
+    .welcome-role {
+      font-size: 22px;
       font-weight: 800;
       color: #1a237e;
-      margin-bottom: 6px;
-    }
-    
-    /* 每一行 */
-    .card-line {
-      margin: 3px 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    /* 今日 / 明日 */
-    .card-badge {
-      position: absolute;
-      top: 10px;
-      right: 12px;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 20px;
-      color: #fff;
-    }
-    .badge-today { background: #d32f2f; }
-    .badge-tomorrow { background: #f57c00; }
-    
-    /* 空狀態 */
-    .schedule-empty {
-      color: #777;
-      font-style: italic;
-      margin-top: 8px;
     }
 
-   
-    /* ===== Role Buttons ===== */
-    .role-btn {
-      flex: 1;
-      padding: 14px;
-      border-radius: 10px;
-      border: none;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    
-    .role-btn.judge {
-      background: #eaf1ff;
-      color: #1a237e;
-    }
-    
-    .role-btn.record {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-    
-    .role-btn:hover {
-      opacity: 0.9;
-    }
-    
-    .close-btn {
-      margin-top: 16px;
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #e0e0e0;
+    .welcome-name {
+      font-size: 18px;
       font-weight: 600;
-      cursor: pointer;
+      margin: 6px 0;
     }
 
-  /* 一行橫式資訊 */
-    .card-row {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;       /* ✅ 螢幕窄時自動換行 */
-      gap: 4px;
-      margin-top: 6px;
-      font-size: 14px;
-    }
-    
-    /* 單一資訊項 */
-    .card-item {
-      white-space: nowrap;
-    }
-    
-    /* 分隔線 */
-    .card-sep {
-      color: #999;
-    }
-    
-    /* 角色標籤 */
-    .role {
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    
-    /* 裁判 / 紀錄不同底色 */
-    .role-judge {
-      background: #e3f2fd;
-      color: #0d47a1;
-    }
-    
-    .role-record {
-      background: #e8f5e9;
-      color: #1b5e20;
-    }
-
-  /* 已過期的班表（本月） */
-    .schedule-card.expired {
-      background-color: #f2f2f2;
-      color: #9e9e9e;
-    }
-    
-    .schedule-card.expired .role {
-      opacity: 0.6;
-    }
-    
-    .schedule-card.expired .sep {
-      color: #bdbdbd;
-    }
-
-    .open-link {
-      background: none;
-      border: none;
-      padding: 0;
-      color: #4a7ef5;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .open-link:hover {
-      text-decoration: underline;
-    }
-    
     .welcome-actions {
       margin-top: 14px;
       display: flex;
-      gap: 16px;
+      gap: 12px;
       flex-wrap: wrap;
     }
-    
-    .welcome-actions .open-link {
-      background: #eef3ff;
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    
+
     .pill {
       border: none;
       border-radius: 999px;
-      padding: 8px 14px;
+      padding: 8px 16px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
@@ -238,549 +77,199 @@
       align-items: center;
       gap: 6px;
     }
-    
-    /* 不同功能顏色 */
-    .pill-blue {
-      background: #e8f1ff;
-      color: #1a237e;
-    }
-    
-    .pill-green {
-      background: #e8f5e9;
-      color: #1b5e20;
-    }
-    
-    .pill-orange {
-      background: #fff3e0;
-      color: #e65100;
-    }
-    
-    .pill:hover {
-      opacity: 0.85;
+
+    .pill-blue { background: #e8f1ff; color: #1a237e; }
+    .pill-green { background: #e8f5e9; color: #1b5e20; }
+    .pill-orange { background: #fff3e0; color: #e65100; }
+
+    /* ===== Overlay（裁判守則 / 聯盟賽制 共用） ===== */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
     }
 
+    .overlay-box {
+      width: min(900px, 92vw);
+      max-height: 92vh;
+      background: #fff;
+      border-radius: 14px;
+      padding: 28px;
+      overflow-y: auto;
+    }
+
+    .overlay-box h2 {
+      margin-top: 0;
+      color: #1a237e;
+    }
+
+    .overlay-box h3 {
+      margin-top: 22px;
+    }
+
+    .overlay-box ul {
+      padding-left: 20px;
+      line-height: 1.7;
+    }
+
+    .overlay-box li.important {
+      color: #c62828;
+      font-weight: 700;
+    }
+
+    .close-btn {
+      margin-top: 24px;
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #4a7ef5;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
   </style>
 </head>
 
 <body>
 
-<div id="header-container"></div>
+  <!-- Header -->
+  <div id="header-container"></div>
 
-<!-- ✅ 雙重身份：查看完整班表選擇框 -->
-<div id="fullScheduleRoleModal" class="overlay" style="display:none;">
-  <div class="overlay-box">
-    <h3>查看完整班表</h3>
-    <p style="color:#555;margin-bottom:16px;">
-      請選擇要查看的班表類型
-    </p>
+  <script>
+    function loadHeader() {
+      fetch('header.html')
+        .then(r => r.text())
+        .then(html => {
+          document.getElementById('header-container').innerHTML = html;
 
-    <div style="display:flex;gap:12px;">
-      <button onclick="goFullSchedule('judge')" class="role-btn judge">
-        🧑‍⚖️ 裁判班表
-      </button>
-      <button onclick="goFullSchedule('record')" class="role-btn record">
-        📝 紀錄班表
-      </button>
+          const session = getSession?.();
+          if (session?.role?.includes('admin')) {
+            document.body.classList.add('is-admin');
+          }
+        });
+    }
+    loadHeader();
+  </script>
+
+  <div class="main">
+
+    <!-- ✅ Welcome -->
+    <div class="panel welcome-box">
+      <div class="welcome-role" id="welcome-role"></div>
+      <div class="welcome-name" id="welcome-name"></div>
+      <div>歡迎使用 <strong>BBT 出勤管理系統</strong></div>
+
+      <div class="welcome-actions">
+        <button id="open-league" class="pill pill-blue">📘 聯盟賽制</button>
+        <button id="open-rules" class="pill pill-green">🧑‍⚖️ 裁判守則</button>
+      </div>
     </div>
 
-    <button onclick="closeFullScheduleModal()" class="close-btn">
-      取消
-    </button>
-  </div>
-</div>
-
-
-<div class="main">
-
-  <!-- ✅ Welcome -->
-  <div class="panel welcome-box">
-    <div class="welcome-role" id="welcome-role"></div>
-    <div class="welcome-name" id="welcome-name"></div>
-    
-    <div class="welcome-line">
-      歡迎使用 <strong>出勤管理系統</strong>
+    <!-- ✅ 聯盟公告 -->
+    <div class="panel">
+      <h3>📢 聯盟公告</h3>
+      <ul>
+        <li>例行賽採七局制或 2.5 小時制。</li>
+        <li>第五局起分差達 10 分（含）提早結束。</li>
+        <li>裁判不得執法所屬母隊賽事。</li>
+      </ul>
     </div>
-    
-    <div class="welcome-actions">
-      <button id="open-league" class="pill pill-blue">
-        📘 聯盟賽制
-      </button>
-      <button id="open-rules" class="pill pill-green">
-        🧑‍⚖️ 裁判守則
-      </button>
-      <button id="open-record" class="pill pill-orange">
-        📝 紀錄原則
-      </button>
-    </div>
-    
-    <div class="welcome-bg" id="license-bg"></div>
   </div>
 
-<!-- 在 welcome 區 JS 後面 -->
-<script>
-  (function controlRulePills(){
+  <!-- ================= 裁判守則 Overlay ================= -->
+  <div id="rules-overlay" class="overlay">
+    <div class="overlay-box">
+      <h2>🧑‍⚖️ BBT 聯盟裁判守則</h2>
+
+      <h3>一、賽前</h3>
+      <ul>
+        <li>請穿著 BBT 裁判制服並配戴裁判帽。</li>
+        <li>主審須向雙方球隊各領取一張已填寫完成的先發單。</li>
+      </ul>
+
+      <h3>二、比賽中</h3>
+      <ul>
+        <li>比賽 7 局制或 2.5 小時制。</li>
+        <li class="important">第五局起，雙方分數差達 10 分（含）以上，判定提前結束比賽。</li>
+        <li>單一投手累計超過 3 次觸身球，或 2 次頭部觸身球，須立即更換投手。</li>
+      </ul>
+
+      <h3>三、比賽結束</h3>
+      <ul>
+        <li>比賽用球全數收回。</li>
+        <li>請協助雙方球隊列隊，清楚告知比賽結果。</li>
+      </ul>
+
+      <button class="close-btn" onclick="closeOverlay('rules-overlay')">關閉</button>
+    </div>
+  </div>
+
+  <!-- ================= 聯盟賽制 Overlay（同款） ================= -->
+  <div id="league-overlay" class="overlay">
+    <div class="overlay-box">
+      <h2>📘 BBT 聯盟賽制規定</h2>
+
+      <h3>一、例行賽</h3>
+      <ul>
+        <li>大聯盟組 8 隊、小聯盟組 8 隊。</li>
+        <li>雙循環制，共 112 場賽事。</li>
+      </ul>
+
+      <h3>二、比賽時間</h3>
+      <ul>
+        <li>7 局制或 2.5 小時制。</li>
+        <li>時間到且平手，進入突破僵局制。</li>
+      </ul>
+
+      <h3>三、提前結束</h3>
+      <ul>
+        <li class="important">例行賽、季後賽、冠軍賽，分差 10 分（含）以上提前結束。</li>
+      </ul>
+
+      <h3>四、迴避原則</h3>
+      <ul>
+        <li class="important">裁判不得執法所屬母隊賽事。</li>
+      </ul>
+
+      <button class="close-btn" onclick="closeOverlay('league-overlay')">關閉</button>
+    </div>
+  </div>
+
+  <script>
     const session = getSession?.();
-    if (!session) return;
-  
-    const roles = (session.role || '').split(',').map(r => r.trim());
-  
-    const leagueBtn = document.getElementById('open-league');
-    const judgeBtn  = document.getElementById('open-rules');
-    const recordBtn = document.getElementById('open-record');
-  
-    // 預設先隱藏
-    if (judgeBtn) judgeBtn.style.display = 'none';
-    if (recordBtn) recordBtn.style.display = 'none';
-  
-    // 管理者全開
-    if (roles.includes('admin')) {
-      if (judgeBtn) judgeBtn.style.display = 'inline-flex';
-      if (recordBtn) recordBtn.style.display = 'inline-flex';
-      return;
+    if (session) {
+      document.getElementById('welcome-name').textContent = `${session.name} 您好`;
+      const roleMap = {
+        admin: '系統管理員',
+        judge: '裁判員',
+        record: '紀錄員'
+      };
+      document.getElementById('welcome-role').textContent =
+        (session.role || '')
+          .split(',')
+          .map(r => roleMap[r])
+          .filter(Boolean)
+          .join('／');
     }
-  
-    // 裁判
-    if (roles.includes('judge')) {
-      if (judgeBtn) judgeBtn.style.display = 'inline-flex';
+
+    function closeOverlay(id) {
+      document.getElementById(id).style.display = 'none';
     }
-  
-    // 紀錄
-    if (roles.includes('record')) {
-      if (recordBtn) recordBtn.style.display = 'inline-flex';
-    }
-  })();  
-</script>
-  
-  
-  <!-- ✅ 我的班表 -->
-  <div class="panel">
-    <h3>📅 我的班表</h3>
-    <div id="schedule-list"></div>
-    <div class="tabs">
-      <button onclick="setRange('week')" id="tab-week">本週</button>
-      <button onclick="setRange('next')" id="tab-next">下週</button>
-      <button onclick="setRange('month')" id="tab-month">本月</button>
-      <span style="flex:1"></span>
-      <!--
-      <a javascript:void(0)onClickViewFullSchedule()">查看完整班表 ▶</a>
-      -->
-    </div>
-      
-    <div id="schedule-loading" class="schedule-empty" style="display:none;">🔄 班表載入中…</div>
 
-    <!-- 裁判 -->
-    <div id="judge-schedule" class="schedule-block" style="display:none;">
-      <div class="schedule-title">🧑‍⚖️ 裁判班表</div>
-      <div id="judge-list"></div>
-    </div>
-
-    <!-- 紀錄 -->
-    <div id="record-schedule" class="schedule-block" style="display:none;">
-      <div class="schedule-title">📝 紀錄班表</div>
-      <div id="record-list"></div>
-    </div>
-
-    <div id="no-schedule" class="empty" style="display:none;">
-      目前此期間尚無班表。
-    </div>
-  </div>
-
-  <!-- ===============================
-       📘 說明內容（隱藏，用於 overlay）
-       =============================== -->
-      <!-- ===============================
-       📘 聯盟賽制 Overlay
-       =============================== -->
-      <div id="league-overlay" class="overlay" style="display:none;">
-        <div class="overlay-box">
-          <h2>📘 聯盟賽制</h2>
-      
-          <!-- ✅ 這裡貼你的聯盟賽制內容 -->
-          <p>（內容建置中）</p>
-
-          <button id="league-close-btn">關閉</button>
-        </div>
-      </div>
-      
-      <!-- ===============================
-       🧑‍⚖️ 裁判守則 Overlay
-       =============================== -->
-      <div id="rules-overlay" class="overlay" style="display:none;">
-        <div class="overlay-box">
-          <h2>🧑‍⚖️ 裁判守則</h2>
-      
-          <!-- ✅ 你原本的裁判守則內容 -->
-          <p>（內容建置中）</p>
-
-          <button id="rules-close-btn">關閉</button>
-        </div>
-      </div>
-      
-        <!-- ===============================
-         📝 紀錄原則 Overlay（一定要有內容）
-         =============================== -->
-        <div id="record-overlay" class="overlay" style="display:none;">
-          <div class="overlay-box">
-            <h2>📝 紀錄原則</h2>
-        
-            <p>（內容建置中）</p>
-        
-            <button id="record-close-btn">關閉</button>
-          </div>
-        </div>
-
-
-  <!-- ✅ 聯盟公告 -->
-  <div class="panel">
-    <h3>📢 聯盟公告</h3>
-    <ul>
-      <li>例行賽七局制或 2.5 小時制。</li>
-      <li>第五局起分差達 10 分（含）提早結束。</li>
-      <li>平手且時間到，進入突破僵局制（二壘有人）。</li>
-      <li>裁判不得執法所屬母隊正式賽。</li>
-    </ul>
-  </div>
-  
-  <!-- ✅ 文件下載 -->
-  <div class="panel">
-    <h3>📄 文件下載</h3>
-    <ul class="">
-      <li>
-        <a href="https://bbtls.com/a03.php" target="_blank">
-          BBT 軟式棒球大聯盟賽事規章
-        </a>
-      </li>
-      <li>
-        <a href="https://bbtls.com/" target="_blank">
-          BBT 軟式棒球大聯盟官網
-        </a>
-      </li>
-      <li>
-        <a href="ctba_rules.pdf" target="_blank">
-          📘 中華民國棒球規則（2024）
-        </a>
-      </li>
-      <li>
-        <a href="umpire_2man_rotation.pdf" target="_blank">
-          🧑‍⚖️ 兩人制裁判移補位（WBSC 英文版）
-        </a>
-      </li>
-      <li>
-        <a href="umpire_3man_rotation.pdf" target="_blank">
-          🧑‍⚖️ 三人制裁判移補位（CTBA 中文版）
-        </a>
-      </li>
-      <li>
-        <a href="umpire_4man_rotation.pdf" target="_blank">
-          🧑‍⚖️ 四人制裁判移補位（WBSC 英文版）
-        </a>
-      </li>
-    </ul>
-  </div>
-
-</div>
-
-<script>
-/* ===== Header ===== */
-function loadHeader() {
-  fetch('header.html')
-    .then(res => res.text())
-    .then(html => {
-      const container = document.getElementById('header-container');
-      if (!container) return;
-      container.innerHTML = html;
-    })
-    .catch(err => console.error('Header 載入失敗', err));
-}
-
-
-// ===== Welcome 區：身份顯示（中文）=====
-const session = getSession();
-if (session) {
-  const nameEl = document.getElementById('welcome-name');
-  const roleEl = document.getElementById('welcome-role');
-
-  if (nameEl) {
-    nameEl.textContent = `${session.name} 您好`;
-  }
-
-  // ✅ 角色中文對照（全頁共用）
-    const roleMap = {
-      admin: '系統管理員',
-      judge: '裁判員',
-      chief_judge: '裁判長',
-      record: '紀錄員',
-      record_chief: '紀錄長'
+    document.getElementById('open-rules').onclick = () => {
+      document.getElementById('rules-overlay').style.display = 'flex';
     };
-
-  if (roleEl) {
-    const roles = (session.role || '')
-      .split(',')
-      .map(r => r.trim());
-
-    const roleText = roles
-      .map(r => roleMap[r])
-      .filter(Boolean)
-      .join('／');
-
-    roleEl.textContent = roleText;
-  }
-}
-
-function renderList(elId, list){
-  const el = document.getElementById(elId);
-  el.innerHTML = '';
-  const grouped = {};
-  list.forEach(i=>{
-    if(!grouped[i.date]) grouped[i.date]=[];
-    grouped[i.date].push(i);
-  });
-  Object.keys(grouped).sort().forEach(d=>{
-    const div = document.createElement('div');
-    div.className='date-block';
-    div.innerHTML = `<div class="date">${d}</div>` +
-      grouped[d].map(i=>`<div class="item">${i.time} ｜ ${i.field} ｜ ${i.role}</div>`).join('');
-    el.appendChild(div);
-  });
-}
-
-setRange('week');  // 預設本週
-
-// ✅ 依身份決定「查看完整班表」要去哪
-(function initFullScheduleLink(){
-  const link = document.getElementById('view-full-schedule');
-  if (!link) return;
-
-  const session = getSession?.();
-  if (!session) return;
-
-  const roles = getRoles(session);
-
-  // 僅裁判
-  if (roles.includes('judge') && !roles.includes('record') && !roles.includes('admin')) {
-    link.href = 'judge_dashboard.html';
-    return;
-  }
-
-  // 僅紀錄
-  if (roles.includes('record') && !roles.includes('judge') && !roles.includes('admin')) {
-    link.href = 'record_dashboard.html';
-    return;
-  }
-
-  // 兼具身份或 admin → 導到管理／整合頁（你可再優化）
-  link.href = 'index.html'; // 或之後的整合頁
-})();
-
-
-function isToday(dateStr) {
-  const d = new Date(dateStr);
-  const t = new Date();
-  return d.toDateString() === t.toDateString();
-}
-
-function isTomorrow(dateStr) {
-  const d = new Date(dateStr);
-  const t = new Date();
-  t.setDate(t.getDate() + 1);
-  return d.toDateString() === t.toDateString();
-}
-
-function formatZhDate(dateStr) {
-  const d = new Date(dateStr);
-  const week = ['日','一','二','三','四','五','六'];
-  return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${week[d.getDay()]}）`;
-}
-
-/* 裁判 / 紀錄卡片 render */
-function renderScheduleCards(containerId, list, type) {
-  const box = document.getElementById(containerId);
-  if (!box) return;
-
-  box.innerHTML = '';
-
-  if (!Array.isArray(list) || list.length === 0) {
-    box.innerHTML = `<div class="schedule-empty">此期間尚無班表</div>`;
-    return;
-  }
-
-  // ✅ 依日期 → 時間排序
-  list.sort((a, b) => {
-    if (a.date === b.date) {
-      return formatTimeOnly(a.time).localeCompare(formatTimeOnly(b.time));
-    }
-    return a.date.localeCompare(b.date);
-  });
-
-  const wrap = document.createElement('div');
-  wrap.className = 'schedule-cards';
-
-  list.forEach(g => {
-    const card = document.createElement('div');
-    card.className = `schedule-card ${type}`;
-
-    // ===== 角色顯示文字（最終版，乾淨且不互相污染）=====
-    let roleText = '';
-    
-    if (type === 'judge') {
-      // ✅ 裁判站位（一定是 PU / U1 / U2 / U3）
-      const JUDGE_ROLE_NAME = {
-        PU: '主審',
-        U1: '一壘',
-        U2: '二壘',
-        U3: '三壘'
-      };
-    
-      if (g.role && JUDGE_ROLE_NAME[g.role]) {
-        roleText = `🧑‍⚖️ 裁判｜${JUDGE_ROLE_NAME[g.role]}`;
-      } else {
-        // 尚未被裁判長指派，但確實是裁判
-        roleText = '🧑‍⚖️ 裁判｜待指派';
-      }
-    }
-    
-    if (type === 'record') {
-      // ✅ 紀錄站位（REC_MAIN / REC_TRAINEE / REC_VIDEO）
-      const RECORD_ROLE_NAME = {
-        REC_MAIN: '主紀錄',
-        REC_TRAINEE: '見習紀錄',
-        REC_VIDEO: '影像紀錄'
-      };
-    
-      if (g.record_role && RECORD_ROLE_NAME[g.record_role]) {
-        roleText = `📝 紀錄｜${RECORD_ROLE_NAME[g.record_role]}`;
-      } else {
-        // 理論上不該發生，但保險
-        roleText = '📝 紀錄｜待指派';
-      }
-    }
-
-
-      card.innerHTML = `
-        <div class="card-date">${formatZhDate(g.date)}</div>
-      
-        <!-- ✅ 同一行資訊容器 -->
-        <div class="card-row">
-          <span class="card-item">⏰ ${formatTimeOnly(g.time)}</span>
-          <span class="card-sep">｜</span>
-      
-          <span class="card-item">📍 ${g.field || ''}</span>
-          <span class="card-sep">｜</span>
-      
-          <span class="card-item">${roleLines}</span>
-        </div>
-      `;
-
-    wrap.appendChild(card);
-  });
-
-  box.appendChild(wrap);
-}
-
-/* 1️⃣ 點「查看完整班表」時的統一入口 */
-function onClickViewFullSchedule(){
-  const session = getSession();
-  const roles = getRoles(session);
-
-  const hasJudge = roles.includes('judge');
-  const hasRecord = roles.includes('record');
-
-  // ✅ 雙重身份 → 跳選單
-  if (hasJudge && hasRecord) {
-    document.getElementById('fullScheduleRoleModal').style.display = 'flex';
-    return;
-  }
-
-  // ✅ 單一身份 → 直接跳正確頁面
-  if (hasJudge) {
-    location.href = buildScheduleUrl('judge');
-    return;
-  }
-
-  if (hasRecord) {
-    location.href = buildScheduleUrl('record');
-    return;
-  }
-}
-
-/* 2️⃣ 關閉選單 */
-function closeFullScheduleModal(){
-  document.getElementById('fullScheduleRoleModal').style.display = 'none';
-}
-
-/* 3️⃣ 依角色跳轉（含期間參數）*/
-function goFullSchedule(type){
-  location.href = buildScheduleUrl(type);
-}
-
-function buildScheduleUrl(type){
-  const range = currentRange || 'week';
-
-  if (type === 'judge') {
-    return `judge_dashboard.html?range=${range}`;
-  }
-
-  if (type === 'record') {
-    return `record_dashboard.html?range=${range}`;
-  }
-}
-
-function formatTimeOnly(t) {
-  if (!t) return '';
-
-  // 已經是 HH:mm 字串
-  if (typeof t === 'string' && /^\d{1,2}:\d{2}$/.test(t)) {
-    return t;
-  }
-
-  const d = new Date(t);
-  if (isNaN(d)) return String(t);
-
-  return (
-    String(d.getHours()).padStart(2, '0') +
-    ':' +
-    String(d.getMinutes()).padStart(2, '0')
-  );
-}
-
-// overlay 
-
-document.addEventListener('DOMContentLoaded', () => {
-
-  function bindOverlay(openId, overlayId, closeId) {
-    const openBtn = document.getElementById(openId);
-    const overlay = document.getElementById(overlayId);
-    const closeBtn = document.getElementById(closeId);
-    const box = overlay?.querySelector('.overlay-box');
-
-    if (!openBtn || !overlay || !closeBtn || !box) return;
-
-    openBtn.addEventListener('click', () => {
-      overlay.style.display = 'flex';
-    });
-
-    closeBtn.addEventListener('click', () => {
-      overlay.style.display = 'none';
-    });
-
-    overlay.addEventListener('click', () => {
-      overlay.style.display = 'none';
-    });
-
-    box.addEventListener('click', e => {
-      e.stopPropagation();
-    });
-  }
-
-  bindOverlay('open-league', 'league-overlay', 'league-close-btn');
-  bindOverlay('open-rules',  'rules-overlay',  'rules-close-btn');
-  bindOverlay('open-record', 'record-overlay', 'record-close-btn');
-
-  // ✅ header 也在這裡載（同一個生命週期）
-  loadHeader();
-});
-
-</script>
+    document.getElementById('open-league').onclick = () => {
+      document.getElementById('league-overlay').style.display = 'flex';
+    };
+  </script>
 
 </body>
 </html>
+``
