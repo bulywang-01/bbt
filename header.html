@@ -1,84 +1,88 @@
 <style>
 #header {
-  background:#fff;
-  border-bottom:1px solid #ddd;
-  padding:8px 12px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 8px 12px;
 }
 
-/* 導覽列 */
 #header nav {
-  display:flex;
-  align-items:center;
-  gap:10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* ===== 卡片式（裁判 / 紀錄預設） ===== */
+/* 卡片式 */
 .nav-tile {
-  width:72px;
-  height:72px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-  text-decoration:none;
-  font-weight:700;
-  font-size:13px;
-  border-radius:14px;
-  background:#f5f8ff;
-  color:#1a237e;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 14px;
+  background: #f5f8ff;
+  color: #1a237e;
 }
 
-/* icon / text */
-.nav-icon { font-size:24px; }
-.nav-text { font-size:14px; text-align:center; }
-
-/* ===== Admin 專用（橫向列） ===== */
+/* Admin 橫向 */
 body.is-admin .nav-tile {
-  width:auto;
-  height:40px;
-  flex-direction:row;
-  padding:6px 12px;
-  border-radius:8px;
-  background:transparent;
+  width: auto;
+  height: 40px;
+  flex-direction: row;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: transparent;
 }
 
-/* ===== 預設隱藏（JS 依角色打開） ===== */
+.nav-icon { font-size: 24px; }
+.nav-text { font-size: 14px; text-align: center; }
+
+/* 預設隱藏 */
 .nav-judge,
 .nav-record,
 .nav-admin {
-  display:none;
+  display: none;
 }
 </style>
 
 <div id="header">
   <nav>
-    index.html" class="nav-tile nav-home">
+    <!-- 首頁 -->
+    <a href="index.html" class="nav-tile nav-home">
       <div class="nav-icon">🏠</div>
       <div class="nav-text">首頁</div>
     </a>
 
-    judge_dashboard.html" class="nav-tile nav-judge">
+    <!-- 裁判班表 -->
+    <a href="judge_dashboard.html" class="nav-tile nav-judge">
       <div class="nav-icon">🧑‍⚖️</div>
       <div class="nav-text">裁判<br>班表</div>
     </a>
 
-    record_dashboard.html" class="nav-tile nav-record">
+    <!-- 紀錄班表 -->
+    <a href="record_dashboard.html" class="nav-tile nav-record">
       <div class="nav-icon">📝</div>
       <div class="nav-text">紀錄<br>班表</div>
     </a>
 
-    admin_dashboard.html" class="nav-tile nav-admin">
+    <!-- 管理介面 -->
+    <a href="admin_dashboard.html" class="nav-tile nav-admin">
       <div class="nav-icon">⚙️</div>
       <div class="nav-text">管理<br>介面</div>
     </a>
 
-    change_password.html" class="nav-tile">
+    <!-- 改密碼 -->
+    <a href="change_password.html" class="nav-tile">
       <div class="nav-icon">🔐</div>
       <div class="nav-text">改<br>密碼</div>
     </a>
 
-    #" class="nav-tile" onclick="logout()">
+    <!-- 登出 -->
+    <a href="#" class="nav-tile" onclick="logout()">
       <div class="nav-icon">🚪</div>
       <div class="nav-text">登出</div>
     </a>
@@ -93,19 +97,19 @@ body.is-admin .nav-tile {
 
   const roles = session.role.split(',').map(r => r.trim());
 
-  // ✅ 裁判（含裁判長）
+  // 裁判（含裁判長）
   if (roles.includes('judge') || roles.includes('chief_judge')) {
     document.querySelectorAll('.nav-judge')
       .forEach(el => el.style.display = 'flex');
   }
 
-  // ✅ 紀錄（含紀錄長）
+  // 紀錄（含紀錄長）
   if (roles.includes('record') || roles.includes('record_chief')) {
     document.querySelectorAll('.nav-record')
       .forEach(el => el.style.display = 'flex');
   }
 
-  // ✅ 管理員
+  // 管理員
   if (roles.includes('admin')) {
     document.body.classList.add('is-admin');
     document.querySelectorAll('.nav-admin')
