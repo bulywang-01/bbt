@@ -236,33 +236,50 @@
   <!-- Header -->
   <div id="header-container"></div>
 
-  <script>
-      function loadHeader() {
-        fetch('header.html')
-          .then(res => {
-            if (!res.ok) throw new Error('header.html not found');
-            return res.text();
-          })
-          .then(html => {
-            const container = document.getElementById('header-container');
-            if (!container) return;
-      
-            container.innerHTML = html;
-      
-            // ✅ header 注入完成後，再判斷角色
-            const session = (typeof getSession === 'function') ? getSession() : null;
-            if (session && session.role && session.role.includes('admin')) {
-              document.body.classList.add('is-admin');
-            }
-          })
-          .catch(err => {
-            console.error('Header 載入失敗', err);
-          });
-      }
-      
-      // ✅ 這一行是關鍵：一定要呼叫
-      document.addEventListener('DOMContentLoaded', loadHeader);
+<script>
+  function loadHeader() {
+    fetch('header.html')
+      .then(res => {
+        if (!res.ok) throw new Error('header.html not found');
+        return res.text();
+      })
+      .then(html => {
+        const container = document.getElementById('header-container');
+        if (!container) return;
+  
+        // ✅ 1. 插入 header HTML
+        container.innerHTML = html;
+  
+        // ✅ 2. 原本你的 admin 判斷（保留）
+        const session = (typeof getSession === 'function') ? getSession() : null;
+        if (session && session.role && session.role.includes('admin')) {
+          document.body.classList.add('is-admin');
+        }
+  
+        // ✅✅✅ 3. 關鍵：載入 header.js，並在載完後初始化
+        const script = document.createElement('script');
+        script.src = 'header.js';
+  
+        script.onload = () => {
+          // ✅ 一定要在這裡呼叫
+          if (typeof window.initHeader === 'function') {
+            window.initHeader();
+          } else {
+            console.error('initHeader not found');
+          }
+        };
+  
+        document.body.appendChild(script);
+      })
+      .catch(err => {
+        console.error('Header 載入失敗', err);
+      });
+  }
+  
+  // ✅ 這一行你已經寫對了
+  document.addEventListener('DOMContentLoaded', loadHeader);
   </script>
+
 
 
   <div class="main">
