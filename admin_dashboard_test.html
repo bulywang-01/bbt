@@ -101,6 +101,19 @@
            onclick
     </div>
   </div>
+      
+  <div id="annualModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="annualModalTitle"></h3>
+        <div>
+          <select id="annualYearSelect" onchange="reloadAnnualByYear()"></select>
+          <button onclick="closeAnnualModal()">✕</button>
+        </div>
+      </div>
+      <div class="modal-body" id="annualModalBody">載入中…</div>
+    </div>
+  </div>
 
   <!-- ✅ 完整保留你原本的 JS 行為 -->
   <script>
@@ -130,6 +143,111 @@
           .forEach(el => el.style.display = 'flex');
       }
     });
-  </script>
+
+  
+/* =========================
+ * 年度總表 Modal（還原版）
+ * ========================= */
+
+let currentAnnualType = null;
+
+function openAnnualModal(type) {
+  currentAnnualType = type;
+
+  document.getElementById('annualModalTitle').textContent =
+    type === 'judge' ? '全員裁判年度總表' : '全員紀錄員年度總表';
+
+  document.getElementById('annualModalBody').textContent = '載入中…';
+  document.getElementById('annualModal').classList.remove('hidden');
+
+  loadAvailableYears();
+}
+
+function closeAnnualModal() {
+  document.getElementById('annualModal').classList.add('hidden');
+}
+
+/* ===== 後端年度（Games 表實際年份） ===== */
+function loadAvailableYears() {
+  callApi({ action: 'getAvailableGameYears' }, res => {
+    if (res.result !== 'ok') {
+      document.getElementById('annualModalBody').textContent = res.message;
+      return;
+    }
+
+    const sel = document.getElementById('annualYearSelect');
+    sel.innerHTML = '';
+
+    res.years.forEach((y, i) => {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y + ' 年';
+      if (i === 0) opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+    reloadAnnualByYear();
+  });
+}
+
+function reloadAnnualByYear() {
+  const year = document.getElementById('annualYearSelect').value;
+
+  callApi({
+    action: currentAnnualType === 'judge'
+      ? 'getJudgeAnnualSummary_'
+      : 'getRecordAnnualSummary_',
+    year: year
+  }, res => {
+    if (res.result !== 'ok') {
+      document.getElementById('annualModalBody').textContent = res.message;
+      return;
+    }
+
+    renderAnnualTable(res.list, currentAnnualType);
+  });
+}
+
+/* ===== 管理頁專用年度表 render ===== */
+function renderAnnualTable(list, type) {
+  if (!list || list.length === 0) {
+    document.getElementById('annualModalBody').innerHTML =
+      '<p style="color:#888">此年度沒有資料</p>';
+    return;
+  }
+
+  const detailTitle = type === 'judge' ? '站位分佈' : '角色分佈';
+
+  const rows = list.map(u => {
+    const detail =
+      type === 'judge'
+        ? Object.entries(u.positions || {}).map(([k,v]) => `${k}：${v}`).join(' ｜ ')
+        : Object.entries(u.roles || {}).map(([k,v]) => `${k}：${v}`).join(' ｜ ');
+
+    return `
+      <tr>
+        <td class="name">${u.name}</td>
+        <td class="num">${u.annual}</td>
+        <td class="num">${u.career}</td>
+        <td>${detail || '—'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('annualModalBody').innerHTML = `
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>姓名</th>
+          <th>年度</th>
+          <th>生涯</th>
+          <th>${detailTitle}</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+</script>
 </body>
 </html>
