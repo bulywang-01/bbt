@@ -305,15 +305,19 @@
 
 <div id="toast" style="
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: #2e7d32;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
   color: #fff;
-  padding: 10px 16px;
-  border-radius: 4px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
   display: none;
-  z-index: 9999;
-  font-size: 14px;
+  z-index: 10000;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
 ">
 </div>
 
@@ -695,8 +699,16 @@ function updateGame(id, field, value) {
     value: value
   })
   .then(res => {
-    if (!res || res.result !== 'ok') {
-      showToast('❌ 儲存失敗', 2500);
+    // ✅ 相容多種後端回傳
+    const ok =
+      res === 'ok' ||
+      res === true ||
+      res?.result === 'ok' ||
+      res?.status === 'ok';
+
+    if (!ok) {
+      console.warn('updateGame failed:', res);
+      showToast('❌ 儲存失敗');
       return;
     }
 
@@ -704,7 +716,7 @@ function updateGame(id, field, value) {
   })
   .catch(err => {
     console.error(err);
-    showToast('❌ 儲存發生錯誤', 2500);
+    showToast('❌ 儲存發生錯誤');
   });
 }
 
