@@ -236,24 +236,33 @@
   <div id="header-container"></div>
 
   <script>
-    function loadHeader() {
-      fetch('header.html')
-        .then(res => res.text())
-        .then(html => {
-          const container = document.getElementById('header-container');
-          if (!container) return;
-    
-          container.innerHTML = html;
-    
-          // ✅ 一定要在 header 注入後，再判斷 admin
-          const session = getSession?.();
-          if (session?.role?.includes('admin')) {
-            document.body.classList.add('is-admin');
-          }
-        })
-        .catch(err => console.error('Header 載入失敗', err));
-    }
+      function loadHeader() {
+        fetch('header.html')
+          .then(res => {
+            if (!res.ok) throw new Error('header.html not found');
+            return res.text();
+          })
+          .then(html => {
+            const container = document.getElementById('header-container');
+            if (!container) return;
+      
+            container.innerHTML = html;
+      
+            // ✅ header 注入完成後，再判斷角色
+            const session = (typeof getSession === 'function') ? getSession() : null;
+            if (session && session.role && session.role.includes('admin')) {
+              document.body.classList.add('is-admin');
+            }
+          })
+          .catch(err => {
+            console.error('Header 載入失敗', err);
+          });
+      }
+      
+      // ✅ 這一行是關鍵：一定要呼叫
+      document.addEventListener('DOMContentLoaded', loadHeader);
   </script>
+
 
   <div class="main">
 
