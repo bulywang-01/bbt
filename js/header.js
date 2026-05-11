@@ -1,10 +1,32 @@
-// header.js（每頁都共用）
-const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-document.getElementById('u_name').textContent = session.name || '';
+// header.js（全站共用，唯一角色邏輯）
+(function () {
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+  if (!session || !session.role) return;
 
-const roles = (session.role || '').split(',');
-document.querySelectorAll('[class*="role-"]').forEach(el => el.style.display = 'none');
+  const roles = session.role.split(',').map(r => r.trim());
+  const isAdmin = roles.includes('admin');
+  const header = document.getElementById('app-header');
+  if (!header) return;
 
-roles.forEach(r => {
-  document.querySelectorAll('.role-' + r).forEach(el => el.style.display = 'inline-block');
-});
+  // ✅ admin：全開
+  if (isAdmin) {
+    header.querySelectorAll('.item').forEach(el => {
+      el.style.display = 'flex';
+    });
+    return;
+  }
+
+  // 裁判 / 裁判長
+  if (roles.includes('judge') || roles.includes('chief_judge')) {
+    header.querySelectorAll('.item.judge').forEach(el => {
+      el.style.display = 'flex';
+    });
+  }
+
+  // 紀錄 / 紀錄長
+  if (roles.includes('record') || roles.includes('record_chief')) {
+    header.querySelectorAll('.item.record').forEach(el => {
+      el.style.display = 'flex';
+    });
+  }
+})();
