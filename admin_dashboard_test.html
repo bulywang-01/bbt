@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>管理中心</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- 共用 -->
   <script src="js/auth.js"></script>
@@ -15,228 +15,53 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #f5f6f8;
     }
+
     .main {
       max-width: 1100px;
       margin: 0 auto;
       padding: 20px;
     }
+
     h2 { margin-top: 0; }
 
     .section-title {
-      margin: 28px 0 10px;
-      font-size: 18px;
-      font-weight: 800;
+      margin: 32px 0 12px;
+      font-size: 20px;
+      font-weight: 900;
     }
 
+    /* === Grid === */
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
     }
 
     .card {
       background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.08);
-    }
-
-    .card h4 { margin: 0 0 8px; }
-    .card p { margin: 4px 0; font-size:14px; color:#555; }
-
-    .card a {
-      color: #0066cc;
-      font-weight: 600;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 6px;
-    }
-    .card a:hover { text-decoration: underline; }
-
-    .role-admin,
-    .role-chief-judge,
-    .role-record-chief { display:none; }
-
-    /* ========== Modal ========== */
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.45);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-    }
-    .modal-content {
-      background: #fff;
-      width: 90%;
-      max-width: 1000px;
-      max-height: 90vh;
-      overflow-y: auto;
-      border-radius: 10px;
-      box-shadow: 0 20px 40px rgba(0,0,0,.25);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px;
-      border-bottom: 1px solid #eee;
-      position: sticky;
-      top: 0;
-      background: #fff;
-      z-index: 2;
-      gap: 8px;
-    }
-    .modal-body { padding: 16px; }
-    .hidden { display: none; }
-
-    /* ========== 表格（專業版） ========== */
-    .admin-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: 14px;
-    }
-    .admin-table thead {
-      position: sticky;
-      top: 0;
-      background: #f4f6f8;
-      z-index: 1;
-    }
-    .admin-table th {
-      padding: 10px 12px;
-      font-weight: 700;
-      border-bottom: 1px solid #ccc;
-      text-align: left;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .admin-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #eee;
-      vertical-align: top;
-    }
-    .admin-table tbody tr:nth-child(even) { background:#fafafa; }
-    .admin-table tbody tr:hover { background:#eef5ff; }
-
-    .admin-table td.num {
-      text-align: right;
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
-    }
-    .admin-table td.name {
-      font-weight: 700;
-      color:#0066cc;
-      cursor:pointer;
-    }
-    .admin-table td.name:hover { text-decoration: underline; }
-    .admin-table td.detail {
-      font-size: 13px;
-      color:#555;
-      line-height: 1.6;
-    }
-
-    .toolbar {
-      display:flex;
-      gap:8px;
-      align-items:center;
-    }
-
-  /* ===== Admin Tile Grid（header 風格） ===== */
-    .admin-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 18px;
-      margin-top: 12px;
-    }
-    
-    /* 單一功能 Tile */
-    .admin-tile {
-      background: #ffffff;
       border-radius: 14px;
-      padding: 20px 16px;
+      min-height: 90px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      justify-content: center;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 800;
       cursor: pointer;
       box-shadow: 0 4px 14px rgba(0,0,0,.08);
-      transition: transform .15s ease, box-shadow .15s ease;
+      transition: transform .15s, box-shadow .15s;
     }
-    
-    .admin-tile:hover {
+
+    .card:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 18px rgba(0,0,0,.14);
     }
-    
-    /* Icon 區 */
-    .admin-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 14px;
-      background: #eef3ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-    }
-    
-    /* 文字區 */
-    .admin-text {
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .admin-text .title {
-      font-size: 18px;       /* ✅ 字體放大 */
-      font-weight: 800;
-      line-height: 1.2;
-    }
-    
-    .admin-text .desc {
-      font-size: 14px;       /* ✅ 手機也清楚 */
-      color: #555;
-      margin-top: 4px;
-    }
-    
-    /* 區塊標題加大 */
-    .section-title {
-      margin: 32px 0 12px;
-      font-size: 20px;       /* ✅ 比原本更大 */
-      font-weight: 900;
-    }
-    
-    /* 權限控制（沿用你原本） */
+
     .role-admin,
     .role-chief-judge,
     .role-record-chief {
       display: none;
     }
-
-  /* ===== 管理中心 Tile 版型（header 風格） ===== */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 18px;
-    }
-    
-    .card {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 90px;
-      text-align: center;
-      font-size: 18px;       /* ✅ 字體放大 */
-      font-weight: 800;
-      cursor: pointer;
-    }
-    
-    .card h4 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 800;
-    }
-
   </style>
 </head>
 
@@ -247,204 +72,41 @@
   <h2>管理中心</h2>
   <p style="color:#666;margin-top:-6px">請依身份選擇可用的管理功能</p>
 
-<div class="section-title">📊 班表與年度統計</div>
-
-<div class="admin-grid">
-
-  <div class="admin-tile role-admin role-chief-judge"
-       onclick="openAnnualModal('judge')">
-    <div class="admin-icon">📈</div>
-    <div class="admin-text">
-      <div class="title">全員裁判年度總表</div>
+  <!-- ===== 班表與年度統計 ===== -->
+  <div class="section-title">📊 班表與年度統計</div>
+  <div class="cards">
+    <div class="card role-admin role-chief-judge"
+         onclick="openAnnualModal('judge')">
+      📈 全員裁判年度總表
     </div>
-  </div>
 
-  <div class="admin-tile role-admin role-record-chief"
-       onclick="openAnnualModal('record')">
-    <div class="admin-icon">📝</div>
-    <div class="admin-text">
-      <div class="title">全員紀錄員年度總表</div>
+    <div class="card role-admin role-record-chief"
+         onclick="openAnnualModal('record')">
+      📝 全員紀錄員年度總表
     </div>
-  </div>
 
-  <div class="admin-tile role-admin role-chief-judge"
-       onclick="location.href='judge_dashboard_adminlass="title">裁判員班表安排</div>
-    </div>
-  </div>
-
-  <div class="admin-tile role-admin role-record-chief"
-       onclick="location.href='record_dashboard_admin.html'title">紀錄員班表安排</div>
-    </div>
-  </div>
-
-</div>
-
-<div class="section-title">⚙️ 系統管理</div>
-
-<div class="admin-grid">
-
-  <div class="admin-tile role-admin"
-       onclick="location.href='admindmin-text">
-      <div class="title">帳號管理</div>
-    </div>
-  </div>
-
-  <div class="admin-tile role-admin"
-       onclick="location.href='admin_games.html>
-      <div class="title">賽事管理</div>
-    </div>
-  </div>
-
-</div>
-
-<!-- ========== 年度 Modal ========== -->
-<div id="annualModal" class="modal hidden">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 id="annualModalTitle"></h3>
-      <div class="toolbar">
-        <input id="annualSearch" placeholder="搜尋姓名…" oninput="filterAnnual()" />
-        <select id="annualYearSelect" onchange="reloadAnnual()"></select>
-        <button onclick="exportAnnual()">匯出</button>
-        <button onclick="closeAnnualModal()">✕</button>
-      </div>
-    </div>
-    <div class="modal-body" id="annualModalBody">載入中…</div>
-  </div>
-</div>
-
-<script>
-/* ===== 初始化 ===== */
-document.addEventListener('DOMContentLoaded', () => {
+    <div class="card role-admin role-chief-judge"
+         onclick="location.href='judge_dashboard_admin.html'dashboard<div class="section-title">⚙️ 系統管理</div>
+  <div class="cards">
+    <div class="card role-admin"
+         onclick="location.href='admin_users.html       onclick="location.href='admin_games.html'ddEventListener('DOMContentLoaded', () => {
   guardAdminPage();
   const roles = getRoles(getSession());
 
   fetch('header.html')
-    .then(r=>r.text())
-    .then(html=>{
+    .then(r => r.text())
+    .then(html => {
       document.getElementById('header-container').innerHTML = html;
       initHeaderVisibility();
     });
 
   if (roles.includes('admin'))
-    document.querySelectorAll('.role-admin').forEach(e=>e.style.display='block');
+    document.querySelectorAll('.role-admin').forEach(e => e.style.display='flex');
   if (roles.includes('chief_judge'))
-    document.querySelectorAll('.role-chief-judge').forEach(e=>e.style.display='block');
+    document.querySelectorAll('.role-chief-judge').forEach(e => e.style.display='flex');
   if (roles.includes('record_chief'))
-    document.querySelectorAll('.role-record-chief').forEach(e=>e.style.display='block');
+    document.querySelectorAll('.role-record-chief').forEach(e => e.style.display='flex');
 });
-
-/* ===== 年度總表 ===== */
-let currentType = null;
-let currentList = [];
-let sortKey = null;
-let sortAsc = false;
-
-function openAnnualModal(type){
-  currentType = type;
-  document.getElementById('annualModalTitle').textContent =
-    type==='judge' ? '全員裁判年度總表' : '全員紀錄員年度總表';
-  document.getElementById('annualModal').classList.remove('hidden');
-  loadYears();
-}
-
-function closeAnnualModal(){
-  document.getElementById('annualModal').classList.add('hidden');
-}
-
-function loadYears(){
-  callApi({ action:'getAvailableGameYears' }, res=>{
-    const sel = document.getElementById('annualYearSelect');
-    sel.innerHTML='';
-    res.years.forEach((y,i)=>{
-      const o=document.createElement('option');
-      o.value=y; o.textContent=y+' 年';
-      if(i===0) o.selected=true;
-      sel.appendChild(o);
-    });
-    reloadAnnual();
-  });
-}
-
-function reloadAnnual(){
-  const year = document.getElementById('annualYearSelect').value;
-  document.getElementById('annualModalBody').textContent='載入中…';
-  callApi({
-    action: currentType==='judge'
-      ? 'getJudgeAnnualSummary_'
-      : 'getRecordAnnualSummary_',
-    year
-  }, res=>{
-    currentList = res.list || [];
-    renderAnnual(currentList);
-  });
-}
-
-function renderAnnual(list){
-  const detailTitle = currentType==='judge' ? '站位分佈' : '角色分佈';
-  const rows = list.map(u=>{
-    const detail = currentType==='judge'
-      ? Object.entries(u.positions||{}).map(([k,v])=>`${k}：${v}`).join(' ｜ ')
-      : Object.entries(u.roles||{}).map(([k,v])=>`${k}：${v}`).join(' ｜ ');
-    return `
-      <tr>
-        <td class="name" onclick="openPerson('${u.name}','${detail}')">${u.name}</td>
-        <td class="num annual">${u.annual}</td>
-        <td class="num career">${u.career}</td>
-        <td class="detail">${detail || '—'}</td>
-      </tr>`;
-  }).join('');
-
-  document.getElementById('annualModalBody').innerHTML = `
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>姓名</th>
-          <th onclick="sortBy('annual')">年度</th>
-          <th onclick="sortBy('career')">生涯</th>
-          <th>${detailTitle}</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-}
-
-/* ===== 搜尋 ===== */
-function filterAnnual(){
-  const k=document.getElementById('annualSearch').value;
-  document.querySelectorAll('.admin-table tbody tr').forEach(tr=>{
-    const name=tr.children[0].textContent;
-    tr.style.display = name.includes(k)?'':'none';
-  });
-}
-
-/* ===== 排序 ===== */
-function sortBy(key){
-  sortAsc = sortKey===key ? !sortAsc : false;
-  sortKey = key;
-  currentList.sort((a,b)=>
-    sortAsc ? a[key]-b[key] : b[key]-a[key]
-  );
-  renderAnnual(currentList);
-}
-
-/* ===== 匯出 CSV ===== */
-function exportAnnual(){
-  let csv='姓名,年度,生涯\\n';
-  currentList.forEach(u=>{
-    csv+=`${u.name},${u.annual},${u.career}\\n`;
-  });
-  const blob=new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='annual.csv';
-  a.click();
-}
-
-/* ===== 個人快速檢視 ===== */
-function openPerson(name, detail){
-  alert(name + '\\n' + detail);
-}
 </script>
 </body>
 </html>
