@@ -1,111 +1,117 @@
+<!-- ================= App Header ================= -->
 <style>
-#header {
+#app-header {
   background: #fff;
   border-bottom: 1px solid #ddd;
-  padding: 8px 12px;
+  padding: 10px 16px;
 }
 
-#header nav {
+/* ✅ 所有 header 樣式都關在這裡 */
+#app-header .nav {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 
-/* 卡片式 */
-.nav-tile {
+/* 預設：卡片式（裁判 / 紀錄） */
+#app-header .item {
   width: 72px;
   height: 72px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
   text-decoration: none;
-  font-weight: 700;
   font-size: 13px;
+  font-weight: 700;
   border-radius: 14px;
   background: #f5f8ff;
   color: #1a237e;
 }
 
-/* Admin 專用橫向 */
-body.is-admin .nav-tile {
+#app-header .icon {
+  font-size: 22px;
+}
+
+#app-header .text {
+  text-align: center;
+}
+
+/* ✅ 管理員：改橫向工具列 */
+body.is-admin #app-header .item {
   width: auto;
   height: 40px;
   flex-direction: row;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 8px;
   background: transparent;
 }
 
-.nav-icon { font-size: 24px; }
-.nav-text { font-size: 14px; text-align: center; }
-
-/* 預設隱藏（由 JS 控制） */
-.nav-judge,
-.nav-record,
-.nav-admin {
+/* ✅ 預設隱藏（JS 打開） */
+#app-header .judge,
+#app-header .record,
+#app-header .admin {
   display: none;
 }
 </style>
 
-<div id="header">
-  <nav>
-    <a href="index.html" class="nav-tile nav�</div>
-      <div class="nav-text">首頁</div>
+<div id="app-header">
+  <nav class="nav">
+    <a href="index.html" class="item home">
+      <span class="icon">🏠</span>
+      <span class="text">首頁</span>
     </a>
 
-    <a href="judge_dashboard.html" class="nav-tile nav-‍⚖️</div>
-      <div class="nav-text">裁判<br>班表</div>
+    <a href="judge_dashboard.html" class="item judge">
+      <span class="icon">🧑‍⚖️</span>
+      <span class="text">裁判<br>班表</span>
     </a>
 
-    <a href="record_dashboard.html" class="nav-ticon">📝</div>
-      <div class="nav-text">紀錄<br>班表</div>
+    <a href="record_dashboard.html" class="item record">
+      <span class="icon">📝</span>
+      <span class="text">紀錄<br>班表</span>
     </a>
 
-    <a href="admin_dashboard.html" class="nav-ticon">⚙️</div>
-      <div class="nav-text">管理<br>介面</div>
+    <a href="admin_dashboard.html" class="item admin">
+      <span class="icon">⚙️</span>
+      <span class="text">管理<br>介面</span>
     </a>
 
-    <hange_password.html
-      <div class="nav-icon">🔐</div>
-      <div class="nav-text">改<br>密碼</div>
+    <a href="change_password.html" class="item">
+      <span class="icon">🔐</span>
+      <span class="text">改<br>密碼</span>
     </a>
 
-    <a href="#" class="nav-tile" onclick="logout()div class="nav-text">登出</div>
+    <a href="#" class="item" onclick="logout()">
+      <span class="icon">🚪</span>
+      <span class="text">登出</span>
     </a>
   </nav>
 </div>
 
-<!-- ✅ 這一行一定要真的存在 -->
-<script src="js/auth.jscript>
-(function initHeader() {
-  if (typeof getSession !== 'function') {
-    console.error('getSession not found');
-    return;
-  }
+<script src="js/auth.js"></script>
+<script>
+(function () {
+  if (typeof getSession !== 'function') return;
+  const s = getSession();
+  if (!s || !s.role) return;
 
-  const session = getSession();
-  if (!session || !session.role) return;
+  const roles = s.role.split(',').map(r => r.trim());
 
-  const roles = session.role.split(',').map(r => r.trim());
-
-  // 裁判（含裁判長）
   if (roles.includes('judge') || roles.includes('chief_judge')) {
-    document.querySelectorAll('.nav-judge')
+    document.querySelectorAll('#app-header .judge')
       .forEach(el => el.style.display = 'flex');
   }
 
-  // 紀錄（含紀錄長）
   if (roles.includes('record') || roles.includes('record_chief')) {
-    document.querySelectorAll('.nav-record')
+    document.querySelectorAll('#app-header .record')
       .forEach(el => el.style.display = 'flex');
   }
 
-  // 管理員
   if (roles.includes('admin')) {
     document.body.classList.add('is-admin');
-    document.querySelectorAll('.nav-admin')
+    document.querySelectorAll('#app-header .admin')
       .forEach(el => el.style.display = 'flex');
   }
 })();
