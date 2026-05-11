@@ -404,12 +404,11 @@ function loadHeader() {
     .catch(err => console.error('Header 載入失敗', err));
   }
   
-
+  // 裁入報名頁面重要function
   document.addEventListener('DOMContentLoaded', () => {
-    loadHeader();  // header
-    loadGames();   // ✅ 裁判頁資料（關鍵）
+    loadHeader();   // 只負責 header
+    loadGames();    // 或該頁真正的資料初始化
   });
-
 </script>
 
   <div class="main">
