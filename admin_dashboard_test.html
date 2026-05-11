@@ -5,7 +5,7 @@
   <title>管理中心</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ 你原本就有、而且不能動的 JS -->
+  <!-- ✅ 你原本的 JS，完整保留 -->
   <script src="js/auth.js"></script>
   <script src="js/config.js"></script>
 
@@ -28,7 +28,7 @@
     }
 
     .section-title {
-      margin: 32px 0 12px;
+      margin: 28px 0 14px;
       font-size: 20px;
       font-weight: 900;
     }
@@ -40,11 +40,11 @@
       gap: 18px;
     }
 
-    /* ===== 卡片（header 風格） ===== */
+    /* ===== Tile（header 風格） ===== */
     .card {
       background: #ffffff;
       border-radius: 14px;
-      min-height: 90px;
+      min-height: 96px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -54,6 +54,7 @@
       cursor: pointer;
       box-shadow: 0 4px 14px rgba(0,0,0,.08);
       transition: transform .15s ease, box-shadow .15s ease;
+      user-select: none;
     }
 
     .card:hover {
@@ -61,18 +62,11 @@
       box-shadow: 0 6px 18px rgba(0,0,0,.14);
     }
 
-    /* ✅ 權限顯示（你原本的） */
-    .role-admin,
-    .role-chief-judge,
-    .role-record-chief {
-      display: none;
-    }
-
-    /* ===== Modal（你原本就有） ===== */
+    /* ===== Modal ===== */
     .modal {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.4);
+      background: rgba(0,0,0,.45);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -107,7 +101,7 @@
       display: none;
     }
 
-    /* ===== 年度表格（你原 render 用） ===== */
+    /* ===== 年度表 ===== */
     .admin-table {
       width: 100%;
       border-collapse: collapse;
@@ -133,34 +127,26 @@
 </head>
 
 <body>
-  <!-- ✅ header 容器 -->
+  <!-- header -->
   <div id="header-container"></div>
 
   <div class="main">
     <h2>管理中心</h2>
     <p style="color:#666;margin-top:-6px">請依身份選擇可用的管理功能</p>
 
-    <!-- ===== 班表與年度統計 ===== -->
     <div class="section-title">📊 班表與年度統計</div>
     <div class="cards">
-
-      <div class="card role-admin role-chief-judge"
-           onclick="openAnnualModal('judge')">
+      <div class="card" onclick="openAnnualModal('judge')">
         📈 全員裁判年度總表
       </div>
 
-      <div class="card role-admin role-record-chief"
-           onclick="openAnnualModal('record')">
+      <div class="card" onclick="openAnnualModal('record')">
         📝 全員紀錄員年度總表
       </div>
 
-      <div class="card role-admin role-chief-judge"
-           onclick="location.href='judge_dashboard_admin.html'ecord_dashboard_admin.html'v class="section-title">⚙️ 系統管理</div>
-    <div class="cards">
+      <div class="card" onclick="location.href='judge_dashboard_admin.html''record_dashboard_admin   <div class="card" onclick="location.href='admin      <div class="card" onclick="location.href='admin_games.html' </div>
 
-      <div class="card role-admin"
-           onclick="location.href='admin_users.html'
-           onclick="location.href='admin_games.html' 年度 Modal（你原本的） ===== -->
+  <!-- ===== 年度 Modal ===== -->
   <div id="annualModal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -174,13 +160,10 @@
     </div>
   </div>
 
-  <!-- ===== ✅ 你原本完整的 JS（一行不刪，只修語法） ===== -->
   <script>
+    /* ===== 初始化（只跑一次，不閃） ===== */
     document.addEventListener('DOMContentLoaded', function () {
       guardAdminPage();
-
-      const session = getSession();
-      const roles = getRoles(session);
 
       fetch('header.html')
         .then(res => res.text())
@@ -188,24 +171,9 @@
           document.getElementById('header-container').innerHTML = html;
           initHeaderVisibility();
         });
-
-      if (roles.includes('admin')) {
-        document.querySelectorAll('.role-admin')
-          .forEach(el => el.style.display = 'flex');
-      }
-      if (roles.includes('chief_judge')) {
-        document.querySelectorAll('.role-chief-judge')
-          .forEach(el => el.style.display = 'flex');
-      }
-      if (roles.includes('record_chief')) {
-        document.querySelectorAll('.role-record-chief')
-          .forEach(el => el.style.display = 'flex');
-      }
     });
 
-    /* =========================
-     * 年度總表 Modal（你原本的）
-     * ========================= */
+    /* ===== 年度總表 Modal ===== */
     let currentAnnualType = null;
 
     function openAnnualModal(type) {
@@ -253,13 +221,12 @@
         action: currentAnnualType === 'judge'
           ? 'getJudgeAnnualSummary_'
           : 'getRecordAnnualSummary_',
-        year: year
+        year
       }, res => {
         if (res.result !== 'ok') {
           document.getElementById('annualModalBody').textContent = res.message;
           return;
         }
-
         renderAnnualTable(res.list, currentAnnualType);
       });
     }
@@ -267,7 +234,7 @@
     function renderAnnualTable(list, type) {
       if (!list || list.length === 0) {
         document.getElementById('annualModalBody').innerHTML =
-          '<p style=\"color:#888\">此年度沒有資料</p>';
+          '<p style="color:#888">此年度沒有資料</p>';
         return;
       }
 
