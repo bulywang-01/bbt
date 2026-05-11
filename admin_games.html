@@ -333,7 +333,7 @@
 
 // ✅ 專門給 <input type="date"> 用
 // ✅ <input type="date"> 專用（最終穩定版）
-function normalizeDateValue(d) {
+function Value(d) {
   if (!d) return '';
 
   const s = String(d);
@@ -427,11 +427,27 @@ function match(g,k){
 }
 
 // 將各種 Date 字串轉成 yyyy-mm-dd
+// ✅ 純日期專用（不碰時區）
 function normalizeDate(d) {
   if (!d) return '';
-  const date = new Date(d);
-  if (isNaN(date)) return '';
-  return date.toISOString().slice(0, 10);
+  const s = String(d);
+
+  // 已經是 yyyy-MM-dd
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    return s;
+  }
+
+  // ISO 格式：2026-05-01T16:00:00.000Z
+  if (s.includes('T')) {
+    return s.split('T')[0];
+  }
+
+  // yyyy/MM/dd
+  if (s.includes('/')) {
+    return s.replace(/\//g, '-');
+  }
+
+  return '';
 }
 
 // 將各種 Date / Time 字串轉成 HH:mm
@@ -672,15 +688,9 @@ function loadGames() {
 
 
 function updateGame(id,f,v){
-  callApi({action:'updateGame',game_id:id,field_name:f,value:v})
+  callApi({action:'updateGame',game_id:id,field_name:f,value:v}, callback)
 }
 
-/*
-function deleteGame(id){
-  if(!confirm('確定刪除？'))return
-  callApi({action:'deleteGame',game_id:id},loadGames)
-}
-*/
 let importRows=[]
 
 // 預覽
