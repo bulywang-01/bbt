@@ -418,7 +418,7 @@
       document.getElementById('annualModalTitle').textContent =
         type === 'judge' ? '全員裁判年度總表' : '全員紀錄員年度總表';
 
-      document.getElementById('annualModalBody').textContent = '載入中…';
+      document.getElementById('annualList').textContent = '載入中…';
       document.getElementById('annualModal').classList.remove('hidden');
 
       loadAvailableYears();
@@ -431,7 +431,7 @@
     function loadAvailableYears() {
       callApi({ action: 'getAvailableGameYears' }, res => {
         if (res.result !== 'ok') {
-          document.getElementById('annualModalBody').textContent = res.message;
+          document.getElementById('annualList').textContent = res.message;
           return;
         }
 
@@ -460,7 +460,7 @@
         year
       }, res => {
         if (res.result !== 'ok') {
-          document.getElementById('annualModalBody').textContent = res.message;
+          document.getElementById('annualList').textContent = res.message;
           return;
         }
         renderAnnualTable(res.list, currentAnnualType);
