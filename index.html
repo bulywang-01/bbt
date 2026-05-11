@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="common.css">
-  
+
 <!-- ================= Script ================= -->
   <script src="js/auth.js"></script>
   <script src="js/config.js"></script>
@@ -25,8 +25,7 @@
     .welcome-box { position:relative; padding:26px; border-radius:16px;
       background:linear-gradient(135deg,#f5f8ff,#fff); }
     .welcome-role { font-size:22px; font-weight:800; color:#1a237e; }
-    .welcome-line { font-size:18px; font-weight:600; }
-    .welcome-name { font-size:22px; font-weight:800; margin:6px 0; }
+    .welcome-name { font-size:18px; font-weight:600; margin:6px 0; }
     .welcome-bg {
       position:absolute; right:18px; bottom:6px;
       font-size:110px; font-weight:900; opacity:.06;
@@ -212,6 +211,53 @@
     .open-link:hover {
       text-decoration: underline;
     }
+    
+    .welcome-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .welcome-actions .open-link {
+      background: #eef3ff;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .pill {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    /* 不同功能顏色 */
+    .pill-blue {
+      background: #e8f1ff;
+      color: #1a237e;
+    }
+    
+    .pill-green {
+      background: #e8f5e9;
+      color: #1b5e20;
+    }
+    
+    .pill-orange {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    
+    .pill:hover {
+      opacity: 0.85;
+    }
 
   </style>
 </head>
@@ -252,28 +298,75 @@
     <div class="welcome-name" id="welcome-name"></div>
     
     <div class="welcome-line">
-      歡迎使用 <strong>出勤管理系統</strong>　
-      <button id="open-league" class="open-link">聯盟賽制</button>｜
-      <button id="open-rules" class="open-link">裁判守則</button>｜
-      <button id="open-record" class="open-link">紀錄原則</button>
+      歡迎使用 <strong>出勤管理系統</strong>
+    </div>
+    
+    <div class="welcome-actions">
+      <button id="open-league" class="pill pill-blue">
+        📘 聯盟賽制
+      </button>
+      <button id="open-rules" class="pill pill-green">
+        🧑‍⚖️ 裁判守則
+      </button>
+      <button id="open-record" class="pill pill-orange">
+        📝 紀錄原則
+      </button>
     </div>
     
     <div class="welcome-bg" id="license-bg"></div>
   </div>
 
-
+// 在 welcome 區 JS 後面
+<script>
+  (function controlRulePills(){
+    const session = getSession?.();
+    if (!session) return;
+  
+    const roles = (session.role || '').split(',').map(r => r.trim());
+  
+    const leagueBtn = document.getElementById('open-league');
+    const judgeBtn  = document.getElementById('open-rules');
+    const recordBtn = document.getElementById('open-record');
+  
+    // 預設先隱藏
+    if (judgeBtn) judgeBtn.style.display = 'none';
+    if (recordBtn) recordBtn.style.display = 'none';
+  
+    // 管理者全開
+    if (roles.includes('admin')) {
+      if (judgeBtn) judgeBtn.style.display = 'inline-flex';
+      if (recordBtn) recordBtn.style.display = 'inline-flex';
+      return;
+    }
+  
+    // 裁判
+    if (roles.includes('judge')) {
+      if (judgeBtn) judgeBtn.style.display = 'inline-flex';
+    }
+  
+    // 紀錄
+    if (roles.includes('record')) {
+      if (recordBtn) recordBtn.style.display = 'inline-flex';
+    }
+  })();  
+</script>
+  
+  
   <!-- ✅ 我的班表 -->
   <div class="panel">
     <h3>📅 我的班表</h3>
-    <!-- <div id="schedule-loading" class="schedule-empty" style="display:none;">🔄 班表載入中…</div> -->
     <div id="schedule-list"></div>
     <div class="tabs">
       <button onclick="setRange('week')" id="tab-week">本週</button>
       <button onclick="setRange('next')" id="tab-next">下週</button>
       <button onclick="setRange('month')" id="tab-month">本月</button>
       <span style="flex:1"></span>
-      <!-- <a javascript:void(0)onClickViewFullSchedule()">查看完整班表 ▶</a> -->
+      <!--
+      <a javascript:void(0)onClickViewFullSchedule()">查看完整班表 ▶</a>
+      -->
     </div>
+      
+    <div id="schedule-loading" class="schedule-empty" style="display:none;">🔄 班表載入中…</div>
 
     <!-- 裁判 -->
     <div id="judge-schedule" class="schedule-block" style="display:none;">
@@ -288,21 +381,8 @@
     </div>
 
     <div id="no-schedule" class="empty" style="display:none;">
-         <!-- 目前此期間尚無班表。-->
+      目前此期間尚無班表。
     </div>
-    
-    
-  </div>
-
-  <!-- ✅ 聯盟公告 -->
-  <div class="panel">
-    <h3>📢 聯盟公告</h3>
-    <ul>
-      <li>例行賽七局制或 2.5 小時制。</li>
-      <li>第五局起分差達 10 分（含）提早結束。</li>
-      <li>平手且時間到，進入突破僵局制（二壘有人）。</li>
-      <li>裁判不得執法所屬母隊正式賽。</li>
-    </ul>
   </div>
 
   <!-- ===============================
@@ -349,6 +429,18 @@
           </div>
         </div>
 
+
+  <!-- ✅ 聯盟公告 -->
+  <div class="panel">
+    <h3>📢 聯盟公告</h3>
+    <ul>
+      <li>例行賽七局制或 2.5 小時制。</li>
+      <li>第五局起分差達 10 分（含）提早結束。</li>
+      <li>平手且時間到，進入突破僵局制（二壘有人）。</li>
+      <li>裁判不得執法所屬母隊正式賽。</li>
+    </ul>
+  </div>
+  
   <!-- ✅ 文件下載 -->
   <div class="panel">
     <h3>📄 文件下載</h3>
@@ -390,10 +482,17 @@
 
 <script>
 /* ===== Header ===== */
-fetch('header.html').then(r=>r.text()).then(h=>{
-  document.getElementById('header-container').innerHTML = h;
-  initHeaderVisibility();
-});
+function loadHeader() {
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      const container = document.getElementById('header-container');
+      if (!container) return;
+      container.innerHTML = html;
+    })
+    .catch(err => console.error('Header 載入失敗', err));
+}
+
 
 // ===== Welcome 區：身份顯示（中文）=====
 const session = getSession();
@@ -649,10 +748,10 @@ function formatTimeOnly(t) {
 document.addEventListener('DOMContentLoaded', () => {
 
   function bindOverlay(openId, overlayId, closeId) {
-    const openBtn  = document.getElementById(openId);
-    const overlay  = document.getElementById(overlayId);
+    const openBtn = document.getElementById(openId);
+    const overlay = document.getElementById(overlayId);
     const closeBtn = document.getElementById(closeId);
-    const box      = overlay?.querySelector('.overlay-box');
+    const box = overlay?.querySelector('.overlay-box');
 
     if (!openBtn || !overlay || !closeBtn || !box) return;
 
@@ -664,12 +763,10 @@ document.addEventListener('DOMContentLoaded', () => {
       overlay.style.display = 'none';
     });
 
-    // 點背景關閉
     overlay.addEventListener('click', () => {
       overlay.style.display = 'none';
     });
 
-    // ✅ 阻止白框冒泡（關鍵）
     box.addEventListener('click', e => {
       e.stopPropagation();
     });
@@ -679,6 +776,8 @@ document.addEventListener('DOMContentLoaded', () => {
   bindOverlay('open-rules',  'rules-overlay',  'rules-close-btn');
   bindOverlay('open-record', 'record-overlay', 'record-close-btn');
 
+  // ✅ header 也在這裡載（同一個生命週期）
+  loadHeader();
 });
 
 </script>
