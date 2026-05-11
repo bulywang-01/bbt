@@ -130,25 +130,31 @@ body.is-admin .nav-tile:hover {
 
 <script src="js/auth.js"></script>
 <script>
-(function initHeader(){
+(function initHeaderRoles(){
   const session = getSession?.();
   if (!session) return;
 
-  // ✅ admin 樣式切換
-  if (session.role && session.role.includes('admin')) {
-    document.body.classList.add('is-admin');
+  const roles = (session.role || '')
+    .split(',')
+    .map(r => r.trim());
+
+  // ✅ 裁判（包含裁判長）
+  if (roles.includes('judge') || roles.includes('chief_judge')) {
+    document.querySelectorAll('.nav-judge')
+      .forEach(el => el.style.display = 'flex');
   }
 
-  // ✅ 顯示角色按鈕
-  const roles = (session.role || '').split(',').map(r => r.trim());
-  if (roles.includes('judge')) {
-    document.querySelectorAll('.nav-judge').forEach(el => el.style.display='flex');
+  // ✅ 紀錄（包含紀錄長）
+  if (roles.includes('record') || roles.includes('record_chief')) {
+    document.querySelectorAll('.nav-record')
+      .forEach(el => el.style.display = 'flex');
   }
-  if (roles.includes('record')) {
-    document.querySelectorAll('.nav-record').forEach(el => el.style.display='flex');
-  }
+
+  // ✅ 管理員
   if (roles.includes('admin')) {
-    document.querySelectorAll('.nav-admin').forEach(el => el.style.display='flex');
+    document.querySelectorAll('.nav-admin')
+      .forEach(el => el.style.display = 'flex');
   }
 })();
+  
 </script>
