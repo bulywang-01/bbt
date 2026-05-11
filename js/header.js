@@ -1,15 +1,14 @@
-// header.js（不要立刻執行）
+// header.js
 window.initHeader = function () {
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
   if (!session || !session.role) return;
 
   const roles = session.role.split(',').map(r => r.trim());
-  const isAdmin = roles.includes('admin');
-
   const header = document.getElementById('app-header');
   if (!header) return;
 
-  // ✅ admin 全開
+  const isAdmin = roles.includes('admin');
+
   if (isAdmin) {
     header.querySelectorAll('.item').forEach(el => {
       el.style.display = 'flex';
