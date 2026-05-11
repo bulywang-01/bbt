@@ -5,7 +5,7 @@
   <title>管理中心</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ 原本就有、不可動的 JS -->
+  <!-- ✅ 你原本就有的 JS（一定要） -->
   <script src="js/auth.js"></script>
   <script src="js/config.js"></script>
 
@@ -33,7 +33,7 @@
       font-weight: 900;
     }
 
-    /* ===== Grid：2～3 格一列 ===== */
+    /* ===== Grid：桌機 3、手機 2 ===== */
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -73,6 +73,10 @@
       z-index: 999;
     }
 
+    .modal.hidden {
+      display: none;
+    }
+
     .modal-content {
       background: #fff;
       width: 90%;
@@ -95,10 +99,6 @@
 
     .modal-body {
       padding: 16px;
-    }
-
-    .hidden {
-      display: none;
     }
 
     /* ===== 年度表 ===== */
@@ -135,18 +135,45 @@
     <p style="color:#666;margin-top:-6px">請依身份選擇可用的管理功能</p>
 
     <div class="section-title">📊 班表與年度統計</div>
+
+    <!-- ✅ 6 個功能框，固定存在 -->
     <div class="cards">
+    
       <div class="card" onclick="openAnnualModal('judge')">
         📈 全員裁判年度總表
       </div>
-
+    
       <div class="card" onclick="openAnnualModal('record')">
         📝 全員紀錄員年度總表
       </div>
+    
+      <a href="judge_dashboard_admin.html">
+        <div class="card">
+          ⚾ 裁判員班表安排
+        </div>
+      </a>
+    
+      <a href="record_dashboard_admin.html">
+        <div class="card">
+          📋 紀錄員班表安排
+        </div>
+      </a>
+    
+      <a href="admin_users.html">
+        <div class="card">
+          👤 帳號管理
+        </div>
+      </a>
+    
+      <a href="admin_games.html">
+        <div class="card">
+          🏟️ 賽事管理
+        </div>
+      </a>
+    
+    </div>
 
-      <div class="card" onclick="location.href='ard" onclick="location.href='record_dashboard_admin   <div class="card" onclick="location.href='admin      <div class="card" onclick="location.href='admin_games.html  </div>
-
-  <!-- ===== 年度 Modal（只在點擊時出現） ===== -->
+  <!-- ✅ Modal 永遠在最外層，而且預設 hidden -->
   <div id="annualModal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -161,7 +188,7 @@
   </div>
 
   <script>
-    /* ===== 初始化（只做 header，不碰 modal） ===== */
+    /* ===== 初始化：只做 header，不碰 modal ===== */
     document.addEventListener('DOMContentLoaded', function () {
       guardAdminPage();
 
