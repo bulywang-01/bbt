@@ -769,15 +769,21 @@ function previewImport(){
     }
 
     //日期轉換
+    // ✅ Excel 日期序號 → yyyy-MM-dd（不碰 UTC）
     function excelDateToISO(value) {
-    if (typeof value !== 'number') return value || '';
-  
-    // Excel 的 1 = 1899-12-31
-    const excelEpoch = new Date(1899, 11, 30);
-    const d = new Date(excelEpoch.getTime() + value * 86400000);
-  
-    return d.toISOString().slice(0, 10);
-  }
+      if (typeof value !== 'number') return value || '';
+    
+      // Excel 的 1 = 1899-12-31
+      const base = new Date(1899, 11, 30);
+      base.setDate(base.getDate() + value);
+    
+      const y = base.getFullYear();
+      const m = String(base.getMonth() + 1).padStart(2, '0');
+      const d = String(base.getDate()).padStart(2, '0');
+    
+      return `${y}-${m}-${d}`;
+    }
+
     //時間轉換
     function excelTimeToHHmm(value) {
     if (typeof value !== 'number') return value || '';
