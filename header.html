@@ -102,31 +102,28 @@ body.is-admin #app-header .item {
   const roles = session.role.split(',').map(r => r.trim());
   const isAdmin = roles.includes('admin');
 
-  // ✅ 用「.item.role」精準選取（這是關鍵）
-  if (
-    isAdmin ||
-    roles.includes('judge') ||
-    roles.includes('chief_judge')
-  ) {
+  const allItems = document.querySelectorAll('#app-header .item');
+
+  if (isAdmin) {
+    // ✅ admin → 直接顯示全部功能
+    document.body.classList.add('is-admin');
+    allItems.forEach(el => {
+      el.style.display = 'flex';
+    });
+    return;
+  }
+
+  // ===== 非 admin 才走角色判斷 =====
+
+  if (roles.includes('judge') || roles.includes('chief_judge')) {
     document
       .querySelectorAll('#app-header .item.judge')
       .forEach(el => (el.style.display = 'flex'));
   }
 
-  if (
-    isAdmin ||
-    roles.includes('record') ||
-    roles.includes('record_chief')
-  ) {
+  if (roles.includes('record') || roles.includes('record_chief')) {
     document
       .querySelectorAll('#app-header .item.record')
-      .forEach(el => (el.style.display = 'flex'));
-  }
-
-  if (isAdmin) {
-    document.body.classList.add('is-admin');
-    document
-      .querySelectorAll('#app-header .item.admin')
       .forEach(el => (el.style.display = 'flex'));
   }
 })();
