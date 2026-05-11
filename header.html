@@ -1,18 +1,18 @@
 <style>
-/* ================= Header 基本 ================= */
 #header {
   background:#fff;
   border-bottom:1px solid #ddd;
   padding:8px 12px;
 }
 
+/* 導覽列 */
 #header nav {
   display:flex;
-  gap:10px;
   align-items:center;
+  gap:10px;
 }
 
-/* ================= Nav Tile（預設：卡片） ================= */
+/* ===== 卡片式（裁判 / 紀錄預設） ===== */
 .nav-tile {
   width:72px;
   height:72px;
@@ -22,49 +22,18 @@
   justify-content:center;
   gap:4px;
   text-decoration:none;
-  color:#1a237e;
-  font-size:13px;
   font-weight:700;
+  font-size:13px;
   border-radius:14px;
   background:#f5f8ff;
-  transition:background .2s, transform .1s;
+  color:#1a237e;
 }
 
-.nav-tile:hover {
-  background:#e8f1ff;
-  transform:translateY(-1px);
-}
+/* icon / text */
+.nav-icon { font-size:24px; }
+.nav-text { font-size:14px; text-align:center; }
 
-.nav-icon {
-  font-size:24px;
-  line-height:1;
-}
-
-.nav-text {
-  font-size:16px;
-  line-height:1.05;
-  text-align:center;
-}
-
-/* ================= Active ================= */
-.nav-tile.active {
-  box-shadow:0 0 0 2px #4a7ef5 inset;
-  background:#dfeaff;
-}
-
-/* ================= Role Colors ================= */
-.nav-home { background:#f5f5f5; color:#333; }
-.nav-password { background:#f5f5f5; color:#333; }
-.nav-logout { background:#f5f5f5; color:#333; }
-.nav-judge { background:#e8f1ff; color:#1a237e; display:none; }
-.nav-record { background:#e8f5e9; color:#1b5e20; display:none; }
-.nav-admin { background:#ede7f6; color:#4a148c; display:none; }
-
-/* ================= ✅ Admin：切換成後台 Navbar 模式 ================= */
-body.is-admin #header nav {
-  gap:6px;
-}
-
+/* ===== Admin 專用（橫向列） ===== */
 body.is-admin .nav-tile {
   width:auto;
   height:40px;
@@ -72,56 +41,44 @@ body.is-admin .nav-tile {
   padding:6px 12px;
   border-radius:8px;
   background:transparent;
-  box-shadow:none;
 }
 
-body.is-admin .nav-icon {
-  font-size:18px;
-}
-
-body.is-admin .nav-text {
-  font-size:14px;
-}
-
-body.is-admin .nav-tile:hover {
-  background:#f3f4f6;
-  transform:none;
-}
-
-/* ================= RWD ================= */
-@media (max-width:720px) {
-  #header nav { overflow-x:auto; }
+/* ===== 預設隱藏（JS 依角色打開） ===== */
+.nav-judge,
+.nav-record,
+.nav-admin {
+  display:none;
 }
 </style>
 
 <div id="header">
   <nav>
-    <a href="index.html" class="nav-tile nav-home">
+    index.html" class="nav-tile nav-home">
       <div class="nav-icon">🏠</div>
       <div class="nav-text">首頁</div>
     </a>
 
-    <a href="judge_dashboard.html" class="nav-tile nav-judge">
+    judge_dashboard.html" class="nav-tile nav-judge">
       <div class="nav-icon">🧑‍⚖️</div>
       <div class="nav-text">裁判<br>班表</div>
     </a>
 
-    <a href="record_dashboard.html" class="nav-tile nav-record">
+    record_dashboard.html" class="nav-tile nav-record">
       <div class="nav-icon">📝</div>
       <div class="nav-text">紀錄<br>班表</div>
     </a>
 
-    <a href="admin_dashboard.html" class="nav-tile nav-admin">
+    admin_dashboard.html" class="nav-tile nav-admin">
       <div class="nav-icon">⚙️</div>
       <div class="nav-text">管理<br>介面</div>
     </a>
 
-    <a href="change_password.html" class="nav-tile nav-password">
+    change_password.html" class="nav-tile">
       <div class="nav-icon">🔐</div>
       <div class="nav-text">改<br>密碼</div>
     </a>
 
-    <a href="#" onclick="logout()" class="nav-tile nav-logout">
+    #" class="nav-tile" onclick="logout()">
       <div class="nav-icon">🚪</div>
       <div class="nav-text">登出</div>
     </a>
@@ -130,21 +87,19 @@ body.is-admin .nav-tile:hover {
 
 <script src="js/auth.js"></script>
 <script>
-(function initHeader(){
-  const session = getSession?.();
-  if (!session) return;
+(function initHeader() {
+  const session = typeof getSession === 'function' ? getSession() : null;
+  if (!session || !session.role) return;
 
-  const roles = (session.role || '')
-    .split(',')
-    .map(r => r.trim());
+  const roles = session.role.split(',').map(r => r.trim());
 
-  // ✅ 裁判（包含裁判長）
+  // ✅ 裁判（含裁判長）
   if (roles.includes('judge') || roles.includes('chief_judge')) {
     document.querySelectorAll('.nav-judge')
       .forEach(el => el.style.display = 'flex');
   }
 
-  // ✅ 紀錄（包含紀錄長）
+  // ✅ 紀錄（含紀錄長）
   if (roles.includes('record') || roles.includes('record_chief')) {
     document.querySelectorAll('.nav-record')
       .forEach(el => el.style.display = 'flex');
@@ -152,9 +107,9 @@ body.is-admin .nav-tile:hover {
 
   // ✅ 管理員
   if (roles.includes('admin')) {
+    document.body.classList.add('is-admin');
     document.querySelectorAll('.nav-admin')
       .forEach(el => el.style.display = 'flex');
   }
 })();
-  
 </script>
