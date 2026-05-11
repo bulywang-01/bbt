@@ -470,24 +470,28 @@
     // 手機版表格
     function renderAnnualTable(list, type) {
       const container = document.getElementById('annualList');
-      
-      // ✅ 關鍵：先清掉「載入中 / 舊資料」
+    
+      // ✅ 清掉「載入中 / 舊資料」
       container.innerHTML = '';
     
       container.innerHTML = list.map(u => {
         const roles = type === 'judge'
-          ? u.positions || {}
-          : u.roles || {};
+          ? (u.positions || {})
+          : (u.roles || {});
     
-      const judgeRoleOrder = ['主審','一壘審','二壘審','三壘審'];
-      const roleCells = judgeRoleOrder
-        .map(r => `<div>${r}<br><b>${roles[r] || 0}</b></div>`)
-        .join('');
-
-      const recordRoleOrder = ['主紀錄','見習','影像'];
-      const roleCells = recordRoleOrder
-        .map(r => `<div>${r}<br><b>${roles[r] || 0}</b></div>`)
-        .join('');
+        let roleCells = '';
+    
+        if (type === 'judge') {
+          const judgeRoleOrder = ['主審','一壘審','二壘審','三壘審'];
+          roleCells = judgeRoleOrder
+            .map(r => `<div>${r}<br><b>${roles[r] || 0}</b></div>`)
+            .join('');
+        } else {
+          const recordRoleOrder = ['主紀錄','見習','影像'];
+          roleCells = recordRoleOrder
+            .map(r => `<div>${r}<br><b>${roles[r] || 0}</b></div>`)
+            .join('');
+        }
     
         return `
           <div class="person-row">
