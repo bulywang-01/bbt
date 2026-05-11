@@ -344,9 +344,9 @@ function Value(d) {
   }
 
   // ✅ ISO 格式：2026-05-01T16:00:00.000Z
-  if (s.includes('T')) {
-    return s.split('T')[0]; // 直接取日期
-  }
+  //if (s.includes('T')) {
+  //  return s.split('T')[0]; // 直接取日期
+  //}
 
   // ✅ yyyy/MM/dd
   if (s.includes('/')) {
@@ -1274,21 +1274,32 @@ function deleteGame(id){
 }
 
 // ✅ <input type="date"> 專用：純字串，不碰時區
+// ✅ 統一處理：Sheet Date / ISO Z / yyyy-MM-dd / yyyy/MM/dd
 function normalizeDateValue(d) {
   if (!d) return '';
+
   const s = String(d);
 
-  // 已經是 yyyy-MM-dd
+  // ✅ 已經是純日期（最安全）
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
     return s;
   }
 
-  // ISO 格式：2026-05-01T16:00:00.000Z
-  if (s.includes('T')) {
-    return s.split('T')[0];
+  // ✅ Apps Script 常見：2026-05-30T16:00:00.000Z
+  if (s.endsWith('Z')) {
+    const date = new Date(s);
+
+    // ✅ 補回本地時區（台灣 +8）
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d2 = String(date.getDate()).padStart(2, '0');
+
+    return `${y}-${m}-${d2}`;
   }
 
-  // yyyy/MM/dd
+  // ✅ yyyy/MM/dd
   if (s.includes('/')) {
     return s.replace(/\//g, '-');
   }
