@@ -686,10 +686,26 @@ function loadGames() {
    }); //callAPI
 } //原本的結束點
 
+// 儲存功能
+function updateGame(id, field, value) {
+  callApiPost({
+    action: 'updateGame',
+    game_id: id,
+    field_name: field,
+    value: value
+  })
+  .then(res => {
+    if (!res || res.result !== 'ok') {
+      showToast('❌ 儲存失敗', 2500);
+      return;
+    }
 
-function updateGame(id,f,v){
-  callApi({action:'updateGame',game_id:id,field_name:f,value:v}, callback)
-}
+    showToast('✅ 已儲存');
+  })
+  .catch(err => {
+    console.error(err);
+    showToast('❌ 儲存發生錯誤', 2500);
+ 
 
 let importRows=[]
 
