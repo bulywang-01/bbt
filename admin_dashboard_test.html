@@ -239,30 +239,6 @@
   <!-- header -->
   <div id="header-container"></div>
 
-  
-  <h2>全員年度總表</h2>
-
-  <div class="toolbar">
-    <input id="searchInput" placeholder="搜尋姓名…" oninput="applyFilter()" />
-    <select id="yearSelect"></select>
-    <button onclick="exportCSV()">匯出</button>
-  </div>
-
-  <!-- 桌機 -->
-  <div class="desktop-only">
-    <table>
-      <thead>
-        <tr>
-          <th onclick="sortBy('name')">姓名</th>
-          <th onclick="sortBy('annual')">年度</th>
-          <th onclick="sortBy('career')">生涯</th>
-          <th>站位分佈</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-
   <div class="main">
     <h2>管理中心</h2>
     <p style="color:#666;margin-top:-6px">請依身份選擇可用的管理功能</p>
@@ -309,6 +285,28 @@
   <!-- ✅ Modal 永遠在最外層，而且預設 hidden -->
   <div id="annualModal" class="modal hidden">
     <div class="modal-content">
+        <h2>全員年度總表</h2>
+          <div class="toolbar">
+            <input id="searchInput" placeholder="搜尋姓名…" oninput="applyFilter()" />
+            <select id="yearSelect"></select>
+            <button onclick="exportCSV()">匯出</button>
+          </div>
+        
+          <!-- 桌機 -->
+          <div class="desktop-only">
+            <table>
+              <thead>
+                <tr>
+                  <th onclick="sortBy('name')">姓名</th>
+                  <th onclick="sortBy('annual')">年度</th>
+                  <th onclick="sortBy('career')">生涯</th>
+                  <th>站位分佈</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+      
       <div class="modal-header">
         <h3 id="annualModalTitle"></h3>
         <div>
