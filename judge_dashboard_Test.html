@@ -404,7 +404,12 @@ function loadHeader() {
     .catch(err => console.error('Header 載入失敗', err));
   }
   
-  document.addEventListener('DOMContentLoaded', loadHeader);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadHeader();  // header
+    initPage();   // ✅ 裁判頁資料（關鍵）
+  });
+
 </script>
 
   <div class="main">
