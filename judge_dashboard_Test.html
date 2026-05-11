@@ -365,10 +365,43 @@ tr.expired {
   </div>
 </div>
 
+/* ===== 給共用header使用 ===== */
+  <div id="header-container"></div>
 
-
-<div id="header"></div>
-
+  <script>
+    function loadHeader() {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+          // 1️⃣ 插入 header
+          document.getElementById('header-container').innerHTML = html;
+    
+          // 2️⃣ 設定身分 → 只影響 body class
+          const session = (typeof getSession === 'function') ? getSession() : null;
+          document.body.classList.remove(
+            'role-admin','role-judge','role-record'
+          );
+    
+          if (session && session.role) {
+            const roles = session.role.split(',').map(r => r.trim());
+    
+            if (roles.includes('admin')) {
+              document.body.classList.add('role-admin');
+            }
+            if (roles.includes('judge') || roles.includes('chief_judge')) {
+              document.body.classList.add('role-judge');
+            }
+            if (roles.includes('record') || roles.includes('record_chief')) {
+              document.body.classList.add('role-record');
+            }
+          }
+        })
+        .catch(err => console.error('Header 載入失敗', err));
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadHeader);
+</script>
+  
 <div class="main">
 
   <!-- 篩選 -->
@@ -431,50 +464,6 @@ function timeToMinutesSafe(t) {
   return d.getHours() * 60 + d.getMinutes();
 }
 
-/* ===== 給共用header.html使用 ===== */
-/* ===== 初始化（含共用 header） ===== */
-document.addEventListener('DOMContentLoaded', () => {
-
-  // 1️⃣ 先載入共用 header
-  fetch('header.html')
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById('header').innerHTML = html;
-      
-       // ✅ 關鍵：初始化 header 行為（權限 / 排序 / 高亮）
-       if (typeof applyHeaderRole === 'function') applyHeaderRole();
-       if (typeof highlightCurrentNav === 'function') highlightCurrentNav();
-       if (typeof reorderNavByRole === 'function') reorderNavByRole();
-
-
-      // 2️⃣ 設定頁面標題（從 body data-page-title）
-      const title = document.body.dataset.pageTitle;
-      if (title) {
-        const el = document.querySelector('.page-title');
-        if (el) el.textContent = title;
-      }
-
-      // 3️⃣ 設定使用者名稱（現在 header 已經存在）
-      const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-      if (!session.user_id) {
-        location.replace('login.html');
-        return;
-      }
-
-      const userEl = document.getElementById('u_name');
-      if (userEl) {
-        userEl.textContent = session.name || '';
-      }
-   
-      // ✅ 這三行「一定要在這一頁跑」
-      applyHeaderRole();
-      reorderNavByRole();
-      highlightCurrentNav();
-      
-      // 4️⃣ 載入頁面主要資料
-      loadGames();
-    });
-});
 
 /* ===== 狀態 ===== */
 let allGames = [];
