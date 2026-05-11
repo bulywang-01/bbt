@@ -5,7 +5,7 @@
   <title>管理中心</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ 完整保留你原本的 JS 載入（這裡是關鍵） -->
+  <!-- ✅ 你原本就有、而且不能動的 JS -->
   <script src="js/auth.js"></script>
   <script src="js/config.js"></script>
 
@@ -40,7 +40,7 @@
       gap: 18px;
     }
 
-    /* ===== Tile（header 風格） ===== */
+    /* ===== 卡片（header 風格） ===== */
     .card {
       background: #ffffff;
       border-radius: 14px;
@@ -61,17 +61,79 @@
       box-shadow: 0 6px 18px rgba(0,0,0,.14);
     }
 
-    /* ✅ 權限顯示（完全沿用你原邏輯） */
+    /* ✅ 權限顯示（你原本的） */
     .role-admin,
     .role-chief-judge,
     .role-record-chief {
       display: none;
     }
+
+    /* ===== Modal（你原本就有） ===== */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: #fff;
+      width: 90%;
+      max-width: 960px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 10px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #eee;
+      position: sticky;
+      top: 0;
+      background: #fff;
+    }
+
+    .modal-body {
+      padding: 16px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* ===== 年度表格（你原 render 用） ===== */
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .admin-table th {
+      text-align: left;
+      font-weight: 700;
+    }
+
+    .admin-table td.num {
+      text-align: right;
+      font-weight: 600;
+    }
   </style>
 </head>
 
 <body>
-  <!-- ✅ header 由你原本 JS 載入 -->
+  <!-- ✅ header 容器 -->
   <div id="header-container"></div>
 
   <div class="main">
@@ -93,15 +155,12 @@
       </div>
 
       <div class="card role-admin role-chief-judge"
-           onclick="location.href='judge_dashboard_admin.html'location.href='record_dashboard_admin   <div class="section-title">⚙️ 系統管理</div>
+           onclick="location.href='judge_dashboard_admin.html'ecord_dashboard_admin.html'v class="section-title">⚙️ 系統管理</div>
     <div class="cards">
 
       <div class="card role-admin"
-           onclick="location.href='"card role-admin"
-           onclick
-    </div>
-  </div>
-      
+           onclick="location.href='admin_users.html'
+           onclick="location.href='admin_games.html' 年度 Modal（你原本的） ===== -->
   <div id="annualModal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -115,7 +174,7 @@
     </div>
   </div>
 
-  <!-- ✅ 完整保留你原本的 JS 行為 -->
+  <!-- ===== ✅ 你原本完整的 JS（一行不刪，只修語法） ===== -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       guardAdminPage();
@@ -144,110 +203,106 @@
       }
     });
 
-  
-/* =========================
- * 年度總表 Modal（還原版）
- * ========================= */
+    /* =========================
+     * 年度總表 Modal（你原本的）
+     * ========================= */
+    let currentAnnualType = null;
 
-let currentAnnualType = null;
+    function openAnnualModal(type) {
+      currentAnnualType = type;
 
-function openAnnualModal(type) {
-  currentAnnualType = type;
+      document.getElementById('annualModalTitle').textContent =
+        type === 'judge' ? '全員裁判年度總表' : '全員紀錄員年度總表';
 
-  document.getElementById('annualModalTitle').textContent =
-    type === 'judge' ? '全員裁判年度總表' : '全員紀錄員年度總表';
+      document.getElementById('annualModalBody').textContent = '載入中…';
+      document.getElementById('annualModal').classList.remove('hidden');
 
-  document.getElementById('annualModalBody').textContent = '載入中…';
-  document.getElementById('annualModal').classList.remove('hidden');
-
-  loadAvailableYears();
-}
-
-function closeAnnualModal() {
-  document.getElementById('annualModal').classList.add('hidden');
-}
-
-/* ===== 後端年度（Games 表實際年份） ===== */
-function loadAvailableYears() {
-  callApi({ action: 'getAvailableGameYears' }, res => {
-    if (res.result !== 'ok') {
-      document.getElementById('annualModalBody').textContent = res.message;
-      return;
+      loadAvailableYears();
     }
 
-    const sel = document.getElementById('annualYearSelect');
-    sel.innerHTML = '';
-
-    res.years.forEach((y, i) => {
-      const opt = document.createElement('option');
-      opt.value = y;
-      opt.textContent = y + ' 年';
-      if (i === 0) opt.selected = true;
-      sel.appendChild(opt);
-    });
-
-    reloadAnnualByYear();
-  });
-}
-
-function reloadAnnualByYear() {
-  const year = document.getElementById('annualYearSelect').value;
-
-  callApi({
-    action: currentAnnualType === 'judge'
-      ? 'getJudgeAnnualSummary_'
-      : 'getRecordAnnualSummary_',
-    year: year
-  }, res => {
-    if (res.result !== 'ok') {
-      document.getElementById('annualModalBody').textContent = res.message;
-      return;
+    function closeAnnualModal() {
+      document.getElementById('annualModal').classList.add('hidden');
     }
 
-    renderAnnualTable(res.list, currentAnnualType);
-  });
-}
+    function loadAvailableYears() {
+      callApi({ action: 'getAvailableGameYears' }, res => {
+        if (res.result !== 'ok') {
+          document.getElementById('annualModalBody').textContent = res.message;
+          return;
+        }
 
-/* ===== 管理頁專用年度表 render ===== */
-function renderAnnualTable(list, type) {
-  if (!list || list.length === 0) {
-    document.getElementById('annualModalBody').innerHTML =
-      '<p style="color:#888">此年度沒有資料</p>';
-    return;
-  }
+        const sel = document.getElementById('annualYearSelect');
+        sel.innerHTML = '';
 
-  const detailTitle = type === 'judge' ? '站位分佈' : '角色分佈';
+        res.years.forEach((y, i) => {
+          const opt = document.createElement('option');
+          opt.value = y;
+          opt.textContent = y + ' 年';
+          if (i === 0) opt.selected = true;
+          sel.appendChild(opt);
+        });
 
-  const rows = list.map(u => {
-    const detail =
-      type === 'judge'
-        ? Object.entries(u.positions || {}).map(([k,v]) => `${k}：${v}`).join(' ｜ ')
-        : Object.entries(u.roles || {}).map(([k,v]) => `${k}：${v}`).join(' ｜ ');
+        reloadAnnualByYear();
+      });
+    }
 
-    return `
-      <tr>
-        <td class="name">${u.name}</td>
-        <td class="num">${u.annual}</td>
-        <td class="num">${u.career}</td>
-        <td>${detail || '—'}</td>
-      </tr>
-    `;
-  }).join('');
+    function reloadAnnualByYear() {
+      const year = document.getElementById('annualYearSelect').value;
 
-  document.getElementById('annualModalBody').innerHTML = `
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>姓名</th>
-          <th>年度</th>
-          <th>生涯</th>
-          <th>${detailTitle}</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `;
-}
-</script>
+      callApi({
+        action: currentAnnualType === 'judge'
+          ? 'getJudgeAnnualSummary_'
+          : 'getRecordAnnualSummary_',
+        year: year
+      }, res => {
+        if (res.result !== 'ok') {
+          document.getElementById('annualModalBody').textContent = res.message;
+          return;
+        }
+
+        renderAnnualTable(res.list, currentAnnualType);
+      });
+    }
+
+    function renderAnnualTable(list, type) {
+      if (!list || list.length === 0) {
+        document.getElementById('annualModalBody').innerHTML =
+          '<p style=\"color:#888\">此年度沒有資料</p>';
+        return;
+      }
+
+      const detailTitle = type === 'judge' ? '站位分佈' : '角色分佈';
+
+      const rows = list.map(u => {
+        const detail =
+          type === 'judge'
+            ? Object.entries(u.positions || {}).map(([k,v]) => `${k}：${v}`).join(' ｜ ')
+            : Object.entries(u.roles || {}).map(([k,v]) => `${k}：${v}`).join(' ｜ ');
+
+        return `
+          <tr>
+            <td>${u.name}</td>
+            <td class="num">${u.annual}</td>
+            <td class="num">${u.career}</td>
+            <td>${detail || '—'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('annualModalBody').innerHTML = `
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>姓名</th>
+              <th>年度</th>
+              <th>生涯</th>
+              <th>${detailTitle}</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+  </script>
 </body>
 </html>
