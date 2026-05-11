@@ -259,38 +259,143 @@
   <!-- 裁判守則 Overlay -->
   <div id="rules-overlay" class="overlay">
     <div class="overlay-box">
-      <h2>🧑‍⚖️ BBT 聯盟裁判守則</h2>
-
-      <h3>賽前</h3>
+      <h2>🧑‍⚖️ BBT 聯盟例行賽｜裁判守則</h2>
+      
+      <h3>— 賽前 —</h3>
       <ul>
-        <li>請穿著 BBT 裁判制服並配戴裁判帽。</li>
-        <li>主審需向雙方球隊各索取一張完成之先發單。</li>
+        <li>請穿著 BBT 裁判制服，並配戴裁判帽。</li>
+        <li>主審須向雙方球隊各領取一張 <strong>已填寫完成的先發單</strong>。</li>
+        <li>第二場、第三場賽事，請協助 <strong>補畫打擊區線</strong> 並 <strong>簡單整理場地</strong>。</li>
       </ul>
-
-      <h3>比賽中</h3>
+      
+      <h3>— 比賽中 —</h3>
       <ul>
-        <li>比賽 7 局制或 2.5 小時制。</li>
-        <li class="important">第五局起分差達 10 分（含）以上提前結束。</li>
-        <li>單投手累計 3 次觸身球或 2 次頭部觸身球須更換。</li>
+        <li>
+          <strong>換人規定：</strong>
+          總教練須先向主審說明換人內容，
+          主審請記錄於先發單（請自備筆），
+          並同步告知記錄員。
+        </li>
+      
+        <li>
+          換局時，請先於 <strong>計分板</strong> 上填寫該局分數。
+        </li>
+      
+        <li>
+          比賽採 <strong>七局制 或 2.5 小時制</strong>（依裁判認定）。
+        </li>
+      
+        <li>
+          若比賽時間已達 <strong>賽前 15 分鐘</strong> 且平手，
+          下局即進入 <strong>突破僵局制</strong>。
+        </li>
+      
+        <li>
+          【突破僵局制】<br>
+          0 出局，進攻方 <strong>二、三壘有人</strong>
+          （前一局最後出局者開始）。
+        </li>
+      
+        <li>
+          若再度平手，視時間可再開新局或以和局判定。
+        </li>
+      
+        <li>
+          <strong>※ 季後賽不適用和局制</strong>
+        </li>
+      
+        <li style="color:#c62828;font-weight:700;">
+          第五局起，雙方分數差達 <strong>10 分（含）以上</strong>，
+          判定提前結束比賽。
+        </li>
+      
+        <li>
+          單一投手累計：
+          <ul>
+            <li>超過 <strong>3 次觸身球</strong>，或</li>
+            <li><strong>2 次頭部觸身球</strong></li>
+          </ul>
+          必須強制更換投手。
+        </li>
+      
+        <li>
+          球員須戴 <strong>著膠質釘（塑膠釘）</strong> 方可上場，<br>
+          違規者請立即請其下場修正。
+        </li>
+      
+        <li>
+          <strong>服裝規定：</strong>
+          球隊須穿著 <strong>相同棒球衣與棒球褲</strong>，
+          不得穿著其他運動褲，
+          並請提醒球員 <strong>褲管需紮入</strong>。
+        </li>
       </ul>
-
+      
+      <h3>— 比賽結束 —</h3>
+      <ul>
+        <li>比賽用球請 <strong>全數收回</strong>。</li>
+        <li>請安排雙方球隊列隊，<strong>清楚告知比賽結果並致謝</strong>。</li>
+      </ul>
+      
       <button class="close-btn" onclick="hideOverlay('rules-overlay')">關閉</button>
+
     </div>
   </div>
 
-  <!-- 聯盟賽制 Overlay -->
-  <div id="league-overlay" class="overlay">
+  <!-- ===============================
+  📘 聯盟賽制 Overlay（比照裁判守則）
+  =============================== -->
+  <div id="league-overlay" class="overlay" style="display:none;">
     <div class="overlay-box">
-      <h2>📘 BBT 聯盟賽制</h2>
-
+      <h2>📘 BBT 賽制規定 Rules</h2>
+  
+      <h3>一、例行賽</h3>
       <ul>
-        <li>大聯盟、小聯盟各 8 隊。</li>
-        <li>雙循環賽制，每隊 14 場例行賽。</li>
-        <li class="important">例行賽、季後賽、冠軍賽分差 10 分（含）提前結束。</li>
-        <li>裁判不得執法所屬母隊賽事。</li>
+        <li>本季採分區制，大聯盟組 8 隊、小聯盟組 8 隊，雙循環制。</li>
+        <li>合計 112 場賽事，每隊進行 14 場例行賽。</li>
       </ul>
-
-      <button class="close-btn" onclick="hideOverlay('league-overlay')">關閉</button>
+  
+      <h3>二、比賽用球</h3>
+      <ul>
+        <li>比賽用球：KENKO BALL（全日本軟式野球聯盟公認球）。</li>
+        <li>賽後將進行回收重複使用。</li>
+      </ul>
+  
+      <h3>三、比賽時間</h3>
+      <ul>
+        <li>正式比賽 7 局或 2.5 小時制（依事前認定）。</li>
+        <li>時間屆滿前 15 分鐘且平手，下局進入突破僵局制。</li>
+        <li>突破僵局：0 出局，進攻方二、三壘有人。</li>
+      </ul>
+  
+      <h3>四、提前結束</h3>
+      <ul>
+        <li class="important">例行賽、季後賽、冠軍賽：雙方分數差 10 分（含）以上，判定提前結束。</li>
+        <li>未滿 3 局不列入正式比賽；滿 3 局為正式比賽。</li>
+      </ul>
+  
+      <h3>五、裁判配置</h3>
+      <ul>
+        <li>大聯盟：三人制裁判。</li>
+        <li>小聯盟：兩人制裁判。</li>
+      </ul>
+  
+      <h3>六、季後賽</h3>
+      <ul>
+        <li>季後賽採單淘汰制。</li>
+        <li>依例行賽戰績前四名晉級。</li>
+        <li>對戰組合由各隊派員抽籤決定。</li>
+      </ul>
+  
+      <h3>七、迴避原則</h3>
+      <ul>
+        <li><strong>嚴格禁止：</strong>例行賽、季後賽、冠軍賽，裁判不得執法所屬母隊賽事。</li>
+        <li>開放範圍：跨隊交流案、熱身賽、冬季聯盟。</li>
+      </ul>
+  
+      <button onclick="document.getElementById('league-overlay').style.display='none'" class="close-btn">
+        關閉
+      </button>
     </div>
   </div>
 
