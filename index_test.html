@@ -152,6 +152,81 @@
       font-weight: 700;
       cursor: pointer;
     }
+
+  /* ===== 我的班表（專業卡片版） ===== */
+
+    .schedule-days {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    
+    /* 每一天 */
+    .schedule-day {
+      display: flex;
+      gap: 12px;
+    }
+    
+    /* 日期欄 */
+    .schedule-date {
+      min-width: 72px;
+      text-align: center;
+      font-weight: 800;
+      color: #1a237e;
+    }
+    
+    .schedule-date .md {
+      font-size: 18px;
+    }
+    
+    .schedule-date .week {
+      font-size: 13px;
+      color: #666;
+    }
+    
+    /* 卡片容器 */
+    .schedule-cards {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    /* 單一班表卡 */
+    .schedule-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.06);
+    
+      display: grid;
+      gap: 6px;
+      font-size: 14px;
+    }
+    
+    .schedule-card .line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    
+    /* 裁判 / 紀錄角色標示 */
+    .role-judge {
+      color: #0d47a1;
+      background: #e3f2fd;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    
+    .role-record {
+      color: #1b5e20;
+      background: #e8f5e9;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
   </style>
 </head>
 
@@ -187,25 +262,22 @@
     </div>
 
     <!-- ✅ 我的班表 -->
-    <div class="panel">
-      <h3>📅 我的班表</h3>
-
-      <div class="tabs">
-        <button onclick="setRange('week')" id="tab-week">本週</button>
-        <button onclick="setRange('next')" id="tab-next">下週</button>
-        <button onclick="setRange('month')" id="tab-month">本月</button>
+      <div class="panel">
+        <h3>📅 我的班表</h3>
+      
+        <div class="tabs">
+          <button onclick="setRange('week')" id="tab-week">本週</button>
+          <button onclick="setRange('next')" id="tab-next">下週</button>
+          <button onclick="setRange('month')" id="tab-month">本月</button>
+        </div>
+      
+        <div id="schedule-list" class="schedule-days"></div>
+      
+        <div id="no-schedule" class="empty" style="display:none;">
+          此期間尚無班表
+        </div>
       </div>
 
-      <div id="schedule-loading" class="empty" style="display:none;">
-        班表載入中…
-      </div>
-
-      <div id="schedule-list"></div>
-
-      <div id="no-schedule" class="empty" style="display:none;">
-        此期間尚無班表
-      </div>
-    </div>
 
     <!-- ✅ 聯盟公告 -->
     <div class="panel">
