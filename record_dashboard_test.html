@@ -314,13 +314,46 @@ select.locked {
 </head>
 
 <body>
-<div id="header-container"></div>
+  
+/* ===== 給共用header使用 ===== */
+  <div id="header-container"></div>
+
+  <script>
+    function loadHeader() {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+          // 1️⃣ 插入 header
+          document.getElementById('header-container').innerHTML = html;
+    
+          // 2️⃣ 設定身分 → 只影響 body class
+          const session = (typeof getSession === 'function') ? getSession() : null;
+          document.body.classList.remove(
+            'role-admin','role-judge','role-record'
+          );
+    
+          if (session && session.role) {
+            const roles = session.role.split(',').map(r => r.trim());
+    
+            if (roles.includes('admin')) {
+              document.body.classList.add('role-admin');
+            }
+            if (roles.includes('judge') || roles.includes('chief_judge')) {
+              document.body.classList.add('role-judge');
+            }
+            if (roles.includes('record') || roles.includes('record_chief')) {
+              document.body.classList.add('role-record');
+            }
+          }
+        })
+        .catch(err => console.error('Header 載入失敗', err));
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadHeader);
+</script>
+  
   <div id="toast" class="toast"></div>
 
-<!--
-<div class="page-title">BBT 軟式棒球聯盟｜紀錄員班表</div>
-<div class="hint">※ 只能在「無」的欄位選擇自己</div>
--->
 <!-- ✅ 唯一主容器 -->
 <div id="desktopView">
   <h2 class="section-title">紀錄員班表</h2>
@@ -335,26 +368,6 @@ select.locked {
 /* ===== 全域 ===== */
 let session;
 let games = [];
-
-/* ===== 初始化 ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  initHeader();   // 只管 header
-  initPage();     // 只管登入與資料
-});
-
-/* ===== Header ===== */
-function initHeader() {
-  fetch('header.html')
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById('header-container').innerHTML = html;
-
-      // ✅ 關鍵：行為在這一頁跑
-      applyHeaderRole();
-      reorderNavByRole();
-      highlightCurrentNav();
-    });
-}
 
 
 function applyHeaderRole(){
