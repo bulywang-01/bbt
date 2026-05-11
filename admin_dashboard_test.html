@@ -194,7 +194,7 @@
   @media (max-width: 640px) {
     .card {
       min-height: 76px;
-      font-size: 17px;
+      font-size: 20px;
       padding: 10px;
     }
   
@@ -230,6 +230,73 @@
   /* 防止你圖中那種「全 員 裁 判」斷字 */
   th, td {
     white-space: nowrap;
+  }
+
+  /* ===== Modal 工具列 ===== */
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .modal-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .btn-export {
+    padding: 6px 10px;
+  }
+  
+  .btn-close {
+    font-size: 20px;
+    padding: 6px 12px;
+  }
+  
+  /* ===== 人卡片（手機主體） ===== */
+  .person-row {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.06);
+  }
+  
+  .person-name {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  
+  .person-stats {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
+  /* 角色分佈（固定欄位，直向） */
+  .role-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    font-size: 13px;
+  }
+  
+  .role-grid div {
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 6px;
+    text-align: center;
+  }
+  
+  /* ===== 桌機優化 ===== */
+  @media (min-width: 768px) {
+    #annualList {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+    }
   }
   </style>
   
@@ -307,14 +374,19 @@
             </table>
           </div>
       
+
+      <!-- 工具列 -->
       <div class="modal-header">
-        <h3 id="annualModalTitle"></h3>
-        <div>
+        <h3 id="annualModalTitle">全員年度總表</h3>
+        <div class="modal-tools">
           <select id="annualYearSelect" onchange="reloadAnnualByYear()"></select>
-          <button onclick="closeAnnualModal()">✕</button>
+          <button class="btn-export" onclick="exportCSV()">匯出</button>
+          <button class="btn-close" onclick="closeAnnualModal()">✕</button>
         </div>
       </div>
+
       <div class="modal-body" id="annualModalBody">載入中…</div>
+        <div id="annualList"></div>
     </div>
   </div>
 
@@ -389,45 +461,33 @@
       });
     }
 
+    // 手機版表格
     function renderAnnualTable(list, type) {
-      if (!list || list.length === 0) {
-        document.getElementById('annualModalBody').innerHTML =
-          '<p style="color:#888">此年度沒有資料</p>';
-        return;
-      }
-
-      const detailTitle = type === 'judge' ? '站位分佈' : '角色分佈';
-
-      const rows = list.map(u => {
-        const detail =
-          type === 'judge'
-            ? Object.entries(u.positions || {}).map(([k,v]) => `${k}：${v}`).join(' ｜ ')
-            : Object.entries(u.roles || {}).map(([k,v]) => `${k}：${v}`).join(' ｜ ');
-
+      const container = document.getElementById('annualList');
+    
+      container.innerHTML = list.map(u => {
+        const roles = type === 'judge'
+          ? u.positions || {}
+          : u.roles || {};
+    
+        const roleCells = Object.entries(roles)
+          .map(([k,v]) => `<div>${k}<br><b>${v}</b></div>`)
+          .join('');
+    
         return `
-          <tr>
-            <td>${u.name}</td>
-            <td class="num">${u.annual}</td>
-            <td class="num">${u.career}</td>
-            <td>${detail || '—'}</td>
-          </tr>
+          <div class="person-row">
+            <div class="person-name">${u.name}</div>
+            <div class="person-stats">
+              年度：${u.annual} ｜ 生涯：${u.career}
+            </div>
+            <div class="role-grid">
+              ${roleCells}
+            </div>
+          </div>
         `;
       }).join('');
-
-      document.getElementById('annualModalBody').innerHTML = `
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>姓名</th>
-              <th>年度</th>
-              <th>生涯</th>
-              <th>${detailTitle}</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      `;
     }
+
 
   // 桌機表格
   function renderDesktopTable(list) {
