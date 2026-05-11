@@ -385,8 +385,11 @@
         </div>
       </div>
 
-      <div class="modal-body" id="annualModalBody">載入中…</div>
-        <div id="annualList"></div>
+        <!-- 內容 -->
+        <div class="modal-body">
+          <div id="annualList"></div>
+        </div>
+
     </div>
   </div>
 
@@ -408,6 +411,9 @@
 
     function openAnnualModal(type) {
       currentAnnualType = type;
+
+      const container = document.getElementById('annualList');
+      container.innerHTML = '載入中…';   // ✅ 清空 + loading
 
       document.getElementById('annualModalTitle').textContent =
         type === 'judge' ? '全員裁判年度總表' : '全員紀錄員年度總表';
@@ -464,15 +470,24 @@
     // 手機版表格
     function renderAnnualTable(list, type) {
       const container = document.getElementById('annualList');
+      
+      // ✅ 關鍵：先清掉「載入中 / 舊資料」
+      container.innerHTML = '';
     
       container.innerHTML = list.map(u => {
         const roles = type === 'judge'
           ? u.positions || {}
           : u.roles || {};
     
-        const roleCells = Object.entries(roles)
-          .map(([k,v]) => `<div>${k}<br><b>${v}</b></div>`)
-          .join('');
+      const judgeRoleOrder = ['主審','一壘審','二壘審','三壘審'];
+      const roleCells = judgeRoleOrder
+        .map(r => `<div>${r}<br><b>${roles[r] || 0}</b></div>`)
+        .join('');
+
+      const recordRoleOrder = ['主紀錄','見習','影像'];
+      const roleCells = recordRoleOrder
+        .map(r => `<div>${r}<br><b>${roles[r] || 0}</b></div>`)
+        .join('');
     
         return `
           <div class="person-row">
