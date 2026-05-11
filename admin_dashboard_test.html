@@ -212,6 +212,31 @@
     .role-record-chief {
       display: none;
     }
+
+  /* ===== 管理中心 Tile 版型（header 風格） ===== */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+    }
+    
+    .card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 90px;
+      text-align: center;
+      font-size: 18px;       /* ✅ 字體放大 */
+      font-weight: 800;
+      cursor: pointer;
+    }
+    
+    .card h4 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
   </style>
 </head>
 
@@ -231,7 +256,6 @@
     <div class="admin-icon">📈</div>
     <div class="admin-text">
       <div class="title">全員裁判年度總表</div>
-      <div class="desc">裁判年度站場數與站位分佈</div>
     </div>
   </div>
 
@@ -240,19 +264,16 @@
     <div class="admin-icon">📝</div>
     <div class="admin-text">
       <div class="title">全員紀錄員年度總表</div>
-      <div class="desc">紀錄員年度出勤與角色分佈</div>
     </div>
   </div>
 
   <div class="admin-tile role-admin role-chief-judge"
        onclick="location.href='judge_dashboard_adminlass="title">裁判員班表安排</div>
-      <div class="desc">場次與站位指派</div>
     </div>
   </div>
 
   <div class="admin-tile role-admin role-record-chief"
        onclick="location.href='record_dashboard_admin.html'title">紀錄員班表安排</div>
-      <div class="desc">指派紀錄相關人員</div>
     </div>
   </div>
 
@@ -265,14 +286,12 @@
   <div class="admin-tile role-admin"
        onclick="location.href='admindmin-text">
       <div class="title">帳號管理</div>
-      <div class="desc">使用者、角色與狀態</div>
     </div>
   </div>
 
   <div class="admin-tile role-admin"
        onclick="location.href='admin_games.html>
       <div class="title">賽事管理</div>
-      <div class="desc">新增、編輯、刪除賽事</div>
     </div>
   </div>
 
