@@ -5,7 +5,7 @@
   <title>管理中心</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ 你原本的 JS，完整保留 -->
+  <!-- ✅ 原本就有、不可動的 JS -->
   <script src="js/auth.js"></script>
   <script src="js/config.js"></script>
 
@@ -144,9 +144,9 @@
         📝 全員紀錄員年度總表
       </div>
 
-      <div class="card" onclick="location.href='judge_dashboard_admin.html''record_dashboard_admin   <div class="card" onclick="location.href='admin      <div class="card" onclick="location.href='admin_games.html' </div>
+      <div class="card" onclick="location.href='ard" onclick="location.href='record_dashboard_admin   <div class="card" onclick="location.href='admin      <div class="card" onclick="location.href='admin_games.html  </div>
 
-  <!-- ===== 年度 Modal ===== -->
+  <!-- ===== 年度 Modal（只在點擊時出現） ===== -->
   <div id="annualModal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -161,7 +161,7 @@
   </div>
 
   <script>
-    /* ===== 初始化（只跑一次，不閃） ===== */
+    /* ===== 初始化（只做 header，不碰 modal） ===== */
     document.addEventListener('DOMContentLoaded', function () {
       guardAdminPage();
 
