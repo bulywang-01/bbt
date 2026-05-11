@@ -236,15 +236,23 @@
   <div id="header-container"></div>
 
   <script>
-    fetch('header.html')
-      .then(r => r.text())
-      .then(html => {
-        document.getElementById('header-container').innerHTML = html;
-        const s = getSession?.();
-        if (s?.role?.includes('admin')) {
-          document.body.classList.add('is-admin');
-        }
-      });
+    function loadHeader() {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+          const container = document.getElementById('header-container');
+          if (!container) return;
+    
+          container.innerHTML = html;
+    
+          // ✅ 一定要在 header 注入後，再判斷 admin
+          const session = getSession?.();
+          if (session?.role?.includes('admin')) {
+            document.body.classList.add('is-admin');
+          }
+        })
+        .catch(err => console.error('Header 載入失敗', err));
+    }
   </script>
 
   <div class="main">
