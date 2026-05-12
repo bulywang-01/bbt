@@ -437,9 +437,11 @@ function loadHeader() {
     <div id="mobileView"></div>
   
     <!-- ✅ 全站唯一的送出按鈕 -->
+    <!--
     <div class="submit-bar">
       <button onclick="submitSignup()">送出報名</button>
     </div>
+    -->
   
   </div>
 
@@ -739,9 +741,9 @@ function render() {
   
     // === 尚未選，可選 ===
     return `
-      <label class="pos-choice">
-        <input type="radio"
-               onchange="rememberSelection('${g.game_id}','${role}')">
+      <label class="pos-choice"
+        onclick="signupJudgeInstant('${g.game_id}','${role}')">
+        點選
       </label>
     `;
   }
@@ -904,7 +906,7 @@ function renderMobilePosGrid(g) {
         return `
           <div class="mobile-pos">
             <div class="mobile-pos-btn"
-                 onclick="rememberSelection('${g.game_id}','${role}')">
+              onclick="signupJudgeInstant('${g.game_id}','${role}')">
               ${ROLE_NAME[role]}
             </div>
           </div>
@@ -1040,6 +1042,33 @@ function cancelMySignup(signupId) {
         setTimeout(() => location.reload(), 800);
       } else {
         showMessage(res?.message || '❌ 取消失敗');
+      }
+    }
+  );
+}
+
+// 按了就直接送出，不用再按鍵了
+function signupJudgeInstant(gameId, position) {
+  const session = JSON.parse(localStorage.getItem('session_user') || {});
+  if (!session.user_id) {
+    showMessage('登入狀態已失效，請重新登入');
+    return;
+  }
+
+  showLoading('報名中...');
+
+  callApi(
+    {
+      action: 'judgeSignupByGames',
+      user_id: session.user_id,
+      games_with_position: `${gameId}:${position}`
+    },
+    res => {
+      if (res && res.result === 'ok') {
+        showMessage('✅ 報名成功');
+        setTimeout(() => location.reload(), 800);
+      } else {
+        showMessage(res?.message || '❌ 報名失敗');
       }
     }
   );
