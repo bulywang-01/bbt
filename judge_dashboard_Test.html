@@ -471,6 +471,7 @@ function loadHeader() {
   <div class="main">
   
     <!-- 篩選 -->
+    <!-- 先暫時關閉不顯示
     <div class="filter-bar">
       目前顯示的資料是：
       <select id="filterRange" onchange="render()">
@@ -484,6 +485,7 @@ function loadHeader() {
       </label>
       關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninput="render()">
     </div>
+    -->
     
     <!-- 桌機表格 -->
     <div id="desktopView">
@@ -521,6 +523,7 @@ function hideLoading() {
   if (overlay) overlay.remove();
 }
 
+/*
 function timeToMinutesSafe(t) {
   if (!t) return 0;
   if (typeof t === 'string' && t.includes(':')) {
@@ -531,6 +534,23 @@ function timeToMinutesSafe(t) {
   if (isNaN(d)) return 0;
   return d.getHours() * 60 + d.getMinutes();
 }
+*/
+
+function timeToMinutesSafe(t) {
+  if (!t) return 0;
+
+  if (typeof t === 'string' && t.includes(':')) {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  if (t instanceof Date) {
+    return t.getHours() * 60 + t.getMinutes();
+  }
+
+  return 0;
+}
+
 
 /* ===== 狀態 ===== */
 let allGames = [];
