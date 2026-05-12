@@ -926,10 +926,13 @@ function groupGamesForMobile(games) {
     map[date][category].push(g);
   });
 
-  // ✅ 每個組別內依時間排序
+  // ✅ 每個組別內依「裁判頁時間欄位」排序
   Object.values(map).forEach(catMap => {
     Object.values(catMap).forEach(list => {
-      list.sort((a, b) => a.time.localeCompare(b.time));
+      list.sort((a, b) =>
+        timeToMinutesSafe(a.time_range) -
+        timeToMinutesSafe(b.time_range)
+      );
     });
   });
 
