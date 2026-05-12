@@ -411,6 +411,26 @@ tr.expired {
   padding: 12px;
   margin-bottom: 10px;
 }
+
+/* ===== 裁判頁手機：時間 / 場地 同列 ===== */
+.mobile-time-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.mobile-time-row .time {
+  color: #d32f2f;   /* 時間偏紅，與你原本一致 */
+}
+
+.mobile-time-row .field {
+  color: #555;
+  font-size: 13px;
+  white-space: nowrap;
+}
 </style>
   
 </head>
@@ -926,11 +946,10 @@ function renderMobile() {
         .forEach(g => {
           groupBox.insertAdjacentHTML('beforeend', `
             <div class="game-card">
-              <div class="record-header">
-                <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
-                <div>📍 ${g.field}</div>
-              </div>
-
+            <div class="mobile-time-row">
+              <div class="time">⏰ ${formatTime(g.time_range)}</div>
+              <div class="field">📍 ${g.field}</div>
+            </div>
               <div class="record-main">
                 <div>${g.away_team} vs ${g.home_team}</div>
               </div>
