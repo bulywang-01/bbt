@@ -1,6 +1,6 @@
 // ===== Apps Script Web App URL =====
 const API_URL =
-  'https://script.google.com/macros/s/AKfycbwxHwONEL-oN1Bg_PnV6rVErKBUIcrLDWA__opxZWrZJbiwHlBeeuMQYS41W0P1JLSCCA/exec';
+  'https://script.google.com/macros/s/AKfycbzXQkwk1rJ06l22pdJIsYZ_MUsVc6Q-XVpu4Bb5qKPo1_GobK2mkBuRdF7twek-9uegEw/exec';
 
 
 // ===== JSONP helper（封版唯一安全版）=====
