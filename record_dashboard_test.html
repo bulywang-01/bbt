@@ -280,8 +280,8 @@ select.locked {
 }
 
 .m-group-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   color: #0d47a1;
   border-left: 4px solid #0d47a1;
   padding-left: 8px;
@@ -394,28 +394,88 @@ select.locked {
 }
 
 .mobile-time-row .time {
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: #d32f2f;
   min-width: 64px;
 }
 
 .mobile-time-row .game-code {
-  flex: 1;
   text-align: center;
+  flex: 0 0 auto;          /* ✅ 不再被撐扁 */
+  min-width: 44px;         /* ✅ A009 不會被擠沒 */
+  text-align: center;
+
 }
 
 .mobile-time-row .field {
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 700;
   color: #555;
   white-space: nowrap;
 }
 
 .mobile-teams {
   text-align: center;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   margin: 6px 0 8px;
 }
+
+/* ✅ 時間 / 場地 同列 */
+.mobile-time-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+/* 時間 */
+.mobile-time-row .time {
+  font-size: 15px;
+  font-weight: 800;
+  color: #d32f2f;
+}
+
+/* 場次 badge */
+.mobile-time-row .game-code.badge {
+  font-size: 13px;      /* ✅ 比組別小，但清楚 */
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* 場地 */
+.mobile-time-row .field {
+  font-size: 14px;
+  font-weight: 700;
+  color: #555;
+}
+
+/* ✅ 對戰列（置中） */
+.mobile-teams {
+  text-align: center;
+  font-size: 16px;      /* 比時間略大，僅次於組別 */
+  font-weight: 800;
+  margin: 6px 0 10px;
+}
+
+.mobile-teams .vs {
+  margin: 0 6px;
+  color: #999;
+  font-weight: 700;
+}
+
+/* ✅ 場次 badge：保證文字一定可見 */
+.game-code.badge {
+  color: #ffffff;          /* ← 關鍵，白字一定看得到 */
+  font-weight: 800;
+  font-size: 13px;         /* 比組別小、比一般內文字清楚 */
+  padding: 2px 8px;
+  border-radius: 999px;
+
+}
+
 
 </style>
 </head>
