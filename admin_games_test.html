@@ -166,39 +166,49 @@
 <script src="js/config.js"></script>
   
 <script>
-function loadHeader() {
-  fetch('header.html')
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById('header-container').innerHTML = html;
-
-      // ✅ 只用 body class 控制身份
-      const session = (typeof getSession === 'function') ? getSession() : null;
-      document.body.classList.remove(
-        'role-admin', 'role-judge', 'role-record'
-      );
-
-      if (session && session.role) {
-        const roles = session.role.split(',').map(r => r.trim());
-
-        if (roles.includes('admin')) {
-          document.body.classList.add('role-admin');
-        }
-        if (roles.includes('judge') || roles.includes('chief_judge')) {
-          document.body.classList.add('role-judge');
-        }
-        if (roles.includes('record') || roles.includes('record_chief')) {
-          document.body.classList.add('role-record');
-        }
-      }
-    })
-    .catch(err => console.error('Header 載入失敗', err));
-  }
+  function loadHeader() {
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => {
+        const hc = document.getElementById('header-container');
+        if (!hc) return;
   
-  // 裁入報名頁面重要function
-  document.addEventListener('DOMContentLoaded', () => {
-    loadHeader();   // 只負責 header
-  });
+        hc.innerHTML = html;
+  
+        // ✅ 一律從 session 重新設定 role（唯一正解）
+        const session = (typeof getSession === 'function')
+          ? getSession()
+          : JSON.parse(localStorage.getItem('session_user') || '{}');
+  
+        document.body.classList.remove(
+          'role-admin',
+          'role-judge',
+          'role-record'
+        );
+  
+        if (session && session.role) {
+          const roles = session.role.split(',').map(r => r.trim());
+  
+          if (roles.includes('admin')) {
+            document.body.classList.add('role-admin');
+          }
+          if (roles.includes('judge') || roles.includes('chief_judge')) {
+            document.body.classList.add('role-judge');
+          }
+          if (roles.includes('record') || roles.includes('record_chief')) {
+            document.body.classList.add('role-record');
+          }
+        }
+  
+        // ✅ 顯示登入者姓名
+        if (session && session.name) {
+          const nameEl = document.getElementById('header-username');
+          if (nameEl) nameEl.textContent = session.name;
+        }
+      })
+      .catch(err => console.error('Header 載入失敗', err));
+  }
+
 </script>
 
 <h2>賽事管理</h2>
