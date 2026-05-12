@@ -315,6 +315,48 @@ select.locked {
 
 <body>
 <div id="header-container"></div>
+
+  
+<script src="js/auth.js"></script>
+<script src="js/config.js"></script>
+  
+<script>
+function loadHeader() {
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+
+      // ✅ 只用 body class 控制身份
+      const session = (typeof getSession === 'function') ? getSession() : null;
+      document.body.classList.remove(
+        'role-admin', 'role-judge', 'role-record'
+      );
+
+      if (session && session.role) {
+        const roles = session.role.split(',').map(r => r.trim());
+
+        if (roles.includes('admin')) {
+          document.body.classList.add('role-admin');
+        }
+        if (roles.includes('judge') || roles.includes('chief_judge')) {
+          document.body.classList.add('role-judge');
+        }
+        if (roles.includes('record') || roles.includes('record_chief')) {
+          document.body.classList.add('role-record');
+        }
+      }
+    })
+    .catch(err => console.error('Header 載入失敗', err));
+  }
+  
+  // 裁入報名頁面重要function
+  document.addEventListener('DOMContentLoaded', () => {
+    loadHeader();   // 只負責 header
+    loadGames();    // 或該頁真正的資料初始化
+  });
+</script>
+  
   <div id="toast" class="toast"></div>
 
 <!--
@@ -329,95 +371,10 @@ select.locked {
 
 <div id="mobileView"></div>
   
-<script src="js/config.js"></script>
-
 <script>
 /* ===== 全域 ===== */
 let session;
 let games = [];
-
-/* ===== 初始化 ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  initHeader();   // 只管 header
-  initPage();     // 只管登入與資料
-});
-
-/* ===== Header ===== */
-function initHeader() {
-  fetch('header.html')
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById('header-container').innerHTML = html;
-
-      // ✅ 關鍵：行為在這一頁跑
-      applyHeaderRole();
-      reorderNavByRole();
-      highlightCurrentNav();
-    });
-}
-
-
-function applyHeaderRole(){
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  if (!session.role) return;
-
-  const roles = session.role.split(',').map(r => r.trim());
-  const show = cls =>
-    document.querySelectorAll(cls).forEach(el => el.style.display = 'flex');
-
-  if (roles.includes('admin')) {
-    show('.nav-judge');
-    show('.nav-record');
-    show('.nav-admin');
-  } else {
-    if (roles.includes('judge')) show('.nav-judge');
-    if (roles.includes('record')) show('.nav-record');
-  }
-
-  const nameEl = document.getElementById('u_name');
-  if (nameEl) nameEl.textContent = session.name || '';
-}
-
-function reorderNavByRole(){
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  if (!session.role) return;
-
-  const roles = session.role.split(',').map(r => r.trim());
-  const nav = document.querySelector('#header-container nav');
-  if (!nav) return;
-
-  const order = [];
-  if (roles.includes('admin')) {
-    order.push('.nav-admin', '.nav-judge', '.nav-record');
-  } else if (roles.includes('judge')) {
-    order.push('.nav-judge', '.nav-record', '.nav-admin');
-  } else if (roles.includes('record')) {
-    order.push('.nav-record', '.nav-judge', '.nav-admin');
-  }
-  order.push('.nav-home', '.nav-password', '.nav-logout');
-
-  order.forEach(sel =>
-    nav.querySelectorAll(sel).forEach(el => nav.appendChild(el))
-  );
-}
-
-function highlightCurrentNav(){
-  const path = location.pathname;
-  const map = {
-    'index': '.nav-home',
-    'judge_dashboard': '.nav-judge',
-    'record_dashboard': '.nav-record',
-    'admin_dashboard': '.nav-admin',
-    'change_password': '.nav-password'
-  };
-  Object.keys(map).forEach(k => {
-    if (path.includes(k)) {
-      document.querySelectorAll(map[k]).forEach(el =>
-        el.classList.add('active')
-      );
-    }
-  });
-}
 
 /* ===== Page / Data ===== */
 function initPage() {
@@ -446,6 +403,7 @@ function showToast(msg, type = 'success') {
 
 /* ===== 取資料 ===== */
 function loadGames() {
+  session = session || JSON.parse(localStorage.getItem('session_user') || '{}');
   callApi({
     action: 'getRecordSignableGames',
     user_id: session.user_id
@@ -577,7 +535,7 @@ function buildRow(g) {
   </tr>`;
 }
 
-/* ===== Signup UI ===== */
+/* ===== 桌機版紀錄報名　Signup UI ===== */
 function renderSignupCell(g, role) {
   const slot = g.record_slots?.[role];
 
@@ -585,10 +543,16 @@ function renderSignupCell(g, role) {
     return `<span class="signup-btn" onclick="signup('${g.game_id}','${role}')">＋報名</span>`;
   }
 
-  if (slot.user_id === session.user_id) {
-    return `<span class="signup-me">${slot.name || '我'}
-      <span class="cancel-btn" onclick="cancelSignup('${g.game_id}','${role}')">取消</span>
-    </span>`;
+  // ✅ 型別統一後，比對才會成立
+  if (String(slot.user_id) === String(session.user_id)) {
+    return `
+      <span class="signup-me">
+        ${slot.name || '我'}
+        <span class="cancel-btn"
+          onclick="cancelSignup('${g.game_id}','${role}')">
+          取消
+        </span>
+      </span>`;
   }
 
   return `<span class="signup-other">${slot.name}</span>`;
@@ -684,54 +648,44 @@ function renderMobileRecord(list) {
   });
 }
 
-/*
-function renderRecordMobileRole(g, role, label) {
-  const slot = g.record_slots?.[role];
-  if (!slot) {
-    return `<div class="record-role action" onclick="signup('${g.game_id}','${role}')">＋${label}</div>`;
-  }
-  if (slot.user_id === session.user_id) {
-    return `<div class="record-role me">${label}<br>我</div>`;
-  }
-  return `<div class="record-role other">${label}<br>${slot.name}</div>`;
-}
-*/
 
 function renderRecordMobileRole(g, role, label) {
   const slot = g.record_slots && g.record_slots[role];
 
-  // ✅ 尚未有人報名
+  // 尚未有人報名
   if (!slot) {
     return `
       <div class="record-role action"
-           onclick="signup('${g.game_id}','${role}')">
+        onclick="signup('${g.game_id}','${role}')">
         ＋${label}
       </div>
     `;
   }
 
-  // ✅ 統一型別再比較（關鍵）
-  const isMe =
-    String(slot.user_id) === String(session.user_id);
+  const isMe = String(slot.user_id) === String(session.user_id);
 
-  // ✅ 我自己
+  // ✅ 我自己（加上取消）
   if (isMe) {
     return `
       <div class="record-role me">
         ${label}<br>我
+        <div class="cancel-btn"
+          onclick="cancelSignup('${g.game_id}','${role}')">
+          取消
+        </div>
       </div>
     `;
   }
 
-  // ✅ 他人（防呆）
+  // 他人
   const name = slot.name || '';
-
   return `
     <div class="record-role other">
       ${label}<br>${name}
     </div>
   `;
 }
+
 
 
 // 先「日期 → 群組 → 賽事（排序）」
