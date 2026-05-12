@@ -351,6 +351,63 @@ tr.expired {
   font-weight: 600;
 }
 
+/* ===== 裁判頁手機版：日期大格 ===== */
+.m-date-box {
+  background: #f5f8ff;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+.m-date-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a237e;
+  margin-bottom: 10px;
+}
+
+/* ===== 裁判頁手機：日期大格 ===== */
+.m-date-box {
+  background: #f5f8ff;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+/* ===== 裁判頁手機：場次卡 ===== */
+.game-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+  
+/* ===== 裁判頁手機版：組別中格 ===== */
+.m-group-box {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.m-group-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0d47a1;
+  border-left: 4px solid #0d47a1;
+  padding-left: 8px;
+  margin-bottom: 8px;
+}
+
+/* ===== 裁判頁手機版：場次卡 ===== */
+.judge-card {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
 </style>
   
 </head>
@@ -446,6 +503,18 @@ function loadHeader() {
   </div>
 
 <script>
+
+// 過期不顯示
+function isPastGame(gameDateStr) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const d = new Date(gameDateStr.replace(/\//g, '-'));
+  d.setHours(0, 0, 0, 0);
+
+  return d < today;
+}
+
 
 function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
@@ -799,6 +868,7 @@ function renderMobile() {
   });
 
   Object.keys(groups).sort().forEach(date => {
+    if (isPastGame(date)) return;   // ✅ 過期日期整天不顯示
     groups[date]
       .sort((a, b) =>
         timeToMinutesSafe(a.time_range) -
@@ -832,6 +902,17 @@ function renderMobile() {
 }
 
 function renderMobilePosGrid(g) {
+  if (isPastGame(g.date)) {
+  return `
+    <div class="mobile-pos-grid">
+      <div class="mobile-pos-na">—</div>
+      <div class="mobile-pos-na">—</div>
+      <div class="mobile-pos-na">—</div>
+      <div class="mobile-pos-na">—</div>
+    </div>
+  `;
+  }
+  
   const ROLE_NAME = {
   PU: '主審',
   U1: '一壘',
