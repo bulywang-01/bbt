@@ -458,7 +458,19 @@ tr.expired {
   color: #999;
   font-size: 16px;
 }
-  
+
+/* ===== 場次 Badge（共用樣式） ===== */
+.game-code.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
 </style>
   
 </head>
@@ -568,6 +580,22 @@ function isPastGame(gameDateStr) {
   return d < today;
 }
 
+// 組別對應顏色
+function applyCategoryBadgeColor() {
+  const colorMap = {
+    '大聯盟': '#2563eb',   // 藍
+    '小聯盟': '#16a34a',   // 綠
+    '六年級': '#d97706',   // 黃
+    '五年級': '#9333ea',   // 紫
+    'U12': '#ef4444'       // 紅
+  };
+
+  document.querySelectorAll('.game-code.badge').forEach(el => {
+    const cat = el.dataset.category;
+    const color = colorMap[cat] || '#6b7280'; // 預設灰
+    el.style.backgroundColor = color;
+  });
+}
 
 function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
@@ -976,8 +1004,7 @@ function renderMobile() {
             <div class="game-card">
             <div class="mobile-time-row">
               <div class="time">⏰ <strong>${formatTime(g.time_range)}</strong></div>
-              <div class="game-code">${g.game_code || ''}</div>
-
+              <div class="game-code badge" data-category="${g.category || ''}">${g.game_code || ''}</div>
               <div class="field">📍 ${g.field}</div>
             </div>
               <div class="mobile-teams">
@@ -994,6 +1021,7 @@ function renderMobile() {
 
     root.appendChild(dateBox);
   });
+  applyCategoryBadgeColor();
 }
 
 // ✅ 裁判頁手機版：依 日期 → 組別 → 場次 分組
