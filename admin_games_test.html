@@ -168,37 +168,33 @@
 <script>
 function loadHeader() {
   fetch('header.html')
-    .then(res => res.text())
+    .then(r => r.text())
     .then(html => {
-      document.getElementById('header-container').innerHTML = html;
+      const hc = document.getElementById('header-container');
+      if (!hc) {
+        console.error('❌ header-container not found');
+        return;
+      }
 
-      // ✅ 只用 body class 控制身份
-      const session = (typeof getSession === 'function') ? getSession() : null;
-      document.body.classList.remove(
-        'role-admin', 'role-judge', 'role-record'
-      );
+      hc.innerHTML = html;
 
-      if (session && session.role) {
-        const roles = session.role.split(',').map(r => r.trim());
+      // ✅ admin_games 一定是 admin 身分
+      document.body.classList.remove('role-judge', 'role-record');
+      document.body.classList.add('role-admin');
 
-        if (roles.includes('admin')) {
-          document.body.classList.add('role-admin');
-        }
-        if (roles.includes('judge') || roles.includes('chief_judge')) {
-          document.body.classList.add('role-judge');
-        }
-        if (roles.includes('record') || roles.includes('record_chief')) {
-          document.body.classList.add('role-record');
-        }
+      // ✅ 顯示登入者姓名
+      const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (session.name) {
+        const nameEl = document.getElementById('header-username');
+        if (nameEl) nameEl.textContent = session.name;
       }
     })
     .catch(err => console.error('Header 載入失敗', err));
-  }
+}
   
   // 裁入報名頁面重要function
   document.addEventListener('DOMContentLoaded', () => {
     loadHeader();   // 只負責 header
-    loadGames();    // 或該頁真正的資料初始化
   });
 </script>
 
