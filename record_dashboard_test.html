@@ -360,37 +360,6 @@ select.locked {
   margin-bottom: 8px;
 }
 
-.mobile-time-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.mobile-time-row .time {
-  font-size: 15px;
-  font-weight: 800;
-  color: #d32f2f;
-  min-width: 64px;
-}
-
-.mobile-time-row .game-code {
-  text-align: center;
-  flex: 0 0 auto;          /* ✅ 不再被撐扁 */
-  min-width: 44px;         /* ✅ A009 不會被擠沒 */
-  text-align: center;
-  white-space: nowrap;
-  color: #fff555;
-
-}
-
-.mobile-time-row .field {
-  font-size: 15px;
-  font-weight: 700;
-  color: #555;
-  white-space: nowrap;
-}
-
 .mobile-teams {
   text-align: center;
   font-size: 16px;
@@ -398,45 +367,36 @@ select.locked {
   margin: 6px 0 8px;
 }
 
-/* ✅ 時間 / 場地 同列 */
+/* ===== 裁判頁手機：時間 / 場地 同列 ===== */
 .mobile-time-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 700;
   margin-bottom: 6px;
 }
 
-/* 時間 */
 .mobile-time-row .time {
-  font-size: 15px;
-  font-weight: 800;
-  color: #d32f2f;
+  color: #d32f2f;     /* 時間偏紅，與你原本一致 */
+  min-width: 70px;     /* 保住左欄 */
+  text-align: left;
+  font-size: 16px;
 }
 
-/* 場次 badge */
-.mobile-time-row .game-code.badge {
-  font-size: 13px;      /* ✅ 比組別小，但清楚 */
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 999px;
-}
-
-/* 場地 */
-.mobile-time-row .field {
-  font-size: 14px;
-  font-weight: 700;
-  color: #555;
-}
-
-/* ✅ 場次 badge：強制不要被擠扁 */
 .mobile-time-row .game-code {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   flex: 1;
   text-align: center; /* ✅ 場次正中央 */
   font-size: 16px;
   color: #333;
+}
+
+.mobile-time-row .field {
+  min-width: 72px;     /* 保住右欄 */
+  text-align: right;
+  font-size: 16px;
+  color: #555;
+  white-space: nowrap;
 }
 
 /* ✅ 對戰列（置中） */
@@ -532,6 +492,23 @@ function loadHeader() {
 /* ===== 全域 ===== */
 let session;
 let games = [];
+
+// 組別對應顏色
+function applyCategoryBadgeColor() {
+  const colorMap = {
+    '大聯盟': '#2563eb',   // 藍
+    '小聯盟': '#16a34a',   // 綠
+    '六年級': '#d97706',   // 黃
+    '五年級': '#9333ea',   // 紫
+    'U12': '#ef4444'       // 紅
+  };
+
+  document.querySelectorAll('.game-code.badge').forEach(el => {
+    const cat = el.dataset.category;
+    const color = colorMap[cat] || '#6b7280'; // 預設灰
+    el.style.backgroundColor = color;
+  });
+}
 
 // 過期判斷工具
 function isPastGame(gameDateStr) {
@@ -855,6 +832,7 @@ function renderMobileRecord(list) {
   
     root.appendChild(dateBox);
   });
+    applyCategoryBadgeColor();
 }
 
 
