@@ -420,13 +420,13 @@ select.locked {
   display: inline-block;
   height: 22px;          /* ✅ 固定高度 */
   padding: 0px 4px;        /* 只管左右 */
+  min-width: 40px;       /* ← A009 / A010 很安全 */
   line-height: 20px;     /* ✅ 文字垂直置中，避免被切掉 */
   border-radius: 999px;
   font-size: 16px;
   font-weight: 600;
   color: #ffffff;
   white-space: nowrap;
-  min-width: 44px;       /* ← A009 / A010 很安全 */
 }
 
 /* ===== 場次 badge：已完賽 ===== */
