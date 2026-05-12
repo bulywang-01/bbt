@@ -430,10 +430,13 @@ select.locked {
 
 /* ✅ 場次 badge：強制不要被擠扁 */
 .mobile-time-row .game-code {
-  flex: 0 0 auto;     /* ← ★ 關鍵：不要參與撐寬分配 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 1;
+  text-align: center; /* ✅ 場次正中央 */
+  font-size: 16px;
+  color: #333;
 }
 
 /* ✅ 對戰列（置中） */
@@ -452,12 +455,14 @@ select.locked {
 
 /* ✅ 場次 badge：保證文字一定可見 */
 .game-code.badge {
-  color: #ffffff;          /* ← 關鍵，白字一定看得到 */
-  font-weight: 800;
-  font-size: 13px;         /* 比組別小、比一般內文字清楚 */
-  padding: 2px 8px;
+  display: inline-block;
+  padding: 1px 4px;
   border-radius: 999px;
-  white-space: nowrap;   /* ✅ 防止 A009 被切掉 */
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.3;
+  white-space: nowrap;
 
 }
 
