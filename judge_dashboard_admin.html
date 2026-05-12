@@ -215,6 +215,48 @@ button {
 <!-- ✅ Header（滿版） -->
 <div id="header-container"></div>
 
+
+<script src="js/auth.js"></script>
+<script src="js/config.js"></script>
+<script src="js/judge_dashboard_admin.js"></script>
+
+<script>
+function loadHeader() {
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+
+      // ✅ 只用 body class 控制身份
+      const session = (typeof getSession === 'function') ? getSession() : null;
+      document.body.classList.remove(
+        'role-admin', 'role-judge', 'role-record'
+      );
+
+      if (session && session.role) {
+        const roles = session.role.split(',').map(r => r.trim());
+
+        if (roles.includes('admin')) {
+          document.body.classList.add('role-admin');
+        }
+        if (roles.includes('judge') || roles.includes('chief_judge')) {
+          document.body.classList.add('role-judge');
+        }
+        if (roles.includes('record') || roles.includes('record_chief')) {
+          document.body.classList.add('role-record');
+        }
+      }
+    })
+    .catch(err => console.error('Header 載入失敗', err));
+  }
+  
+  // 裁入報名頁面重要function
+  document.addEventListener('DOMContentLoaded', () => {
+    loadHeader();   // 只負責 header
+  });
+</script>
+
+   
 <!-- ✅ 主內容 -->
 <div class="main">
   <div id="content"></div>
@@ -236,7 +278,7 @@ button {
    ✅ 共用載入程式區
    ===============================
 -->
-
+<!-- 原 header 程式
 <script>
    document.addEventListener('DOMContentLoaded', () => {
      guardAdminPage();     // ✅ 權限
@@ -260,10 +302,7 @@ button {
        });
    });
 </script>
-
-<script src="js/config.js"></script>
-<script src="js/judge_dashboard_admin.js"></script>
-<script src="js/auth.js"></script>
+-->
 
 </body>
 </html>
