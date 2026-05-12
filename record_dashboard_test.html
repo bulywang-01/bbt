@@ -376,11 +376,11 @@ select.locked {
 
 .mobile-time-row .game-code {
   text-align: center;
-  flex: 0 0 auto !important;          /* ✅ 不再被撐扁 */
+  flex: 0 0 auto;          /* ✅ 不再被撐扁 */
   min-width: 44px;         /* ✅ A009 不會被擠沒 */
   text-align: center;
   white-space: nowrap;
-  color: #fff;
+  color: #fff555;
 
 }
 
@@ -901,77 +901,6 @@ function renderRecordMobileRole(g, role, label) {
     </div>
   `;
 }
-
-
-
-// 先「日期 → 群組 → 賽事（排序）」
-/*
-function groupGamesForMobile(games) {
-  const map = {};
-
-  games.forEach(g => {
-    const date = g.date;                 // yyyy/mm/dd
-    const category = g.category || '未分類';
-
-    if (!map[date]) map[date] = {};
-    if (!map[date][category]) map[date][category] = [];
-
-    map[date][category].push(g);
-  });
-
-  // ✅ 每個組別內依時間排序
-  Object.values(map).forEach(catMap => {
-    Object.values(catMap).forEach(list => {
-      list.sort((a, b) => a.time.localeCompare(b.time));
-    });
-  });
-
-  return map;
-}
-*/
-
-// 手機版 render（一次跑完三層）
-/* ===== Render（手機） ===== */
-/*
-function renderMobileByDate(games) {
-  const root = document.getElementById('mobileView');
-  if (!root) return;
-
-  root.innerHTML = '';
-
-  const grouped = groupGamesForMobile(games);
-
-  // ⭐ 只共用日期排序
-  const dates = sortDatesAsc(Object.keys(grouped));
-
-  dates.forEach(date => {
-    const dateBox = document.createElement('div');
-    dateBox.className = 'm-date-box';
-    dateBox.innerHTML = `<div class="m-date-title">📅 ${date}</div>`;
-    root.appendChild(dateBox);
-
-    // ✅ 手機：保持你原本的 category 順序（不強制）
-    Object.keys(grouped[date]).forEach(category => {
-      const groupBox = document.createElement('div');
-      groupBox.className = 'm-group-box';
-      groupBox.innerHTML = `<div class="m-group-title">${category}</div>`;
-      dateBox.appendChild(groupBox);
-
-      grouped[date][category].forEach(g => {
-        groupBox.insertAdjacentHTML('beforeend', `
-          <div class="m-game-card">
-            <div class="m-game-time">⏰ ${g.time}</div>
-            <div class="m-game-teams">
-              ${g.away_team} vs ${g.home_team}
-            </div>
-            <div class="m-game-field">📍 ${g.field}</div>
-          </div>
-        `);
-      });
-    });
-  });
-}
-*/
 
 </script>
 
