@@ -854,52 +854,64 @@ function render() {
 // 手機版 ${renderTimeHHmm(g.time_range)}
  
 function renderMobile() {
-  const box = document.getElementById('mobileView');
-  if (!box) return;
-  box.innerHTML = '';
+  const root = document.getElementById('mobileView');
+  if (!root) return;
+  root.innerHTML = '';
 
-  if (!allGames || !allGames.length) return;
+  // ✅ 先用你原本的分組邏輯
+  const grouped = groupGamesForMobile(allGames);
 
-  // ✅ 依日期分組
-  const groups = {};
-  allGames.forEach(g => {
-    if (!groups[g.date]) groups[g.date] = [];
-    groups[g.date].push(g);
-  });
+  const dates = Object.keys(grouped).sort();
+  dates.forEach(date => {
+    // ✅ 過期日期整天不顯示
+    if (isPastGame(date)) return;
 
-  Object.keys(groups).sort().forEach(date => {
-    if (isPastGame(date)) return;   // ✅ 過期日期整天不顯示
-    groups[date]
-      .sort((a, b) =>
-        timeToMinutesSafe(a.time_range) -
-        timeToMinutesSafe(b.time_range)
-      )
-      .forEach(g => {
-        const card = document.createElement('div');
-        card.className = 'game-card';
+    // ✅ 日期大格
+    const dateBox = document.createElement('div');
+    dateBox.className = 'm-date-box';
 
-        card.innerHTML = `
-          <div class="game-header">
-            <div>📅 <strong>${g.date}</strong></div>
-            <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
-          </div>
+    dateBox.insertAdjacentHTML(
+      'beforeend',
+      `<div class="m-date-title">📅 ${date}</div>`
+    );
 
-          <div class="game-main">
-            <div class="teams">${g.away_team} vs ${g.home_team}</div>
-            <div>📍 ${g.field}</div>
-          </div>
+    Object.keys(grouped[date]).forEach(category => {
+      // ✅ 組別中格
+      const groupBox = document.createElement('div');
+      groupBox.className = 'm-group-box';
 
-          ${renderMobilePosGrid(g)}
+      groupBox.insertAdjacentHTML(
+        'beforeend',
+        `<div class="m-group-title">${category}</div>`
+      );
 
-          <div style="margin-top:10px;font-size:14px;font-weight:700;text-align:center;">
-            ${g.tournament || ''} - ${g.category || ''}
-          </div>
-        `;
+      // ✅ 中格內依時間排序
+      grouped[date][category]
+        .sort((a, b) => a.time.localeCompare(b.time))
+        .forEach(g => {
+          groupBox.insertAdjacentHTML('beforeend', `
+            <div class="game-card">
+              <div class="record-header">
+                <div>⏰ ${g.time}</div>
+              </div>
 
-        box.appendChild(card);
-      });
+              <div class="record-main">
+                <div>${g.away_team} vs ${g.home_team}</div>
+                <div>📍 ${g.field}</div>
+              </div>
+
+              ${renderMobilePosGrid(g)}
+            </div>
+          `);
+        });
+
+      dateBox.appendChild(groupBox);
+    });
+
+    root.appendChild(dateBox);
   });
 }
+
 
 function renderMobilePosGrid(g) {
   if (isPastGame(g.date)) {
