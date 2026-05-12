@@ -887,7 +887,14 @@ function renderMobile() {
 
       // ✅ 中格內依時間排序
       grouped[date][category]
-        .sort((a, b) => a.time.localeCompare(b.time))
+        //.sort((a, b) => a.time.localeCompare(b.time))
+
+        grouped[date][category]
+          .sort((a, b) =>
+            timeToMinutesSafe(a.time_range) -
+            timeToMinutesSafe(b.time_range)
+          )
+       
         .forEach(g => {
           groupBox.insertAdjacentHTML('beforeend', `
             <div class="game-card">
