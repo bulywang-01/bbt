@@ -358,61 +358,90 @@ tr.expired {
 
 <!-- 共用 Header -->
 <body data-page-title="裁判報名">
+
+
+<script src="js/auth.js"></script>
+<script src="js/config.js"></script>
+
+
 <!-- 畫面中間呈現訊息 -->
-<div id="overlay"">
+<div id="overlay">
   <div id="overlay-box">
     <div id="overlay-text">處理中...</div>
     <button id="overlay-ok">確定</button>
   </div>
 </div>
 
+<div id="header-container"></div>
 
+<script>
+function loadHeader() {
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
 
-<div id="header"></div>
+      // ✅ 只用 body class 控制身份
+      const session = (typeof getSession === 'function') ? getSession() : null;
+      document.body.classList.remove(
+        'role-admin', 'role-judge', 'role-record'
+      );
 
-<div class="main">
+      if (session && session.role) {
+        const roles = session.role.split(',').map(r => r.trim());
 
-  <!-- 篩選 -->
-  <div class="filter-bar">
-    目前顯示的資料是：
-    <select id="filterRange" onchange="render()">
-      <option value="all">全部</option>
-      <option value="month">本月</option>
-      <option value="week">本週</option>
-    </select>
-
-    <label style="margin-left:10px;">
-      <input type="checkbox" id="showPast" onchange="render()"> 顯示過期賽事　　　
-    </label>
-    關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninput="render()">
-  </div>
+        if (roles.includes('admin')) {
+          document.body.classList.add('role-admin');
+        }
+        if (roles.includes('judge') || roles.includes('chief_judge')) {
+          document.body.classList.add('role-judge');
+        }
+        if (roles.includes('record') || roles.includes('record_chief')) {
+          document.body.classList.add('role-record');
+        }
+      }
+    })
+    .catch(err => console.error('Header 載入失敗', err));
+  }
   
-  <!-- 桌機表格 -->
-  <div id="desktopView">
-    <div id="content"></div>
-  </div>
+  // 裁入報名頁面重要function
+  document.addEventListener('DOMContentLoaded', () => {
+    loadHeader();   // 只負責 header
+    loadGames();    // 或該頁真正的資料初始化
+  });
+</script>
 
-  <!-- 手機卡片 -->
-  <div id="mobileView"></div>
-
-  <!-- ✅ 全站唯一的送出按鈕 -->
-  <div class="submit-bar">
-    <button onclick="submitSignup()">送出報名</button>
-  </div>
-
-</div>
-  <!--
-  <button onclick="cancelSelectedByDate()">取消當日選擇</button>
-  <button onclick="cancelAllSelected()" style="margin-left:8px;">
-  全部取消
-  </button>
-  <button onclick="submitSignup()">送出報名</button>
-  -->
-</div>
+  <div class="main">
   
-
+    <!-- 篩選 -->
+    <div class="filter-bar">
+      目前顯示的資料是：
+      <select id="filterRange" onchange="render()">
+        <option value="all">全部</option>
+        <option value="month">本月</option>
+        <option value="week">本週</option>
+      </select>
   
-<script src="js/config.js"></script>
+      <label style="margin-left:10px;">
+        <input type="checkbox" id="showPast" onchange="render()"> 顯示過期賽事　　　
+      </label>
+      關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninput="render()">
+    </div>
+    
+    <!-- 桌機表格 -->
+    <div id="desktopView">
+      <div id="content"></div>
+    </div>
+  
+    <!-- 手機卡片 -->
+    <div id="mobileView"></div>
+  
+    <!-- ✅ 全站唯一的送出按鈕 -->
+    <div class="submit-bar">
+      <button onclick="submitSignup()">送出報名</button>
+    </div>
+  
+  </div>
 
 <script>
 
@@ -431,51 +460,6 @@ function timeToMinutesSafe(t) {
   if (isNaN(d)) return 0;
   return d.getHours() * 60 + d.getMinutes();
 }
-
-/* ===== 給共用header.html使用 ===== */
-/* ===== 初始化（含共用 header） ===== */
-document.addEventListener('DOMContentLoaded', () => {
-
-  // 1️⃣ 先載入共用 header
-  fetch('header.html')
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById('header').innerHTML = html;
-      
-       // ✅ 關鍵：初始化 header 行為（權限 / 排序 / 高亮）
-       if (typeof applyHeaderRole === 'function') applyHeaderRole();
-       if (typeof highlightCurrentNav === 'function') highlightCurrentNav();
-       if (typeof reorderNavByRole === 'function') reorderNavByRole();
-
-
-      // 2️⃣ 設定頁面標題（從 body data-page-title）
-      const title = document.body.dataset.pageTitle;
-      if (title) {
-        const el = document.querySelector('.page-title');
-        if (el) el.textContent = title;
-      }
-
-      // 3️⃣ 設定使用者名稱（現在 header 已經存在）
-      const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-      if (!session.user_id) {
-        location.replace('login.html');
-        return;
-      }
-
-      const userEl = document.getElementById('u_name');
-      if (userEl) {
-        userEl.textContent = session.name || '';
-      }
-   
-      // ✅ 這三行「一定要在這一頁跑」
-      applyHeaderRole();
-      reorderNavByRole();
-      highlightCurrentNav();
-      
-      // 4️⃣ 載入頁面主要資料
-      loadGames();
-    });
-});
 
 /* ===== 狀態 ===== */
 let allGames = [];
@@ -1059,75 +1043,6 @@ function cancelMySignup(signupId) {
       }
     }
   );
-}
-
-//✅ ① 權限顯示（admin 全開)
-function applyHeaderRole(){
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  if (!session.role) return;
-
-  const roles = session.role.split(',').map(r => r.trim());
-
-  const show = cls =>
-    document.querySelectorAll(cls).forEach(el => el.style.display = 'flex');
-
-  if (roles.includes('admin')) {
-    show('.nav-judge');
-    show('.nav-record');
-    show('.nav-admin');
-  } else {
-    if (roles.includes('judge')) show('.nav-judge');
-    if (roles.includes('record')) show('.nav-record');
-  }
-
-  const nameEl = document.getElementById('u_name');
-  if (nameEl) nameEl.textContent = session.name || '';
-}
-
-//✅ ② 角色順序（裁判頁先裁判）
-function reorderNavByRole(){
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-  if (!session.role) return;
-
-  const roles = session.role.split(',').map(r => r.trim());
-  const nav = document.querySelector('#header nav');
-  if (!nav) return;
-
-  const orders = [];
-
-  if (roles.includes('admin')) {
-    orders.push('.nav-admin', '.nav-judge', '.nav-record');
-  } else if (roles.includes('judge')) {
-    orders.push('.nav-judge', '.nav-record', '.nav-admin');
-  } else if (roles.includes('record')) {
-    orders.push('.nav-record', '.nav-judge', '.nav-admin');
-  }
-
-  orders.push('.nav-home', '.nav-password', '.nav-logout');
-
-  orders.forEach(sel =>
-    nav.querySelectorAll(sel).forEach(el => nav.appendChild(el))
-  );
-}
-
-//✅ ③ 高亮目前頁面（重點）
-function highlightCurrentNav(){
-  const path = location.pathname;
-
-  const map = {
-    'index.html': '.nav-home',
-    'judge_dashboard': '.nav-judge',
-    'record_dashboard': '.nav-record',
-    'admin_dashboard': '.nav-admin',
-    'change_password': '.nav-password'
-  };
-
-  Object.keys(map).forEach(key => {
-    if (path.includes(key)) {
-      document.querySelectorAll(map[key])
-        .forEach(el => el.classList.add('active'));
-    }
-  });
 }
 
 </script>
