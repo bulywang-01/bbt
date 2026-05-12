@@ -452,6 +452,14 @@ select.locked {
   color: #555;
 }
 
+/* ✅ 場次 badge：強制不要被擠扁 */
+.mobile-time-row .game-code {
+  flex: 0 0 auto;     /* ← ★ 關鍵：不要參與撐寬分配 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ✅ 對戰列（置中） */
 .mobile-teams {
   text-align: center;
@@ -473,6 +481,7 @@ select.locked {
   font-size: 13px;         /* 比組別小、比一般內文字清楚 */
   padding: 2px 8px;
   border-radius: 999px;
+  white-space: nowrap;   /* ✅ 防止 A009 被切掉 */
 
 }
 
