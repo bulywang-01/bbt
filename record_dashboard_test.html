@@ -289,32 +289,6 @@ select.locked {
 }
 
 /* ===== 單場賽事卡片 ===== */
-.m-game-card {
-  background: #fafafa;
-  border-radius: 10px;
-  padding: 10px;
-  margin-bottom: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-.m-game-time {
-  font-weight: 700;
-  color: #d32f2f;
-  margin-bottom: 4px;
-}
-
-.m-game-teams {
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 2px;
-}
-
-.m-game-field {
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 6px;
-}
-
 .m-game-action {
   margin-top: 4px;
 }
@@ -402,9 +376,11 @@ select.locked {
 
 .mobile-time-row .game-code {
   text-align: center;
-  flex: 0 0 auto;          /* ✅ 不再被撐扁 */
+  flex: 0 0 auto !important;          /* ✅ 不再被撐扁 */
   min-width: 44px;         /* ✅ A009 不會被擠沒 */
   text-align: center;
+  white-space: nowrap;
+  color: #fff;
 
 }
 
@@ -929,6 +905,7 @@ function renderRecordMobileRole(g, role, label) {
 
 
 // 先「日期 → 群組 → 賽事（排序）」
+/*
 function groupGamesForMobile(games) {
   const map = {};
 
@@ -951,10 +928,11 @@ function groupGamesForMobile(games) {
 
   return map;
 }
-
+*/
 
 // 手機版 render（一次跑完三層）
 /* ===== Render（手機） ===== */
+/*
 function renderMobileByDate(games) {
   const root = document.getElementById('mobileView');
   if (!root) return;
@@ -993,7 +971,7 @@ function renderMobileByDate(games) {
     });
   });
 }
-
+*/
 
 </script>
 
