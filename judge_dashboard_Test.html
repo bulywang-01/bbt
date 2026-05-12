@@ -657,9 +657,14 @@ function render() {
     return;
   }
 
+  /*
   const range = filterRange.value;
   const showPastChecked = showPast.checked;
   const kw = keyword.value.trim();
+  */
+  const range = 'all';
+  const showPastChecked = false;
+  const kw = '';
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
