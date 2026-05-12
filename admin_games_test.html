@@ -441,12 +441,6 @@ function callApiAdminBatch(params, callback) {
 //
 let loadingTimer = null;
 
-function loadHeader(){
-  fetch('header.html').then(r=>r.text()).then(h=>{
-    document.getElementById('header-container').innerHTML=h
-  })
-}
-
 function showLoading(text) {
   // 設定顯示文字（C 的核心）
   document.getElementById('loadingText').textContent = text || '處理中...';
