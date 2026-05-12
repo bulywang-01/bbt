@@ -233,6 +233,48 @@ button {
 
 <body>
 <div id="header-container"></div>
+
+
+<script src="js/auth.js"></script>
+<script src="js/config.js"></script>
+<script src="js/judge_dashboard_admin.js"></script>
+
+<script>
+function loadHeader() {
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+
+      // ✅ 只用 body class 控制身份
+      const session = (typeof getSession === 'function') ? getSession() : null;
+      document.body.classList.remove(
+        'role-admin', 'role-judge', 'role-record'
+      );
+
+      if (session && session.role) {
+        const roles = session.role.split(',').map(r => r.trim());
+
+        if (roles.includes('admin')) {
+          document.body.classList.add('role-admin');
+        }
+        if (roles.includes('judge') || roles.includes('chief_judge')) {
+          document.body.classList.add('role-judge');
+        }
+        if (roles.includes('record') || roles.includes('record_chief')) {
+          document.body.classList.add('role-record');
+        }
+      }
+    })
+    .catch(err => console.error('Header 載入失敗', err));
+  }
+  
+  // 裁入報名頁面重要function
+  document.addEventListener('DOMContentLoaded', () => {
+    loadHeader();   // 只負責 header
+  });
+</script>
+   
 <div id="toast" class="toast"></div>
 
 <div class="main">
@@ -250,9 +292,7 @@ button {
   </div>
 </div>
 
-<script src="js/config.js"></script>
-<script src="js/record_dashboard_admin.js"></script>
-<script src="js/auth.js"></script>
+<!-- 原程式
 <script>
    
 document.addEventListener('DOMContentLoaded', () => {
@@ -268,7 +308,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 });
+</script>
 
+-->
+<script>
 //✅ 3️⃣ JS helper（一次寫好，全頁可用）
 function showToast(message, type = 'success', duration = 2000) {
   const el = document.getElementById('toast');
