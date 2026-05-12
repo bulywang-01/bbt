@@ -487,30 +487,35 @@ function renderRecordDashboard(list) {
   const dates = sortDatesAsc(Object.keys(grouped));
 
   dates.forEach(date => {
-
-  if (isPastGame(date)) return;   // ✅ 過期整天不顯示
-
-    root.insertAdjacentHTML(
+    if (isPastGame(date)) return;
+  
+    // ✅ 日期大格
+    const dateBox = document.createElement('div');
+    dateBox.className = 'panel';   // 你本來就有 panel 樣式
+  
+    dateBox.insertAdjacentHTML(
       'beforeend',
       `<div class="date-title">${date}</div>`
     );
-
-    // ⭐ 組別排序（桌機專用：大中小）
+  
     const categories = sortCategoriesForDesktop(
       Object.keys(grouped[date])
     );
-
+  
     categories.forEach(cat => {
-      root.insertAdjacentHTML(
+      // ✅ 組別中格
+      dateBox.insertAdjacentHTML(
         'beforeend',
         `<div class="group-title">│ ${cat}</div>`
       );
-
-      root.insertAdjacentHTML(
+  
+      dateBox.insertAdjacentHTML(
         'beforeend',
         buildGroupTable(grouped[date][cat])
       );
     });
+  
+    root.appendChild(dateBox);
   });
 }
 
@@ -641,13 +646,31 @@ function renderMobileRecord(list) {
 
   const grouped = groupGames(list);
   Object.keys(grouped).sort().forEach(date => {
-    if (isPastGame(date)) return;   // ✅ 手機版過期日期不顯示
+    if (isPastGame(date)) return;
+  
+    // ✅ 日期大格
+    const dateBox = document.createElement('div');
+    dateBox.className = 'm-date-box';
+  
+    dateBox.insertAdjacentHTML(
+      'beforeend',
+      `<div class="m-date-title">📅 ${date}</div>`
+    );
+  
     Object.keys(grouped[date]).forEach(cat => {
+      // ✅ 組別中格
+      const groupBox = document.createElement('div');
+      groupBox.className = 'm-group-box';
+  
+      groupBox.insertAdjacentHTML(
+        'beforeend',
+        `<div class="m-group-title">${cat}</div>`
+      );
+  
       grouped[date][cat].forEach(g => {
-        root.insertAdjacentHTML('beforeend', `
+        groupBox.insertAdjacentHTML('beforeend', `
           <div class="record-card">
             <div class="record-header">
-              <div>📅 ${date}</div>
               <div>⏰ ${formatTimeTW(g.time)}</div>
             </div>
             <div class="record-main">
@@ -662,7 +685,11 @@ function renderMobileRecord(list) {
           </div>
         `);
       });
+  
+      dateBox.appendChild(groupBox);
     });
+  
+    root.appendChild(dateBox);
   });
 }
 
