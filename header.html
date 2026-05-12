@@ -16,22 +16,26 @@
 
 /* 預設全部隱藏 */
 #app-header .item {
-  width:96px;
-  height:96px;
-  display:none;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  gap:8px;
-  font-size:16px;
-  font-weight:800;
-  border-radius:18px;
-  text-decoration:none;
-  background:#f5f8ff;
-  color:#1a237e;
+  width: 84px;          /* 原本 96 → 縮小一點 */
+  height: 84px;         /* 原本 96 → 縮小一點 */
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;             /* 間距一起縮 */
+  font-size: 15px;      /* 文字微縮 */
+  font-weight: 800;
+  border-radius: 16px;  /* 圓角跟著比例縮 */
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
+  
+#app-header .icon { font-size:28px; }
 
-#app-header .icon { font-size:32px; }
+#app-header .item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
 
 /* 基本項目 */
 #app-header .home {
