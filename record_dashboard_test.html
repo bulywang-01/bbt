@@ -419,17 +419,23 @@ select.locked {
 .game-code.badge {
   display: inline-block;
   height: 22px;          /* ✅ 固定高度 */
-  padding: 2px 8px;        /* 只管左右 */
-  line-height: 22px;     /* ✅ 文字垂直置中 */
+  padding: 1px 4px;        /* 只管左右 */
+  line-height: 20px;     /* ✅ 文字垂直置中，避免被切掉 */
   border-radius: 999px;
   font-size: 14px;
   font-weight: 800;
-  color: #fff;
+  color: #ffffff;
   white-space: nowrap;
   min-width: 44px;       /* ← A009 / A010 很安全 */
 }
 
-
+/* ===== 場次 badge：已完賽 ===== */
+.game-code.badge.expired {
+  background: #9ca3af !important; /* 灰 */
+  color: #ffffff;
+  opacity: 0.9;
+}
+  
 </style>
 </head>
 
