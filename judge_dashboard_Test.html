@@ -899,12 +899,11 @@ function renderMobile() {
           groupBox.insertAdjacentHTML('beforeend', `
             <div class="game-card">
               <div class="record-header">
-                <div>⏰ ${g.time}</div>
+                <div>⏰ ${renderTimeHHmm(g.time_range)}</div>
               </div>
 
               <div class="record-main">
-                <div>${g.away_team} vs ${g.home_team}</div>
-                <div>📍 ${g.field}</div>
+                <div>${g.away_team} vs ${g.home_team}｜📍 ${g.field}</div>
               </div>
 
               ${renderMobilePosGrid(g)}
