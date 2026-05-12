@@ -535,7 +535,7 @@ function buildRow(g) {
   </tr>`;
 }
 
-/* ===== Signup UI ===== */
+/* ===== 桌機版紀錄報名　Signup UI ===== */
 function renderSignupCell(g, role) {
   const slot = g.record_slots?.[role];
 
@@ -543,10 +543,16 @@ function renderSignupCell(g, role) {
     return `<span class="signup-btn" onclick="signup('${g.game_id}','${role}')">＋報名</span>`;
   }
 
-  if (slot.user_id === session.user_id) {
-    return `<span class="signup-me">${slot.name || '我'}
-      <span class="cancel-btn" onclick="cancelSignup('${g.game_id}','${role}')">取消</span>
-    </span>`;
+  // ✅ 型別統一後，比對才會成立
+  if (String(slot.user_id) === String(session.user_id)) {
+    return `
+      <span class="signup-me">
+        ${slot.name || '我'}
+        <span class="cancel-btn"
+          onclick="cancelSignup('${g.game_id}','${role}')">
+          取消
+        </span>
+      </span>`;
   }
 
   return `<span class="signup-other">${slot.name}</span>`;
@@ -642,54 +648,44 @@ function renderMobileRecord(list) {
   });
 }
 
-/*
-function renderRecordMobileRole(g, role, label) {
-  const slot = g.record_slots?.[role];
-  if (!slot) {
-    return `<div class="record-role action" onclick="signup('${g.game_id}','${role}')">＋${label}</div>`;
-  }
-  if (slot.user_id === session.user_id) {
-    return `<div class="record-role me">${label}<br>我</div>`;
-  }
-  return `<div class="record-role other">${label}<br>${slot.name}</div>`;
-}
-*/
 
 function renderRecordMobileRole(g, role, label) {
   const slot = g.record_slots && g.record_slots[role];
 
-  // ✅ 尚未有人報名
+  // 尚未有人報名
   if (!slot) {
     return `
       <div class="record-role action"
-           onclick="signup('${g.game_id}','${role}')">
+        onclick="signup('${g.game_id}','${role}')">
         ＋${label}
       </div>
     `;
   }
 
-  // ✅ 統一型別再比較（關鍵）
-  const isMe =
-    String(slot.user_id) === String(session.user_id);
+  const isMe = String(slot.user_id) === String(session.user_id);
 
-  // ✅ 我自己
+  // ✅ 我自己（加上取消）
   if (isMe) {
     return `
       <div class="record-role me">
         ${label}<br>我
+        <div class="cancel-btn"
+          onclick="cancelSignup('${g.game_id}','${role}')">
+          取消
+        </div>
       </div>
     `;
   }
 
-  // ✅ 他人（防呆）
+  // 他人
   const name = slot.name || '';
-
   return `
     <div class="record-role other">
       ${label}<br>${name}
     </div>
   `;
 }
+
 
 
 // 先「日期 → 群組 → 賽事（排序）」
