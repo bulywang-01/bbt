@@ -382,7 +382,7 @@ tr.expired {
   padding: 14px;
   margin-bottom: 14px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-  font-size: 18px;
+  font-size: 16px;
 
 }
   
@@ -396,7 +396,7 @@ tr.expired {
 }
 
 .m-group-title {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   color: #0d47a1;
   border-left: 4px solid #0d47a1;
@@ -927,11 +927,11 @@ function renderMobile() {
           groupBox.insertAdjacentHTML('beforeend', `
             <div class="game-card">
               <div class="record-header">
-                <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
+                <div>⏰ <strong>${formatTime(g.time_range)}</strong>　　📍 ${g.field}</div>
               </div>
 
               <div class="record-main">
-                <div>${g.away_team} vs ${g.home_team}｜📍 ${g.field}</div>
+                <div>${g.away_team} vs ${g.home_team}</div>
               </div>
 
               ${renderMobilePosGrid(g)}
