@@ -825,10 +825,7 @@ function renderMobileRecord(list) {
             <div class="mobile-time-row">
               <div class="time">⏰ ${formatTimeTW(g.time)}</div>
             
-              <div class="game-code badge ${isPastGame(g.date) ? 'expired' : ''}"
-                   data-category="${g.category || ''}">
-                ${g.game_code || ''}
-              </div>
+              <div class="game-code badge ${isPastGame(g.date) ? 'expired' : ''}" data-category="${g.category || ''}">${g.game_code || ''}</div>
             
               <div class="field">📍 ${g.field}</div>
             </div>
