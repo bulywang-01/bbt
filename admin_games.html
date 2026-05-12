@@ -213,52 +213,52 @@
 
 <h2>賽事管理</h2>
 <div class="main">
-
-<!-- 新增賽事 -->
-  <div class="filter-bar">
-  <button
-  style="margin-left:auto"
-  onclick="addNewGameRow()">
-  ＋ 新增賽事
-</button>
-</div>
-
-<!-- 儲存賽事 -->
-<div id="batchSaveBar" style="display:none; margin-top:12px; text-align:right;">
-  <button onclick="saveAllNewGames()">
-    ✅ 儲存全部新增賽事
-  </button>
-</div>
   
-<!-- 篩選 -->
-<div class="panel">
-  <div class="filter-bar">
-
-    <label>
-      <input type="radio" id="rangeAll" name="range" value="all" checked>
-      全部
-    </label>
-    
-    <label>
-      <input type="radio" id="rangeWeek" name="range" value="week">
-      本週
-    </label>
-    
-    <label>
-      <input type="radio" id="rangeMonth" name="range" value="month">
-      本月
-    </label>
-
-    <label>
-      <input type="checkbox" id="showExpired">
-      顯示已完成
-    </label>
-
-    <input id="searchInput" placeholder="搜尋賽事 / 場地 / 球隊">
-
+  <!-- 篩選 -->
+  <div class="panel">
+    <div class="filter-bar">
+  
+      <label>
+        <input type="radio" id="rangeAll" name="range" value="all" checked>
+        全部
+      </label>
+      
+      <label>
+        <input type="radio" id="rangeWeek" name="range" value="week">
+        本週
+      </label>
+      
+      <label>
+        <input type="radio" id="rangeMonth" name="range" value="month">
+        本月
+      </label>
+  
+      <label>
+        <input type="checkbox" id="showExpired">
+        顯示已完成
+      </label>
+  
+      <input id="searchInput" placeholder="搜尋賽事 / 場地 / 球隊">
+  
+    </div>
   </div>
-</div>
 
+  <!-- 新增賽事 -->
+    <div class="filter-bar">
+    <button
+    style="margin-left:auto"
+    onclick="addNewGameRow()">
+    ＋ 新增賽事
+  </button>
+  </div>
+  
+  <!-- 儲存賽事 -->
+  <div id="batchSaveBar" style="display:none; margin-top:12px; text-align:right;">
+    <button onclick="saveAllNewGames()">
+      ✅ 儲存全部新增賽事
+    </button>
+  </div>
+    
 </div>
 
 <div id="gamesContainer"></div>
