@@ -424,11 +424,13 @@ tr.expired {
 
 .mobile-time-row .time {
   color: #d32f2f;   /* 時間偏紅，與你原本一致 */
+  font-size: 16px;
+
 }
 
 .mobile-time-row .field {
   color: #555;
-  font-size: 13px;
+  font-size: 16px;
   white-space: nowrap;
 }
 </style>
@@ -947,11 +949,11 @@ function renderMobile() {
           groupBox.insertAdjacentHTML('beforeend', `
             <div class="game-card">
             <div class="mobile-time-row">
-              <div class="time">⏰ ${formatTime(g.time_range)}</div>
+              <div class="time">⏰ <strong>${formatTime(g.time_range)}</strong></div>
               <div class="field">📍 ${g.field}</div>
             </div>
               <div class="record-main">
-                <div>${g.away_team} vs ${g.home_team}</div>
+                <div><strong>${g.away_team}</strong> vs <strong>${g.home_team}</strong></div>
               </div>
 
               ${renderMobilePosGrid(g)}
