@@ -966,7 +966,7 @@ function submitSignup(){
   callApi(
     {
       action: 'judgeSignupByGames',
-      userId: session.user_id,
+      user_id: session.user_id,
       games_with_position: payload.join(',')
     },
     res => {
