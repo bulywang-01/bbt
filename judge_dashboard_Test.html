@@ -912,6 +912,29 @@ function renderMobile() {
   });
 }
 
+// ✅ 裁判頁手機版：依 日期 → 組別 → 場次 分組
+function groupGamesForMobile(games) {
+  const map = {};
+
+  games.forEach(g => {
+    const date = g.date; // yyyy/MM/dd
+    const category = g.category || '未分類';
+
+    if (!map[date]) map[date] = {};
+    if (!map[date][category]) map[date][category] = [];
+
+    map[date][category].push(g);
+  });
+
+  // ✅ 每個組別內依時間排序
+  Object.values(map).forEach(catMap => {
+    Object.values(catMap).forEach(list => {
+      list.sort((a, b) => a.time.localeCompare(b.time));
+    });
+  });
+
+  return map;
+}
 
 function renderMobilePosGrid(g) {
   if (isPastGame(g.date)) {
