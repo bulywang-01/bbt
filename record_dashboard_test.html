@@ -376,6 +376,17 @@ function loadHeader() {
 let session;
 let games = [];
 
+// 過期判斷工具
+function isPastGame(gameDateStr) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const d = new Date(gameDateStr.replace(/\//g, '-'));
+  d.setHours(0, 0, 0, 0);
+
+  return d < today;
+}
+
 /* ===== Page / Data ===== */
 function initPage() {
   const raw = localStorage.getItem('session_user');
@@ -465,7 +476,6 @@ function groupGames(list) {
   return map;
 }
 
-/* ===== Render ===== */
 /* ===== Render（桌機） ===== */
 function renderRecordDashboard(list) {
   const root = document.getElementById('recordContainer');
@@ -477,6 +487,9 @@ function renderRecordDashboard(list) {
   const dates = sortDatesAsc(Object.keys(grouped));
 
   dates.forEach(date => {
+
+  if (isPastGame(date)) return;   // ✅ 過期整天不顯示
+
     root.insertAdjacentHTML(
       'beforeend',
       `<div class="date-title">${date}</div>`
@@ -538,6 +551,10 @@ function buildRow(g) {
 /* ===== 桌機版紀錄報名　Signup UI ===== */
 function renderSignupCell(g, role) {
   const slot = g.record_slots?.[role];
+
+  if (isPastGame(g.date)) {
+    return `<span class="signup-other">—</span>`; // ✅ 過期鎖住
+  }
 
   if (!slot) {
     return `<span class="signup-btn" onclick="signup('${g.game_id}','${role}')">＋報名</span>`;
@@ -624,6 +641,7 @@ function renderMobileRecord(list) {
 
   const grouped = groupGames(list);
   Object.keys(grouped).sort().forEach(date => {
+    if (isPastGame(date)) return;   // ✅ 手機版過期日期不顯示
     Object.keys(grouped[date]).forEach(cat => {
       grouped[date][cat].forEach(g => {
         root.insertAdjacentHTML('beforeend', `
@@ -651,6 +669,15 @@ function renderMobileRecord(list) {
 
 function renderRecordMobileRole(g, role, label) {
   const slot = g.record_slots && g.record_slots[role];
+
+  // 過期鎖定
+  if (isPastGame(g.date)) {
+  return `
+    <div class="record-role other">
+      ${label}<br>—
+    </div>
+  `;
+  }
 
   // 尚未有人報名
   if (!slot) {
