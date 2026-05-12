@@ -387,6 +387,40 @@ select.locked {
 }
 
 
+
+/* ===== 補齊：手機版時間 / 場次 / 場地 ===== */
+.mobile-time-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.mobile-time-row .time {
+  font-weight: 700;
+  color: #d32f2f;
+}
+.mobile-time-row .game-code {
+  flex: 1;
+  text-align: center;
+}
+.mobile-time-row .field {
+  font-size: 13px;
+  color: #555;
+}
+.mobile-teams {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  margin: 6px 0 8px;
+}
+.mobile-teams .vs { margin: 0 6px; color: #999; }
+.game-code.badge {
+  display: inline-block; padding: 1px 6px;
+  font-size: 11px; font-weight: 800;
+  border-radius: 999px; color: #fff;
+}
+.game-code.badge.expired { background:#9ca3af !important; }
+
 </style>
 </head>
 
@@ -394,7 +428,18 @@ select.locked {
 <div id="header-container"></div>
 
   
-<script src="js/auth.js"></script>
+<script src="js/auth.js">
+function applyCategoryBadgeColor(){
+  const map={
+    '大聯盟組':'#2563eb','中聯盟組':'#16a34a','小聯盟組':'#d97706'
+  };
+  document.querySelectorAll('.game-code.badge').forEach(el=>{
+    if(el.classList.contains('expired')) return;
+    el.style.backgroundColor = map[el.dataset.category] || '#6b7280';
+  });
+}
+
+</script>
 <script src="js/config.js"></script>
   
 <script>
