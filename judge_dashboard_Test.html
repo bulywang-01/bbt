@@ -462,13 +462,20 @@ tr.expired {
 /* ===== 場次 Badge（共用樣式） ===== */
 .game-code.badge {
   display: inline-block;
-  padding: 1px 5px;
+  padding: 1px 4px;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 800;
   color: #fff;
   line-height: 1.3;
   white-space: nowrap;
+}
+
+/* ===== 場次 badge：已完賽 ===== */
+.game-code.badge.expired {
+  background: #9ca3af !important; /* 灰 */
+  color: #fff;
+  opacity: 0.9;
 }
 
 </style>
@@ -1004,7 +1011,7 @@ function renderMobile() {
             <div class="game-card">
             <div class="mobile-time-row">
               <div class="time">⏰ <strong>${formatTime(g.time_range)}</strong></div>
-              <div class="game-code badge" data-category="${g.category || ''}">${g.game_code || ''}</div>
+              <div class="game-code badge ${g.expired ? 'expired' : ''}" data-category="${g.category || ''}">${g.game_code || ''}</div>
               <div class="field">📍 ${g.field}</div>
             </div>
               <div class="mobile-teams">
