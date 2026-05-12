@@ -261,13 +261,22 @@ table td {
 <script>
 // ✅ 載入共用 Header
 document.addEventListener('DOMContentLoaded', () => {
-  guardAdminPage();     // ✅ 權限
+  guardAdminPage(); // ✅ 權限
+
   fetch('header.html')
     .then(r => r.text())
     .then(html => {
       document.getElementById('header-container').innerHTML = html;
-      // ✅ admin 頁一定要補
+
+      // ✅ 關鍵：admin 頁一定要補 role-admin
       document.body.classList.add('role-admin');
+
+      // ✅（加分）顯示登入者姓名在登出下面
+      const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (session.name) {
+        const nameEl = document.getElementById('header-username');
+        if (nameEl) nameEl.textContent = session.name;
+      }
     });
 });
 
