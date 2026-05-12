@@ -38,6 +38,10 @@ body {
   margin: 0 12px 16px;
   border-collapse: collapse;
   background: #fff;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+
 }
 .record-table th,
 .record-table td {
@@ -180,11 +184,16 @@ select.locked {
  手機卡片
 ================================ */
 .record-card {
-  background: #fff;
   border-radius: 14px;
   padding: 14px 16px;
   margin-bottom: 14px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+
 }
 
 .record-header {
@@ -309,6 +318,74 @@ select.locked {
 .m-game-action {
   margin-top: 4px;
 }
+
+/* ===== 日期大格（桌機） ===== */
+.panel {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.date-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a237e;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-title::before {
+  content: "📅";
+}
+
+/* ===== 組別中格（桌機） ===== */
+.group-title {
+  margin-top: 18px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  color: #0d47a1;
+  border-left: 4px solid #0d47a1;
+  padding-left: 10px;
+}
+
+/* ===== 日期大格（手機） ===== */
+.m-date-box {
+  background: #f5f8ff;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+.m-date-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a237e;
+  margin-bottom: 10px;
+}
+
+/* ===== 組別中格（手機） ===== */
+.m-group-box {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.m-group-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0d47a1;
+  border-left: 4px solid #0d47a1;
+  padding-left: 8px;
+  margin-bottom: 8px;
+}
+
 
 </style>
 </head>
