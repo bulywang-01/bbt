@@ -163,7 +163,7 @@ table td {
 
 <body>
   
-<div id="header-container"></div>
+<div id="-container"></div>
   
 <div class="header">
   <b>使用者管理</b>
@@ -266,6 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(r => r.text())
     .then(html => {
       document.getElementById('header-container').innerHTML = html;
+      // ✅ admin 頁一定要補
+      document.body.classList.add('role-admin');
     });
 });
 
