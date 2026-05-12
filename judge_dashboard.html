@@ -238,6 +238,7 @@ tr.expired {
   padding: 14px 16px;
   margin-bottom: 14px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  font-size: 18px;
 }
 
 .game-header {
@@ -351,6 +352,87 @@ tr.expired {
   font-weight: 600;
 }
 
+/* ===== 裁判頁手機版：日期大格 ===== */
+.m-date-box {
+  background: #f5f8ff;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+.m-date-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a237e;
+  margin-bottom: 10px;
+}
+
+/* ===== 裁判頁手機：日期大格 ===== */
+.m-date-box {
+  background: #f5f8ff;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+/* ===== 裁判頁手機：場次卡 ===== */
+.game-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  font-size: 16px;
+
+}
+  
+/* ===== 裁判頁手機版：組別中格 ===== */
+.m-group-box {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.m-group-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0d47a1;
+  border-left: 4px solid #0d47a1;
+  padding-left: 8px;
+  margin-bottom: 8px;
+}
+
+/* ===== 裁判頁手機版：場次卡 ===== */
+.judge-card {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+/* ===== 裁判頁手機：時間 / 場地 同列 ===== */
+.mobile-time-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.mobile-time-row .time {
+  color: #d32f2f;   /* 時間偏紅，與你原本一致 */
+  font-size: 16px;
+
+}
+
+.mobile-time-row .field {
+  color: #555;
+  font-size: 16px;
+  white-space: nowrap;
+}
 </style>
   
 </head>
@@ -414,6 +496,7 @@ function loadHeader() {
   <div class="main">
   
     <!-- 篩選 -->
+    <!-- 先暫時關閉不顯示
     <div class="filter-bar">
       目前顯示的資料是：
       <select id="filterRange" onchange="render()">
@@ -427,6 +510,7 @@ function loadHeader() {
       </label>
       關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninput="render()">
     </div>
+    -->
     
     <!-- 桌機表格 -->
     <div id="desktopView">
@@ -447,11 +531,24 @@ function loadHeader() {
 
 <script>
 
+// 過期不顯示
+function isPastGame(gameDateStr) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const d = new Date(gameDateStr.replace(/\//g, '-'));
+  d.setHours(0, 0, 0, 0);
+
+  return d < today;
+}
+
+
 function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
   if (overlay) overlay.remove();
 }
 
+/*
 function timeToMinutesSafe(t) {
   if (!t) return 0;
   if (typeof t === 'string' && t.includes(':')) {
@@ -462,6 +559,23 @@ function timeToMinutesSafe(t) {
   if (isNaN(d)) return 0;
   return d.getHours() * 60 + d.getMinutes();
 }
+*/
+
+function timeToMinutesSafe(t) {
+  if (!t) return 0;
+
+  if (typeof t === 'string' && t.includes(':')) {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  if (t instanceof Date) {
+    return t.getHours() * 60 + t.getMinutes();
+  }
+
+  return 0;
+}
+
 
 /* ===== 狀態 ===== */
 let allGames = [];
@@ -568,9 +682,14 @@ function render() {
     return;
   }
 
+  /*
   const range = filterRange.value;
   const showPastChecked = showPast.checked;
   const kw = keyword.value.trim();
+  */
+  const range = 'all';
+  const showPastChecked = false;
+  const kw = '';
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -785,53 +904,109 @@ function render() {
 // 手機版 ${renderTimeHHmm(g.time_range)}
  
 function renderMobile() {
-  const box = document.getElementById('mobileView');
-  if (!box) return;
-  box.innerHTML = '';
+  const root = document.getElementById('mobileView');
+  if (!root) return;
+  root.innerHTML = '';
 
-  if (!allGames || !allGames.length) return;
+  // ✅ 先用你原本的分組邏輯
+  const grouped = groupGamesForMobile(allGames);
 
-  // ✅ 依日期分組
-  const groups = {};
-  allGames.forEach(g => {
-    if (!groups[g.date]) groups[g.date] = [];
-    groups[g.date].push(g);
-  });
+  const dates = Object.keys(grouped).sort();
+  dates.forEach(date => {
+    // ✅ 過期日期整天不顯示
+    if (isPastGame(date)) return;
 
-  Object.keys(groups).sort().forEach(date => {
-    groups[date]
-      .sort((a, b) =>
-        timeToMinutesSafe(a.time_range) -
-        timeToMinutesSafe(b.time_range)
-      )
-      .forEach(g => {
-        const card = document.createElement('div');
-        card.className = 'game-card';
+    // ✅ 日期大格
+    const dateBox = document.createElement('div');
+    dateBox.className = 'm-date-box';
 
-        card.innerHTML = `
-          <div class="game-header">
-            <div>📅 <strong>${g.date}</strong></div>
-            <div>⏰ <strong>${formatTime(g.time_range)}</strong></div>
-          </div>
+    dateBox.insertAdjacentHTML(
+      'beforeend',
+      `<div class="m-date-title">📅 ${date}</div>`
+    );
 
-          <div class="game-main">
-            <div class="teams">${g.away_team} vs ${g.home_team}</div>
-            <div>📍 ${g.field}</div>
-          </div>
+    Object.keys(grouped[date]).forEach(category => {
+      // ✅ 組別中格
+      const groupBox = document.createElement('div');
+      groupBox.className = 'm-group-box';
 
-          ${renderMobilePosGrid(g)}
+      groupBox.insertAdjacentHTML(
+        'beforeend',
+        `<div class="m-group-title">${category}</div>`
+      );
 
-          <div style="margin-top:10px;font-size:14px;font-weight:700;text-align:center;">
-            ${g.tournament || ''} - ${g.category || ''}
-          </div>
-        `;
+      // ✅ 中格內依時間排序
+      grouped[date][category]
+        //.sort((a, b) => a.time.localeCompare(b.time))
 
-        box.appendChild(card);
-      });
+        grouped[date][category]
+          .sort((a, b) =>
+            timeToMinutesSafe(a.time_range) -
+            timeToMinutesSafe(b.time_range)
+          )
+       
+        .forEach(g => {
+          groupBox.insertAdjacentHTML('beforeend', `
+            <div class="game-card">
+            <div class="mobile-time-row">
+              <div class="time">⏰ <strong>${formatTime(g.time_range)}</strong></div>
+              <div class="field">📍 ${g.field}</div>
+            </div>
+              <div class="record-main">
+                <div><strong>${g.away_team}</strong> vs <strong>${g.home_team}</strong></div>
+              </div>
+
+              ${renderMobilePosGrid(g)}
+            </div>
+          `);
+        });
+
+      dateBox.appendChild(groupBox);
+    });
+
+    root.appendChild(dateBox);
   });
 }
 
+// ✅ 裁判頁手機版：依 日期 → 組別 → 場次 分組
+function groupGamesForMobile(games) {
+  const map = {};
+
+  games.forEach(g => {
+    const date = g.date; // yyyy/MM/dd
+    const category = g.category || '未分類';
+
+    if (!map[date]) map[date] = {};
+    if (!map[date][category]) map[date][category] = [];
+
+    map[date][category].push(g);
+  });
+
+  // ✅ 每個組別內依「裁判頁時間欄位」排序
+  Object.values(map).forEach(catMap => {
+    Object.values(catMap).forEach(list => {
+      list.sort((a, b) =>
+        timeToMinutesSafe(a.time_range) -
+        timeToMinutesSafe(b.time_range)
+      );
+    });
+  });
+
+  return map;
+}
+
 function renderMobilePosGrid(g) {
+  if (isPastGame(g.date)) {
+  return `
+    <div class="mobile-pos-grid">
+      <div class="mobile-pos-na">—</div>
+      <div class="mobile-pos-na">—</div>
+      <div class="mobile-pos-na">—</div>
+      <div class="mobile-pos-na">—</div>
+    </div>
+  `;
+  }
+  
   const ROLE_NAME = {
   PU: '主審',
   U1: '一壘',
