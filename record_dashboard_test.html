@@ -1059,7 +1059,7 @@ function renderRecordMobileRole(g, role, label) {
   if (isMe) {
     return `
       <div class="record-role me">
-        ${label}<br>我
+        ${label}<br>${slot.name || '我'}
         <div class="cancel-btn"
           onclick="cancelSignup('${g.game_id}','${role}')">
           取消
