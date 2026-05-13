@@ -296,8 +296,14 @@ tr.full {
 #mobileView { display: none; }
 
 @media (max-width: 768px) {
-  #desktopView { display: none; }
-  #mobileView { display: block; padding: 12px; }
+  #desktopView {
+    display: none;
+  }
+  
+  #mobileView { 
+    display: block;
+    padding: 6px 8px;
+  }
 }
 
 /* ===== 共用訊息遮罩（桌機＋手機） ===== */
@@ -485,7 +491,7 @@ tr.full {
 .m-group-box {
   background: #ffffff;
   border-radius: 12px;
-  padding: 6px 6px;   /* ✅ 原本 10 → 縮小 */
+  padding: 4px;   /* ✅ 原本 10 → 縮小 */
   margin-bottom: 14px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
   
