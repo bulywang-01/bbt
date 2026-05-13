@@ -429,6 +429,54 @@ select.locked {
   opacity: 0.9;
 }
   
+
+/* ===== 升級：桌機專業表格 ===== */
+.record-table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.record-table th {
+  background: linear-gradient(135deg,#0d4c63,#1976d2);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.record-table td {
+  font-size: 14px;
+}
+
+.record-table tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.record-table tr:hover {
+  background: #e3f2fd;
+}
+
+/* 場次欄 */
+.col-game {
+  font-weight: 800;
+  color: #0d47a1;
+}
+
+/* 對戰強化 */
+.record-table td:nth-child(3),
+.record-table td:nth-child(4) {
+  font-weight: 700;
+}
+
+
+
+.upgraded-hint {
+  background: #fff3cd;
+  border-left: 5px solid #ff9800;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
 </style>
 </head>
 
@@ -480,7 +528,7 @@ function loadHeader() {
 
 <!--
 <div class="page-title">BBT 軟式棒球聯盟｜紀錄員班表</div>
-<div class="hint">※ 只能在「無」的欄位選擇自己</div>
+<div class="hint upgraded-hint">※ 只能在「無」的欄位選擇自己</div>
 -->
 <!-- ✅ 唯一主容器 -->
 <div id="desktopView">
@@ -661,7 +709,7 @@ function buildGroupTable(list) {
   <table class="record-table">
     <thead>
       <tr>
-        <th>時間</th>
+        <th>場次</th><th>時間</th>
         <th>客隊（三壘）</th>
         <th>主隊（一壘）</th>
         <th>地點</th>
@@ -679,7 +727,7 @@ function buildGroupTable(list) {
 function buildRow(g) {
   return `
   <tr>
-    <td>${formatTimeTW(g.time)}</td>
+    <td class='col-game'>${g.game_code || ''}</td><td>${formatTimeTW(g.time)}</td>
     <td>${g.away_team}</td>
     <td>${g.home_team}</td>
     <td>${g.field}</td>
