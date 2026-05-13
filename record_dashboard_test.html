@@ -218,7 +218,7 @@ select.locked {
   margin-bottom: 6px;
 }
 
-.record-roles {
+s {
   margin-top: 10px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -232,11 +232,16 @@ select.locked {
 
 /* 基本名單 */
 .record-role {
-  font-size: 17px;              /* ✅ 字稍微變大 */
-  font-weight: 800;
+  font-size: 13px;              /* ✅ 字稍微變大 */
+  font-weight: 600;
   line-height: 1.3;
   padding: 8px 6px;
   border-radius: 10px;
+}
+
+.record-role br + * {
+  font-size: 15px;        /* ✅ 名字稍微大一點 */
+  font-weight: 800;
 }
 
 /* ✅ 自己（我報名的 / 被指派） */
@@ -1002,9 +1007,9 @@ function renderMobileRecord(list) {
         
             <!-- ✅ ✅ ✅ 關鍵：搬進來 -->
             <div class="record-roles">
-              ${renderRecordMobileRole(g,'REC_MAIN','紀錄員')}
-              ${renderRecordMobileRole(g,'REC_TRAINEE','見習紀錄')}
-              ${renderRecordMobileRole(g,'REC_VIDEO','影像紀錄')}
+              ${renderRecordMobileRole(g,'REC_MAIN','紀錄')}
+              ${renderRecordMobileRole(g,'REC_TRAINEE','見習')}
+              ${renderRecordMobileRole(g,'REC_VIDEO','影像')}
             </div>
         
           </div>
