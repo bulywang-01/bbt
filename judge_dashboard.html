@@ -34,15 +34,16 @@ body {
   padding: 20px;
 }
 
-/* ===============================
-   Panel / 區塊
-================================ */
+/* =====================================
+ ✅ Panel 強化
+===================================== */
+
 .panel {
-  background: #fff;
-  padding: 18px;
+  background: #ffffff;
+  padding: 20px 22px;
   margin-bottom: 24px;
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
 /* 日期標題 */
@@ -66,25 +67,84 @@ h3 {
 /* ===============================
    Table（桌機）
 ================================ */
+/* ✅ 表格全部置中（統一控制） */
+table th,
+table td {
+  text-align: center;
+  vertical-align: middle;  /* ✅ 上下也置中 */
+}
+
+/* ===== 專業後台表格 ===== */
 table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
 }
 
-th, td {
-  border: 1px solid #dcdcdc;
-  padding: 6px 8px;
-  text-align: center;
-}
-
+/* 表頭 */
 th {
-  background: #f2f5fa;
+  background: linear-gradient(135deg, #0d4c63, #1976d2);
+  color: #fff;
   font-weight: 700;
-  color: #37474f;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  border: none;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
+
+/* 內容 */
+td {
+  padding: 10px 12px;
+  font-size: 16px;
+  text-align: center;
+  vertical-align: middle;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* =====================================
+ ✅ 對戰強化
+===================================== */
+/* 對戰給最大空間 */
+td:nth-child(4),
+td:nth-child(5) {
+  font-weight: 800;
+  font-size: 17px;
+  min-width: 100px;
+}
+
+/* 場次窄一點 */
+td:first-child,
+th:first-child {
+  width: 70px;
+}
+
+/* 時間 */
+td:nth-child(2),
+th:nth-child(2) {
+  width: 90px;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* zebra */
+tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+/* hover */
+tbody tr:hover {
+  background: #e3f2fd;
+}
+
 
 tbody tr:hover {
   background: #f9fbff;
@@ -92,26 +152,65 @@ tbody tr:hover {
 
 .col-game-id {
   font-weight: 800;
-  background: #eef3fb;
-  color: #263238;
-  white-space: nowrap;
+  text-align: center;
 }
 
-/* 已額滿 */
+/* =====================================
+ ✅ 場次 Badge（桌機 + 手機統一）
+===================================== */
+
+.game-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 999px;
+  color: #fff;
+  line-height: 1.4;
+  white-space: nowrap;
+  background: #2563eb;   /* ✅ 補這行 */
+
+}
+
+/* 已完賽 */
+.game-badge.expired {
+  background: #9ca3af;
+}
+
+/* ✅ 強制場次一定顯示（最終保命寫法） */
+.game-badge,
+.game-code.badge {
+  color: #ffffff;
+  opacity: 1;
+  text-shadow: 0 0 0 #ffffff;  /* ✅ 防止被灰化 */
+}
+
+
+/* =====================================
+ ✅ 狀態
+===================================== */
+
+/* 已完賽（過期） */
+
+tr.expired {
+  background: #f9fafb;
+}
+
+/* ✅ 禁止吃掉子元素顏色 */
+tr.expired td {
+  color: inherit;
+}
+
+/* 額滿 */
 tr.full {
-  background: #fff3f3;
+  background: #fff5f5;
 }
 
 .umpire-full {
-  //font-weight: 600;
-  color: #d32f2f;
+  color: #dc2626;
+  font-weight: 800;
 }
 
-/* 過期 */
-tr.expired {
-  background: #f2f2f2;
-  color: #999;
-}
 
 /* ===============================
    桌機站位
@@ -937,7 +1036,8 @@ function render() {
             }
 
             tr.innerHTML = `
-              <td class="col-game-id">${g.game_code}</td>
+              
+              <td><span class="game-badge ${isPast ? 'expired' : ''}" data-category="${g.category || ''}">${g.game_code}</span></td>
               <td>${formatTime(g.time_range)}</td>
               <td>${g.category || ''}</td>
               <td>${g.away_team || ''}</td>
