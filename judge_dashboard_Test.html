@@ -175,15 +175,28 @@ tbody tr:hover {
   background: #9ca3af !important;
 }
 
+.game-badge,
+.game-code.badge {
+  color: #ffffff !important;  /* ✅ 一律白字 */
+  opacity: 1 !important;      /* ✅ 不要再被變淡 */
+}
+
+
 /* =====================================
  ✅ 狀態
 ===================================== */
 
 /* 已完賽（過期） */
+
 tr.expired {
-  background: #f9fafb;
-  color: #9ca3af;
+  background: #f9fafb;   /* 淡灰背景即可 */
 }
+
+/* ❗不要再改整列文字顏色 */
+tr.expired td {
+  color: inherit;        /* ✅ 保留正常文字 */
+}
+
 
 /* 額滿 */
 tr.full {
