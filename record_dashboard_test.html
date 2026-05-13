@@ -490,6 +490,19 @@ td:nth-child(5) {
   font-weight: 600;
 }
 
+/* loading 狀態 */
+#overlay.loading #overlay-text::after {
+  content: '...';
+  animation: dots 1.2s infinite;
+}
+
+@keyframes dots {
+  0%   { content: '...'; }
+  33%  { content: '.  '; }
+  66%  { content: '.. '; }
+  100% { content: '...'; }
+}
+
 </style>
 </head>
 
@@ -533,7 +546,7 @@ function loadHeader() {
   // 裁入報名頁面重要function
   document.addEventListener('DOMContentLoaded', () => {
     loadHeader();   // 只負責 header
-    loadGames();    // 或該頁真正的資料初始化
+    ();    // 或該頁真正的資料初始化
   });
 </script>
   
@@ -612,10 +625,18 @@ function showToast(msg, type = 'success') {
 /* ===== 取資料 ===== */
 function loadGames() {
   session = session || JSON.parse(localStorage.getItem('session_user') || '{}');
+  
+  // ✅ 顯示置中 loading
+  showLoading('載入賽事資料中...');
+
   callApi({
     action: 'getRecordSignableGames',
     user_id: session.user_id
   }, res => {
+
+      // ✅ 關掉 loading
+      hideOverlay();
+
     if (!res || res.result !== 'ok') {
       showToast('載入賽事失敗', 'error');
       return;
@@ -626,6 +647,42 @@ function loadGames() {
     renderMobileRecord(games);   // ✅ 新增
   });
 }
+
+// 1️⃣ 顯示 loading（不要可點）
+function showLoading(msg) {
+  const overlay = document.getElementById('overlay');
+  document.getElementById('overlay-text').textContent = msg;
+
+  const ok = document.getElementById('overlay-ok');
+  ok.style.display = 'none';
+
+  overlay.onclick = null;   // ✅ 禁止點擊關閉
+  overlay.classList.add('show', 'loading'); 
+}
+
+// 2️⃣ 顯示訊息（可以點關閉）
+function showMessage(msg) {
+  const overlay = document.getElementById('overlay');
+  const text = document.getElementById('overlay-text');
+  const ok = document.getElementById('overlay-ok');
+
+  text.textContent = msg;
+
+  ok.style.display = 'inline-block';
+
+  // ✅ 點擊關閉
+  ok.onclick = hideOverlay;
+  overlay.onclick = hideOverlay;
+
+  overlay.classList.add('show');
+}
+
+// ✅ 3️⃣ 關閉統一
+function hideOverlay() {
+  const overlay = document.getElementById('overlay');
+  overlay.classList.remove('show', 'loading'); 
+}
+
 
 /* ===============================
  * 共用排序工具
