@@ -186,16 +186,21 @@ select.locked {
  手機卡片
 ================================ */
 .record-card {
+  background: #ffffff;
   border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-  
-  background: #fafafa;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 10px;
+  padding: 14px;
+  margin-bottom: 18px;   /* ✅ ✅ ✅ 關鍵：拉開下一場 */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+  overflow: hidden;      /* ✅ 防止內部“外溢看起來黏” */
+  /* ✅ 這兩行最重要 */
+  border: 1px solid #e5e7eb;
+}
 
+.record-card + .record-card {
+  margin-top: 10px;
+
+  /* ✅ 視覺分隔（超重要） */
+  border-top: 3px solid #e3f2fd;
 }
 
 .record-header {
@@ -213,6 +218,18 @@ select.locked {
   margin-bottom: 6px;
 }
 
+s {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: center;
+  border-top: 1px dashed #e0e0e0;   /* ✅ 視覺上連在上面 */
+  padding-top: 8px;
+}
+
+/* ===== 手機版名單強化 ===== */
+
 .record-roles {
   margin-top: 8px;
   display: grid;
@@ -220,16 +237,17 @@ select.locked {
   gap: 8px;
   text-align: center;
 }
-
-/* ===== 手機版名單強化 ===== */
-
+  
 /* 基本名單 */
 .record-role {
-  font-size: 17px;              /* ✅ 字稍微變大 */
-  font-weight: 800;
+  font-size: 14px;              /* ✅ 字稍微變大 */
+  font-weight: 600;
   line-height: 1.3;
   padding: 8px 6px;
   border-radius: 10px;
+  min-width: 0;
+  white-space: normal;      /* ✅ 允許換行 */
+  word-break: break-word;   /* ✅ 中文也不撐爆 */
 }
 
 /* ✅ 自己（我報名的 / 被指派） */
@@ -238,7 +256,6 @@ select.locked {
   border: 2px solid #2e7d32;    /* 明確邊框 */
   color: #1b5e20;
   font-size: 18px;              /* ✅ 字稍微變大 */
-
 }
 
 /* ✅ 他人 */
@@ -246,6 +263,7 @@ select.locked {
   background: #f1f1f1;
   border: 1px solid #cfcfcf;
   color: #424242;
+  font-size: 16px;              /* ✅ 字稍微變大 */
 }
 
 /* ✅ 可操作（尚未報名） */
@@ -272,23 +290,6 @@ select.locked {
   font-size: 18px;
   font-weight: 800;
   color: #1a237e;
-  margin-bottom: 6px;
-}
-
-/* ===== 群組中框 ===== */
-.m-group-box {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 8px;
-  margin-bottom: 12px;
-}
-
-.m-group-title {
-  font-size: 17px;
-  font-weight: 800;
-  color: #0d47a1;
-  border-left: 4px solid #0d47a1;
-  padding-left: 8px;
   margin-bottom: 6px;
 }
 
@@ -353,15 +354,20 @@ select.locked {
   padding: 10px;
   margin-bottom: 14px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  
+  /* ✅ 關鍵：加出「群組感」 */
+  border: 2px solid #e3f2fd;
+
 }
 
 .m-group-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: #0d47a1;
-  border-left: 4px solid #0d47a1;
-  padding-left: 8px;
-  margin-bottom: 8px;
+
+  border-left: 6px solid #0d47a1;
+  padding-left: 10px;
+  margin-bottom: 12px;
 }
 
 /* ===== 裁判頁手機：時間 / 場地 同列 ===== */
@@ -372,6 +378,11 @@ select.locked {
   font-size: 16px;
   font-weight: 700;
   margin-bottom: 6px;
+  
+  /* ✅ 加分隔 */
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 6px;
+
 }
 
 .mobile-time-row .time {
@@ -530,6 +541,25 @@ td:nth-child(5) {
   33%  { content: '.  '; }
   66%  { content: '.. '; }
   100% { content: '...'; }
+}
+
+.game-card {
+  background: #fafafa;   /* ✅ 和白底區隔 */
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+
+  /* ✅ 關鍵：分隔線 */
+  border: 1px solid #e5e7eb;
+}
+
+.m-group-box .game-card:last-child {
+  margin-bottom: 4px;
+}
+
+/* 在卡片頂部加一條分隔線（讓每場更獨立）*/
+.game-card + .game-card {
+  border-top: 2px dashed #e0e0e0;
 }
 
 </style>
@@ -965,25 +995,29 @@ function renderMobileRecord(list) {
       grouped[date][cat].forEach(g => {
         groupBox.insertAdjacentHTML('beforeend', `
           <div class="record-card">
+        
             <div class="mobile-time-row">
               <div class="time">⏰ ${formatTimeTW(g.time)}</div>
-            
-              <div class="game-code badge ${isPastGame(g.date) ? 'expired' : ''}" data-category="${g.category || ''}">${g.game_code || ''}</div>
-            
+              <div class="game-code badge ${isPastGame(g.date) ? 'expired' : ''}"
+                   data-category="${g.category || ''}">
+                ${g.game_code || ''}
+              </div>
               <div class="field">📍 ${g.field}</div>
             </div>
-            
+        
             <div class="mobile-teams">
               <strong>${g.away_team}</strong>
               <span class="vs">vs</span>
               <strong>${g.home_team}</strong>
             </div>
-          </div>
+        
+            <!-- ✅ ✅ ✅ 關鍵：搬進來 -->
             <div class="record-roles">
-              ${renderRecordMobileRole(g,'REC_MAIN','紀錄員')}
-              ${renderRecordMobileRole(g,'REC_TRAINEE','見習紀錄')}
-              ${renderRecordMobileRole(g,'REC_VIDEO','影像紀錄')}
+              ${renderRecordMobileRole(g,'REC_MAIN','紀錄')}
+              ${renderRecordMobileRole(g,'REC_TRAINEE','見習')}
+              ${renderRecordMobileRole(g,'REC_VIDEO','影像')}
             </div>
+        
           </div>
         `);
       });
@@ -1025,7 +1059,7 @@ function renderRecordMobileRole(g, role, label) {
   if (isMe) {
     return `
       <div class="record-role me">
-        ${label}<br>我
+        ${label}<br>${slot.name || '我'}
         <div class="cancel-btn"
           onclick="cancelSignup('${g.game_id}','${role}')">
           取消
