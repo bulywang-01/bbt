@@ -174,13 +174,7 @@ function renderMergedCards(games) {
   .sort()
   .forEach(date => {
 
-    // ✅ 日期
-    const dateTitle = document.createElement('div');
-    dateTitle.className = 'schedule-date-title';
-    dateTitle.textContent = formatZhDate(date);
-    box.appendChild(dateTitle);
-
-    // ✅ ✅ ✅ 👉 這段你要補
+    //
     groups[date].forEach(g => {
 
       const card = document.createElement('div');
