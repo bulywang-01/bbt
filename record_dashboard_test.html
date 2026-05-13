@@ -186,16 +186,22 @@ select.locked {
  手機卡片
 ================================ */
 .record-card {
+  background: #ffffff;
   border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-  
-  background: #fafafa;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+
+  /* ✅ 這兩行最重要 */
+  border: 1px solid #e5e7eb;
+}
+
+.record-card + .record-card {
+  margin-top: 12px;
+
+  /* ✅ 視覺分隔（超重要） */
+  border-top: 3px solid #e3f2fd;
 }
 
 .record-header {
@@ -214,7 +220,7 @@ select.locked {
 }
 
 .record-roles {
-  margin-top: 8px;
+  margin-top: 10px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
@@ -360,6 +366,11 @@ select.locked {
   font-size: 16px;
   font-weight: 700;
   margin-bottom: 6px;
+  
+  /* ✅ 加分隔 */
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 6px;
+
 }
 
 .mobile-time-row .time {
