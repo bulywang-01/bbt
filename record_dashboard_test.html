@@ -189,16 +189,15 @@ select.locked {
   background: #ffffff;
   border-radius: 14px;
   padding: 14px;
-  margin-bottom: 16px;
-
+  margin-bottom: 18px;   /* ✅ ✅ ✅ 關鍵：拉開下一場 */
   box-shadow: 0 4px 12px rgba(0,0,0,0.10);
-
+  overflow: hidden;      /* ✅ 防止內部“外溢看起來黏” */
   /* ✅ 這兩行最重要 */
   border: 1px solid #e5e7eb;
 }
 
 .record-card + .record-card {
-  margin-top: 12px;
+  margin-top: 10px;
 
   /* ✅ 視覺分隔（超重要） */
   border-top: 3px solid #e3f2fd;
@@ -225,6 +224,7 @@ select.locked {
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   text-align: center;
+  border-top: 1px dashed #e0e0e0;   /* ✅ 視覺上連在上面 */
 }
 
 /* ===== 手機版名單強化 ===== */
