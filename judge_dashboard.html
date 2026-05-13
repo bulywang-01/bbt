@@ -296,8 +296,14 @@ tr.full {
 #mobileView { display: none; }
 
 @media (max-width: 768px) {
-  #desktopView { display: none; }
-  #mobileView { display: block; padding: 12px; }
+  #desktopView {
+    display: none;
+  }
+  
+  #mobileView { 
+    display: block;
+    padding: 6px 8px;
+  }
 }
 
 /* ===== 共用訊息遮罩（桌機＋手機） ===== */
@@ -452,12 +458,6 @@ tr.full {
 }
 
 /* ===== 裁判頁手機版：日期大格 ===== */
-.m-date-box {
-  background: #f5f8ff;
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 20px;
-}
 
 .m-date-title {
   font-size: 18px;
@@ -469,9 +469,10 @@ tr.full {
 /* ===== 裁判頁手機：日期大格 ===== */
 .m-date-box {
   background: #f5f8ff;
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 20px;
+  border-radius: 16px;    /* ✅ 跟紀錄一致 */
+  padding: 10px;          /* ✅ 關鍵：縮小 */
+  margin-bottom: 16px;    /* ✅ 對齊 */
+  box-sizing: border-box;   /* ✅ 防止 padding 撐大 */
 }
 
 /* ===== 裁判頁手機：場次卡 ===== */
@@ -482,6 +483,7 @@ tr.full {
   margin-bottom: 14px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.12);
   font-size: 16px;
+  margin: 0 -4px 12px;   /* ✅ 往外撐（關鍵） */
 
 }
   
@@ -489,9 +491,15 @@ tr.full {
 .m-group-box {
   background: #ffffff;
   border-radius: 12px;
-  padding: 10px;
+  padding: 4px;   /* ✅ 原本 10 → 縮小 */
   margin-bottom: 14px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  
+  /* ✅ 可選：讓界線更乾淨 */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
 }
 
 .m-group-title {
