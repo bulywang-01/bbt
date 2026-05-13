@@ -114,48 +114,6 @@ function renderSchedule() {
 /* =========================
  * 合併 裁判＋紀錄（同一場一張）
  * ========================= */
-/* 原程式開頭
-function mergeMySchedules(judgeGames, recordGames) {
-  const map = {};
-
-  function ensure(g) {
-    if (!map[g.game_id]) {
-      map[g.game_id] = {
-        game_id: g.game_id,
-        date: g.date,
-        time: g.time,
-        field: g.field,
-        roles: []
-      };
-    }
-    return map[g.game_id];
-  }
-
-  // ✅ 裁判（永遠 push，不覆蓋）
-    judgeGames.forEach(g => {
-      // ✅ 沒有 role 的裁判資料，代表「不屬於我」，直接忽略
-      if (!g.role) return;
-    
-      ensure(g).roles.push({
-        type: 'judge',
-        role: g.role
-      });
-    });
-
-  // ✅ 紀錄（永遠 push，即使同一場）
-    recordGames.forEach(g => {
-      if (!g.record_role) return;
-    
-      ensure(g).roles.push({
-        type: 'record',
-        role: g.record_role
-      });
-    });
-
-  return Object.values(map);
-}
-原程式尾巴 */
-
 function mergeMySchedules(judgeGames, recordGames) {
   const map = {};
 
@@ -212,53 +170,6 @@ function renderMergedCards(games) {
     groups[g.date].push(g);
   });
 
-  /* ==== 原程式
-  Object.keys(groups)
-    .sort()
-    .forEach(date => {
-      // 日期標題
-      const dateTitle = document.createElement('div');
-      dateTitle.className = 'schedule-date-title';
-      dateTitle.textContent = formatZhDate(date);
-      box.appendChild(dateTitle);
-
-      groups[date]
-        .sort((a,b) => formatTimeOnly(a.time).localeCompare(formatTimeOnly(b.time)))
-        .forEach(g => {
-
-          // ✅ 每一張卡片都在這裡重新算是否過期
-          const gameDate = new Date(g.date.replace(/\//g, '-'));
-          gameDate.setHours(0, 0, 0, 0);
-          const isExpired = (currentRange === 'month' && gameDate < today);
-
-          const roleSpans = g.roles.map(r => {
-            if (r.type === 'judge') {
-              return `<span class="role role-judge">🧑‍⚖️ 裁判｜${JUDGE_ROLE[r.role] || '待指派'}</span>`;
-            }
-            if (r.type === 'record') {
-              return `<span class="role role-record">📝 紀錄｜${RECORD_ROLE[r.role] || '待指派'}</span>`;
-            }
-          }).join(' ');
-
-          const card = document.createElement('div');
-          card.className = 'schedule-card' + (isExpired ? ' expired' : '');
-
-          card.innerHTML = `
-            <div class="card-row">
-              <span>⏰ ${formatTimeOnly(g.time)}</span>
-              <span class="sep">｜</span>
-              <span>📍 ${g.field}</span>
-              <span class="sep">｜</span>
-              ${roleSpans}
-            </div>
-          `;
-
-          box.appendChild(card);
-        });
-    });
-    原程式區尾巴 */
-
-  /*新程式區開頭*/
   Object.keys(groups)
   .sort()
   .forEach(date => {
@@ -287,7 +198,6 @@ function renderMergedCards(games) {
       const roleHtml = g.roles.map(r => {
 
         const isJudge = r.startsWith('U') || r === 'PU';
-
         const name = isJudge ? judgeMap[r] : recordMap[r];
 
         return `
@@ -298,16 +208,22 @@ function renderMergedCards(games) {
       }).join('');
 
       card.innerHTML = `
-        <div class="schedule-date-text">
-          ${formatZhDate(g.date)}
+        <div class="schedule-top-row">
+          <div class="schedule-date-text">
+            ${formatZhDate(g.date)}
+          </div>
+      
+          <div class="schedule-role-group">
+            ${roleHtml}
+          </div>
         </div>
-        <div>${roleHtml}</div>
-
+      
         <div class="schedule-info-row">
           <div>⏰ ${formatTimeOnly(g.time)}</div>
           <div>📍 ${g.field}</div>
         </div>
       `;
+
       box.appendChild(card);
     });
   });
