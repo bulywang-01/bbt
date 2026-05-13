@@ -562,6 +562,13 @@ td:nth-child(5) {
   <div id="recordContainer"></div>
 </div>
 
+<div id="overlay">
+  <div id="overlay-box">
+    <div id="overlay-text">處理中...</div>
+    <button id="overlay-ok">確定</button>
+  </div>
+</div>
+
 <div id="mobileView"></div>
   
 <script>
@@ -651,14 +658,19 @@ function loadGames() {
 // 1️⃣ 顯示 loading（不要可點）
 function showLoading(msg) {
   const overlay = document.getElementById('overlay');
-  document.getElementById('overlay-text').textContent = msg;
+
+  const textEl = document.getElementById('overlay-text');
+  if (textEl) textEl.textContent = msg;
 
   const ok = document.getElementById('overlay-ok');
-  ok.style.display = 'none';
+  if (ok) ok.style.display = 'none';
 
-  overlay.onclick = null;   // ✅ 禁止點擊關閉
-  overlay.classList.add('show', 'loading'); 
+  if (overlay) {
+    overlay.onclick = null;
+    overlay.classList.add('show', 'loading');
+  }
 }
+
 
 // 2️⃣ 顯示訊息（可以點關閉）
 function showMessage(msg) {
@@ -680,7 +692,7 @@ function showMessage(msg) {
 // ✅ 3️⃣ 關閉統一
 function hideOverlay() {
   const overlay = document.getElementById('overlay');
-  overlay.classList.remove('show', 'loading'); 
+  if (overlay) overlay.classList.remove('show', 'loading');
 }
 
 
