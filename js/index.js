@@ -301,13 +301,12 @@ function renderMergedCards(games) {
         <div class="schedule-date-text">
           ${formatZhDate(g.date)}
         </div>
+        <div>${roleHtml}</div>
 
         <div class="schedule-info-row">
           <div>⏰ ${formatTimeOnly(g.time)}</div>
           <div>📍 ${g.field}</div>
         </div>
-
-        ${roleHtml}
       `;
       box.appendChild(card);
     });
