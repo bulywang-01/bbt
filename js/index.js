@@ -114,6 +114,7 @@ function renderSchedule() {
 /* =========================
  * 合併 裁判＋紀錄（同一場一張）
  * ========================= */
+/* 原程式開頭
 function mergeMySchedules(judgeGames, recordGames) {
   const map = {};
 
@@ -153,6 +154,39 @@ function mergeMySchedules(judgeGames, recordGames) {
 
   return Object.values(map);
 }
+原程式尾巴 */
+
+function mergeMySchedules(judgeGames, recordGames) {
+  const map = {};
+
+  function ensure(g) {
+    if (!map[g.game_id]) {
+      map[g.game_id] = {
+        game_id: g.game_id,
+        date: g.date,
+        time: g.time,
+        field: g.field,
+        roles: []
+      };
+    }
+    return map[g.game_id];
+  }
+
+  // ✅ 裁判
+  judgeGames.forEach(g => {
+    if (!g.role) return;
+    ensure(g).roles.push(g.role);
+  });
+
+  // ✅ 紀錄
+  recordGames.forEach(g => {
+    if (!g.record_role) return;
+    ensure(g).roles.push(g.record_role);
+  });
+
+  return Object.values(map);
+}
+
 
 /* =========================
  * 合併卡片 render（橫式）
@@ -178,6 +212,7 @@ function renderMergedCards(games) {
     groups[g.date].push(g);
   });
 
+  /* ==== 原程式
   Object.keys(groups)
     .sort()
     .forEach(date => {
@@ -221,6 +256,63 @@ function renderMergedCards(games) {
           box.appendChild(card);
         });
     });
+    原程式區尾巴 */
+
+  /*新程式區開頭*/
+  Object.keys(groups)
+  .sort()
+  .forEach(date => {
+
+    // ✅ 日期
+    const dateTitle = document.createElement('div');
+    dateTitle.className = 'schedule-date-title';
+    dateTitle.textContent = formatZhDate(date);
+    box.appendChild(dateTitle);
+
+    // ✅ ✅ ✅ 👉 這段你要補
+    groups[date].forEach(g => {
+
+      const card = document.createElement('div');
+      card.className = 'schedule-card';
+
+      // ✅ 角色轉換
+      const judgeMap = { PU:'主審', U1:'一壘審', U2:'二壘審', U3:'三壘審' };
+      const recordMap = {
+        REC_MAIN:'紀錄員',
+        REC_TRAINEE:'見習紀錄',
+        REC_VIDEO:'影像紀錄'
+      };
+
+      // ✅ 判斷是否裁判 or 紀錄
+      const roleHtml = g.roles.map(r => {
+
+        const isJudge = r.startsWith('U') || r === 'PU';
+
+        const name = isJudge ? judgeMap[r] : recordMap[r];
+
+        return `
+          <div class="schedule-role ${isJudge ? 'judge' : 'record'}">
+            ${isJudge ? '🧑‍⚖️' : '📝'} ${name}
+          </div>
+        `;
+      }).join('');
+
+      card.innerHTML = `
+        <div class="schedule-date-text">
+          ${formatZhDate(g.date)}
+        </div>
+
+        <div class="schedule-info-row">
+          <div>⏰ ${formatTimeOnly(g.time)}</div>
+          <div>📍 ${g.field}</div>
+        </div>
+
+        ${roleHtml}
+      `;
+      box.appendChild(card);
+    });
+  });
+  /*新程式區尾巴*/
 }
 
 /* =========================
