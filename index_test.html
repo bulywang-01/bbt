@@ -292,7 +292,22 @@
       background: #e8f5e9;
       color: #1b5e20;
     }
-
+    
+    /* 日期 + 角色 同一列 */
+    .schedule-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    
+      gap: 8px;
+    }
+    
+    /* 角色群組 */
+    .schedule-role-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;   /* ✅ 多角色不會爆 */
+    }
   </style>
 </head>
 
