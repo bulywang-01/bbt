@@ -238,6 +238,61 @@
       border-radius: 6px;
       font-weight: 600;
     }
+
+  /* ===== 班表卡（手機專用） ===== */
+    .schedule-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 3px 10px rgba(0,0,0,.08);
+    
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    
+      font-size: 14px;
+    }
+    
+    /* 日期 */
+    .schedule-date-text {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1a237e;
+    }
+    
+    /* 時間 + 場地（同一列） */
+    .schedule-info-row {
+      display: flex;
+      gap: 10px;
+      font-weight: 600;
+    }
+    
+    /* 角色 badge（裁判 / 紀錄） */
+    .schedule-role {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    
+      width: fit-content;
+    }
+    
+    /* ✅ 裁判（藍） */
+    .schedule-role.judge {
+      background: #e3f2fd;
+      color: #0d47a1;
+    }
+    
+    /* ✅ 紀錄（綠） */
+    .schedule-role.record {
+      background: #e8f5e9;
+      color: #1b5e20;
+    }
+
   </style>
 </head>
 
