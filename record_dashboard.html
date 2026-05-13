@@ -237,6 +237,8 @@ select.locked {
   background: #e8f5e9;          /* 淡綠底 */
   border: 2px solid #2e7d32;    /* 明確邊框 */
   color: #1b5e20;
+  font-size: 18px;              /* ✅ 字稍微變大 */
+
 }
 
 /* ✅ 他人 */
@@ -429,6 +431,107 @@ select.locked {
   opacity: 0.9;
 }
   
+
+/* ===== 升級：桌機專業表格 ===== */
+.record-table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.record-table th {
+  background: linear-gradient(135deg,#0d4c63,#1976d2);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+.record-table td {
+  font-size: 16px;
+}
+
+.record-table tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.record-table tr:hover {
+  background: #e3f2fd;
+}
+
+/* 場次欄 */
+.col-game {
+  font-weight: 800;
+  color: #0d47a1;
+}
+
+/* 對戰強化 */
+/* 場次窄一點 */
+td:first-child,
+th:first-child {
+  width: 70px;
+}
+
+/* 時間 */
+td:nth-child(2),
+th:nth-child(2) {
+  width: 90px;
+}
+
+/* 對戰給最大空間 */
+td:nth-child(4),
+td:nth-child(5) {
+  min-width: 100px;
+}
+
+.upgraded-hint {
+  background: #fff3cd;
+  border-left: 5px solid #ff9800;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* loading 狀態 */
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0,0,0,0.35);
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+}
+
+/* ✅ 顯示時 */
+#overlay.show {
+  display: flex;
+}
+
+#overlay-box {
+  background: #fff;
+  padding: 20px 26px;
+  border-radius: 10px;
+  min-width: 260px;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+#overlay-box {
+  transform: translateY(-10px); /* ✅ 微微往上，視覺更正中 */
+}
+
+@keyframes dots {
+  0%   { content: '...'; }
+  33%  { content: '.  '; }
+  66%  { content: '.. '; }
+  100% { content: '...'; }
+}
+
 </style>
 </head>
 
@@ -440,52 +543,59 @@ select.locked {
 <script src="js/config.js"></script>
   
 <script>
-function loadHeader() {
-  fetch('header.html')
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById('header-container').innerHTML = html;
-
-      // ✅ 只用 body class 控制身份
-      const session = (typeof getSession === 'function') ? getSession() : null;
-      document.body.classList.remove(
-        'role-admin', 'role-judge', 'role-record'
-      );
-
-      if (session && session.role) {
-        const roles = session.role.split(',').map(r => r.trim());
-
-        if (roles.includes('admin')) {
-          document.body.classList.add('role-admin');
-        }
-        if (roles.includes('judge') || roles.includes('chief_judge')) {
-          document.body.classList.add('role-judge');
-        }
-        if (roles.includes('record') || roles.includes('record_chief')) {
-          document.body.classList.add('role-record');
-        }
-      }
-    })
-    .catch(err => console.error('Header 載入失敗', err));
-  }
+  function loadHeader() {
+    fetch('header.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('header-container').innerHTML = html;
   
-  // 裁入報名頁面重要function
-  document.addEventListener('DOMContentLoaded', () => {
-    loadHeader();   // 只負責 header
-    loadGames();    // 或該頁真正的資料初始化
-  });
+        // ✅ 只用 body class 控制身份
+        const session = (typeof getSession === 'function') ? getSession() : null;
+        document.body.classList.remove(
+          'role-admin', 'role-judge', 'role-record'
+        );
+  
+        if (session && session.role) {
+          const roles = session.role.split(',').map(r => r.trim());
+  
+          if (roles.includes('admin')) {
+            document.body.classList.add('role-admin');
+          }
+          if (roles.includes('judge') || roles.includes('chief_judge')) {
+            document.body.classList.add('role-judge');
+          }
+          if (roles.includes('record') || roles.includes('record_chief')) {
+            document.body.classList.add('role-record');
+          }
+        }
+      })
+      .catch(err => console.error('Header 載入失敗', err));
+    }
+    
+    // 裁入報名頁面重要function
+    document.addEventListener('DOMContentLoaded', () => {
+      loadHeader();   // 只負責 header
+      loadGames();    // 或該頁真正的資料初始化
+    });
 </script>
   
   <div id="toast" class="toast"></div>
 
 <!--
 <div class="page-title">BBT 軟式棒球聯盟｜紀錄員班表</div>
-<div class="hint">※ 只能在「無」的欄位選擇自己</div>
+<div class="hint upgraded-hint">※ 只能在「無」的欄位選擇自己</div>
 -->
 <!-- ✅ 唯一主容器 -->
 <div id="desktopView">
   <h2 class="section-title">紀錄員班表</h2>
   <div id="recordContainer"></div>
+</div>
+
+<div id="overlay">
+  <div id="overlay-box">
+    <div id="overlay-text">處理中...</div>
+    <button id="overlay-ok">確定</button>
+  </div>
 </div>
 
 <div id="mobileView"></div>
@@ -551,10 +661,18 @@ function showToast(msg, type = 'success') {
 /* ===== 取資料 ===== */
 function loadGames() {
   session = session || JSON.parse(localStorage.getItem('session_user') || '{}');
+  
+  // ✅ 顯示置中 loading
+  showLoading('載入賽事資料中...');
+
   callApi({
     action: 'getRecordSignableGames',
     user_id: session.user_id
   }, res => {
+
+      // ✅ 關掉 loading
+      hideOverlay();
+
     if (!res || res.result !== 'ok') {
       showToast('載入賽事失敗', 'error');
       return;
@@ -565,6 +683,47 @@ function loadGames() {
     renderMobileRecord(games);   // ✅ 新增
   });
 }
+
+// 1️⃣ 顯示 loading（不要可點）
+function showLoading(msg) {
+  const overlay = document.getElementById('overlay');
+
+  const textEl = document.getElementById('overlay-text');
+  if (textEl) textEl.textContent = msg;
+
+  const ok = document.getElementById('overlay-ok');
+  if (ok) ok.style.display = 'none';
+
+  if (overlay) {
+    overlay.onclick = null;
+    overlay.classList.add('show', 'loading');
+  }
+}
+
+
+// 2️⃣ 顯示訊息（可以點關閉）
+function showMessage(msg) {
+  const overlay = document.getElementById('overlay');
+  const text = document.getElementById('overlay-text');
+  const ok = document.getElementById('overlay-ok');
+
+  text.textContent = msg;
+
+  ok.style.display = 'inline-block';
+
+  // ✅ 點擊關閉
+  ok.onclick = hideOverlay;
+  overlay.onclick = hideOverlay;
+
+  overlay.classList.add('show');
+}
+
+// ✅ 3️⃣ 關閉統一
+function hideOverlay() {
+  const overlay = document.getElementById('overlay');
+  if (overlay) overlay.classList.remove('show', 'loading');
+}
+
 
 /* ===============================
  * 共用排序工具
@@ -661,7 +820,7 @@ function buildGroupTable(list) {
   <table class="record-table">
     <thead>
       <tr>
-        <th>時間</th>
+        <th>場次</th><th>時間</th>
         <th>客隊（三壘）</th>
         <th>主隊（一壘）</th>
         <th>地點</th>
@@ -679,7 +838,7 @@ function buildGroupTable(list) {
 function buildRow(g) {
   return `
   <tr>
-    <td>${formatTimeTW(g.time)}</td>
+    <td class='col-game'>${g.game_code || ''}</td><td>${formatTimeTW(g.time)}</td>
     <td>${g.away_team}</td>
     <td>${g.home_team}</td>
     <td>${g.field}</td>
