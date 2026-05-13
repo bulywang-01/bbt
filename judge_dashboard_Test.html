@@ -38,11 +38,11 @@ body {
    Panel / 區塊
 ================================ */
 .panel {
-  background: #fff;
-  padding: 18px;
+  background: #ffffff;
+  padding: 20px 22px;
   margin-bottom: 24px;
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
 /* 日期標題 */
@@ -66,24 +66,52 @@ h3 {
 /* ===============================
    Table（桌機）
 ================================ */
+/* ===== 專業後台表格 ===== */
 table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
 }
 
-th, td {
-  border: 1px solid #dcdcdc;
-  padding: 6px 8px;
-  text-align: center;
-}
-
+/* 表頭 */
 th {
-  background: #f2f5fa;
+  background: linear-gradient(135deg, #0d4c63, #1976d2);
+  color: #fff;
   font-weight: 700;
-  color: #37474f;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  border: none;
+}
+
+/* 表格內容 */
+td {
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+/* 對戰強化 */
+td:nth-child(4),
+td:nth-child(5) {
+  font-weight: 700;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* zebra */
+tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+/* hover */
+tbody tr:hover {
+  background: #e3f2fd;
 }
 
 tbody tr:hover {
@@ -92,25 +120,35 @@ tbody tr:hover {
 
 .col-game-id {
   font-weight: 800;
-  background: #eef3fb;
-  color: #263238;
-  white-space: nowrap;
+  text-align: center;
 }
 
-/* 已額滿 */
-tr.full {
-  background: #fff3f3;
-}
-
-.umpire-full {
-  //font-weight: 600;
-  color: #d32f2f;
+/* 場次 Badge（桌機版） */
+.game-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 999px;
+  color: #fff;
+  background: #2563eb; /* 預設 */
 }
 
 /* 過期 */
 tr.expired {
-  background: #f2f2f2;
-  color: #999;
+  background: #f9fafb;
+  color: #9ca3af;
+}
+
+/* 額滿 */
+tr.full {
+  background: #fff5f5;
+}
+
+/* 額滿文字 */
+.umpire-full {
+  color: #dc2626;
+  font-weight: 800;
 }
 
 /* ===============================
@@ -937,7 +975,7 @@ function render() {
             }
 
             tr.innerHTML = `
-              <td class="col-game-id">${g.game_code}</td>
+              <td class="col-game-id"><span class="game-badge">${g.game_code}</span></td>
               <td>${formatTime(g.time_range)}</td>
               <td>${g.category || ''}</td>
               <td>${g.away_team || ''}</td>
