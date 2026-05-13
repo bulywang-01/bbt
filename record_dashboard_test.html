@@ -248,7 +248,11 @@ s {
   min-width: 0;
   white-space: normal;      /* ✅ 允許換行 */
   word-break: break-word;   /* ✅ 中文也不撐爆 */
+}
 
+.record-role br + * {
+  font-size: 15px;        /* ✅ 名字稍微大一點 */
+  font-weight: 800;
 }
 
 /* ✅ 自己（我報名的 / 被指派） */
