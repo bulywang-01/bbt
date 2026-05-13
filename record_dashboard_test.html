@@ -275,23 +275,6 @@ select.locked {
   margin-bottom: 6px;
 }
 
-/* ===== 群組中框 ===== */
-.m-group-box {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 8px;
-  margin-bottom: 12px;
-}
-
-.m-group-title {
-  font-size: 17px;
-  font-weight: 800;
-  color: #0d47a1;
-  border-left: 4px solid #0d47a1;
-  padding-left: 8px;
-  margin-bottom: 6px;
-}
-
 /* ===== 單場賽事卡片 ===== */
 .m-game-action {
   margin-top: 4px;
@@ -353,15 +336,20 @@ select.locked {
   padding: 10px;
   margin-bottom: 14px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  
+  /* ✅ 關鍵：加出「群組感」 */
+  border: 2px solid #e3f2fd;
+
 }
 
 .m-group-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: #0d47a1;
-  border-left: 4px solid #0d47a1;
-  padding-left: 8px;
-  margin-bottom: 8px;
+
+  border-left: 6px solid #0d47a1;
+  padding-left: 10px;
+  margin-bottom: 12px;
 }
 
 /* ===== 裁判頁手機：時間 / 場地 同列 ===== */
@@ -530,6 +518,25 @@ td:nth-child(5) {
   33%  { content: '.  '; }
   66%  { content: '.. '; }
   100% { content: '...'; }
+}
+
+.game-card {
+  background: #fafafa;   /* ✅ 和白底區隔 */
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+
+  /* ✅ 關鍵：分隔線 */
+  border: 1px solid #e5e7eb;
+}
+
+.m-group-box .game-card:last-child {
+  margin-bottom: 4px;
+}
+
+/* 在卡片頂部加一條分隔線（讓每場更獨立）*/
+.game-card + .game-card {
+  border-top: 2px dashed #e0e0e0;
 }
 
 </style>
