@@ -34,9 +34,10 @@ body {
   padding: 20px;
 }
 
-/* ===============================
-   Panel / 區塊
-================================ */
+/* =====================================
+ ✅ Panel 強化
+===================================== */
+
 .panel {
   background: #ffffff;
   padding: 20px 22px;
@@ -91,19 +92,41 @@ th {
   font-size: 15px;
   letter-spacing: 0.5px;
   border: none;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
-/* 表格內容 */
+/* 內容 */
 td {
-  border-bottom: 1px solid #e5e7eb;
+  padding: 10px 12px;
   font-size: 16px;
+  text-align: center;
+  vertical-align: middle;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-/* 對戰強化 */
+/* =====================================
+ ✅ 對戰強化
+===================================== */
+/* 對戰給最大空間 */
 td:nth-child(4),
 td:nth-child(5) {
-  font-size: 17px;
   font-weight: 800;
+  font-size: 17px;
+  min-width: 100px;
+}
+
+/* 場次窄一點 */
+td:first-child,
+th:first-child {
+  width: 70px;
+}
+
+/* 時間 */
+td:nth-child(2),
+th:nth-child(2) {
+  width: 90px;
 }
 
 thead th {
@@ -122,6 +145,7 @@ tbody tr:hover {
   background: #e3f2fd;
 }
 
+
 tbody tr:hover {
   background: #f9fbff;
 }
@@ -131,18 +155,31 @@ tbody tr:hover {
   text-align: center;
 }
 
-/* 場次 Badge（桌機版） */
+/* =====================================
+ ✅ 場次 Badge（桌機 + 手機統一）
+===================================== */
+
 .game-badge {
   display: inline-block;
-  padding: 2px 6px;
+  padding: 1px 6px;
   font-size: 13px;
   font-weight: 800;
   border-radius: 999px;
   color: #fff;
-  background: #2563eb; /* 預設 */
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
-/* 過期 */
+/* 已完賽 */
+.game-badge.expired {
+  background: #9ca3af !important;
+}
+
+/* =====================================
+ ✅ 狀態
+===================================== */
+
+/* 已完賽（過期） */
 tr.expired {
   background: #f9fafb;
   color: #9ca3af;
@@ -153,11 +190,11 @@ tr.full {
   background: #fff5f5;
 }
 
-/* 額滿文字 */
 .umpire-full {
   color: #dc2626;
   font-weight: 800;
 }
+
 
 /* ===============================
    桌機站位
@@ -983,7 +1020,8 @@ function render() {
             }
 
             tr.innerHTML = `
-              <td class="col-game-id"><span class="game-badge">${g.game_code}</span></td>
+              
+              <td><span class="game-badge ${isPast ? 'expired' : ''}" data-category="${g.category || ''}">${g.game_code}</span></td>
               <td>${formatTime(g.time_range)}</td>
               <td>${g.category || ''}</td>
               <td>${g.away_team || ''}</td>
