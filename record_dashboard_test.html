@@ -237,6 +237,8 @@ select.locked {
   background: #e8f5e9;          /* 淡綠底 */
   border: 2px solid #2e7d32;    /* 明確邊框 */
   color: #1b5e20;
+  font-size: 18px;              /* ✅ 字稍微變大 */
+
 }
 
 /* ✅ 他人 */
@@ -439,12 +441,12 @@ select.locked {
 
 .record-table th {
   background: linear-gradient(135deg,#0d4c63,#1976d2);
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 0.5px;
 }
 
 .record-table td {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .record-table tr:nth-child(even) {
@@ -462,12 +464,23 @@ select.locked {
 }
 
 /* 對戰強化 */
-.record-table td:nth-child(3),
-.record-table td:nth-child(4) {
-  font-weight: 700;
+/* 場次窄一點 */
+td:first-child,
+th:first-child {
+  width: 70px;
 }
 
+/* 時間 */
+td:nth-child(2),
+th:nth-child(2) {
+  width: 90px;
+}
 
+/* 對戰給最大空間 */
+td:nth-child(4),
+td:nth-child(5) {
+  min-width: 100px;
+}
 
 .upgraded-hint {
   background: #fff3cd;
