@@ -452,12 +452,6 @@ tr.full {
 }
 
 /* ===== 裁判頁手機版：日期大格 ===== */
-.m-date-box {
-  background: #f5f8ff;
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 20px;
-}
 
 .m-date-title {
   font-size: 18px;
@@ -469,9 +463,10 @@ tr.full {
 /* ===== 裁判頁手機：日期大格 ===== */
 .m-date-box {
   background: #f5f8ff;
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 20px;
+  border-radius: 14px;    /* ✅ 跟紀錄一致 */
+  padding: 10px;          /* ✅ 關鍵：縮小 */
+  margin-bottom: 16px;    /* ✅ 對齊 */
+  box-sizing: border-box;   /* ✅ 防止 padding 撐大 */
 }
 
 /* ===== 裁判頁手機：場次卡 ===== */
