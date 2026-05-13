@@ -207,27 +207,28 @@ function renderMergedCards(games) {
         `;
       }).join('');
 
-      card.innerHTML = `
-        <div class="schedule-top-row">
-          <div class="schedule-date-text">
-            ${formatZhDate(g.date)}
+        card.innerHTML = `
+          <div class="schedule-top-row">
+        
+            <div class="schedule-date-text">
+              ${formatZhDate(g.date)}
+            </div>
+        
+            <div class="schedule-role-group">
+              ${roleHtml}
+            </div>
+        
           </div>
-      
-          <div class="schedule-role-group">
-            ${roleHtml}
+        
+          <div class="schedule-info-row">
+            <div>⏰ ${formatTimeOnly(g.time)}</div>
+            <div>📍 ${g.field}</div>
           </div>
-        </div>
-      
-        <div class="schedule-info-row">
-          <div>⏰ ${formatTimeOnly(g.time)}</div>
-          <div>📍 ${g.field}</div>
-        </div>
-      `;
+        `;
 
       box.appendChild(card);
     });
   });
-  /*新程式區尾巴*/
 }
 
 /* =========================
