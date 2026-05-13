@@ -981,33 +981,35 @@ function renderMobileRecord(list) {
         `<div class="m-group-title">${cat}</div>`
       );
   
-groupBox.insertAdjacentHTML('beforeend', `
-  <div class="record-card">
-
-    <div class="mobile-time-row">
-      <div class="time">⏰ ${formatTimeTW(g.time)}</div>
-      <div class="game-code badge ${isPastGame(g.date) ? 'expired' : ''}"
-           data-category="${g.category || ''}">
-        ${g.game_code || ''}
-      </div>
-      <div class="field">📍 ${g.field}</div>
-    </div>
-
-    <div class="mobile-teams">
-      <strong>${g.away_team}</strong>
-      <span class="vs">vs</span>
-      <strong>${g.home_team}</strong>
-    </div>
-
-    <!-- ✅ ✅ ✅ 關鍵：搬進來 -->
-    <div class="record-roles">
-      ${renderRecordMobileRole(g,'REC_MAIN','紀錄員')}
-      ${renderRecordMobileRole(g,'REC_TRAINEE','見習紀錄')}
-      ${renderRecordMobileRole(g,'REC_VIDEO','影像紀錄')}
-    </div>
-
-  </div>
-`);
+      grouped[date][cat].forEach(g => {
+        groupBox.insertAdjacentHTML('beforeend', `
+          <div class="record-card">
+        
+            <div class="mobile-time-row">
+              <div class="time">⏰ ${formatTimeTW(g.time)}</div>
+              <div class="game-code badge ${isPastGame(g.date) ? 'expired' : ''}"
+                   data-category="${g.category || ''}">
+                ${g.game_code || ''}
+              </div>
+              <div class="field">📍 ${g.field}</div>
+            </div>
+        
+            <div class="mobile-teams">
+              <strong>${g.away_team}</strong>
+              <span class="vs">vs</span>
+              <strong>${g.home_team}</strong>
+            </div>
+        
+            <!-- ✅ ✅ ✅ 關鍵：搬進來 -->
+            <div class="record-roles">
+              ${renderRecordMobileRole(g,'REC_MAIN','紀錄員')}
+              ${renderRecordMobileRole(g,'REC_TRAINEE','見習紀錄')}
+              ${renderRecordMobileRole(g,'REC_VIDEO','影像紀錄')}
+            </div>
+        
+          </div>
+        `);
+      });
   
       dateBox.appendChild(groupBox);
     });
