@@ -168,17 +168,21 @@ tbody tr:hover {
   color: #fff;
   line-height: 1.4;
   white-space: nowrap;
+  background: #2563eb;   /* ✅ 補這行 */
+
 }
 
 /* 已完賽 */
 .game-badge.expired {
-  background: #9ca3af !important;
+  background: #9ca3af;
 }
 
+/* ✅ 強制場次一定顯示（最終保命寫法） */
 .game-badge,
 .game-code.badge {
-  color: #ffffff !important;  /* ✅ 一律白字 */
-  opacity: 1 !important;      /* ✅ 不要再被變淡 */
+  color: #ffffff;
+  opacity: 1;
+  text-shadow: 0 0 0 #ffffff;  /* ✅ 防止被灰化 */
 }
 
 
@@ -189,14 +193,13 @@ tbody tr:hover {
 /* 已完賽（過期） */
 
 tr.expired {
-  background: #f9fafb;   /* 淡灰背景即可 */
+  background: #f9fafb;
 }
 
-/* ❗不要再改整列文字顏色 */
+/* ✅ 禁止吃掉子元素顏色 */
 tr.expired td {
-  color: inherit;        /* ✅ 保留正常文字 */
+  color: inherit;
 }
-
 
 /* 額滿 */
 tr.full {
