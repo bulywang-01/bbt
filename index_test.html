@@ -106,28 +106,38 @@
     }
 
     /* ===== Overlay（裁判守則 / 聯盟賽制 同款）===== */
+    @media (max-width: 768px) {
+  }
+    
     .overlay {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,.5);
       display: none;
-      align-items: center;
+      align-items: flex-start;   /* ✅ 不再置中 */
       justify-content: center;
       z-index: 9999;
     }
 
     .overlay-box {
-      width: min(900px, 92vw);
-      max-height: 92vh;
+      /*width: min(900px, 92vw);*/
+      /*max-height: 92vh;*/
       background: #fff;
-      border-radius: 14px;
-      padding: 28px;
-      overflow-y: auto;
+      /*border-radius: 14px;*/
+      /*padding: 28px;*/
+      width: 100vw;
+      height: 100vh;             /* ✅ 直接變整頁 */
+      max-height: none;
+      border-radius: 0;          /* ✅ 手機不要卡片感 */
+      padding: 20px 16px;
+      overflow-y: auto;          /* ✅ 正常往下滑 */
     }
 
     .overlay-box h2 {
-      margin-top: 0;
-      color: #1a237e;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      padding-bottom: 8px;
     }
 
     .overlay-box ul {
@@ -139,6 +149,7 @@
       color: #c62828;
       font-weight: 700;
     }
+
 
     .close-btn {
       margin-top: 24px;
