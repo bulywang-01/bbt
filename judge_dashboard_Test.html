@@ -66,6 +66,13 @@ h3 {
 /* ===============================
    Table（桌機）
 ================================ */
+/* ✅ 表格全部置中（統一控制） */
+table th,
+table td {
+  text-align: center;
+  vertical-align: middle;  /* ✅ 上下也置中 */
+}
+
 /* ===== 專業後台表格 ===== */
 table {
   width: 100%;
@@ -81,7 +88,7 @@ th {
   background: linear-gradient(135deg, #0d4c63, #1976d2);
   color: #fff;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0.5px;
   border: none;
 }
@@ -89,13 +96,14 @@ th {
 /* 表格內容 */
 td {
   border-bottom: 1px solid #e5e7eb;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 /* 對戰強化 */
 td:nth-child(4),
 td:nth-child(5) {
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
 }
 
 thead th {
@@ -127,7 +135,7 @@ tbody tr:hover {
 .game-badge {
   display: inline-block;
   padding: 2px 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   border-radius: 999px;
   color: #fff;
