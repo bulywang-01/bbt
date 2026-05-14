@@ -461,6 +461,7 @@
     <div class="panel welcome-box">
       <div class="welcome-role" id="welcome-role"></div>
       <div class="welcome-name" id="welcome-name"></div>
+      <div class="welcome-name">歡迎使用BBT出勤管理系統</div>
       <div class="user-stats">
       
         <div class="stat-card">
@@ -703,7 +704,7 @@
     const session = getSession?.();
     if (session) {
       document.getElementById('welcome-name').textContent =
-        session.name + ' 您好，歡迎使用BBT出勤管理系統';
+        session.name + ' 您好';
 
       const roleMap = {
         admin: '系統管理員',
