@@ -237,7 +237,9 @@ window.openAssignJudge = function (gameId, role) {
   const title = document.getElementById('judgeModalTitle');
 
   title.textContent = `指派 ${ROLE_LABEL[role]}`;
-  list.innerHTML = '載入中...';
+  list.innerHTML = '載入中…';
+
+  modal.classList.remove('hidden');
 
   callApi({
     action: 'getAssignableJudges_admin',
@@ -247,50 +249,41 @@ window.openAssignJudge = function (gameId, role) {
 
     list.innerHTML = '';
 
+    // ❌ 防呆
     if (!res || res.result !== 'ok' || !Array.isArray(res.judges)) {
       list.innerHTML = `<div class="empty">目前無可指派裁判</div>`;
-      modal.classList.remove('hidden');
       return;
     }
 
+    // ✅ 找到該場比賽
     const game = allGames.find(g => String(g.game_id) === String(gameId));
-    const currentAssignedId =
-      game?.positions?.[role]?.assigned?.user_id;
 
-    // 其他裁判位置
-    const otherJudgeIds = [];
-    if (game) {
-      Object.entries(game.positions || {}).forEach(([pos, p]) => {
-        if (!p.assigned) return;
-        if (pos === role) return;
-        otherJudgeIds.push(String(p.assigned.user_id));
+    // ✅ 本場「所有已指派裁判」ID（不分站位）
+    const assignedJudgeIds = [];
+    if (game && game.positions) {
+      Object.values(game.positions).forEach(p => {
+        if (p.assigned && p.assigned.user_id) {
+          assignedJudgeIds.push(String(p.assigned.user_id));
+        }
       });
     }
 
+    // ✅ 嚴格過濾：只要已在任何裁判站位 → 不顯示
     res.judges.forEach(j => {
       const uid = String(j.user_id);
-
-      // ❌ 已在其他裁判位置
-      if (otherJudgeIds.includes(uid)) return;
+      if (assignedJudgeIds.includes(uid)) return;
 
       const card = document.createElement('div');
       card.className = 'judge-card';
       card.textContent = j.name;
-
-      // ✅ 標示目前人
-      if (String(currentAssignedId) === uid) {
-        card.classList.add('current');
-      }
-
       card.onclick = () => assignJudge(j);
+
       list.appendChild(card);
     });
 
     if (!list.children.length) {
       list.innerHTML = `<div class="empty">目前無可指派裁判</div>`;
     }
-
-    modal.classList.remove('hidden');
   });
 };
 
@@ -319,50 +312,47 @@ window.handleModalBackdrop = function (e) {
 function assignJudge(judge) {
   if (!currentAssignContext) return;
 
-  // ✅ 防呆：避免重複點擊
   const modal = document.getElementById('judgeModal');
+  const loading = document.getElementById('judgeLoading');
+
+  // ✅ UX：立即回饋
+  showAssignMessage('⏳ 指派中，請稍候…');
+
+  // ✅ 防止重複點擊
   modal.style.pointerEvents = 'none';
+  if (loading) loading.style.display = 'block';
 
-  callApi(
-    {
-      action: 'assignJudgeToPosition_admin',
-      game_id: currentAssignContext.gameId,
-      role: currentAssignContext.role,
-      judge_id: judge.user_id
-    },
-    res => {
-      modal.style.pointerEvents = 'auto';
+  callApi({
+    action: 'assignJudgeToPosition_admin',
+    game_id: currentAssignContext.gameId,
+    role: currentAssignContext.role,
+    judge_id: judge.user_id
+  }, res => {
 
-      // ✅ 成功
-      const isSuccess =
-        res &&
-        (
-          res.result === 'ok' ||
-          res.success === true
-        );
-      
-      // ✅ 正常成功
-      if (isSuccess) {
-        showAssignMessage('✅ 指派成功');
-        closeJudgeModal();
-        loadGames();
-        return;
-      }
-      
-      // ✅ fallback（資料已寫）
-      if (res && !res.message) {
-        console.warn('API回傳異常:', res);
-      
-        showAssignMessage('✅ 指派成功');   // ✅ 不要顯示異常
-        closeJudgeModal();
-        loadGames();
-        return;
-      }
-      
-      // ❌ 真錯誤
-      showAssignMessage(`❌ ${res?.message || '指派失敗'}`);
+    modal.style.pointerEvents = 'auto';
+    if (loading) loading.style.display = 'none';
+
+    // ✅ 成功
+    if (res && res.result === 'ok') {
+      showAssignMessage('✅ 指派成功');
+      closeJudgeModal();
+      loadGames();
+      return;
     }
-  );
+
+    // ⚠️ 後端偶爾回 {}
+    if (res && !res.message) {
+      showAssignMessage('✅ 已送出指派（處理中）');
+      closeJudgeModal();
+      loadGames();
+      return;
+    }
+
+    // ❌ 失敗
+    showAssignMessage(
+      res?.message || '❌ 指派失敗，請稍後再試'
+    );
+  });
 }
 
 function showAssignMessage(msg) {
