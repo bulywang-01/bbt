@@ -29,6 +29,7 @@
       padding: 22px;
       margin-bottom: 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      margin-bottom: 18px;  /* ✅ 原本可能 14 → 加大 */
     }
 
     h3 {
@@ -41,7 +42,8 @@
     .welcome-box {
       background: linear-gradient(135deg,#f5f8ff,#fff);
       border-radius: 16px;
-      padding: 26px;
+      /* padding: 26px; */
+      padding: 20px 16px 22px;   /* ✅ 上 左右 下（加下面空間） */
     }
 
     .welcome-role {
@@ -52,12 +54,13 @@
 
     .welcome-name {
       font-size: 18px;
-      font-weight: 600;
+      font-weight: 800;
       margin: 6px 0;
+      margin-bottom: 6px;
     }
 
     .welcome-actions {
-      margin-top: 14px;
+      margin-top: 12px;
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -107,7 +110,23 @@
 
     /* ===== Overlay（裁判守則 / 聯盟賽制 同款）===== */
     @media (max-width: 768px) {
-  }
+      .panel {
+        padding: 18px 16px;   /* ✅ 整塊白卡變大 */
+        border-radius: 16px;  /* ✅ 稍微圓一點更柔和 */
+      }
+    
+      .welcome-box {
+        padding: 20px 16px 22px;
+      }
+    
+      .user-stats {
+        margin: 16px 0;
+      }
+    
+      .panel {
+        margin-bottom: 18px;
+      }
+    }
     
     .overlay {
       position: fixed;
@@ -309,22 +328,21 @@
     /* 本週有班表通知 */
     #schedule-tip {
       margin-top: 12px;
-    
       font-size: 16px;
       font-weight: 800;
       color: #d32f2f;
-    
       display: flex;              /* ✅ 關鍵 */
       justify-content: center;    /* ✅ 水平置中 */
       align-items: center;        /* ✅ 垂直置中 */
-    
       text-align: center;
-    
       min-height: 36px;           /* ✅ 給高度，才能垂直置中 */
-    
       animation: pulse-soft 1.6s infinite;
+      /*
+      border-radius: 10px;
+      background: #fff5f5;
+      padding: 6px 10px;
+      */
     }
-
     
     /* ✅ 推薦用這個（比較舒服） */
     @keyframes pulse-soft {
@@ -336,6 +354,63 @@
     #schedule-tip.show {
       animation: pulse-soft 1.6s infinite;
     }
+
+    /* 個人生涯／站場／紀錄數據 */
+    .user-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+      margin-bottom: 14px;
+      margin: 16px 0;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #f8fbff, #ffffff);
+    
+      border-radius: 14px;
+      padding: 12px 8px;
+    
+      text-align: center;
+    
+      border: 1px solid #e5e7eb;
+    
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+    }
+    
+    /* 標題 */
+    .stat-title {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    
+    /* 大數字 */
+    .stat-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1a237e;
+    }
+    
+    /* 子資訊 */
+    .stat-sub {
+      color: #666;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+    
+    /* 左側色條（更有層次） */
+    .stat-card:nth-child(1) { border-top: 4px solid #1976d2; }
+    .stat-card:nth-child(2) { border-top: 4px solid #2e7d32; }
+    .stat-card:nth-child(3) { border-top: 4px solid #ef6c00; }
 
   </style>
 </head>
@@ -379,13 +454,37 @@
     document.addEventListener('DOMContentLoaded', loadHeader);
 </script>
 
+  
   <div class="main">
 
     <!-- ✅ Welcome -->
     <div class="panel welcome-box">
       <div class="welcome-role" id="welcome-role"></div>
       <div class="welcome-name" id="welcome-name"></div>
-      <div>歡迎使用 <strong>BBT 出勤管理系統</strong></div>
+      <div class="welcome-name">歡迎使用BBT出勤管理系統</div>
+      <div class="user-stats">
+      
+        <div class="stat-card">
+          <div class="stat-title">🧑‍⚖️ 裁判</div>
+          <div class="stat-value" id="stat-judge">--</div>
+          <div class="stat-sub" id="stat-judge-sub"></div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-title">📝 紀錄</div>
+          <div class="stat-value" id="stat-record">--</div>
+          <div class="stat-sub" id="stat-record-sub"></div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-title">📊 總計</div>
+          <div class="stat-value" id="stat-total">--</div>
+          <div class="stat-sub" id="stat-total-sub"></div>
+        </div>
+      
+      </div>
+
+
       <div class="welcome-actions">
         <button id="open-schedule" class="pill pill-orange">📅 我的班表</button>
         <button id="open-league" class="pill pill-blue">📘 聯盟賽制</button>
