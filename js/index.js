@@ -195,14 +195,14 @@ function renderStats() {
     `${judgeYear}`;   // ✅ 主數字 = 今年
 
   document.getElementById('stat-judge-sub').textContent =
-    `生涯 ${judgeAll}場`;
+    `生涯 ${judgeAll} 場`;
 
   // ✅ 紀錄卡
   document.getElementById('stat-record').textContent =
     `${recordYear}`;
 
   document.getElementById('stat-record-sub').textContent =
-    `生涯 ${recordAll}場`;
+    `生涯 ${recordAll} 場`;
 
   // ✅ 總計
   const totalYear = judgeYear + recordYear;
@@ -212,7 +212,7 @@ function renderStats() {
     `${totalYear}`;
 
   document.getElementById('stat-total-sub').textContent =
-    `生涯 ${totalAll}場`;
+    `生涯 ${totalAll} 場`;
 }
 
 
