@@ -239,74 +239,59 @@ window.openAssignJudge = function (gameId, role) {
   title.textContent = `指派 ${ROLE_LABEL[role]}`;
   list.innerHTML = '載入中...';
 
-  callApi(
-    {
-      action: 'getAssignableJudges_admin',
-      game_id: gameId,
-      role: role,
-      user_id: CURRENT_USER_ID
-    },
-    res => {
-      list.innerHTML = '';
+  callApi({
+    action: 'getAssignableJudges_admin',
+    game_id: gameId,
+    user_id: CURRENT_USER_ID
+  }, res => {
 
-      // ✅ 防呆
-      if (
-        !res ||
-        res.result !== 'ok' ||
-        !Array.isArray(res.judges)
-      ) {
-        list.innerHTML = `<div style="text-align:center;color:#777;">目前無可指派裁判</div>`;
-        modal.classList.remove('hidden');
-        return;
-      }
+    list.innerHTML = '';
 
-      // ✅ 找該場 game
-      const game = allGames.find(g => String(g.game_id) === String(gameId));
-
-      // ✅ 取得「其他位置」已指派裁判
-      const assignedIds = [];
-
-      if (game) {
-        Object.entries(game.positions || {}).forEach(([posRole, p]) => {
-          if (!p.assigned) return;
-
-          // ✅ ⭐ 只排除「其他位置」
-          if (posRole === role) return;
-
-          assignedIds.push(String(p.assigned.user_id));
-        });
-      }
-
-      // ✅ ✅ ✅ 正確 loop（你之前少這段）
-      res.judges.forEach(j => {
-
-        // ✅ 過濾：同場其他位置的人
-        if (assignedIds.includes(String(j.user_id))) return;
-
-        const card = document.createElement('div');
-        card.className = 'judge-card';
-        card.textContent = j.name;
-
-        // ✅ ⭐ 加強：標示「目前人」
-        const current = game?.positions?.[role]?.assigned;
-        if (current && String(current.user_id) === String(j.user_id)) {
-          card.style.border = '2px solid #4caf50';
-          card.style.background = '#e8f5e9';
-        }
-
-        card.onclick = () => assignJudge(j);
-
-        list.appendChild(card);
-      });
-
-      // ✅ 如果真的沒有（極少）
-      if (list.children.length === 0) {
-        list.innerHTML = `<div style="text-align:center;color:#777;">無可用裁判（皆已安排於其他位置）</div>`;
-      }
-
+    if (!res || res.result !== 'ok' || !Array.isArray(res.judges)) {
+      list.innerHTML = `<div class="empty">目前無可指派裁判</div>`;
       modal.classList.remove('hidden');
+      return;
     }
-  );
+
+    const game = allGames.find(g => String(g.game_id) === String(gameId));
+    const currentAssignedId =
+      game?.positions?.[role]?.assigned?.user_id;
+
+    // 其他裁判位置
+    const otherJudgeIds = [];
+    if (game) {
+      Object.entries(game.positions || {}).forEach(([pos, p]) => {
+        if (!p.assigned) return;
+        if (pos === role) return;
+        otherJudgeIds.push(String(p.assigned.user_id));
+      });
+    }
+
+    res.judges.forEach(j => {
+      const uid = String(j.user_id);
+
+      // ❌ 已在其他裁判位置
+      if (otherJudgeIds.includes(uid)) return;
+
+      const card = document.createElement('div');
+      card.className = 'judge-card';
+      card.textContent = j.name;
+
+      // ✅ 標示目前人
+      if (String(currentAssignedId) === uid) {
+        card.classList.add('current');
+      }
+
+      card.onclick = () => assignJudge(j);
+      list.appendChild(card);
+    });
+
+    if (!list.children.length) {
+      list.innerHTML = `<div class="empty">目前無可指派裁判</div>`;
+    }
+
+    modal.classList.remove('hidden');
+  });
 };
 
 /*
