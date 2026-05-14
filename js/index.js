@@ -170,40 +170,49 @@ function renderStats() {
   let recordYear = 0;
   let recordAll = 0;
 
+  // ✅ 裁判
   judgeGames.forEach(g => {
     if (!g.role) return;
+
     judgeAll++;
 
     const d = new Date(g.date.replace(/\//g,'-'));
     if (d.getFullYear() === year) judgeYear++;
   });
 
+  // ✅ 紀錄
   recordGames.forEach(g => {
     if (!g.record_role) return;
+
     recordAll++;
 
     const d = new Date(g.date.replace(/\//g,'-'));
     if (d.getFullYear() === year) recordYear++;
   });
 
-  // ✅ 填入
+  // ✅ 裁判卡
   document.getElementById('stat-judge').textContent =
-    `${judgeAll + judgeYear}場`;
+    `${judgeYear}場`;   // ✅ 主數字 = 今年
 
   document.getElementById('stat-judge-sub').textContent =
-    `年 ${judgeYear} / 生 ${judgeAll}`;
+    `生涯 ${judgeAll}場`;
 
+  // ✅ 紀錄卡
   document.getElementById('stat-record').textContent =
-    `${recordAll + recordYear}場`;
+    `${recordYear}場`;
 
   document.getElementById('stat-record-sub').textContent =
-    `年 ${recordYear} / 生 ${recordAll}`;
+    `生涯 ${recordAll}場`;
+
+  // ✅ 總計
+  const totalYear = judgeYear + recordYear;
+  const totalAll = judgeAll + recordAll;
 
   document.getElementById('stat-total').textContent =
-    `${judgeAll + recordAll}場`;
+    `${totalYear}場`;
 
   document.getElementById('stat-total-sub').textContent =
-    `年 ${judgeYear + recordYear} / 生 ${judgeAll + recordAll}`;
+    `生涯 ${totalAll}場`;
 }
 
 
