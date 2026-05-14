@@ -315,7 +315,7 @@ function assignJudge(judge) {
       modal.style.pointerEvents = 'auto';
 
       // ✅ 成功
-      if (res && res.result === 'ok') {
+      if (res && (res.result === 'ok' || res.success === true)) {
         showAssignMessage('✅ 指派成功');
 
         // ✅ 關閉 modal
