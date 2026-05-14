@@ -336,6 +336,47 @@
       animation: pulse-soft 1.6s infinite;
     }
 
+  /* 個人生涯／年度紀錄 */
+  .user-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .stat-card {
+    background: linear-gradient(135deg, #f8fbff, #ffffff);
+  
+    border-radius: 12px;
+    padding: 10px 8px;
+  
+    text-align: center;
+  
+    border: 1px solid #e5e7eb;
+  
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  
+  .stat-title {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+  
+  .stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1a237e;
+  }
+
+  /* 滑過會浮起來 */
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  }
+
   </style>
 </head>
 
@@ -378,6 +419,14 @@
     document.addEventListener('DOMContentLoaded', loadHeader);
 </script>
 
+<script>
+  // 個人年度／生涯的站場／紀錄數據
+  // 測試用假資料
+  document.getElementById('stat-career').textContent = '120 場';
+  document.getElementById('stat-year').textContent = '18 場';
+  document.getElementById('stat-record').textContent = '45 場';
+</script>
+  
   <div class="main">
 
     <!-- ✅ Welcome -->
@@ -385,6 +434,24 @@
       <div class="welcome-role" id="welcome-role"></div>
       <div class="welcome-name" id="welcome-name"></div>
       <div>歡迎使用 <strong>BBT 出勤管理系統</strong></div>
+      
+      <div class="user-stats">
+        <div class="stat-card">
+          <div class="stat-title">🏆 個人生涯</div>
+          <div class="stat-value" id="stat-career">-- 場</div>
+        </div>
+      
+        <div class="stat-card">
+          <div class="stat-title">📅 本年度</div>
+          <div class="stat-value" id="stat-year">-- 場</div>
+        </div>
+      
+        <div class="stat-card">
+          <div class="stat-title">📝 紀錄數據</div>
+          <div class="stat-value" id="stat-record">-- 場</div>
+        </div>
+      </div>
+
       <div class="welcome-actions">
         <button id="open-schedule" class="pill pill-orange">📅 我的班表</button>
         <button id="open-league" class="pill pill-blue">📘 聯盟賽制</button>
