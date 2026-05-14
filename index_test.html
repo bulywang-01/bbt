@@ -305,6 +305,29 @@
       gap: 6px;
       flex-wrap: wrap;   /* ✅ 多角色不會爆 */
     }
+
+    /* 本週有班表通知 */
+      #schedule-tip {
+      margin-top: 12px;
+    
+      font-size: 14px;
+      font-weight: 800;
+      color: #d32f2f;
+    
+      text-align: center;
+    }
+    
+    /* ✅ 推薦用這個（比較舒服） */
+    @keyframes pulse-soft {
+      0%   { transform: scale(1); opacity: 1; }
+      50%  { transform: scale(1.03); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    #schedule-tip.show {
+      animation: pulse-soft 1.6s infinite;
+    }
+
   </style>
 </head>
 
@@ -362,28 +385,9 @@
       </div>
     </div>
 
-    <div id="schedule-tip" style="margin-top:10px; font-size:13px; color:#d97706; display:none;">
+    <div id="schedule-tip" style="display:none;">
       📢 本週有執法／紀錄賽事噢，詳見「我的班表」
     </div>
-
-
-    <!-- ✅ 我的班表 
-      <div class="panel">
-        <h3>📅 我的班表</h3>
-      
-        <div class="tabs">
-          <button onclick="setRange('week')" id="tab-week">本週</button>
-          <button onclick="setRange('next')" id="tab-next">下週</button>
-          <button onclick="setRange('month')" id="tab-month">本月</button>
-        </div>
-      
-        <div id="schedule-list" class="schedule-days"></div>
-      
-        <div id="no-schedule" class="empty" style="display:none;">
-          此期間尚無班表
-        </div>
-      </div>
--->
 
     <!-- ✅ 聯盟公告 -->
     <div class="panel">
