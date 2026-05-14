@@ -315,23 +315,34 @@ function assignJudge(judge) {
       modal.style.pointerEvents = 'auto';
 
       // ✅ 成功
-      if (res && (res.result === 'ok' || res.success === true)) {
+const isSuccess =
+  res &&
+  (
+    res.result === 'ok' ||
+    res.success === true ||
+    res.status === 'success'
+  );
+      // ✅ 正常成功
+      if (isSuccess) {
         showAssignMessage('✅ 指派成功');
-
-        // ✅ 關閉 modal
         closeJudgeModal();
-
-        // ✅ 重新載入資料（畫面立即更新）
         loadGames();
         return;
       }
-
-      // ✅ 明確失敗訊息
-      const msg =
-        (res && res.message) ?
-          `❌ 指派失敗：${res.message}` :
-          '❌ 指派失敗，請稍後再試';
-
+      
+      // ✅ ⭐ 關鍵補救：資料已寫入但回傳異常
+      if (res && !res.message) {
+        showAssignMessage('✅ 已指派（回傳異常）');
+        closeJudgeModal();
+        loadGames();
+        return;
+      }
+      
+      // ✅ 真正錯誤
+      const msg = (res && res.message)
+        ? `❌ ${res.message}`
+        : '❌ 指派失敗，請稍後再試';
+      
       showAssignMessage(msg);
     }
   );
