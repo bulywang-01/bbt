@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ? res.games
           : [];
         renderSchedule();
+        checkThisWeekNotice(filtered);
       }
     );
   }
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ? res.games
           : [];
         renderSchedule();
+        checkThisWeekNotice(filtered);
       }
     );
   }
@@ -75,6 +77,7 @@ function setRange(range) {
   document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
   document.getElementById(`tab-${range}`)?.classList.add('active');
   renderSchedule();
+  checkThisWeekNotice(filtered);
 }
 
 /* =========================
@@ -96,10 +99,14 @@ function renderSchedule() {
   // ✅ 只用日期做區間判斷（避開時間地雷）
   const { start, end } = getPeriodRange(currentRange);
 
+  // ✅ 只顯示「未過期」
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  
   const filtered = merged.filter(g => {
     const d = new Date(g.date.replace(/\//g, '-'));
     d.setHours(0,0,0,0);
-    return d >= start && d <= end;
+    return d >= today;
   });
 
   if (!filtered.length) {
@@ -110,6 +117,31 @@ function renderSchedule() {
 
   renderMergedCards(filtered);
 }
+
+// 本週提醒判斷
+function checkThisWeekNotice(list) {
+  const tip = document.getElementById('schedule-tip');
+  if (!tip) return;
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const day = today.getDay() || 7;
+
+  const start = new Date(today);
+  start.setDate(today.getDate() - day + 1);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+
+  const hasThisWeek = list.some(g => {
+    const d = new Date(g.date.replace(/\//g,'-'));
+    return d >= start && d <= end;
+  });
+
+  tip.style.display = hasThisWeek ? 'block' : 'none';
+}
+
 
 /* =========================
  * 合併 裁判＋紀錄（同一場一張）
@@ -151,77 +183,55 @@ function mergeMySchedules(judgeGames, recordGames) {
  * ========================= */
 function renderMergedCards(games) {
   const box = document.getElementById('schedule-list');
+  
   box.innerHTML = '';
-
-  const JUDGE_ROLE = { PU:'主審', U1:'一壘', U2:'二壘', U3:'三壘' };
-  const RECORD_ROLE = {
-    REC_MAIN:'主紀錄',
-    REC_TRAINEE:'見習紀錄',
-    REC_VIDEO:'影像紀錄'
-  };
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // ✅ 依日期分組（同一天只顯示一次日期）
-  const groups = {};
-  games.forEach(g => {
-    if (!groups[g.date]) groups[g.date] = [];
-    groups[g.date].push(g);
+  
+  const sorted = games.sort((a,b) => 
+    new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time)
+  );
+  
+  sorted.forEach(g => {
+  
+    const judgeMap = { PU:'主審', U1:'一壘審', U2:'二壘審', U3:'三壘審' };
+    const recordMap = {
+      REC_MAIN:'紀錄員',
+      REC_TRAINEE:'見習紀錄',
+      REC_VIDEO:'影像紀錄'
+    };
+  
+    const roles = g.roles.map(r => {
+      const isJudge = r.startsWith('U') || r === 'PU';
+      const name = isJudge ? judgeMap[r] : recordMap[r];
+  
+      return `
+        <div class="schedule-role ${isJudge ? 'judge' : 'record'}">
+          ${isJudge ? '🧑‍⚖️' : '📝'} ${name}
+        </div>
+      `;
+    }).join('');
+  
+    const card = document.createElement('div');
+    card.className = 'schedule-card';
+  
+    card.innerHTML = `
+      <div class="schedule-top-row">
+        <div class="schedule-date-text">
+          ${formatZhDate(g.date)}
+        </div>
+        <div class="schedule-role-group">
+          ${roles}
+        </div>
+      </div>
+  
+      <div class="schedule-info-row">
+        <div>⏰ ${formatTimeOnly(g.time)}</div>
+        <div>📍 ${g.field}</div>
+      </div>
+    `;
+  
+    box.appendChild(card);
   });
 
-  Object.keys(groups)
-  .sort()
-  .forEach(date => {
-
-    //
-    groups[date].forEach(g => {
-
-      const card = document.createElement('div');
-      card.className = 'schedule-card';
-
-      // ✅ 角色轉換
-      const judgeMap = { PU:'主審', U1:'一壘審', U2:'二壘審', U3:'三壘審' };
-      const recordMap = {
-        REC_MAIN:'紀錄員',
-        REC_TRAINEE:'見習紀錄',
-        REC_VIDEO:'影像紀錄'
-      };
-
-      // ✅ 判斷是否裁判 or 紀錄
-      const roleHtml = g.roles.map(r => {
-
-        const isJudge = r.startsWith('U') || r === 'PU';
-        const name = isJudge ? judgeMap[r] : recordMap[r];
-
-        return `
-          <div class="schedule-role ${isJudge ? 'judge' : 'record'}">
-            ${isJudge ? '🧑‍⚖️' : '📝'} ${name}
-          </div>
-        `;
-      }).join('');
-
-        card.innerHTML = `
-          <div class="schedule-top-row">
-        
-            <div class="schedule-date-text">
-              ${formatZhDate(g.date)}
-            </div>
-        
-            <div class="schedule-role-group">
-              ${roleHtml}
-            </div>
-        
-          </div>
-        
-          <div class="schedule-info-row">
-            <div>⏰ ${formatTimeOnly(g.time)}</div>
-            <div>📍 ${g.field}</div>
-          </div>
-        `;
-
-      box.appendChild(card);
-    });
   });
 }
 
