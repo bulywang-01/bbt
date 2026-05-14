@@ -192,14 +192,14 @@ function renderStats() {
 
   // ✅ 裁判卡
   document.getElementById('stat-judge').textContent =
-    `${judgeYear}場`;   // ✅ 主數字 = 今年
+    `今年 ${judgeYear}場`;   // ✅ 主數字 = 今年
 
   document.getElementById('stat-judge-sub').textContent =
     `生涯 ${judgeAll}場`;
 
   // ✅ 紀錄卡
   document.getElementById('stat-record').textContent =
-    `${recordYear}場`;
+    `今年 ${recordYear}場`;
 
   document.getElementById('stat-record-sub').textContent =
     `生涯 ${recordAll}場`;
@@ -209,7 +209,7 @@ function renderStats() {
   const totalAll = judgeAll + recordAll;
 
   document.getElementById('stat-total').textContent =
-    `${totalYear}場`;
+    `今年 ${totalYear}場`;
 
   document.getElementById('stat-total-sub').textContent =
     `生涯 ${totalAll}場`;
@@ -219,13 +219,13 @@ function renderStats() {
 // 點卡片功能（未來,目前暫放）
 function openStatDetail(type) {
   if (type === 'career') {
-    alert('未來可打開生涯統計頁');
+    alert('可打開生涯統計頁(尚未開放)');
   }
   if (type === 'year') {
-    alert('可顯示年度詳細紀錄');
+    alert('可顯示年度詳細紀錄(尚未開放)');
   }
   if (type === 'record') {
-    alert('紀錄詳細數據');
+    alert('紀錄詳細數據(尚未開放)');
   }
 }
 
