@@ -210,15 +210,30 @@ button {
 
 /* 裁判名單容器 */
 #judgeList {
-  max-height: 60vh;        /* ✅ 高度限制，手機也安全 */
-  overflow-y: auto;        /* ✅ 垂直捲動 */
-  padding-right: 6px;      /* ✅ 避免 scrollbar 擋字 */
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 6px;
 }
 
-/* 裁判卡片間距維持 */
 .judge-card {
+  padding: 10px;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
   margin-bottom: 8px;
+  text-align: center;
 }
+
+.judge-card:hover {
+  background: #f0f6ff;
+}
+
+#judgeList .empty {
+  text-align: center;
+  color: #777;
+  padding: 12px 0;
+}
+
 </style>
 </head>
 
@@ -283,6 +298,15 @@ function loadHeader() {
       <button onclick="closeJudgeModal()">取消</button>
     </div>
   </div>
+</div>
+
+<div id="judgeLoading" style="
+  display:none;
+  text-align:center;
+  padding:10px;
+  color:#666;
+">
+  ⏳ 指派中…
 </div>
 
  <!--
