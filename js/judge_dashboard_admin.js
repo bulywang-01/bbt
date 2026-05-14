@@ -315,10 +315,10 @@ function assignJudge(judge) {
   const modal = document.getElementById('judgeModal');
   const loading = document.getElementById('judgeLoading');
 
-  // ✅ UX：立即回饋
+  // ✅ 立刻給使用者回饋
   showAssignMessage('⏳ 指派中，請稍候…');
 
-  // ✅ 防止重複點擊
+  // ✅ 防止連續點擊
   modal.style.pointerEvents = 'none';
   if (loading) loading.style.display = 'block';
 
@@ -332,28 +332,27 @@ function assignJudge(judge) {
     modal.style.pointerEvents = 'auto';
     if (loading) loading.style.display = 'none';
 
-    // ✅ 成功
-    if (res && res.result === 'ok') {
-      showAssignMessage('✅ 指派成功');
-      closeJudgeModal();
-      loadGames();
+    /* =========================
+     * ❌ 1️⃣ 明確失敗（後端規則擋）
+     * ========================= */
+    if (res && res.result === 'error') {
+      // ✅ 這裡就是你現在缺的
+      showAssignMessage(
+        `❌ ${res.message || '指派失敗'}`
+      );
       return;
     }
 
-    // ⚠️ 後端偶爾回 {}
-    if (res && !res.message) {
-      showAssignMessage('✅ 已送出指派（處理中）');
-      closeJudgeModal();
-      loadGames();
-      return;
-    }
-
-    // ❌ 失敗
-    showAssignMessage(
-      res?.message || '❌ 指派失敗，請稍後再試'
-    );
+    /* =========================
+     * ✅ 2️⃣ 成功 or 非明確錯誤
+     * ========================= */
+    showAssignMessage('✅ 指派完成');
+    closeJudgeModal();
+    loadGames();   // ✅ 一定要重整
   });
 }
+
+
 
 function showAssignMessage(msg) {
   const box = document.createElement('div');
