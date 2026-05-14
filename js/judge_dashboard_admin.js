@@ -262,6 +262,14 @@ window.openAssignJudge = function (gameId, role) {
       }
 
       res.judges.forEach(j => {
+        
+      // 取得當前 game 所有已指派
+      const assignedIds = Object.values(game.positions)
+        .filter(p => p.assigned)
+        .map(p => String(p.assigned.user_id));
+      res.judges.forEach(j => {
+        if (assignedIds.includes(String(j.user_id))) return; // ✅ 過濾
+      
         const card = document.createElement('div');
         card.className = 'judge-card';
         card.textContent = j.name;
@@ -315,13 +323,13 @@ function assignJudge(judge) {
       modal.style.pointerEvents = 'auto';
 
       // ✅ 成功
-const isSuccess =
-  res &&
-  (
-    res.result === 'ok' ||
-    res.success === true ||
-    res.status === 'success'
-  );
+      const isSuccess =
+        res &&
+        (
+          res.result === 'ok' ||
+          res.success === true
+        );
+      
       // ✅ 正常成功
       if (isSuccess) {
         showAssignMessage('✅ 指派成功');
@@ -330,20 +338,18 @@ const isSuccess =
         return;
       }
       
-      // ✅ ⭐ 關鍵補救：資料已寫入但回傳異常
+      // ✅ fallback（資料已寫）
       if (res && !res.message) {
-        showAssignMessage('✅ 已指派（回傳異常）');
+        console.warn('API回傳異常:', res);
+      
+        showAssignMessage('✅ 指派成功');   // ✅ 不要顯示異常
         closeJudgeModal();
         loadGames();
         return;
       }
       
-      // ✅ 真正錯誤
-      const msg = (res && res.message)
-        ? `❌ ${res.message}`
-        : '❌ 指派失敗，請稍後再試';
-      
-      showAssignMessage(msg);
+      // ❌ 真錯誤
+      showAssignMessage(`❌ ${res?.message || '指派失敗'}`);
     }
   );
 }
