@@ -454,13 +454,6 @@
     document.addEventListener('DOMContentLoaded', loadHeader);
 </script>
 
-<script>
-  // 個人年度／生涯的站場／紀錄數據
-  // 測試用假資料
-  //document.getElementById('stat-career').textContent = '120 場';
-  //document.getElementById('stat-year').textContent = '18 場';
-  //document.getElementById('stat-record').textContent = '45 場';
-</script>
   
   <div class="main">
 
@@ -471,22 +464,22 @@
       
       <div class="user-stats">
       
-        <div class="stat-card" onclick="openStatDetail('career')">
-          <div class="stat-title">🏆 個人生涯</div>
-          <div class="stat-value" id="stat-career">--</div>
-          <div class="stat-sub">裁判 + 紀錄</div>
+        <div class="stat-card">
+          <div class="stat-title">🧑‍⚖️ 裁判</div>
+          <div class="stat-value" id="stat-judge">--</div>
+          <div class="stat-sub" id="stat-judge-sub"></div>
         </div>
-      
-        <div class="stat-card" onclick="openStatDetail('year')">
-          <div class="stat-title">📅 本年度</div>
-          <div class="stat-value" id="stat-year">--</div>
-          <div class="stat-sub" id="stat-year-breakdown">--</div>
-        </div>
-      
-        <div class="stat-card" onclick="openStatDetail('record')">
-          <div class="stat-title">📝 紀錄數據</div>
+        
+        <div class="stat-card">
+          <div class="stat-title">📝 紀錄</div>
           <div class="stat-value" id="stat-record">--</div>
-          <div class="stat-sub">紀錄場次</div>
+          <div class="stat-sub" id="stat-record-sub"></div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-title">📊 總計</div>
+          <div class="stat-value" id="stat-total">--</div>
+          <div class="stat-sub" id="stat-total-sub"></div>
         </div>
       
       </div>
