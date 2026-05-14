@@ -161,21 +161,51 @@ function computeStats(judgeGames, recordGames) {
 }
 
 function renderStats() {
-  const stats = computeStats(judgeGames, recordGames);
+  const now = new Date();
+  const year = now.getFullYear();
 
-  document.getElementById('stat-career').textContent =
-    `${stats.careerTotal} 場`;
+  let judgeYear = 0;
+  let judgeAll = 0;
 
-  document.getElementById('stat-year').textContent =
-    `${stats.yearTotal} 場`;
+  let recordYear = 0;
+  let recordAll = 0;
+
+  judgeGames.forEach(g => {
+    if (!g.role) return;
+    judgeAll++;
+
+    const d = new Date(g.date.replace(/\//g,'-'));
+    if (d.getFullYear() === year) judgeYear++;
+  });
+
+  recordGames.forEach(g => {
+    if (!g.record_role) return;
+    recordAll++;
+
+    const d = new Date(g.date.replace(/\//g,'-'));
+    if (d.getFullYear() === year) recordYear++;
+  });
+
+  // ✅ 填入
+  document.getElementById('stat-judge').textContent =
+    `${judgeAll + judgeYear}場`;
+
+  document.getElementById('stat-judge-sub').textContent =
+    `年 ${judgeYear} / 生 ${judgeAll}`;
 
   document.getElementById('stat-record').textContent =
-    `${stats.recordTotal} 場`;
+    `${recordAll + recordYear}場`;
 
-  // ✅ 分解顯示（很專業 ✅）
-  document.getElementById('stat-year-breakdown').textContent =
-    `裁判 ${stats.judgeYear} / 紀錄 ${stats.recordYear}`;
+  document.getElementById('stat-record-sub').textContent =
+    `年 ${recordYear} / 生 ${recordAll}`;
+
+  document.getElementById('stat-total').textContent =
+    `${judgeAll + recordAll}場`;
+
+  document.getElementById('stat-total-sub').textContent =
+    `年 ${judgeYear + recordYear} / 生 ${judgeAll + recordAll}`;
 }
+
 
 // 點卡片功能（未來,目前暫放）
 function openStatDetail(type) {
