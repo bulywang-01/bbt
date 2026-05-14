@@ -192,14 +192,14 @@ function renderStats() {
 
   // ✅ 裁判卡
   document.getElementById('stat-judge').textContent =
-    `今年 ${judgeYear}場`;   // ✅ 主數字 = 今年
+    `${judgeYear}`;   // ✅ 主數字 = 今年
 
   document.getElementById('stat-judge-sub').textContent =
     `生涯 ${judgeAll}場`;
 
   // ✅ 紀錄卡
   document.getElementById('stat-record').textContent =
-    `今年 ${recordYear}場`;
+    `${recordYear}`;
 
   document.getElementById('stat-record-sub').textContent =
     `生涯 ${recordAll}場`;
@@ -209,7 +209,7 @@ function renderStats() {
   const totalAll = judgeAll + recordAll;
 
   document.getElementById('stat-total').textContent =
-    `今年 ${totalYear}場`;
+    `${totalYear}`;
 
   document.getElementById('stat-total-sub').textContent =
     `生涯 ${totalAll}場`;
