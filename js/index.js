@@ -84,38 +84,38 @@ function setRange(range) {
  * 主 render
  * ========================= */
 function renderSchedule() {
-  const box = document.getElementById('schedule-list');
+  const box = document.getElementById('my-schedule-list');  // ✅ 已改 overlay
   const noBlock = document.getElementById('no-schedule');
 
-  document.getElementById('schedule-loading')?.style.setProperty('display', 'none');
   if (!box) return;
 
   box.innerHTML = '';
-  noBlock.style.display = 'none';
+  if (noBlock) noBlock.style.display = 'none';
 
-  // ✅ 合併裁判＋紀錄（同一場）
   const merged = mergeMySchedules(judgeGames, recordGames);
 
-  // ✅ 只用日期做區間判斷（避開時間地雷）
-  const { start, end } = getPeriodRange(currentRange);
-
-  // ✅ 只顯示「未過期」
+  // ✅ ✅ ✅ 補這段（你現在缺這個）
   const today = new Date();
   today.setHours(0,0,0,0);
-  
+
   const filtered = merged.filter(g => {
-    const d = new Date(g.date.replace(/\//g, '-'));
+    const d = new Date(g.date.replace(/\//g,'-'));
     d.setHours(0,0,0,0);
     return d >= today;
   });
 
   if (!filtered.length) {
-    noBlock.textContent = '此期間尚無班表';
-    noBlock.style.display = 'block';
+    if (noBlock) {
+      noBlock.textContent = '目前沒有未來班表';
+      noBlock.style.display = 'block';
+    }
     return;
   }
 
   renderMergedCards(filtered);
+
+  // ✅ ✅ ✅ 這行也會用到 filtered
+  checkThisWeekNotice(filtered);
 }
 
 // 本週提醒判斷
