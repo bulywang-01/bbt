@@ -245,11 +245,12 @@ window.openAssignJudge = function (gameId, role) {
       action: 'getAssignableJudges_admin',
       game_id: gameId,
       role: role,
-      user_id: CURRENT_USER_ID // ✅ 裁判長身分
+      user_id: CURRENT_USER_ID
     },
     res => {
       list.innerHTML = '';
 
+      // ❗防呆
       if (
         !res ||
         res.result !== 'ok' ||
@@ -261,19 +262,28 @@ window.openAssignJudge = function (gameId, role) {
         return;
       }
 
+      // ✅ ⭐ 取得該場 game（從全域抓）
+      const game = allGames.find(g => String(g.game_id) === String(gameId));
+
+      // ✅ ⭐ 已指派裁判
+      const assignedIds = game
+        ? Object.values(game.positions || {})
+            .filter(p => p.assigned)
+            .map(p => String(p.assigned.user_id))
+        : [];
+
+      // ✅ ✅ ✅ 單層 loop（正確）
       res.judges.forEach(j => {
-        
-      // 取得當前 game 所有已指派
-      const assignedIds = Object.values(game.positions)
-        .filter(p => p.assigned)
-        .map(p => String(p.assigned.user_id));
-      res.judges.forEach(j => {
-        if (assignedIds.includes(String(j.user_id))) return; // ✅ 過濾
-      
+
+        // ✅ 過濾同場已指派
+        if (assignedIds.includes(String(j.user_id))) return;
+
         const card = document.createElement('div');
         card.className = 'judge-card';
         card.textContent = j.name;
+
         card.onclick = () => assignJudge(j);
+
         list.appendChild(card);
       });
 
