@@ -29,6 +29,7 @@
       padding: 22px;
       margin-bottom: 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      margin-bottom: 18px;  /* ✅ 原本可能 14 → 加大 */
     }
 
     h3 {
@@ -41,7 +42,8 @@
     .welcome-box {
       background: linear-gradient(135deg,#f5f8ff,#fff);
       border-radius: 16px;
-      padding: 26px;
+      /* padding: 26px; */
+      padding: 20px 16px 22px;   /* ✅ 上 左右 下（加下面空間） */
     }
 
     .welcome-role {
@@ -54,10 +56,11 @@
       font-size: 18px;
       font-weight: 600;
       margin: 6px 0;
+      margin-bottom: 6px;
     }
 
     .welcome-actions {
-      margin-top: 14px;
+      margin-top: 12px;
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -107,7 +110,23 @@
 
     /* ===== Overlay（裁判守則 / 聯盟賽制 同款）===== */
     @media (max-width: 768px) {
-  }
+      .panel {
+        padding: 18px 16px;   /* ✅ 整塊白卡變大 */
+        border-radius: 16px;  /* ✅ 稍微圓一點更柔和 */
+      }
+    
+      .welcome-box {
+        padding: 20px 16px 22px;
+      }
+    
+      .user-stats {
+        margin: 16px 0;
+      }
+    
+      .panel {
+        margin-bottom: 18px;
+      }
+    }
     
     .overlay {
       position: fixed;
@@ -341,9 +360,9 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-    
-      margin-top: 14px;
-      margin-bottom: 10px;
+      margin-top: 16px;
+      margin-bottom: 14px;
+      margin: 16px 0;
     }
     
     .stat-card {
