@@ -112,25 +112,24 @@
     .overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.5);
+      background: rgba(0,0,0,0.45);
       display: none;
-      align-items: flex-start;   /* ✅ 不再置中 */
+      align-items: center;   /* ✅ 置中 */
       justify-content: center;
       z-index: 9999;
+      padding-top: 60px;         /* ✅ 往上偏 */
     }
 
     .overlay-box {
-      /*width: min(900px, 92vw);*/
-      /*max-height: 92vh;*/
       background: #fff;
-      /*border-radius: 14px;*/
-      /*padding: 28px;*/
-      width: 100vw;
+      width: 92vw;              /* ✅ 有邊界 */
       height: 100vh;             /* ✅ 直接變整頁 */
-      max-height: none;
-      border-radius: 0;          /* ✅ 手機不要卡片感 */
+      max-height: 80vh;         /* ✅ 不要滿版 */
+      max-width: 420px;         /* ✅ 不會太寬 */
+      border-radius: 16px;          /* ✅ 手機卡片感 */
       padding: 20px 16px;
       overflow-y: auto;          /* ✅ 正常往下滑 */
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);    /* 會像 App */
     }
 
     .overlay-box h2 {
