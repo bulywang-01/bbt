@@ -54,7 +54,7 @@
 
     .welcome-name {
       font-size: 18px;
-      font-weight: 600;
+      font-weight: 800;
       margin: 6px 0;
       margin-bottom: 6px;
     }
@@ -703,7 +703,7 @@
     const session = getSession?.();
     if (session) {
       document.getElementById('welcome-name').textContent =
-        session.name + ' 您好，今年參與的數據';
+        session.name + ' 您好，歡迎使用BBT出勤管理系統';
 
       const roleMap = {
         admin: '系統管理員',
