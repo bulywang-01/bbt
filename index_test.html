@@ -357,10 +357,16 @@
       <div>歡迎使用 <strong>BBT 出勤管理系統</strong></div>
 
       <div class="welcome-actions">
+        <button id="open-schedule" class="pill pill-orange">📅 我的班表</button>
         <button id="open-league" class="pill pill-blue">📘 聯盟賽制</button>
         <button id="open-rules" class="pill pill-green">🧑‍⚖️ 裁判守則</button>
       </div>
     </div>
+
+    <div id="schedule-tip" style="margin-top:10px; font-size:13px; color:#d97706; display:none;">
+      📢 本週有執法／紀錄賽事噢，詳見「我的班表」
+    </div>
+
 
     <!-- ✅ 我的班表 -->
       <div class="panel">
@@ -384,10 +390,8 @@
     <div class="panel">
       <h3>📢 聯盟公告</h3>
       <ul>
-        <li>例行賽七局制或 2.5 小時制。</li>
-        <li>第五局起分差達 10 分（含）提前結束。</li>
-        <li>平手且時間到，進入突破僵局制（二壘有人）。</li>
-        <li>裁判不得執法所屬母隊之正式賽。</li>
+        <li>本系統將於115年5月20日12:00正式上線，在此之前的報名資料皆為測試，上線前會全數清除。</li>
+        <li>六月份賽程已上傳，請裁判員及紀錄員至班表頁面報名。</li>
       </ul>
     </div>
 
@@ -572,6 +576,21 @@
     </div>
   </div>
 
+  <!-- ===============================
+  📘 我的班表
+  =============================== -->
+  <div id="schedule-overlay" class="overlay">
+    <div class="overlay-box">
+      <h2>📅 我的班表</h2>
+  
+      <div id="my-schedule-list"></div>
+  
+      <button class="close-btn" onclick="hideOverlay('schedule-overlay')">
+        關閉
+      </button>
+    </div>
+  </div>
+  
   <script>
     const session = getSession?.();
     if (session) {
