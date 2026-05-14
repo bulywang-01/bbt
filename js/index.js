@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ? res.games
           : [];
         renderSchedule();
+        renderStats();
       }
     );
   }
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ? res.games
           : [];
         renderSchedule();
+        renderStats();
       }
     );
   }
@@ -75,6 +77,7 @@ function setRange(range) {
   document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
   document.getElementById(`tab-${range}`)?.classList.add('active');
   renderSchedule();
+  renderStats();
 }
 
 /* =========================
@@ -108,6 +111,84 @@ function renderSchedule() {
   checkThisWeekNotice(filtered);
 }
 
+// 個人生涯數據資料
+function computeStats(judgeGames, recordGames) {
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+
+  let careerTotal = 0;
+  let yearTotal = 0;
+  let recordTotal = 0;
+
+  let judgeYear = 0;
+  let recordYear = 0;
+
+  // ✅ 裁判
+  judgeGames.forEach(g => {
+    if (!g.role) return;
+
+    careerTotal++;
+
+    const d = new Date(g.date.replace(/\//g,'-'));
+    if (d.getFullYear() === currentYear) {
+      yearTotal++;
+      judgeYear++;
+    }
+  });
+
+  // ✅ 紀錄
+  recordGames.forEach(g => {
+    if (!g.record_role) return;
+
+    careerTotal++;
+    recordTotal++;
+
+    const d = new Date(g.date.replace(/\//g,'-'));
+    if (d.getFullYear() === currentYear) {
+      yearTotal++;
+      recordYear++;
+    }
+  });
+
+  return {
+    careerTotal,
+    yearTotal,
+    recordTotal,
+    judgeYear,
+    recordYear
+  };
+}
+
+function renderStats() {
+  const stats = computeStats(judgeGames, recordGames);
+
+  document.getElementById('stat-career').textContent =
+    `${stats.careerTotal} 場`;
+
+  document.getElementById('stat-year').textContent =
+    `${stats.yearTotal} 場`;
+
+  document.getElementById('stat-record').textContent =
+    `${stats.recordTotal} 場`;
+
+  // ✅ 分解顯示（很專業 ✅）
+  document.getElementById('stat-year-breakdown').textContent =
+    `裁判 ${stats.judgeYear} / 紀錄 ${stats.recordYear}`;
+}
+
+// 點卡片功能（未來,目前暫放）
+function openStatDetail(type) {
+  if (type === 'career') {
+    alert('未來可打開生涯統計頁');
+  }
+  if (type === 'year') {
+    alert('可顯示年度詳細紀錄');
+  }
+  if (type === 'record') {
+    alert('紀錄詳細數據');
+  }
+}
 
 // 本週提醒判斷
 function checkThisWeekNotice(list) {
