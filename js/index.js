@@ -131,6 +131,12 @@ function checkThisWeekNotice(list) {
   });
 
   tip.style.display = hasThisWeek ? 'block' : 'none';
+  
+  if (hasThisWeek) {
+    tip.classList.add('show');   // ✅ 開啟動畫
+  } else {
+    tip.classList.remove('show');
+  }
 }
 
 
