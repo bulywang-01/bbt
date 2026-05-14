@@ -231,8 +231,6 @@ function renderMergedCards(games) {
   
     box.appendChild(card);
   });
-
-  });
 }
 
 /* =========================
