@@ -48,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
           ? res.games
           : [];
         renderSchedule();
-        checkThisWeekNotice(filtered);
       }
     );
   }
@@ -61,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
           ? res.games
           : [];
         renderSchedule();
-        checkThisWeekNotice(filtered);
       }
     );
   }
@@ -77,46 +75,39 @@ function setRange(range) {
   document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
   document.getElementById(`tab-${range}`)?.classList.add('active');
   renderSchedule();
-  checkThisWeekNotice(filtered);
 }
 
 /* =========================
  * 主 render
  * ========================= */
 function renderSchedule() {
-  const box = document.getElementById('my-schedule-list');  // ✅ 已改 overlay
-  const noBlock = document.getElementById('no-schedule');
-
+  const box = document.getElementById('my-schedule-list'); // ✅ 改這裡
   if (!box) return;
 
   box.innerHTML = '';
-  if (noBlock) noBlock.style.display = 'none';
 
   const merged = mergeMySchedules(judgeGames, recordGames);
 
-  // ✅ ✅ ✅ 補這段（你現在缺這個）
   const today = new Date();
   today.setHours(0,0,0,0);
 
   const filtered = merged.filter(g => {
-    const d = new Date(g.date.replace(/\//g,'-'));
+    const d = new Date(g.date.replace(/\//g, '-'));
     d.setHours(0,0,0,0);
     return d >= today;
   });
 
   if (!filtered.length) {
-    if (noBlock) {
-      noBlock.textContent = '目前沒有未來班表';
-      noBlock.style.display = 'block';
-    }
+    box.innerHTML = `<div class="empty">目前沒有未來班表</div>`;
     return;
   }
 
   renderMergedCards(filtered);
 
-  // ✅ ✅ ✅ 這行也會用到 filtered
+  // ✅ ✅ ✅ 只在這裡呼叫
   checkThisWeekNotice(filtered);
 }
+
 
 // 本週提醒判斷
 function checkThisWeekNotice(list) {
@@ -182,9 +173,12 @@ function mergeMySchedules(judgeGames, recordGames) {
  * 合併卡片 render（橫式）
  * ========================= */
 function renderMergedCards(games) {
-  const box = document.getElementById('schedule-list');
+
+  const box = document.getElementById('my-schedule-list'); // ✅ 這行最重要
+  if (!box) return;
   
   box.innerHTML = '';
+
   
   const sorted = games.sort((a,b) => 
     new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time)
