@@ -309,22 +309,19 @@
     /* 本週有班表通知 */
     #schedule-tip {
       margin-top: 12px;
-    
       font-size: 16px;
       font-weight: 800;
       color: #d32f2f;
-    
       display: flex;              /* ✅ 關鍵 */
       justify-content: center;    /* ✅ 水平置中 */
       align-items: center;        /* ✅ 垂直置中 */
-    
       text-align: center;
-    
       min-height: 36px;           /* ✅ 給高度，才能垂直置中 */
-    
       animation: pulse-soft 1.6s infinite;
+      border-radius: 10px;
+      background: #fff5f5;
+      padding: 6px 10px;
     }
-
     
     /* ✅ 推薦用這個（比較舒服） */
     @keyframes pulse-soft {
