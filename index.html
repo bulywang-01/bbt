@@ -112,25 +112,24 @@
     .overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.5);
+      background: rgba(0,0,0,0.45);
       display: none;
-      align-items: flex-start;   /* ✅ 不再置中 */
+      align-items: center;   /* ✅ 置中 */
       justify-content: center;
       z-index: 9999;
+      padding-top: 60px;         /* ✅ 往上偏 */
     }
 
     .overlay-box {
-      /*width: min(900px, 92vw);*/
-      /*max-height: 92vh;*/
       background: #fff;
-      /*border-radius: 14px;*/
-      /*padding: 28px;*/
-      width: 100vw;
+      width: 92vw;              /* ✅ 有邊界 */
       height: 100vh;             /* ✅ 直接變整頁 */
-      max-height: none;
-      border-radius: 0;          /* ✅ 手機不要卡片感 */
+      max-height: 80vh;         /* ✅ 不要滿版 */
+      max-width: 420px;         /* ✅ 不會太寬 */
+      border-radius: 16px;          /* ✅ 手機卡片感 */
       padding: 20px 16px;
       overflow-y: auto;          /* ✅ 正常往下滑 */
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);    /* 會像 App */
     }
 
     .overlay-box h2 {
@@ -357,12 +356,18 @@
       <div>歡迎使用 <strong>BBT 出勤管理系統</strong></div>
 
       <div class="welcome-actions">
+        <button id="open-schedule" class="pill pill-orange">📅 我的班表</button>
         <button id="open-league" class="pill pill-blue">📘 聯盟賽制</button>
         <button id="open-rules" class="pill pill-green">🧑‍⚖️ 裁判守則</button>
       </div>
     </div>
 
-    <!-- ✅ 我的班表 -->
+    <div id="schedule-tip" style="margin-top:10px; font-size:13px; color:#d97706; display:none;">
+      📢 本週有執法／紀錄賽事噢，詳見「我的班表」
+    </div>
+
+
+    <!-- ✅ 我的班表 
       <div class="panel">
         <h3>📅 我的班表</h3>
       
@@ -378,7 +383,7 @@
           此期間尚無班表
         </div>
       </div>
-
+-->
 
     <!-- ✅ 聯盟公告 -->
     <div class="panel">
@@ -570,6 +575,21 @@
     </div>
   </div>
 
+  <!-- ===============================
+  📘 我的班表
+  =============================== -->
+  <div id="schedule-overlay" class="overlay">
+    <div class="overlay-box">
+      <h2>📅 我的班表</h2>
+  
+      <div id="my-schedule-list"></div>
+  
+      <button class="close-btn" onclick="hideOverlay('schedule-overlay')">
+        關閉
+      </button>
+    </div>
+  </div>
+  
   <script>
     const session = getSession?.();
     if (session) {
@@ -601,6 +621,10 @@
 
     document.getElementById('open-league').onclick = () =>
       document.getElementById('league-overlay').style.display = 'flex';
+
+    document.getElementById('open-schedule').onclick = () =>
+      document.getElementById('schedule-overlay').style.display = 'flex';
+      
   </script>
 
 </body>
