@@ -482,18 +482,21 @@ function renderWeeklySchedule(games) {
     div.innerHTML = `
       <div class="game-title">
         ${g.date} ${formatTimeOnly(g.time)}｜${g.away} vs ${g.home}
-        <div style="font-size:12px;color:#666;">📍 ${g.field || ''}</div>
       </div>
-
+    
+      <div class="game-sub">
+        📍 ${g.field || ''}
+      </div>
+    
       <div class="section">
-        <div class="label">裁判</div>
+        <div class="label">🧑‍⚖️ 裁判</div>
         <div class="grid">
           ${renderUmpireSlots(g, judges)}
         </div>
       </div>
-
+    
       <div class="section">
-        <div class="label">紀錄</div>
+        <div class="label">📝 紀錄</div>
         <div class="grid">
           ${renderRecordSlots(records)}
         </div>
