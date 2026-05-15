@@ -480,6 +480,11 @@ function renderWeeklySchedule(games) {
     div.className = 'weekly-card';
 
     div.innerHTML = `
+    
+      <div class="game-meta">
+        第${g.game_no || '-'}場｜${g.group || ''}
+      </div>
+    
       <div class="game-title">
         ${g.date} ${formatTimeOnly(g.time)}｜${g.away} vs ${g.home}
       </div>
