@@ -228,6 +228,35 @@ button {
 .toast.error {
   background: #c62828; /* 紅：失敗 */
 }
+
+#recordList {
+  max-height: 60vh;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);  /* ✅ 一列三個 */
+  gap: 8px;
+}
+
+.record-card {
+  padding: 10px;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.record-card:hover {
+  background: #f0f6ff;
+}
+
+#recordList .empty {
+  grid-column: span 3;  /* ✅ 讓提示佔整列 */
+  text-align: center;
+  color: #777;
+  padding: 12px 0;
+}
 </style>
 </head>
 
