@@ -435,9 +435,8 @@ function formatZhDate(dateStr) {
 function openWeeklySchedule() {
   const modal = document.getElementById('weeklyModal');
   const content = document.getElementById('weeklyContent');
-
-  // ✅ 正確開法（你原本錯在這）
-  modal.style.display = 'flex';
+  
+  document.getElementById('weekly-overlay').style.display = 'flex';
 
   content.innerHTML = '⏳ 載入中...';
 
