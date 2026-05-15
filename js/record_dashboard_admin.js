@@ -199,22 +199,24 @@ function assignRecord(userId) {
     record_role: currentRole,
     user_id: userId,
     assigned_by: adminSession.user_id
-
+  
   }, res => {
-
+  
     modal.style.pointerEvents = 'auto';
     if (loading) loading.style.display = 'none';
-
-    // ❌ 明確失敗
-    if (res && res.result === 'error') {
-      showAssignMessage(`❌ ${res.message || '指派失敗'}`);
+  
+    /* ❌ 明確錯誤（這一段保留） */
+    if (!res || res.result !== 'ok') {
+      showAssignMessage(
+        `❌ ${res?.message || '指派失敗（系統回應異常）'}`
+      );
       return;
     }
-
-    // ✅ 成功 / 空回傳
+  
+    /* ✅ 只有 ok 才成功 */
     showAssignMessage('✅ 指派完成');
     closeRecordModal();
-    loadAdminGames();   // ✅ 一定刷新
+    loadAdminGames();
   });
 }
 
