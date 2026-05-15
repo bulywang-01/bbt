@@ -478,17 +478,29 @@ function renderWeeklySchedule(games) {
 
     const div = document.createElement('div');
     div.className = 'weekly-card';
-
+    const groupClass = getGroupClass(g.group);
+    
     div.innerHTML = `
     
-      <div class="game-meta">
-        ${g.game_code ? g.game_code : '未排場次'}｜${g.group || ''}
-      </div>
-      <div class="game-title">
-        ${g.date} ${formatTimeOnly(g.time)}｜${g.away} vs ${g.home}
+      <div class="game-meta-row">
+        <div class="game-code">
+          ${g.game_code || '-'}
+        </div>
+    
+        <div class="game-group ${groupClass}">
+          ${g.group || ''}
+        </div>
       </div>
     
-      <div class="game-sub">
+      <div class="match-title">
+        ${g.away} vs ${g.home}
+      </div>
+    
+      <div class="game-datetime">
+        ${formatZhDate(g.date)} ${formatTimeOnly(g.time)}
+      </div>
+    
+      <div class="game-field">
         📍 ${g.field || ''}
       </div>
     
