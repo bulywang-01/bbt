@@ -428,12 +428,17 @@ function formatZhDate(dateStr) {
   return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${w[d.getDay()]}）`;
 }
 
-// 本週班表
+/* =========================
+ * ✅ 本週班表（完整版修正版）
+ * ========================= */
+
 function openWeeklySchedule() {
   const modal = document.getElementById('weeklyModal');
   const content = document.getElementById('weeklyContent');
 
-  modal.classList.remove('hidden');
+  // ✅ 正確開法（你原本錯在這）
+  modal.style.display = 'flex';
+
   content.innerHTML = '⏳ 載入中...';
 
   callApi({
@@ -445,37 +450,53 @@ function openWeeklySchedule() {
       return;
     }
 
-    renderWeeklySchedule(res.games);
+    renderWeeklySchedule(res.games || []);
   });
 }
 
+function closeWeeklyModal() {
+  document.getElementById('weeklyModal').style.display = 'none';
+}
+
+
+/* =========================
+ * ✅ Render 主畫面
+ * ========================= */
 function renderWeeklySchedule(games) {
 
   const root = document.getElementById('weeklyContent');
   root.innerHTML = '';
 
+  if (!games.length) {
+    root.innerHTML = '<div class="empty">本週沒有賽事</div>';
+    return;
+  }
+
   games.forEach(g => {
+
+    const judges = g.judges || {};
+    const records = g.records || {};
 
     const div = document.createElement('div');
     div.className = 'weekly-card';
 
     div.innerHTML = `
       <div class="game-title">
-        ${g.date} ${g.time}｜${g.away} vs ${g.home}
-        <div class="field">${g.field}</div>
+        ${g.date} ${formatTimeOnly(g.time)}｜${g.away} vs ${g.home}
+        <div style="font-size:12px;color:#666;">📍 ${g.field || ''}</div>
       </div>
 
       <div class="section">
         <div class="label">裁判</div>
         <div class="grid">
-          ${renderUmpireSlots(g)}
+          ${renderUmpireSlots(g, judges)}
         </div>
       </div>
 
       <div class="section">
         <div class="label">紀錄</div>
         <div class="grid">
-          ${renderRecordSlots(g)}
+          ${renderRecordSlots(records)}
         </div>
       </div>
     `;
@@ -484,11 +505,14 @@ function renderWeeklySchedule(games) {
   });
 }
 
-function renderUmpireSlots(g) {
 
-  const slots = [];
+/* =========================
+ * ✅ 裁判 slots（你規則完整版）
+ * ========================= */
+function renderUmpireSlots(g, judges) {
 
   const count = Number(g.umpire_count);
+  const slots = [];
 
   if (count === 0) {
     return `<div class="empty">不用裁判</div>`;
@@ -497,12 +521,10 @@ function renderUmpireSlots(g) {
   if (count >= 1) slots.push(['PU', '主審']);
   if (count >= 2) slots.push(['U1', '一壘審']);
   if (count >= 4) slots.push(['U2', '二壘審']);
-  if (count >= 3) slots.push(['U3', '三壘審']); // ✅ 注意順序
+  if (count >= 3) slots.push(['U3', '三壘審']);
 
   return slots.map(([key, label]) => {
-
-    const name = g.judges?.[key] || '';
-
+    const name = judges[key] || '';
     return `
       <div class="slot">
         <div class="role">${label}</div>
@@ -512,7 +534,11 @@ function renderUmpireSlots(g) {
   }).join('');
 }
 
-function renderRecordSlots(g) {
+
+/* =========================
+ * ✅ 紀錄 slots（固定3格）
+ * ========================= */
+function renderRecordSlots(records) {
 
   const roles = [
     ['REC_MAIN', '記錄員'],
@@ -521,9 +547,7 @@ function renderRecordSlots(g) {
   ];
 
   return roles.map(([key, label]) => {
-
-    const name = g.records?.[key] || '';
-
+    const name = records[key] || '';
     return `
       <div class="slot">
         <div class="role">${label}</div>
