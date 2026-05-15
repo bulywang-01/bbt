@@ -482,9 +482,8 @@ function renderWeeklySchedule(games) {
     div.innerHTML = `
     
       <div class="game-meta">
-        第${g.game_no || '-'}場｜${g.group || ''}
+        ${g.game_code ? g.game_code : '未排場次'}｜${g.group || ''}
       </div>
-    
       <div class="game-title">
         ${g.date} ${formatTimeOnly(g.time)}｜${g.away} vs ${g.home}
       </div>
