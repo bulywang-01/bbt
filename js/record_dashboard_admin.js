@@ -143,43 +143,39 @@ function openRecordModal(gameId, role) {
 
   modal.classList.remove('hidden');
 
-  callApi({
-    action: 'getRecordCandidates',
-    game_id: gameId,
-    record_role: role
-  }, res => {
+callApi({
+  action: 'getRecordCandidates',
+  game_id: gameId,
+  record_role: role
+}, res => {
 
-    list.innerHTML = '';
+  list.innerHTML = '';
 
-    if (!res || res.result !== 'ok' || !Array.isArray(res.records)) {
-      list.innerHTML = `<div class="empty">目前無可指派紀錄員</div>`;
-      return;
-    }
+  if (!res || res.result !== 'ok' || !Array.isArray(res.records)) {
+    list.innerHTML = `<div class="empty">目前無可指派紀錄員</div>`;
+    return;
+  }
 
-    /* =========================
-     * ✅ 筆畫排序（依第一個字）
-     * ========================= */
-    const sorted = res.records.sort((a, b) => {
-      return getStrokeCount(a.name[0]) - getStrokeCount(b.name[0]);
-    });
-
-    /* =========================
-     * ✅ 建立卡片（3 欄）
-     * ========================= */
-    sorted.forEach(r => {
-      const div = document.createElement('div');
-      div.className = 'record-card';
-      div.textContent = r.name;
-
-      div.onclick = () => assignRecord(r.user_id);
-
-      list.appendChild(div);
-    });
-
-    if (!list.children.length) {
-      list.innerHTML = `<div class="empty">目前無可指派紀錄員</div>`;
-    }
+  /* ✅ 姓名排序（中文排序） */
+  const sorted = res.records.sort((a, b) => {
+    return a.name.localeCompare(b.name, 'zh-Hant');
   });
+
+  /* ✅ 建立卡片 */
+  sorted.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'record-card';
+    div.textContent = r.name;
+
+    div.onclick = () => assignRecord(r.user_id);
+
+    list.appendChild(div);
+  });
+
+  if (!list.children.length) {
+    list.innerHTML = `<div class="empty">目前無可指派紀錄員</div>`;
+  }
+});
 }
 
 
