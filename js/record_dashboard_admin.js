@@ -130,44 +130,108 @@ function renderPos(g, role, label) {
 
 
 /* ===== Modal ===== */
-
 function openRecordModal(gameId, role) {
   currentGameId = gameId;
   currentRole = role;
-  callApi({ action:'getRecordCandidates', game_id:gameId, record_role:role }, res=>{
-    const list = document.getElementById('recordList');
-    list.innerHTML='';
-    res.records.forEach(r=>{
+
+  const modal = document.getElementById('recordModal');
+  const list = document.getElementById('recordList');
+
+  list.innerHTML = `
+    <div class="empty">⏳ 載入紀錄名單中...</div>
+  `;
+
+  modal.classList.remove('hidden');
+
+  callApi({
+    action: 'getRecordCandidates',
+    game_id: gameId,
+    record_role: role
+  }, res => {
+
+    list.innerHTML = '';
+
+    if (!res || res.result !== 'ok' || !Array.isArray(res.records)) {
+      list.innerHTML = `<div class="empty">目前無可指派紀錄員</div>`;
+      return;
+    }
+
+    /* =========================
+     * ✅ 筆畫排序（依第一個字）
+     * ========================= */
+    const sorted = res.records.sort((a, b) => {
+      return getStrokeCount(a.name[0]) - getStrokeCount(b.name[0]);
+    });
+
+    /* =========================
+     * ✅ 建立卡片（3 欄）
+     * ========================= */
+    sorted.forEach(r => {
       const div = document.createElement('div');
-      div.className='record-card';
+      div.className = 'record-card';
       div.textContent = r.name;
-      div.onclick = ()=>assignRecord(r.user_id);
+
+      div.onclick = () => assignRecord(r.user_id);
+
       list.appendChild(div);
     });
+
+    if (!list.children.length) {
+      list.innerHTML = `<div class="empty">目前無可指派紀錄員</div>`;
+    }
   });
-  document.getElementById('recordModal').classList.remove('hidden');
 }
+
 
 function closeRecordModal() {
   document.getElementById('recordModal').classList.add('hidden');
 }
 
 function assignRecord(userId) {
-  showToast('指派中…');
+  const modal = document.getElementById('recordModal');
+  const loading = document.getElementById('recordLoading');
+
+  // ✅ UX：立即回饋
+  showAssignMessage('⏳ 指派中，請稍候…');
+
+  modal.style.pointerEvents = 'none';
+  if (loading) loading.style.display = 'block';
 
   callApi({
-    action: 'assignRecord_admin',   // ✅ 注意這裡是 action 名稱
+    action: 'assignRecord_admin',
     game_id: currentGameId,
     record_role: currentRole,
     user_id: userId,
     assigned_by: adminSession.user_id
+
   }, res => {
-    if (res && res.result === 'ok') {
-      closeRecordModal();
-      showToast('指派完成', 'success');
-      loadAdminGames();
-    } else {
-      showToast(res?.message || '指派失敗', 'error');
+
+    modal.style.pointerEvents = 'auto';
+    if (loading) loading.style.display = 'none';
+
+    // ❌ 明確失敗
+    if (res && res.result === 'error') {
+      showAssignMessage(`❌ ${res.message || '指派失敗'}`);
+      return;
     }
+
+    // ✅ 成功 / 空回傳
+    showAssignMessage('✅ 指派完成');
+    closeRecordModal();
+    loadAdminGames();   // ✅ 一定刷新
   });
 }
+
+// 排序用，依姓名筆劃
+function getStrokeCount(char) {
+  const map = {
+    '一':1,'乙':1,'二':2,'十':2,'丁':2,
+    '三':3,'上':3,'下':3,'小':3,
+    '王':4,'天':4,'木':4,'水':4,
+    '林':8,'張':11,'陳':16,'黃':12
+  };
+
+  // 👉 若沒有定義 → fallback 用字碼順序（不會壞）
+  return map[char] || char.charCodeAt(0);
+}
+
