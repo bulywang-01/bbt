@@ -574,3 +574,14 @@ function renderRecordSlots(records) {
     `;
   }).join('');
 }
+
+
+    function getGroupClass(group) {
+  
+    if (!group) return '';
+  
+    if (group.includes('大')) return 'group-major';
+    if (group.includes('小')) return 'group-minor';
+  
+    return '';
+  }
