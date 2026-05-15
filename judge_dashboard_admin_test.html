@@ -213,6 +213,7 @@ button {
   max-height: 60vh;
   overflow-y: auto;
   padding-right: 6px;
+  grid-template-columns: repeat(3, 1fr);  /* ✅ 名單一列幾個名字 */
 }
 
 .judge-card {
@@ -232,6 +233,13 @@ button {
   text-align: center;
   color: #777;
   padding: 12px 0;
+}
+
+
+@media (max-width: 768px) {
+  #judgeList {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 </style>
