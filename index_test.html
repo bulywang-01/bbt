@@ -412,6 +412,55 @@
     .stat-card:nth-child(2) { border-top: 4px solid #2e7d32; }
     .stat-card:nth-child(3) { border-top: 4px solid #ef6c00; }
 
+    /* 本週班表 */
+    .weekly-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+    
+    .game-title {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    
+    .section {
+      margin-top: 8px;
+    }
+    
+    .label {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    
+    .slot {
+      background: #f5f5f5;
+      border-radius: 6px;
+      padding: 6px;
+      text-align: center;
+    }
+    
+    .slot .role {
+      font-size: 12px;
+      color: #888;
+    }
+    
+    .slot .name {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .empty {
+      color: #aaa;
+    }
   </style>
 </head>
 
@@ -491,10 +540,24 @@
         <button id="open-rules" class="pill pill-green">🧑‍⚖️ 裁判守則</button>
       </div>
     </div>
+    <div class="menu-card" onclick="openWeeklySchedule()">
+    📅 本週班表
+    </div>
     <div id="schedule-tip" style="display:none;">
       📢 本週有執法／紀錄賽事噢，詳見「我的班表」
     </div>
-
+    
+    <!-- ✅ 本週賽事詳細班表 -->
+    <div id="weeklyModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>📅 本週班表</h3>
+          <span onclick="closeWeeklyModal()">✖</span>
+        </div>
+        <div id="weeklyContent"></div>
+      </div>
+  </div>
+    
     <!-- ✅ 聯盟公告 -->
     <div class="panel">
       <h3>📢 聯盟公告</h3>
