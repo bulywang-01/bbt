@@ -231,3 +231,24 @@ function getStrokeCount(char) {
   return map[char] || char.charCodeAt(0);
 }
 
+function showAssignMessage(msg) {
+  const toast = document.createElement('div');
+  toast.textContent = msg;
+
+  toast.style.position = 'fixed';
+  toast.style.bottom = '20px';
+  toast.style.left = '50%';
+  toast.style.transform = 'translateX(-50%)';
+  toast.style.background = '#333';
+  toast.style.color = '#fff';
+  toast.style.padding = '10px 16px';
+  toast.style.borderRadius = '6px';
+  toast.style.zIndex = '9999';
+  toast.style.fontSize = '14px';
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 2000);
+}
