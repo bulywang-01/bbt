@@ -427,3 +427,108 @@ function formatZhDate(dateStr) {
   const w = ['日','一','二','三','四','五','六'];
   return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${w[d.getDay()]}）`;
 }
+
+// 本週班表
+function openWeeklySchedule() {
+  const modal = document.getElementById('weeklyModal');
+  const content = document.getElementById('weeklyContent');
+
+  modal.classList.remove('hidden');
+  content.innerHTML = '⏳ 載入中...';
+
+  callApi({
+    action: 'getWeeklySchedule'
+  }, res => {
+
+    if (!res || res.result !== 'ok') {
+      content.innerHTML = '❌ 載入失敗';
+      return;
+    }
+
+    renderWeeklySchedule(res.games);
+  });
+}
+
+function renderWeeklySchedule(games) {
+
+  const root = document.getElementById('weeklyContent');
+  root.innerHTML = '';
+
+  games.forEach(g => {
+
+    const div = document.createElement('div');
+    div.className = 'weekly-card';
+
+    div.innerHTML = `
+      <div class="game-title">
+        ${g.date} ${g.time}｜${g.away} vs ${g.home}
+        <div class="field">${g.field}</div>
+      </div>
+
+      <div class="section">
+        <div class="label">裁判</div>
+        <div class="grid">
+          ${renderUmpireSlots(g)}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label">紀錄</div>
+        <div class="grid">
+          ${renderRecordSlots(g)}
+        </div>
+      </div>
+    `;
+
+    root.appendChild(div);
+  });
+}
+
+function renderUmpireSlots(g) {
+
+  const slots = [];
+
+  const count = Number(g.umpire_count);
+
+  if (count === 0) {
+    return `<div class="empty">不用裁判</div>`;
+  }
+
+  if (count >= 1) slots.push(['PU', '主審']);
+  if (count >= 2) slots.push(['U1', '一壘審']);
+  if (count >= 4) slots.push(['U2', '二壘審']);
+  if (count >= 3) slots.push(['U3', '三壘審']); // ✅ 注意順序
+
+  return slots.map(([key, label]) => {
+
+    const name = g.judges?.[key] || '';
+
+    return `
+      <div class="slot">
+        <div class="role">${label}</div>
+        <div class="name">${name}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderRecordSlots(g) {
+
+  const roles = [
+    ['REC_MAIN', '記錄員'],
+    ['REC_TRAINEE', '見習'],
+    ['REC_VIDEO', '影像']
+  ];
+
+  return roles.map(([key, label]) => {
+
+    const name = g.records?.[key] || '';
+
+    return `
+      <div class="slot">
+        <div class="role">${label}</div>
+        <div class="name">${name}</div>
+      </div>
+    `;
+  }).join('');
+}
