@@ -588,28 +588,30 @@ tr.full {
 /* ===== 月班表選擇 ===== */
 .month-tabs {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   margin: 10px 0 16px;
   flex-wrap: wrap;
 }
 
 .month-tab {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  color: #555;
-  padding-bottom: 4px;
-  border-bottom: 2px solid transparent;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #444;
   transition: 0.2s;
 }
 
 .month-tab:hover {
-  color: #4a7ef5;
+  background: #e3f2fd;
+  color: #1976d2;
 }
 
 .month-tab.active {
-  color: #4a7ef5;
-  border-bottom: 2px solid #4a7ef5;
+  background: #1976d2;
+  color: #fff;
 }
 </style>
   
@@ -880,11 +882,6 @@ function render() {
     return;
   }
 
-  /*
-  const range = filterRange.value;
-  const showPastChecked = showPast.checked;
-  const kw = keyword.value.trim();
-  */
   const range = 'all';
   const showPastChecked = false;
   const kw = '';
@@ -1461,15 +1458,29 @@ function initMonthTabs() {
   const container = document.getElementById('month-tabs');
   container.innerHTML = '';
 
+  // ✅ ✅ ✅ 全年按鈕
+  const allBtn = document.createElement('div');
+  allBtn.className = 'month-tab active';
+  allBtn.textContent = '📊 全年班表';
+
+  allBtn.onclick = () => {
+    currentMonth = null;
+    setActiveTab(allBtn);
+    loadGames(); // ✅ 回原本全部
+  };
+
+  container.appendChild(allBtn);
+
+
+  // ✅ 月份
   for (let m = 1; m <= 12; m++) {
 
     const div = document.createElement('div');
     div.className = 'month-tab';
-    div.textContent = `${m}月份班表`;
+    div.textContent = `${m}月`;
 
     if (m === now.getMonth() + 1) {
-      div.classList.add('active');
-      currentMonth = m;
+      // 預設不要 active（讓全年是預設）
     }
 
     div.onclick = () => {
@@ -1480,9 +1491,6 @@ function initMonthTabs() {
 
     container.appendChild(div);
   }
-
-  // ✅ 預設載入當月
-  loadJudgeGamesByMonth(year, currentMonth);
 }
 
 function setActiveTab(el) {
