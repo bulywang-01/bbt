@@ -585,6 +585,32 @@ tr.full {
   opacity: 0.9;
 }
 
+/* ===== 月班表選擇 ===== */
+.month-tabs {
+  display: flex;
+  gap: 14px;
+  margin: 10px 0 16px;
+  flex-wrap: wrap;
+}
+
+.month-tab {
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #555;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: 0.2s;
+}
+
+.month-tab:hover {
+  color: #4a7ef5;
+}
+
+.month-tab.active {
+  color: #4a7ef5;
+  border-bottom: 2px solid #4a7ef5;
+}
 </style>
   
 </head>
@@ -642,6 +668,7 @@ function loadHeader() {
   document.addEventListener('DOMContentLoaded', () => {
     loadHeader();   // 只負責 header
     loadGames();    // 或該頁真正的資料初始化
+    initMonthTabs();  // 初始化月班表選擇
   });
 </script>
 
@@ -663,7 +690,10 @@ function loadHeader() {
       關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninput="render()">
     </div>
     -->
-    
+
+    // 月班表選擇
+    <div id="month-tabs" class="month-tabs"></div>
+
     <!-- 桌機表格 -->
     <div id="desktopView">
       <div id="content"></div>
@@ -1420,6 +1450,64 @@ function signupJudgeInstant(gameId, position) {
   );
 }
 
+// 初始化月份
+let currentMonth = null;
+
+function initMonthTabs() {
+
+  const now = new Date();
+  const year = now.getFullYear();
+
+  const container = document.getElementById('month-tabs');
+  container.innerHTML = '';
+
+  for (let m = 1; m <= 12; m++) {
+
+    const div = document.createElement('div');
+    div.className = 'month-tab';
+    div.textContent = `${m}月份班表`;
+
+    if (m === now.getMonth() + 1) {
+      div.classList.add('active');
+      currentMonth = m;
+    }
+
+    div.onclick = () => {
+      currentMonth = m;
+      setActiveTab(div);
+      loadJudgeGamesByMonth(year, m);
+    };
+
+    container.appendChild(div);
+  }
+
+  // ✅ 預設載入當月
+  loadJudgeGamesByMonth(year, currentMonth);
+}
+
+function setActiveTab(el) {
+  document.querySelectorAll('.month-tab')
+    .forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// 呼叫API
+function loadJudgeGamesByMonth(year, month) {
+
+  callApi({
+    action: 'getJudgeGamesByMonth',
+    year: year,
+    month: month
+  }, res => {
+
+    if (!res || res.result !== 'ok') {
+      console.error('載入月份班表失敗');
+      return;
+    }
+
+    renderJudgeGames(res.games);
+  });
+}
 </script>
 </body>
 </html>
