@@ -693,7 +693,7 @@ function loadHeader() {
     </div>
     -->
 
-    // 月班表選擇
+    <!-- 月班表選擇 -->
     <div id="month-tabs" class="month-tabs"></div>
 
     <!-- 桌機表格 -->
@@ -747,19 +747,6 @@ function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
   if (overlay) overlay.remove();
 }
-
-/*
-function timeToMinutesSafe(t) {
-  if (!t) return 0;
-  if (typeof t === 'string' && t.includes(':')) {
-    const [h, m] = t.split(':').map(Number);
-    return h * 60 + m;
-  }
-  const d = new Date(t);
-  if (isNaN(d)) return 0;
-  return d.getHours() * 60 + d.getMinutes();
-}
-*/
 
 function timeToMinutesSafe(t) {
   if (!t) return 0;
@@ -908,7 +895,9 @@ function render() {
 
   // ✅ 前置篩選
   const filtered = allGames.filter(g => {
-    const gd = new Date(g.date.replace(/\//g, '-'));
+    // const gd = new Date(g.date.replace(/\//g, '-'));
+    if (!g.date) return false;   // ✅ 過濾掉壞資料
+      const gd = new Date(String(g.date).replace(/\//g,'-'));
     if (gd < today && !showPastChecked) return false;
     if (range === 'month' && !inThisMonth(g.date)) return false;
     if (range === 'week' && !inThisWeek(g.date)) return false;
