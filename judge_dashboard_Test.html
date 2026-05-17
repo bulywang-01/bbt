@@ -1491,10 +1491,13 @@ function setActiveTab(el) {
 // 呼叫API
 function loadJudgeGamesByMonth(year, month) {
 
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
   callApi({
     action: 'getJudgeGamesByMonth',
     year: year,
-    month: month
+    month: month,
+    user_id: session.user_id   // ✅ ✅ ✅ 這行就是關鍵
   }, res => {
 
     if (!res || res.result !== 'ok') {
@@ -1502,13 +1505,13 @@ function loadJudgeGamesByMonth(year, month) {
       return;
     }
 
-    // ✅ ✅ ✅ 接回你原本系統
     allGames = res.games || [];
 
     render();
     renderMobile();
   });
 }
+
 </script>
 </body>
 </html>
