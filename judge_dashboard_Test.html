@@ -1505,7 +1505,11 @@ function loadJudgeGamesByMonth(year, month) {
       return;
     }
 
-    renderJudgeGames(res.games);
+    // ✅ ✅ ✅ 接回你原本系統
+    allGames = res.games || [];
+
+    render();
+    renderMobile();
   });
 }
 </script>
