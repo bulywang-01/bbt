@@ -1103,8 +1103,8 @@ function loadRecordGamesByMonth(year, month) {
 
     allGames = res.games || [];
 
-    render();
-    renderMobile();
+    renderRecordDashboard(games);
+    renderMobileRecord(games);
   });
 }
 
