@@ -1003,37 +1003,49 @@ function buildRow(g) {
 /* ===== 桌機版紀錄報名　Signup UI ===== */
 function renderSignupCell(g, role) {
 
-  const slot = g.record_slots?.[role];
+  const slots = g.record_slots || {};
+  const slot = slots[role];
 
-  // ✅ ✅ ✅ 過期邏輯（顯示但不可操作）
+  console.log('CHECK:', g.game_id, role, slot); // ✅ debug
+
+  /* ✅ 過期 */
   if (isPastGame(g.date)) {
 
     if (slot) {
-      return `<span class="signup-other">${slot.name}</span>`; // ✅ 顯示名字
+      return `<span class="signup-other">${slot.name}</span>`;
     }
 
     return `<span class="signup-other">—</span>`;
   }
 
-  // ✅ 沒人 → 可報名
-  if (!slot) {
-    return `<span class="signup-btn" onclick="signup('${g.game_id}','${role}')">＋報名</span>`;
-  }
+  /* ✅ ✅ ✅ 🔥 真正修正點（保證抓得到） */
 
-  // ✅ 自己
-  if (String(slot.user_id) === String(session.user_id)) {
-    return `
-      <span class="signup-me">
-        ${slot.name || '我'}
-        <span class="cancel-btn"
-          onclick="cancelSignup('${g.game_id}','${role}')">
-          取消
+  if (slot && slot.user_id) {
+
+    const isMe = String(slot.user_id) === String(session.user_id);
+
+    if (isMe) {
+      return `
+        <span class="signup-me">
+          ${slot.name || '我'}
+          <span class="cancel-btn"
+            onclick="cancelSignup('${g.game_id}','${role}')">
+            取消
+          </span>
         </span>
-      </span>`;
+      `;
+    }
+
+    return `<span class="signup-other">${slot.name}</span>`;
   }
 
-  // ✅ 他人
-  return `<span class="signup-other">${slot.name}</span>`;
+  /* ✅ 可報名 */
+  return `
+    <span class="signup-btn"
+      onclick="signup('${g.game_id}','${role}')">
+      ＋報名
+    </span>
+  `;
 }
 
 /* ===== Actions ===== */
