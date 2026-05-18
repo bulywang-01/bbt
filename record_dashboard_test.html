@@ -1029,24 +1029,39 @@ function signup(gameId, role) {
   showToast('報名中...');
 
   callApi({
-    action:'recordSignup',
+    action: 'recordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
   }, res => {
 
-    // ✅ ✅ ✅ 防呆（你之前卡這）
     if (!res) {
       showToast('系統無回應', 'error');
       return;
     }
 
     if (res.result === 'ok') {
+
       showToast('報名成功');
-      loadGames();
+
+      // ✅ ✅ ✅ 🔥 核心關鍵（修你兩個問題）
+
+      if (currentMonth === null) {
+
+        // ✅ 全年
+        loadGames();
+
+      } else {
+
+        // ✅ ✅ ✅ 回到原月份（不跳掉）
+        loadRecordGamesByMonth(currentYear, currentMonth);
+
+      }
+
     } else {
       showToast(res.message || '報名失敗', 'error');
     }
+
   });
 }
 
@@ -1058,20 +1073,27 @@ function cancelSignup(gameId, role) {
   showToast('取消中...');
 
   callApi({
-    action:'cancelRecordSignup',
+    action: 'cancelRecordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
   }, res => {
 
     if (!res) {
-      showToast('系統無回應（API失敗）', 'error');
+      showToast('系統無回應', 'error');
       return;
     }
 
     if (res.result === 'ok') {
+
       showToast('已取消');
-      loadGames();
+
+      if (currentMonth === null) {
+        loadGames();
+      } else {
+        loadRecordGamesByMonth(currentYear, currentMonth);
+      }
+
     } else {
       showToast(res.message || '取消失敗', 'error');
     }
@@ -1290,8 +1312,9 @@ function loadRecordGamesByMonth(year, month) {
   });
 }
 
-// 初始化月份
+// 初始化月份／年份
 let currentMonth = null;
+let currentYear = null;
 
 function initMonthTabs() {
 
@@ -1301,35 +1324,36 @@ function initMonthTabs() {
   const container = document.getElementById('month-tabs');
   container.innerHTML = '';
 
-  // ✅ ✅ ✅ 全年按鈕
+  /* ✅ 全年 */
   const allBtn = document.createElement('div');
   allBtn.className = 'month-tab active';
   allBtn.textContent = '📊 全年班表';
 
   allBtn.onclick = () => {
     currentMonth = null;
+    currentYear = null;
     setActiveTab(allBtn);
-    loadGames(); // ✅ 回原本全部
+
+    loadGames(); // ✅ 全年
   };
 
   container.appendChild(allBtn);
 
-
-  // ✅ 月份
+  /* ✅ 月份 */
   for (let m = 1; m <= 12; m++) {
 
     const div = document.createElement('div');
     div.className = 'month-tab';
     div.textContent = `${m}月`;
 
-    if (m === now.getMonth() + 1) {
-      // 預設不要 active（讓全年是預設）
-    }
-
     div.onclick = () => {
+
       currentMonth = m;
+      currentYear = year;   // ✅ ✅ ✅ 記住年份（關鍵）
+
       setActiveTab(div);
-      loadRecordGamesByMonth(year, m);
+
+      loadRecordGamesByMonth(year, m); // ✅ 月
     };
 
     container.appendChild(div);
