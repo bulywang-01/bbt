@@ -300,57 +300,93 @@ function mergeMySchedules(judgeGames, recordGames) {
  * ========================= */
 function renderMergedCards(games) {
 
-  const box = document.getElementById('my-schedule-list'); // ✅ 這行最重要
+  const box = document.getElementById('my-schedule-list');
   if (!box) return;
-  
+
   box.innerHTML = '';
 
-  
-  const sorted = games.sort((a,b) => 
+  const sorted = games.sort((a,b)=>
     new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time)
   );
-  
+
+  const judgeMap = {
+    PU:'主審', U1:'一壘審', U2:'二壘審', U3:'三壘審'
+  };
+
+  const recordMap = {
+    REC_MAIN:'記錄員',
+    REC_TRAINEE:'見習',
+    REC_VIDEO:'影像'
+  };
+
   sorted.forEach(g => {
-  
-    const judgeMap = { PU:'主審', U1:'一壘審', U2:'二壘審', U3:'三壘審' };
-    const recordMap = {
-      REC_MAIN:'紀錄員',
-      REC_TRAINEE:'見習紀錄',
-      REC_VIDEO:'影像紀錄'
-    };
-  
-    const roles = g.roles.map(r => {
-      const isJudge = r.startsWith('U') || r === 'PU';
-      const name = isJudge ? judgeMap[r] : recordMap[r];
-  
-      return `
-        <div class="schedule-role ${isJudge ? 'judge' : 'record'}">
-          ${isJudge ? '🧑‍⚖️' : '📝'} ${name}
-        </div>
-      `;
-    }).join('');
-  
+
+    const judgeSlots = [];
+    const recordSlots = [];
+
+    g.roles.forEach(r => {
+
+      if (r.startsWith('U') || r === 'PU') {
+        judgeSlots.push({
+          role: judgeMap[r],
+          name: '✔️'
+        });
+      } else {
+        recordSlots.push({
+          role: recordMap[r],
+          name: '✔️'
+        });
+      }
+
+    });
+
     const card = document.createElement('div');
-    card.className = 'schedule-card';
-  
+    card.className = 'schedule-card-pro';
+
     card.innerHTML = `
-      <div class="schedule-top-row">
-        <div class="schedule-date-text">
-          ${formatZhDate(g.date)}
-        </div>
-        <div class="schedule-role-group">
-          ${roles}
+    
+    <div class="left">
+      <div class="date">${formatZhDate(g.date)} ${formatTimeOnly(g.time)}</div>
+      <div class="field">📍 ${g.field}</div>
+    </div>
+
+    <div class="right">
+
+      <div class="block">
+        <div class="title">🧑‍⚖️ 裁判</div>
+        <div class="grid">
+          ${renderSlots(judgeSlots,3)}
         </div>
       </div>
-  
-      <div class="schedule-info-row">
-        <div>⏰ ${formatTimeOnly(g.time)}</div>
-        <div>📍 ${g.field}</div>
+
+      <div class="block">
+        <div class="title">📝 紀錄</div>
+        <div class="grid">
+          ${renderSlots(recordSlots,3)}
+        </div>
       </div>
+
+    </div>
     `;
-  
+
     box.appendChild(card);
   });
+}
+
+function renderSlots(list, total){
+
+  const arr = [...list];
+
+  while(arr.length < total){
+    arr.push({ role:'', name:'' });
+  }
+
+  return arr.map(s => `
+    <div class="slot">
+      <div class="role">${s.role || ''}</div>
+      <div class="name">${s.name || '-'}</div>
+    </div>
+  `).join('');
 }
 
 /* =========================
