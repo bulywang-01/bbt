@@ -1119,17 +1119,30 @@ function renderMobileRecord(list) {
 
   const grouped = groupGames(list);
 
-  Object.keys(grouped).sort().forEach(date => {
+  // ✅ ✅ ✅ 日期排序（關鍵修正）
+  const dates = Object.keys(grouped).sort((a, b) => {
+    return new Date(a.replace(/\//g, '-')) - new Date(b.replace(/\//g, '-'));
+  });
+
+  // ✅ 全年提示
+  if (currentMonth === null) {
+    root.insertAdjacentHTML(
+      'beforeend',
+      '<div class="hint">※ 過期賽事請看「單月班表」</div>'
+    );
+  }
+
+  dates.forEach(date => {
 
     const isPast = isPastGame(date);
 
-    // ✅ 全年：不顯示過期
+    // ✅ 全年隱藏過期
     if (currentMonth === null && isPast) return;
 
     const dateBox = document.createElement('div');
     dateBox.className = 'm-date-box';
 
-    // ✅ ✅ ✅ 單月灰底
+    // ✅ 單月灰底
     if (currentMonth !== null && isPast) {
       dateBox.style.background = '#f3f4f6';
       dateBox.style.opacity = '0.85';
@@ -1151,13 +1164,16 @@ function renderMobileRecord(list) {
       );
 
       grouped[date][cat].forEach(g => {
+
         groupBox.insertAdjacentHTML('beforeend', `
           <div class="record-card ${isPast ? 'expired-card' : ''}">
+
             <div class="mobile-time-row">
               <div class="time">⏰ ${g.time}</div>
               <div class="game-code badge">${g.game_code}</div>
               <div class="field">📍 ${g.field}</div>
             </div>
+
             <div class="mobile-teams">
               <strong>${g.away_team}</strong>
               <span class="vs">vs</span>
@@ -1169,6 +1185,7 @@ function renderMobileRecord(list) {
               ${renderRecordMobileRole(g,'REC_TRAINEE','見習')}
               ${renderRecordMobileRole(g,'REC_VIDEO','影像')}
             </div>
+
           </div>
         `);
       });
@@ -1179,6 +1196,7 @@ function renderMobileRecord(list) {
     root.appendChild(dateBox);
   });
 }
+
 
 
 
