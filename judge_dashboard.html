@@ -727,6 +727,11 @@ function loadHeader() {
   </div>
 
 <script>
+function getName(v){
+  if (!v) return '—';
+  if (typeof v === 'object') return v.name || '—';
+  return v;
+}
 
 // 過期不顯示
 function isPastGame(gameDateStr) {
@@ -1040,7 +1045,6 @@ function renderGameRow(g, today) {
 /* ✅ ✅ ✅ 拆出：站位邏輯 */
 function renderPos(g, role, isPast) {
 
-  // 不需要
   if (
     g.need_count === 0 ||
     (g.need_count === 1 && role !== 'PU') ||
@@ -1051,20 +1055,22 @@ function renderPos(g, role, isPast) {
   }
 
   const occupied = g.occupied_positions || {};
+  const name = getName(occupied[role]);
 
-  // ✅ 過期：只顯示
+  /* ✅ ✅ ✅ 過期 → 只顯示人名（關鍵） */
   if (isPast) {
-    return occupied[role] || '';
+    return name;
   }
 
-  // 已佔
-  if (occupied[role]) {
+  /* ✅ 已有人 */
+  if (name !== '—') {
+
     const isMe = g.my_position === role;
 
     if (isMe) {
       return `
         <div class="judge-name me">
-          ★ ${occupied[role]}
+          ★ ${name}
           <span class="cancel-btn"
             onclick="cancelMySignup('${g.my_signup_id}')">
             [取消]
@@ -1073,14 +1079,15 @@ function renderPos(g, role, isPast) {
       `;
     }
 
-    return `<div class="judge-name">${occupied[role]}</div>`;
+    return `<div class="judge-name">${name}</div>`;
   }
 
-  // 待位中
+  /* ✅ 待位中 */
   if (g.my_position) {
     return '<span class="pos-hint">待位中</span>';
   }
 
+  /* ✅ 可報名 */
   return `
     <div class="pos-choice"
       onclick="signupJudgeInstant('${g.game_id}','${role}')">
@@ -1088,6 +1095,7 @@ function renderPos(g, role, isPast) {
     </div>
   `;
 }
+
 
 /* ✅工具 */
 function timeToMinutes(t){
@@ -1281,7 +1289,7 @@ function renderMobilePosGrid(g) {
           return `
             <div class="mobile-pos">
               <span class="${isMe ? 'mobile-judge-me' : ''}">
-                ${isMe ? '★ ' : ''}${occupied[role]}
+                ${isMe ? '★ ' : ''}${getName(occupied[role])}
               </span>
               ${
                 isMe
