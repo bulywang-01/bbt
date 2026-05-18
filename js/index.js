@@ -163,10 +163,9 @@ function computeStats(judgeGames, recordGames) {
 function renderStats() {
 
   const now = new Date();
-  const year = now.getFullYear();
 
-  let judgeDone = 0, judgePending = 0, judgeAll = 0;
-  let recordDone = 0, recordPending = 0, recordAll = 0;
+  let judgeDone = 0, judgePending = 0;
+  let recordDone = 0, recordPending = 0;
 
   function isDone(g){
     const d = new Date(g.date.replace(/\//g,'-'));
@@ -175,10 +174,7 @@ function renderStats() {
 
   /* ✅ 裁判 */
   judgeGames.forEach(g => {
-
     if (!g.role) return;
-
-    judgeAll++;
 
     if (isDone(g)) judgeDone++;
     else judgePending++;
@@ -186,33 +182,49 @@ function renderStats() {
 
   /* ✅ 紀錄 */
   recordGames.forEach(g => {
-
     if (!g.record_role) return;
-
-    recordAll++;
 
     if (isDone(g)) recordDone++;
     else recordPending++;
   });
 
-  /* ✅ UI */
-
-  document.getElementById('stat-judge').textContent = judgeDone;
-  document.getElementById('stat-judge-sub').textContent =
-    `待 ${judgePending} ｜生涯 ${judgeAll} `;
-
-  document.getElementById('stat-record').textContent = recordDone;
-  document.getElementById('stat-record-sub').textContent =
-    `待 ${recordPending} ｜生涯 ${recordAll} `;
+  const judgeCareer = judgeDone;   // ✅ 生涯只算完賽
+  const recordCareer = recordDone;
 
   const totalDone = judgeDone + recordDone;
   const totalPending = judgePending + recordPending;
-  const totalAll = judgeAll + recordAll;
+  const totalCareer = judgeCareer + recordCareer;
 
-  document.getElementById('stat-total').textContent = totalDone;
-  document.getElementById('stat-total-sub').textContent =
-    `待 ${totalPending} ｜生涯 ${totalAll} `;
+  /* ✅ 👉 UI（有圖版） */
+
+  document.getElementById('stat-judge').innerHTML = `
+    <div class="stat-main">${judgeDone}</div>
+    <div class="stat-subline">
+      <span class="badge done">✅ ${judgeDone}</span>
+      <span class="badge pending">🟡 ${judgePending}</span>
+      <span class="badge total">⚫ ${judgeCareer}</span>
+    </div>
+  `;
+
+  document.getElementById('stat-record').innerHTML = `
+    <div class="stat-main">${recordDone}</div>
+    <div class="stat-subline">
+      <span class="badge done">✅ ${recordDone}</span>
+      <span class="badge pending">🟡 ${recordPending}</span>
+      <span class="badge total">⚫ ${recordCareer}</span>
+    </div>
+  `;
+
+  document.getElementById('stat-total').innerHTML = `
+    <div class="stat-main">${totalDone}</div>
+    <div class="stat-subline">
+      <span class="badge done">✅ ${totalDone}</span>
+      <span class="badge pending">🟡 ${totalPending}</span>
+      <span class="badge total">⚫ ${totalCareer}</span>
+    </div>
+  `;
 }
+
 
 
 
