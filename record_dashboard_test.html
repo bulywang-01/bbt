@@ -960,17 +960,25 @@ function buildRow(g) {
 
 /* ===== 桌機版紀錄報名　Signup UI ===== */
 function renderSignupCell(g, role) {
+
   const slot = g.record_slots?.[role];
 
+  // ✅ ✅ ✅ 過期邏輯（顯示但不可操作）
   if (isPastGame(g.date)) {
-    return `<span class="signup-other">—</span>`; // ✅ 過期鎖住
+
+    if (slot) {
+      return `<span class="signup-other">${slot.name}</span>`; // ✅ 顯示名字
+    }
+
+    return `<span class="signup-other">—</span>`;
   }
 
+  // ✅ 沒人 → 可報名
   if (!slot) {
     return `<span class="signup-btn" onclick="signup('${g.game_id}','${role}')">＋報名</span>`;
   }
 
-  // ✅ 型別統一後，比對才會成立
+  // ✅ 自己
   if (String(slot.user_id) === String(session.user_id)) {
     return `
       <span class="signup-me">
@@ -982,6 +990,7 @@ function renderSignupCell(g, role) {
       </span>`;
   }
 
+  // ✅ 他人
   return `<span class="signup-other">${slot.name}</span>`;
 }
 
@@ -1115,18 +1124,28 @@ function renderMobileRecord(list) {
 
 
 function renderRecordMobileRole(g, role, label) {
+
   const slot = g.record_slots && g.record_slots[role];
 
-  // 過期鎖定
+  // ✅ ✅ ✅ 過期：保留名單（關鍵修正）
   if (isPastGame(g.date)) {
-  return `
-    <div class="record-role other">
-      ${label}<br>—
-    </div>
-  `;
+
+    if (slot) {
+      return `
+        <div class="record-role other">
+          ${label}<br>${slot.name}
+        </div>
+      `;
+    }
+
+    return `
+      <div class="record-role other">
+        ${label}<br>—
+      </div>
+    `;
   }
 
-  // 尚未有人報名
+  // ✅ 沒人 → 可報名
   if (!slot) {
     return `
       <div class="record-role action"
@@ -1138,7 +1157,7 @@ function renderRecordMobileRole(g, role, label) {
 
   const isMe = String(slot.user_id) === String(session.user_id);
 
-  // ✅ 我自己（加上取消）
+  // ✅ 自己
   if (isMe) {
     return `
       <div class="record-role me">
@@ -1151,11 +1170,10 @@ function renderRecordMobileRole(g, role, label) {
     `;
   }
 
-  // 他人
-  const name = slot.name || '';
+  // ✅ 他人
   return `
     <div class="record-role other">
-      ${label}<br>${name}
+      ${label}<br>${slot.name}
     </div>
   `;
 }
