@@ -716,6 +716,45 @@ function initPage() {
   loadGames();
 }
 
+function normalizeGame(g) {
+  return {
+    ...g,
+
+    // ✅ 統一欄位
+    game_id: g.game_id || g.id,
+    game_code: g.game_code || '',
+
+    date: g.date || g.game_date || '',
+    time: g.time || g.game_time || '',
+
+    category: g.category || g.group || '未分類',
+
+    away_team: g.away_team || g.team_a || '',
+    home_team: g.home_team || g.team_b || '',
+
+    field: g.field || g.location || '',
+
+    // ✅ 統一紀錄欄位
+    record_slots: g.record_slots || {
+      REC_MAIN: g.recorder ? {
+        user_id: g.recorder,
+        name: g.recorder_name
+      } : null,
+
+      REC_TRAINEE: g.recorder_trainee ? {
+        user_id: g.recorder_trainee,
+        name: g.recorder_trainee_name
+      } : null,
+
+      REC_VIDEO: g.recorder_video ? {
+        user_id: g.recorder_video,
+        name: g.recorder_video_name
+      } : null
+    }
+  };
+}
+
+
 /* ===== Toast ===== */
 function showToast(msg, type = 'success') {
   const el = document.getElementById('toast');
@@ -744,7 +783,8 @@ function loadGames() {
       return;
     }
 
-    games = Array.isArray(res.games) ? res.games : [];
+    // games = Array.isArray(res.games) ? res.games : [];
+    games = (res.games || []).map(normalizeGame);
     renderRecordDashboard(games);
     renderMobileRecord(games);   // ✅ 新增
   });
@@ -830,7 +870,8 @@ function groupGames(list) {
 
   Object.values(map).forEach(catMap => {
     Object.values(catMap).forEach(arr => {
-      arr.sort((a, b) => a.time.localeCompare(b.time)); // ✅ 正確排序
+//      arr.sort((a, b) => a.time.localeCompare(b.time)); // ✅ 正確排序
+      arr.sort((a, b) => (a.time || a.game_time || '').localeCompare(b.time || b.game_time || ''));
     });
   });
 
@@ -1130,7 +1171,8 @@ function loadRecordGamesByMonth(year, month) {
       return;
     }
 
-    games = res.games || [];   // ✅ 改這行（關鍵）
+    // games = res.games || [];   // ✅ 改這行（關鍵）
+    games = (res.games || []).map(normalizeGame);
 
     renderRecordDashboard(games);
     renderMobileRecord(games);
