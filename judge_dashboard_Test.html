@@ -1115,10 +1115,13 @@ function renderMobile() {
 
   const grouped = groupGamesForMobile(allGames);
 
-  const dates = Object.keys(grouped).sort();
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  // ✅ ✅ ✅ 日期排序（防止 5/10 排在 5/2 前面）
+  const dates = Object.keys(grouped).sort((a, b) => {
+    return new Date(a.replace(/\//g, '-')) - new Date(b.replace(/\//g, '-'));
+  });
 
   // ✅ ✅ ✅ 全年提示
   if (currentMonth === null) {
@@ -1130,36 +1133,28 @@ function renderMobile() {
 
   dates.forEach(date => {
 
-    // ✅ ✅ ✅ 正確定義 isPast（你原本缺這行）
     const isPast = isPastGame(date);
 
-    // ✅ ✅ ✅ 全年：隱藏過期
+    // ✅ ✅ ✅ 🔥關鍵修正：只有全年才擋
     if (currentMonth === null && isPast) return;
 
-    // ✅ 日期區塊
     const dateBox = document.createElement('div');
     dateBox.className = 'm-date-box';
 
-    // ✅ ✅ ✅ 單月：灰底顯示過期
+    // ✅ ✅ ✅ 單月灰底
     if (currentMonth !== null && isPast) {
       dateBox.style.background = '#f3f4f6';
       dateBox.style.opacity = '0.85';
     }
 
-    dateBox.insertAdjacentHTML(
-      'beforeend',
-      `<div class="m-date-title">📅 ${date}</div>`
-    );
+    dateBox.innerHTML = `<div class="m-date-title">📅 ${date}</div>`;
 
     Object.keys(grouped[date]).forEach(category => {
 
       const groupBox = document.createElement('div');
       groupBox.className = 'm-group-box';
 
-      groupBox.insertAdjacentHTML(
-        'beforeend',
-        `<div class="m-group-title">${category}</div>`
-      );
+      groupBox.innerHTML = `<div class="m-group-title">${category}</div>`;
 
       grouped[date][category]
         .sort((a, b) =>
@@ -1168,12 +1163,11 @@ function renderMobile() {
         )
         .forEach(g => {
 
-          // ✅ ✅ ✅ 每場也要判斷（避免 g.expired 這種假欄位）
           const isPastGameRow = isPastGame(g.date);
 
-          groupBox.insertAdjacentHTML('beforeend', `
+          groupBox.innerHTML += `
             <div class="game-card ${isPastGameRow ? 'expired-card' : ''}">
-
+              
               <div class="mobile-time-row">
                 <div class="time">⏰ ${formatTime(g.time_range)}</div>
 
@@ -1194,8 +1188,7 @@ function renderMobile() {
               ${renderMobilePosGrid(g)}
 
             </div>
-          `);
-
+          `;
         });
 
       dateBox.appendChild(groupBox);
@@ -1206,6 +1199,8 @@ function renderMobile() {
 
   applyCategoryBadgeColor();
 }
+
+
 
 
 // ✅ 裁判頁手機版：依 日期 → 組別 → 場次 分組
