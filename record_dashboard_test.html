@@ -591,6 +591,19 @@ td:nth-child(5) {
   color: #fff;
 }
 
+/* 過期卡片 */
+.expired-card {
+  background: #f3f4f6 !important;
+  border: 1px solid #d1d5db;
+}
+
+/* 讓文字偏灰 */
+.expired-card .record-role,
+.expired-card .mobile-teams,
+.expired-card .time {
+  color: #6b7280;
+}
+  
 </style>
 </head>
 
@@ -886,17 +899,32 @@ function renderRecordDashboard(list) {
 
   const grouped = groupGames(list);
 
-  // ⭐ 日期排序
   const dates = sortDatesAsc(Object.keys(grouped));
+
+  // ✅ ✅ ✅ 全年模式提示
+  if (currentMonth === null) {
+    root.insertAdjacentHTML(
+      'beforeend',
+      `<div class="hint">※ 過期賽事請看「單月班表」</div>`
+    );
+  }
 
   dates.forEach(date => {
 
-    // ✅ ✅ ✅ 最終版：過期一律不顯示（全年 / 單月都一樣）
-    if (isPastGame(date)) return;
+    const isPast = isPastGame(date);
+
+    // ✅ ✅ ✅ 全年：過期不顯示
+    if (currentMonth === null && isPast) return;
 
     // ✅ 日期區塊
     const dateBox = document.createElement('div');
     dateBox.className = 'panel';
+
+    // ✅ ✅ ✅ 單月：過期加灰底
+    if (currentMonth !== null && isPast) {
+      dateBox.style.background = '#f3f4f6';     // 淺灰底
+      dateBox.style.opacity = '0.85';           // 微淡
+    }
 
     dateBox.insertAdjacentHTML(
       'beforeend',
@@ -1055,73 +1083,75 @@ function formatTimeTW(v) {
 
 /* ===== 手機版 render（完整）===== */
 function renderMobileRecord(list) {
+
   const root = document.getElementById('mobileView');
   if (!root) return;
+
   root.innerHTML = '';
 
   const grouped = groupGames(list);
-  Object.keys(grouped).sort().forEach(date => {
-    if (isPastGame(date)) return;
-    // ✅ 只在「全年」才過濾
-    // if (currentMonth === null && isPastGame(date)) return;
 
-  
-    // ✅ 日期大格
+  Object.keys(grouped).sort().forEach(date => {
+
+    const isPast = isPastGame(date);
+
+    // ✅ 全年：不顯示過期
+    if (currentMonth === null && isPast) return;
+
     const dateBox = document.createElement('div');
     dateBox.className = 'm-date-box';
-  
+
+    // ✅ ✅ ✅ 單月灰底
+    if (currentMonth !== null && isPast) {
+      dateBox.style.background = '#f3f4f6';
+      dateBox.style.opacity = '0.85';
+    }
+
     dateBox.insertAdjacentHTML(
       'beforeend',
       `<div class="m-date-title">📅 ${date}</div>`
     );
-  
+
     Object.keys(grouped[date]).forEach(cat => {
-      // ✅ 組別中格
+
       const groupBox = document.createElement('div');
       groupBox.className = 'm-group-box';
-  
+
       groupBox.insertAdjacentHTML(
         'beforeend',
         `<div class="m-group-title">${cat}</div>`
       );
-  
+
       grouped[date][cat].forEach(g => {
         groupBox.insertAdjacentHTML('beforeend', `
-          <div class="record-card">
-        
+          <div class="record-card ${isPast ? 'expired-card' : ''}">
             <div class="mobile-time-row">
-              <div class="time">⏰ ${formatTimeTW(g.time)}</div>
-              <div class="game-code badge ${isPastGame(g.date) ? 'expired' : ''}"
-                   data-category="${g.category || ''}">
-                ${g.game_code || ''}
-              </div>
+              <div class="time">⏰ ${g.time}</div>
+              <div class="game-code badge">${g.game_code}</div>
               <div class="field">📍 ${g.field}</div>
             </div>
-        
             <div class="mobile-teams">
               <strong>${g.away_team}</strong>
               <span class="vs">vs</span>
               <strong>${g.home_team}</strong>
             </div>
-        
-            <!-- ✅ ✅ ✅ 關鍵：搬進來 -->
+
             <div class="record-roles">
               ${renderRecordMobileRole(g,'REC_MAIN','紀錄')}
               ${renderRecordMobileRole(g,'REC_TRAINEE','見習')}
               ${renderRecordMobileRole(g,'REC_VIDEO','影像')}
             </div>
-        
           </div>
         `);
       });
-  
+
       dateBox.appendChild(groupBox);
     });
-  
+
     root.appendChild(dateBox);
   });
-    applyCategoryBadgeColor();
 }
+
 
 
 function renderRecordMobileRole(g, role, label) {
