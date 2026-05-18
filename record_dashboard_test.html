@@ -1160,29 +1160,6 @@ function setActiveTab(el) {
   el.classList.add('active');
 }
 
-// 呼叫API
-function loadRecordGamesByMonth(year, month) {
-
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-
-  callApi({
-    action: 'loadRecordGamesByMonth',
-    year: year,
-    month: month,
-    user_id: session.user_id   // ✅ ✅ ✅ 這行就是關鍵
-  }, res => {
-
-    if (!res || res.result !== 'ok') {
-      console.error('載入月份班表失敗');
-      return;
-    }
-
-    allGames = res.games || [];
-
-    render();
-    renderMobile();
-  });
-}
 </script>
 
 </body>
