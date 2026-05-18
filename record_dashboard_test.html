@@ -889,7 +889,10 @@ function renderRecordDashboard(list) {
   const dates = sortDatesAsc(Object.keys(grouped));
 
   dates.forEach(date => {
-    if (isPastGame(date)) return;
+    // if (isPastGame(date)) return;
+    // ✅ 只在「全年」才過濾
+    if (currentMonth === null && isPastGame(date)) return;
+
   
     // ✅ 日期大格
     const dateBox = document.createElement('div');
@@ -1048,7 +1051,10 @@ function renderMobileRecord(list) {
 
   const grouped = groupGames(list);
   Object.keys(grouped).sort().forEach(date => {
-    if (isPastGame(date)) return;
+    // if (isPastGame(date)) return;
+    // ✅ 只在「全年」才過濾
+    if (currentMonth === null && isPastGame(date)) return;
+
   
     // ✅ 日期大格
     const dateBox = document.createElement('div');
@@ -1156,23 +1162,33 @@ function renderRecordMobileRole(g, role, label) {
 
 // 產生月班表
 function loadRecordGamesByMonth(year, month) {
-
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  showLoading('載入月份班表中...'); // ✅ 補 loading
 
   callApi({
     action: 'getRecordGamesByMonth',
     year: year,
     month: month,
-    user_id: session.user_id   // ✅ 一定要有
+    user_id: session.user_id
   }, res => {
 
+    hideOverlay(); // ✅ 關 loading
+
     if (!res || res.result !== 'ok') {
-      console.error('載入失敗');
+      showMessage('載入失敗');
       return;
     }
 
-    // games = res.games || [];   // ✅ 改這行（關鍵）
     games = (res.games || []).map(normalizeGame);
+
+    // ✅ ✅ ✅ 補：空資料提示（你現在缺這個）
+    if (!games.length) {
+      showMessage('當月無賽事');
+      document.getElementById('recordContainer').innerHTML = '';
+      document.getElementById('mobileView').innerHTML = '';
+      return;
+    }
 
     renderRecordDashboard(games);
     renderMobileRecord(games);
