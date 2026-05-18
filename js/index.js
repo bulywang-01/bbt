@@ -161,59 +161,59 @@ function computeStats(judgeGames, recordGames) {
 }
 
 function renderStats() {
+
   const now = new Date();
   const year = now.getFullYear();
 
-  let judgeYear = 0;
-  let judgeAll = 0;
+  let judgeDone = 0, judgePending = 0, judgeAll = 0;
+  let recordDone = 0, recordPending = 0, recordAll = 0;
 
-  let recordYear = 0;
-  let recordAll = 0;
+  function isDone(g){
+    const d = new Date(g.date.replace(/\//g,'-'));
+    return d < now;
+  }
 
-  // ✅ 裁判
+  /* ✅ 裁判 */
   judgeGames.forEach(g => {
+
     if (!g.role) return;
 
     judgeAll++;
 
-    const d = new Date(g.date.replace(/\//g,'-'));
-    if (d.getFullYear() === year) judgeYear++;
+    if (isDone(g)) judgeDone++;
+    else judgePending++;
   });
 
-  // ✅ 紀錄
+  /* ✅ 紀錄 */
   recordGames.forEach(g => {
+
     if (!g.record_role) return;
 
     recordAll++;
 
-    const d = new Date(g.date.replace(/\//g,'-'));
-    if (d.getFullYear() === year) recordYear++;
+    if (isDone(g)) recordDone++;
+    else recordPending++;
   });
 
-  // ✅ 裁判卡
-  document.getElementById('stat-judge').textContent =
-    `${judgeYear}`;   // ✅ 主數字 = 今年
+  /* ✅ UI */
 
+  document.getElementById('stat-judge').textContent = judgeDone;
   document.getElementById('stat-judge-sub').textContent =
-    `生涯 ${judgeAll} 場`;
+    `待 ${judgePending} ｜生涯 ${judgeAll} `;
 
-  // ✅ 紀錄卡
-  document.getElementById('stat-record').textContent =
-    `${recordYear}`;
-
+  document.getElementById('stat-record').textContent = recordDone;
   document.getElementById('stat-record-sub').textContent =
-    `生涯 ${recordAll} 場`;
+    `待 ${recordPending} ｜生涯 ${recordAll} `;
 
-  // ✅ 總計
-  const totalYear = judgeYear + recordYear;
+  const totalDone = judgeDone + recordDone;
+  const totalPending = judgePending + recordPending;
   const totalAll = judgeAll + recordAll;
 
-  document.getElementById('stat-total').textContent =
-    `${totalYear}`;
-
+  document.getElementById('stat-total').textContent = totalDone;
   document.getElementById('stat-total-sub').textContent =
-    `生涯 ${totalAll} 場`;
+    `待 ${totalPending} ｜生涯 ${totalAll} `;
 }
+
 
 
 // 點卡片功能（未來,目前暫放）
