@@ -1035,9 +1035,9 @@ function signup(gameId, role) {
     record_role: role
   }, res => {
 
-    // ✅ ✅ ✅ 補這段（關鍵）
+    // ✅ ✅ ✅ 防呆（你之前卡這）
     if (!res) {
-      showToast('系統無回應（API失敗）', 'error');
+      showToast('系統無回應', 'error');
       return;
     }
 
@@ -1047,7 +1047,6 @@ function signup(gameId, role) {
     } else {
       showToast(res.message || '報名失敗', 'error');
     }
-
   });
 }
 
