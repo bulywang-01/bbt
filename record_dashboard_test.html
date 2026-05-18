@@ -684,6 +684,19 @@ td:nth-child(5) {
 let session;
 let games = [];
 
+function reloadCurrentView() {
+
+  // ✅ 強制重新抓 session（避免 cache 問題）
+  session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  if (currentMonth === null) {
+    loadGames();
+  } else {
+    loadRecordGamesByMonth(currentYear, currentMonth);
+  }
+}
+
+  
 // 組別對應顏色
 function applyCategoryBadgeColor() {
   const colorMap = {
@@ -1035,6 +1048,8 @@ function signup(gameId, role) {
     record_role: role
   }, res => {
 
+    console.log('signup res:', res);  // ✅ debug
+
     if (!res) {
       showToast('系統無回應', 'error');
       return;
@@ -1044,26 +1059,15 @@ function signup(gameId, role) {
 
       showToast('報名成功');
 
-      // ✅ ✅ ✅ 🔥 核心關鍵（修你兩個問題）
-
-      if (currentMonth === null) {
-
-        // ✅ 全年
-        loadGames();
-
-      } else {
-
-        // ✅ ✅ ✅ 回到原月份（不跳掉）
-        loadRecordGamesByMonth(currentYear, currentMonth);
-
-      }
+      // ✅ ✅ ✅ 🔥 強制 reload（重點）
+      reloadCurrentView();
 
     } else {
       showToast(res.message || '報名失敗', 'error');
     }
-
   });
 }
+
 
 
 function cancelSignup(gameId, role) {
@@ -1079,6 +1083,8 @@ function cancelSignup(gameId, role) {
     record_role: role
   }, res => {
 
+    console.log('cancel res:', res);
+
     if (!res) {
       showToast('系統無回應', 'error');
       return;
@@ -1088,18 +1094,15 @@ function cancelSignup(gameId, role) {
 
       showToast('已取消');
 
-      if (currentMonth === null) {
-        loadGames();
-      } else {
-        loadRecordGamesByMonth(currentYear, currentMonth);
-      }
+      // ✅ ✅ ✅ 🔥 同樣 reload
+      reloadCurrentView();
 
     } else {
       showToast(res.message || '取消失敗', 'error');
     }
-
   });
 }
+
 
 function recordSignup(gameId, role) {
   const session = getSession();
@@ -1279,9 +1282,10 @@ function renderRecordMobileRole(g, role, label) {
 
 // 產生月班表
 function loadRecordGamesByMonth(year, month) {
+
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
 
-  showLoading('載入月份班表中...'); // ✅ 補 loading
+  showLoading('載入月份班表中...');
 
   callApi({
     action: 'getRecordGamesByMonth',
@@ -1290,16 +1294,18 @@ function loadRecordGamesByMonth(year, month) {
     user_id: session.user_id
   }, res => {
 
-    hideOverlay(); // ✅ 關 loading
+    hideOverlay();
+
+    console.log('month res:', res); // ✅ debug
 
     if (!res || res.result !== 'ok') {
       showMessage('載入失敗');
       return;
     }
 
-    games = (res.games || []).map(normalizeGame);
+    // ✅ ✅ ✅ 🔥 這行是很多人漏掉的
+    games = res.games || [];
 
-    // ✅ ✅ ✅ 補：空資料提示（你現在缺這個）
     if (!games.length) {
       showMessage('當月無賽事');
       document.getElementById('recordContainer').innerHTML = '';
