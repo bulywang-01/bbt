@@ -1003,10 +1003,8 @@ function buildRow(g) {
 /* ===== 桌機版紀錄報名　Signup UI ===== */
 function renderSignupCell(g, role) {
 
-  const slots = g.record_slots || {};
-  const slot = slots[role];
+  const slot = g.record_slots?.[role];
 
-  /* ✅ 過期 */
   if (isPastGame(g.date)) {
     if (slot && slot.user_id) {
       return `<span class="signup-other">${slot.name}</span>`;
@@ -1014,13 +1012,11 @@ function renderSignupCell(g, role) {
     return `<span class="signup-other">—</span>`;
   }
 
-  /* ✅ ✅ ✅ 一定會顯示 */
   if (slot && String(slot.user_id).trim() !== '') {
 
     const name = slot.name || ('ID:' + slot.user_id);
-    const isMe = String(slot.user_id) === String(session.user_id);
 
-    if (isMe) {
+    if (String(slot.user_id) === String(session.user_id)) {
       return `
         <span class="signup-me">
           ${name}
@@ -1035,7 +1031,6 @@ function renderSignupCell(g, role) {
     return `<span class="signup-other">${name}</span>`;
   }
 
-  /* ✅ 可報名 */
   return `
     <span class="signup-btn"
       onclick="signup('${g.game_id}','${role}')">
