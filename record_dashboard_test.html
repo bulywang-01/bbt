@@ -880,49 +880,50 @@ function groupGames(list) {
 
 /* ===== Render（桌機） ===== */
 function renderRecordDashboard(list) {
+
   const root = document.getElementById('recordContainer');
   root.innerHTML = '';
 
   const grouped = groupGames(list);
 
-  // ⭐ 日期排序（共用）
+  // ⭐ 日期排序
   const dates = sortDatesAsc(Object.keys(grouped));
 
   dates.forEach(date => {
-    // if (isPastGame(date)) return;
-    // ✅ 只在「全年」才過濾
-    if (currentMonth === null && isPastGame(date)) return;
 
-  
-    // ✅ 日期大格
+    // ✅ ✅ ✅ 最終版：過期一律不顯示（全年 / 單月都一樣）
+    if (isPastGame(date)) return;
+
+    // ✅ 日期區塊
     const dateBox = document.createElement('div');
-    dateBox.className = 'panel';   // 你本來就有 panel 樣式
-  
+    dateBox.className = 'panel';
+
     dateBox.insertAdjacentHTML(
       'beforeend',
       `<div class="date-title">${date}</div>`
     );
-  
+
     const categories = sortCategoriesForDesktop(
       Object.keys(grouped[date])
     );
-  
+
     categories.forEach(cat => {
-      // ✅ 組別中格
+
       dateBox.insertAdjacentHTML(
         'beforeend',
         `<div class="group-title">│ ${cat}</div>`
       );
-  
+
       dateBox.insertAdjacentHTML(
         'beforeend',
         buildGroupTable(grouped[date][cat])
       );
     });
-  
+
     root.appendChild(dateBox);
   });
 }
+
 
 /* ===== Table ===== */
 function buildGroupTable(list) {
@@ -1060,9 +1061,9 @@ function renderMobileRecord(list) {
 
   const grouped = groupGames(list);
   Object.keys(grouped).sort().forEach(date => {
-    // if (isPastGame(date)) return;
+    if (isPastGame(date)) return;
     // ✅ 只在「全年」才過濾
-    if (currentMonth === null && isPastGame(date)) return;
+    // if (currentMonth === null && isPastGame(date)) return;
 
   
     // ✅ 日期大格
