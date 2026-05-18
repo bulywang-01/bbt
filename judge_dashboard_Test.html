@@ -613,6 +613,19 @@ tr.full {
   background: #1976d2;
   color: #fff;
 }
+
+/* ✅ 過期卡片 */
+.expired-card {
+  background: #f3f4f6 !important;
+  border: 1px solid #d1d5db;
+}
+
+/* ✅ 過期文字稍微淡化 */
+.expired-card .mobile-teams,
+.expired-card .time {
+  color: #6b7280;
+}
+
 </style>
   
 </head>
@@ -1096,12 +1109,16 @@ function render() {
 function renderMobile() {
 
   const root = document.getElementById('mobileView');
+  if (!root) return;
+
   root.innerHTML = '';
 
   const grouped = groupGamesForMobile(allGames);
 
+  const dates = Object.keys(grouped).sort();
+
   const today = new Date();
-  today.setHours(0,0,0,0);
+  today.setHours(0, 0, 0, 0);
 
   // ✅ ✅ ✅ 全年提示
   if (currentMonth === null) {
@@ -1111,51 +1128,85 @@ function renderMobile() {
     );
   }
 
-  Object.keys(grouped).sort().forEach(date => {
+  dates.forEach(date => {
 
-    // ✅ 全年隱藏過期
+    // ✅ ✅ ✅ 正確定義 isPast（你原本缺這行）
+    const isPast = isPastGame(date);
+
+    // ✅ ✅ ✅ 全年：隱藏過期
     if (currentMonth === null && isPast) return;
 
+    // ✅ 日期區塊
     const dateBox = document.createElement('div');
     dateBox.className = 'm-date-box';
 
-    // ✅ ✅ ✅ 單月灰底
+    // ✅ ✅ ✅ 單月：灰底顯示過期
     if (currentMonth !== null && isPast) {
       dateBox.style.background = '#f3f4f6';
       dateBox.style.opacity = '0.85';
     }
 
-    dateBox.innerHTML = `<div class="m-date-title">📅 ${date}</div>`;
+    dateBox.insertAdjacentHTML(
+      'beforeend',
+      `<div class="m-date-title">📅 ${date}</div>`
+    );
 
-    Object.keys(grouped[date]).forEach(cat => {
+    Object.keys(grouped[date]).forEach(category => {
 
       const groupBox = document.createElement('div');
       groupBox.className = 'm-group-box';
-      groupBox.innerHTML = `<div class="m-group-title">${cat}</div>`;
 
-      grouped[date][cat].forEach(g => {
+      groupBox.insertAdjacentHTML(
+        'beforeend',
+        `<div class="m-group-title">${category}</div>`
+      );
 
-        groupBox.innerHTML += `
-          <div class="game-card">
-            <div class="mobile-time-row">
-              <div class="time">${g.time_range}</div>
-              <div class="game-code badge">${g.game_code}</div>
-              <div class="field">${g.field}</div>
+      grouped[date][category]
+        .sort((a, b) =>
+          timeToMinutesSafe(a.time_range) -
+          timeToMinutesSafe(b.time_range)
+        )
+        .forEach(g => {
+
+          // ✅ ✅ ✅ 每場也要判斷（避免 g.expired 這種假欄位）
+          const isPastGameRow = isPastGame(g.date);
+
+          groupBox.insertAdjacentHTML('beforeend', `
+            <div class="game-card ${isPastGameRow ? 'expired-card' : ''}">
+
+              <div class="mobile-time-row">
+                <div class="time">⏰ ${formatTime(g.time_range)}</div>
+
+                <div class="game-code badge ${isPastGameRow ? 'expired' : ''}"
+                  data-category="${g.category || ''}">
+                  ${g.game_code || ''}
+                </div>
+
+                <div class="field">📍 ${g.field}</div>
+              </div>
+
+              <div class="mobile-teams">
+                <strong>${g.away_team}</strong>
+                <span class="vs">vs</span>
+                <strong>${g.home_team}</strong>
+              </div>
+
+              ${renderMobilePosGrid(g)}
+
             </div>
+          `);
 
-            <div class="mobile-teams">
-              ${g.away_team} vs ${g.home_team}
-            </div>
-          </div>
-        `;
-      });
+        });
 
       dateBox.appendChild(groupBox);
     });
 
     root.appendChild(dateBox);
   });
+
+  applyCategoryBadgeColor();
 }
+
 
 // ✅ 裁判頁手機版：依 日期 → 組別 → 場次 分組
 function groupGamesForMobile(games) {
