@@ -1003,8 +1003,11 @@ function render() {
                 
                     return `<div class="judge-name">${g.occupied_positions[role]}</div>`;
                   }
-                
+
+                  
                   // === 已過期 ===
+                  const isPast = isPastGame(date);
+
                   if (isPast) {
                     return '';
                   }
@@ -1112,8 +1115,6 @@ function renderMobile() {
   }
 
   Object.keys(grouped).sort().forEach(date => {
-
-    const isPast = isPastGame(date);
 
     // ✅ 全年隱藏過期
     if (currentMonth === null && isPast) return;
