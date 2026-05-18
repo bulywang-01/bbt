@@ -161,79 +161,59 @@ function computeStats(judgeGames, recordGames) {
 }
 
 function renderStats() {
-
   const now = new Date();
-  const currentYear = now.getFullYear();
+  const year = now.getFullYear();
 
-  let judgeDone = 0, judgePending = 0, judgeCareer = 0;
-  let recordDone = 0, recordPending = 0, recordCareer = 0;
+  let judgeYear = 0;
+  let judgeAll = 0;
 
-  function parse(g){
-    return new Date(g.date.replace(/\//g,'-'));
-  }
+  let recordYear = 0;
+  let recordAll = 0;
 
-  /* ✅ 裁判 */
+  // ✅ 裁判
   judgeGames.forEach(g => {
-
     if (!g.role) return;
 
-    const d = parse(g);
+    judgeAll++;
 
-    if (d < now) {
-      judgeCareer++;
-      if (d.getFullYear() === currentYear) judgeDone++;
-    } else {
-      judgePending++;
-    }
+    const d = new Date(g.date.replace(/\//g,'-'));
+    if (d.getFullYear() === year) judgeYear++;
   });
 
-  /* ✅ 紀錄 */
+  // ✅ 紀錄
   recordGames.forEach(g => {
-
     if (!g.record_role) return;
 
-    const d = parse(g);
+    recordAll++;
 
-    if (d < now) {
-      recordCareer++;
-      if (d.getFullYear() === currentYear) recordDone++;
-    } else {
-      recordPending++;
-    }
+    const d = new Date(g.date.replace(/\//g,'-'));
+    if (d.getFullYear() === year) recordYear++;
   });
 
-  const totalDone = judgeDone + recordDone;
-  const totalPending = judgePending + recordPending;
-  const totalCareer = judgeCareer + recordCareer;
+  // ✅ 裁判卡
+  document.getElementById('stat-judge').textContent =
+    `${judgeYear}`;   // ✅ 主數字 = 今年
 
-  /* ✅ UI（橫排極簡版） */
+  document.getElementById('stat-judge-sub').textContent =
+    `生涯 ${judgeAll} 場`;
 
-  document.getElementById('stat-judge').innerHTML = `
-    <div class="stat-main">${judgeDone}</div>
-    <div class="stat-row">
-      <span class="icon pending">未 ${judgePending}</span>
-      <span class="icon career">生 ${judgeCareer}</span>
-    </div>
-  `;
+  // ✅ 紀錄卡
+  document.getElementById('stat-record').textContent =
+    `${recordYear}`;
 
-  document.getElementById('stat-record').innerHTML = `
-    <div class="stat-main">${recordDone}</div>
-    <div class="stat-row">
-      <span class="icon pending">未 ${recordPending}</span>
-      <span class="icon career">生 ${recordCareer}</span>
-    </div>
-  `;
+  document.getElementById('stat-record-sub').textContent =
+    `生涯 ${recordAll} 場`;
 
-  document.getElementById('stat-total').innerHTML = `
-    <div class="stat-main">${totalDone}</div>
-    <div class="stat-row">
-      <span class="icon pending">未 ${totalPending}</span>
-      <span class="icon career">生 ${totalCareer}</span>
-    </div>
-  `;
+  // ✅ 總計
+  const totalYear = judgeYear + recordYear;
+  const totalAll = judgeAll + recordAll;
+
+  document.getElementById('stat-total').textContent =
+    `${totalYear}`;
+
+  document.getElementById('stat-total-sub').textContent =
+    `生涯 ${totalAll} 場`;
 }
-
-
 
 
 // 點卡片功能（未來,目前暫放）
@@ -320,93 +300,57 @@ function mergeMySchedules(judgeGames, recordGames) {
  * ========================= */
 function renderMergedCards(games) {
 
-  const box = document.getElementById('my-schedule-list');
+  const box = document.getElementById('my-schedule-list'); // ✅ 這行最重要
   if (!box) return;
-
+  
   box.innerHTML = '';
 
-  const sorted = games.sort((a,b)=>
+  
+  const sorted = games.sort((a,b) => 
     new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time)
   );
-
-  const judgeMap = {
-    PU:'主審', U1:'一壘審', U2:'二壘審', U3:'三壘審'
-  };
-
-  const recordMap = {
-    REC_MAIN:'記錄員',
-    REC_TRAINEE:'見習',
-    REC_VIDEO:'影像'
-  };
-
+  
   sorted.forEach(g => {
-
-    const judgeSlots = [];
-    const recordSlots = [];
-
-    g.roles.forEach(r => {
-
-      if (r.startsWith('U') || r === 'PU') {
-        judgeSlots.push({
-          role: judgeMap[r],
-          name: '✔️'
-        });
-      } else {
-        recordSlots.push({
-          role: recordMap[r],
-          name: '✔️'
-        });
-      }
-
-    });
-
+  
+    const judgeMap = { PU:'主審', U1:'一壘審', U2:'二壘審', U3:'三壘審' };
+    const recordMap = {
+      REC_MAIN:'紀錄員',
+      REC_TRAINEE:'見習紀錄',
+      REC_VIDEO:'影像紀錄'
+    };
+  
+    const roles = g.roles.map(r => {
+      const isJudge = r.startsWith('U') || r === 'PU';
+      const name = isJudge ? judgeMap[r] : recordMap[r];
+  
+      return `
+        <div class="schedule-role ${isJudge ? 'judge' : 'record'}">
+          ${isJudge ? '🧑‍⚖️' : '📝'} ${name}
+        </div>
+      `;
+    }).join('');
+  
     const card = document.createElement('div');
-    card.className = 'schedule-card-pro';
-
+    card.className = 'schedule-card';
+  
     card.innerHTML = `
-    
-    <div class="left">
-      <div class="date">${formatZhDate(g.date)} ${formatTimeOnly(g.time)}</div>
-      <div class="field">📍 ${g.field}</div>
-    </div>
-
-    <div class="right">
-
-      <div class="block">
-        <div class="title">🧑‍⚖️ 裁判</div>
-        <div class="grid">
-          ${renderSlots(judgeSlots,3)}
+      <div class="schedule-top-row">
+        <div class="schedule-date-text">
+          ${formatZhDate(g.date)}
+        </div>
+        <div class="schedule-role-group">
+          ${roles}
         </div>
       </div>
-
-      <div class="block">
-        <div class="title">📝 紀錄</div>
-        <div class="grid">
-          ${renderSlots(recordSlots,3)}
-        </div>
+  
+      <div class="schedule-info-row">
+        <div>⏰ ${formatTimeOnly(g.time)}</div>
+        <div>📍 ${g.field}</div>
       </div>
-
-    </div>
     `;
-
+  
     box.appendChild(card);
   });
-}
-
-function renderSlots(list, total){
-
-  const arr = [...list];
-
-  while(arr.length < total){
-    arr.push({ role:'', name:'' });
-  }
-
-  return arr.map(s => `
-    <div class="slot">
-      <div class="role">${s.role || ''}</div>
-      <div class="name">${s.name || '-'}</div>
-    </div>
-  `).join('');
 }
 
 /* =========================
