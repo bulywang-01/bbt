@@ -606,6 +606,8 @@ td:nth-child(5) {
     document.addEventListener('DOMContentLoaded', () => {
       loadHeader();   // 只負責 header
       loadGames();    // 或該頁真正的資料初始化
+      initMonthTabs();  // 初始化月班表選擇
+
     });
 </script>
   
@@ -615,6 +617,11 @@ td:nth-child(5) {
 <div class="page-title">BBT 軟式棒球聯盟｜紀錄員班表</div>
 <div class="hint upgraded-hint">※ 只能在「無」的欄位選擇自己</div>
 -->
+
+
+<!-- 月班表選擇 -->
+<div id="month-tabs" class="month-tabs"></div>
+  
 <!-- ✅ 唯一主容器 -->
 <div id="desktopView">
   <h2 class="section-title">紀錄員班表</h2>
@@ -1077,6 +1084,105 @@ function renderRecordMobileRole(g, role, label) {
   `;
 }
 
+// 產生月班表
+function loadRecordGamesByMonth(year, month) {
+
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  callApi({
+    action: 'getRecordGamesByMonth',
+    year: year,
+    month: month,
+    user_id: session.user_id   // ✅ 一定要有
+  }, res => {
+
+    if (!res || res.result !== 'ok') {
+      console.error('載入失敗');
+      return;
+    }
+
+    allGames = res.games || [];
+
+    render();
+    renderMobile();
+  });
+}
+
+// 初始化月份
+let currentMonth = null;
+
+function initMonthTabs() {
+
+  const now = new Date();
+  const year = now.getFullYear();
+
+  const container = document.getElementById('month-tabs');
+  container.innerHTML = '';
+
+  // ✅ ✅ ✅ 全年按鈕
+  const allBtn = document.createElement('div');
+  allBtn.className = 'month-tab active';
+  allBtn.textContent = '📊 全年班表';
+
+  allBtn.onclick = () => {
+    currentMonth = null;
+    setActiveTab(allBtn);
+    loadGames(); // ✅ 回原本全部
+  };
+
+  container.appendChild(allBtn);
+
+
+  // ✅ 月份
+  for (let m = 1; m <= 12; m++) {
+
+    const div = document.createElement('div');
+    div.className = 'month-tab';
+    div.textContent = `${m}月`;
+
+    if (m === now.getMonth() + 1) {
+      // 預設不要 active（讓全年是預設）
+    }
+
+    div.onclick = () => {
+      currentMonth = m;
+      setActiveTab(div);
+      loadRecordGamesByMonth(year, m);
+    };
+
+    container.appendChild(div);
+  }
+}
+
+function setActiveTab(el) {
+  document.querySelectorAll('.month-tab')
+    .forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// 呼叫API
+function loadRecordGamesByMonth(year, month) {
+
+  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  callApi({
+    action: 'loadRecordGamesByMonth',
+    year: year,
+    month: month,
+    user_id: session.user_id   // ✅ ✅ ✅ 這行就是關鍵
+  }, res => {
+
+    if (!res || res.result !== 'ok') {
+      console.error('載入月份班表失敗');
+      return;
+    }
+
+    allGames = res.games || [];
+
+    render();
+    renderMobile();
+  });
+}
 </script>
 
 </body>
