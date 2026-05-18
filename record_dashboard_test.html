@@ -1025,29 +1025,58 @@ function renderSignupCell(g, role) {
 
 /* ===== Actions ===== */
 function signup(gameId, role) {
+
   showToast('報名中...');
+
   callApi({
     action:'recordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
   }, res => {
-    res?.result === 'ok' ? (showToast('報名成功'), loadGames())
-                         : showToast(res?.message||'報名失敗','error');
+
+    // ✅ ✅ ✅ 補這段（關鍵）
+    if (!res) {
+      showToast('系統無回應（API失敗）', 'error');
+      return;
+    }
+
+    if (res.result === 'ok') {
+      showToast('報名成功');
+      loadGames();
+    } else {
+      showToast(res.message || '報名失敗', 'error');
+    }
+
   });
 }
 
+
 function cancelSignup(gameId, role) {
+
   if (!confirm('確定取消此場紀錄？')) return;
+
   showToast('取消中...');
+
   callApi({
     action:'cancelRecordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
   }, res => {
-    res?.result === 'ok' ? (showToast('已取消'), loadGames())
-                         : showToast(res?.message||'取消失敗','error');
+
+    if (!res) {
+      showToast('系統無回應（API失敗）', 'error');
+      return;
+    }
+
+    if (res.result === 'ok') {
+      showToast('已取消');
+      loadGames();
+    } else {
+      showToast(res.message || '取消失敗', 'error');
+    }
+
   });
 }
 
