@@ -856,6 +856,7 @@ function rememberSelection(gameId, role, btn) {
 
 /* ===== 產置出表格及內容 ===== */
 function render() {
+
   function timeToMinutes(t) {
     const d = new Date(t);
     return d.getHours() * 60 + d.getMinutes();
@@ -869,66 +870,41 @@ function render() {
     return;
   }
 
-  const range = 'all';
-  const showPastChecked = false;
-  const kw = '';
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  function inThisMonth(dateStr) {
-    const d = new Date(dateStr.replace(/\//g, '-'));
-    return (
-      d.getFullYear() === today.getFullYear() &&
-      d.getMonth() === today.getMonth()
+  /* ✅ ✅ ✅ 全年提示 */
+  if (currentMonth === null) {
+    box.insertAdjacentHTML(
+      'beforeend',
+      '<div class="hint">※ 過期賽事請看「單月班表」</div>'
     );
   }
 
-  function inThisWeek(dateStr) {
-    const d = new Date(dateStr.replace(/\//g, '-'));
-    const s = new Date(today);
-    s.setDate(today.getDate() - today.getDay());
-    const e = new Date(s);
-    e.setDate(s.getDate() + 6);
-    return d >= s && d <= e;
-  }
-
-  // ✅ 前置篩選
-  const filtered = allGames.filter(g => {
-    // const gd = new Date(g.date.replace(/\//g, '-'));
-    if (!g.date) return false;   // ✅ 過濾掉壞資料
-      const gd = new Date(String(g.date).replace(/\//g,'-'));
-    if (gd < today && !showPastChecked) return false;
-    if (range === 'month' && !inThisMonth(g.date)) return false;
-    if (range === 'week' && !inThisWeek(g.date)) return false;
-    if (kw) {
-      const txt = `${g.away_team} ${g.home_team} ${g.field} ${g.category}`;
-      if (!txt.includes(kw)) return false;
-    }
-    return true;
-  });
-
-  if (!filtered.length) {
-    box.innerHTML = '<div class="panel">沒有符合條件的賽事</div>';
-    return;
-  }
-
-  // ✅ 依日期分組
+  /* ✅ 依日期分組 */
   const dateGroups = {};
-  filtered.forEach(g => {
+  allGames.forEach(g => {
+    if (!g.date) return;
     if (!dateGroups[g.date]) dateGroups[g.date] = [];
     dateGroups[g.date].push(g);
   });
 
-  // ✅ 日期排序
+  /* ✅ 日期排序 */
   Object.keys(dateGroups)
     .sort()
     .forEach(date => {
+
+      const gd = new Date(String(date).replace(/\//g, '-'));
+      const isPastDate = gd < today;
+
+      /* ✅ ✅ ✅ 全年：過期整天不顯示 */
+      if (currentMonth === null && isPastDate) return;
+
       const h3 = document.createElement('h3');
       h3.textContent = date;
       box.appendChild(h3);
 
-      // ✅ 同一天再依「組別」分組
+      /* ✅ 同一天依組別分組 */
       const categoryGroups = {};
       dateGroups[date].forEach(g => {
         const cat = g.category || '未分類';
@@ -937,17 +913,23 @@ function render() {
       });
 
       Object.keys(categoryGroups).forEach(category => {
+
         const panel = document.createElement('div');
         panel.className = 'panel';
 
-        // ✅ 組別標題（大聯盟／小聯盟）
+        /* ✅ ✅ ✅ 單月：過期灰底 */
+        if (currentMonth !== null && isPastDate) {
+          panel.style.background = '#f3f4f6';
+          panel.style.opacity = '0.85';
+        }
+
+        /* ✅ 組別標題 */
         const categoryTitle = document.createElement('div');
         categoryTitle.textContent = category;
         categoryTitle.style.fontSize = '16px';
         categoryTitle.style.fontWeight = '700';
         categoryTitle.style.marginBottom = '8px';
         categoryTitle.style.color = '#1a237e';
-        
         panel.appendChild(categoryTitle);
 
         const table = document.createElement('table');
@@ -973,22 +955,59 @@ function render() {
 
         const tbody = table.querySelector('tbody');
 
-        // ✅ 同日期＋同組別 → 依時間排序
         categoryGroups[category]
-          .sort(
-            (a, b) =>
-              timeToMinutes(a.time_range) -
-              timeToMinutes(b.time_range)
+          .sort((a, b) =>
+            timeToMinutes(a.time_range) - timeToMinutes(b.time_range)
           )
           .forEach(g => {
+
             const tr = document.createElement('tr');
 
-            const gd = new Date(g.date.replace(/\//g, '-'));
-            const isPast = gd < today;
-            if (isPast) tr.classList.add('expired');
+            const gd2 = new Date(String(g.date).replace(/\//g, '-'));
+            const isPastGameRow = gd2 < today;
+
+            if (isPastGameRow) tr.classList.add('expired');
 
             const filled = Object.keys(g.occupied_positions || {}).length;
             if (filled >= g.need_count) tr.classList.add('full');
+
+            let umpireCell = g.need_count;
+            if (g.need_count === 0) {
+              umpireCell = '<span class="umpire-na">不需裁判</span>';
+            } else if (filled >= g.need_count) {
+              umpireCell = '<span class="umpire-full"><strong>已額滿</strong></span>';
+            }
+
+            tr.innerHTML = `
+              <td>
+                <span class="game-badge ${isPastGameRow ? 'expired' : ''}">
+                  ${g.game_code}
+                </span>
+              </td>
+              <td>${formatTime(g.time_range)}</td>
+              <td>${g.category || ''}</td>
+              <td>${g.away_team || ''}</td>
+              <td>${g.home_team || ''}</td>
+              <td>${g.field || ''}</td>
+              <td>${g.duration || ''}</td>
+              <td>${umpireCell}</td>
+              ${['PU','U1','U2','U3'].map(r => {
+                const v = renderPos(r);
+                return v === '__NA__'
+                  ? '<td class="pos-cell cell-na"></td>'
+                  : `<td class="pos-cell">${v}</td>`;
+              }).join('')}
+            `;
+
+            tbody.appendChild(tr);
+          });
+
+        panel.appendChild(table);
+        box.appendChild(panel);
+      });
+    });
+}
+
 
   function renderPos(role) {
     // === 不需要此站位 ===
@@ -1052,107 +1071,89 @@ function render() {
   }
 
 
-            let umpireCell = g.need_count;
-            if (g.need_count === 0) {
-              umpireCell = '<span class="umpire-na">不需裁判</span>';
-            } else if (filled >= g.need_count) {
-              umpireCell = '<span class="umpire-full"><strong>已額滿</strong></span>';
-            }
+  function inThisMonth(dateStr) {
+    const d = new Date(dateStr.replace(/\//g, '-'));
+    return (
+      d.getFullYear() === today.getFullYear() &&
+      d.getMonth() === today.getMonth()
+    );
+  }
 
-            tr.innerHTML = `
-              
-              <td><span class="game-badge ${isPast ? 'expired' : ''}" data-category="${g.category || ''}">${g.game_code}</span></td>
-              <td>${formatTime(g.time_range)}</td>
-              <td>${g.category || ''}</td>
-              <td>${g.away_team || ''}</td>
-              <td>${g.home_team || ''}</td>
-              <td>${g.field || ''}</td>
-              <td>${g.duration || ''}</td>
-              <td>${umpireCell}</td>
-              ${['PU','U1','U2','U3'].map(r => {
-                const v = renderPos(r);
-                return v === '__NA__'
-                  ? '<td class="pos-cell cell-na"></td>'
-                  : `<td class="pos-cell">${v}</td>`;
-              }).join('')}
-            `;
-
-            tbody.appendChild(tr);
-          });
-
-        panel.appendChild(table);
-        box.appendChild(panel);
-      });
-    });
-}
-
+  function inThisWeek(dateStr) {
+    const d = new Date(dateStr.replace(/\//g, '-'));
+    const s = new Date(today);
+    s.setDate(today.getDate() - today.getDay());
+    const e = new Date(s);
+    e.setDate(s.getDate() + 6);
+    return d >= s && d <= e;
+  }
+  
 // 手機版 ${renderTimeHHmm(g.time_range)}
  
 function renderMobile() {
+
   const root = document.getElementById('mobileView');
-  if (!root) return;
   root.innerHTML = '';
 
-  // ✅ 先用你原本的分組邏輯
   const grouped = groupGamesForMobile(allGames);
 
-  const dates = Object.keys(grouped).sort();
-  dates.forEach(date => {
-    // ✅ 過期日期整天不顯示
-    if (isPastGame(date)) return;
+  const today = new Date();
+  today.setHours(0,0,0,0);
 
-    // ✅ 日期大格
+  // ✅ ✅ ✅ 全年提示
+  if (currentMonth === null) {
+    root.insertAdjacentHTML(
+      'beforeend',
+      '<div class="hint">※ 過期賽事請看「單月班表」</div>'
+    );
+  }
+
+  Object.keys(grouped).sort().forEach(date => {
+
+    const isPast = isPastGame(date);
+
+    // ✅ 全年隱藏過期
+    if (currentMonth === null && isPast) return;
+
     const dateBox = document.createElement('div');
     dateBox.className = 'm-date-box';
 
-    dateBox.insertAdjacentHTML(
-      'beforeend',
-      `<div class="m-date-title">📅 ${date}</div>`
-    );
+    // ✅ ✅ ✅ 單月灰底
+    if (currentMonth !== null && isPast) {
+      dateBox.style.background = '#f3f4f6';
+      dateBox.style.opacity = '0.85';
+    }
 
-    Object.keys(grouped[date]).forEach(category => {
-      // ✅ 組別中格
+    dateBox.innerHTML = `<div class="m-date-title">📅 ${date}</div>`;
+
+    Object.keys(grouped[date]).forEach(cat => {
+
       const groupBox = document.createElement('div');
       groupBox.className = 'm-group-box';
+      groupBox.innerHTML = `<div class="m-group-title">${cat}</div>`;
 
-      groupBox.insertAdjacentHTML(
-        'beforeend',
-        `<div class="m-group-title">${category}</div>`
-      );
+      grouped[date][cat].forEach(g => {
 
-      // ✅ 中格內依時間排序
-      grouped[date][category]
-        //.sort((a, b) => a.time.localeCompare(b.time))
-
-        grouped[date][category]
-          .sort((a, b) =>
-            timeToMinutesSafe(a.time_range) -
-            timeToMinutesSafe(b.time_range)
-          )
-       
-        .forEach(g => {
-          groupBox.insertAdjacentHTML('beforeend', `
-            <div class="game-card">
+        groupBox.innerHTML += `
+          <div class="game-card">
             <div class="mobile-time-row">
-              <div class="time">⏰ <strong>${formatTime(g.time_range)}</strong></div>
-              <div class="game-code badge ${g.expired ? 'expired' : ''}" data-category="${g.category || ''}">${g.game_code || ''}</div>
-              <div class="field">📍 ${g.field}</div>
+              <div class="time">${g.time_range}</div>
+              <div class="game-code badge">${g.game_code}</div>
+              <div class="field">${g.field}</div>
             </div>
-              <div class="mobile-teams">
-                <div><strong>${g.away_team}</strong> <span class="vs">vs</span> <strong>${g.home_team}</strong></div>
-              </div>
 
-              ${renderMobilePosGrid(g)}
+            <div class="mobile-teams">
+              ${g.away_team} vs ${g.home_team}
             </div>
-          `);
-        });
+          </div>
+        `;
+      });
 
       dateBox.appendChild(groupBox);
     });
 
     root.appendChild(dateBox);
   });
-  applyCategoryBadgeColor();
 }
 
 // ✅ 裁判頁手機版：依 日期 → 組別 → 場次 分組
@@ -1493,19 +1494,31 @@ function loadJudgeGamesByMonth(year, month) {
 
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
 
+  showLoading('載入月份班表中...');
+
   callApi({
     action: 'getJudgeGamesByMonth',
     year: year,
     month: month,
-    user_id: session.user_id   // ✅ ✅ ✅ 這行就是關鍵
+    user_id: session.user_id
   }, res => {
 
+    hideOverlay();
+
     if (!res || res.result !== 'ok') {
-      console.error('載入月份班表失敗');
+      showMessage('載入失敗');
       return;
     }
 
     allGames = res.games || [];
+
+    // ✅ ✅ ✅ 關鍵（補空資料）
+    if (!allGames.length) {
+      showMessage('當月無賽事');
+      document.getElementById('content').innerHTML = '';
+      document.getElementById('mobileView').innerHTML = '';
+      return;
+    }
 
     render();
     renderMobile();
