@@ -684,6 +684,19 @@ td:nth-child(5) {
 let session;
 let games = [];
 
+function reloadCurrentView() {
+
+  // ✅ 強制重新抓 session（避免 cache 問題）
+  session = JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  if (currentMonth === null) {
+    loadGames();
+  } else {
+    loadRecordGamesByMonth(currentYear, currentMonth);
+  }
+}
+
+  
 // 組別對應顏色
 function applyCategoryBadgeColor() {
   const colorMap = {
@@ -992,64 +1005,107 @@ function renderSignupCell(g, role) {
 
   const slot = g.record_slots?.[role];
 
-  // ✅ ✅ ✅ 過期邏輯（顯示但不可操作）
   if (isPastGame(g.date)) {
-
-    if (slot) {
-      return `<span class="signup-other">${slot.name}</span>`; // ✅ 顯示名字
+    if (slot && slot.user_id) {
+      return `<span class="signup-other">${slot.name}</span>`;
     }
-
     return `<span class="signup-other">—</span>`;
   }
 
-  // ✅ 沒人 → 可報名
-  if (!slot) {
-    return `<span class="signup-btn" onclick="signup('${g.game_id}','${role}')">＋報名</span>`;
-  }
+  if (slot && String(slot.user_id).trim() !== '') {
 
-  // ✅ 自己
-  if (String(slot.user_id) === String(session.user_id)) {
-    return `
-      <span class="signup-me">
-        ${slot.name || '我'}
-        <span class="cancel-btn"
-          onclick="cancelSignup('${g.game_id}','${role}')">
-          取消
+    const name = slot.name || ('ID:' + slot.user_id);
+
+    if (String(slot.user_id) === String(session.user_id)) {
+      return `
+        <span class="signup-me">
+          ${name}
+          <span class="cancel-btn"
+            onclick="cancelSignup('${g.game_id}','${role}')">
+            取消
+          </span>
         </span>
-      </span>`;
+      `;
+    }
+
+    return `<span class="signup-other">${name}</span>`;
   }
 
-  // ✅ 他人
-  return `<span class="signup-other">${slot.name}</span>`;
+  return `
+    <span class="signup-btn"
+      onclick="signup('${g.game_id}','${role}')">
+      ＋報名
+    </span>
+  `;
 }
 
 /* ===== Actions ===== */
 function signup(gameId, role) {
+
   showToast('報名中...');
+
   callApi({
-    action:'recordSignup',
+    action: 'recordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
   }, res => {
-    res?.result === 'ok' ? (showToast('報名成功'), loadGames())
-                         : showToast(res?.message||'報名失敗','error');
+
+    console.log('signup res:', res);  // ✅ debug
+
+    if (!res) {
+      showToast('系統無回應', 'error');
+      return;
+    }
+
+    if (res.result === 'ok') {
+
+      showToast('報名成功');
+
+      // ✅ ✅ ✅ 🔥 強制 reload（重點）
+      reloadCurrentView();
+
+    } else {
+      showToast(res.message || '報名失敗', 'error');
+    }
   });
 }
 
+
+
 function cancelSignup(gameId, role) {
+
   if (!confirm('確定取消此場紀錄？')) return;
+
   showToast('取消中...');
+
   callApi({
-    action:'cancelRecordSignup',
+    action: 'cancelRecordSignup',
     user_id: session.user_id,
     game_id: gameId,
     record_role: role
   }, res => {
-    res?.result === 'ok' ? (showToast('已取消'), loadGames())
-                         : showToast(res?.message||'取消失敗','error');
+
+    console.log('cancel res:', res);
+
+    if (!res) {
+      showToast('系統無回應', 'error');
+      return;
+    }
+
+    if (res.result === 'ok') {
+
+      showToast('已取消');
+
+      // ✅ ✅ ✅ 🔥 同樣 reload
+      reloadCurrentView();
+
+    } else {
+      showToast(res.message || '取消失敗', 'error');
+    }
   });
 }
+
 
 function recordSignup(gameId, role) {
   const session = getSession();
@@ -1091,17 +1147,30 @@ function renderMobileRecord(list) {
 
   const grouped = groupGames(list);
 
-  Object.keys(grouped).sort().forEach(date => {
+  // ✅ ✅ ✅ 日期排序（關鍵修正）
+  const dates = Object.keys(grouped).sort((a, b) => {
+    return new Date(a.replace(/\//g, '-')) - new Date(b.replace(/\//g, '-'));
+  });
+
+  // ✅ 全年提示
+  if (currentMonth === null) {
+    root.insertAdjacentHTML(
+      'beforeend',
+      '<div class="hint">※ 過期賽事請看「單月班表」</div>'
+    );
+  }
+
+  dates.forEach(date => {
 
     const isPast = isPastGame(date);
 
-    // ✅ 全年：不顯示過期
+    // ✅ 全年隱藏過期
     if (currentMonth === null && isPast) return;
 
     const dateBox = document.createElement('div');
     dateBox.className = 'm-date-box';
 
-    // ✅ ✅ ✅ 單月灰底
+    // ✅ 單月灰底
     if (currentMonth !== null && isPast) {
       dateBox.style.background = '#f3f4f6';
       dateBox.style.opacity = '0.85';
@@ -1123,13 +1192,16 @@ function renderMobileRecord(list) {
       );
 
       grouped[date][cat].forEach(g => {
+
         groupBox.insertAdjacentHTML('beforeend', `
           <div class="record-card ${isPast ? 'expired-card' : ''}">
+
             <div class="mobile-time-row">
               <div class="time">⏰ ${g.time}</div>
               <div class="game-code badge">${g.game_code}</div>
               <div class="field">📍 ${g.field}</div>
             </div>
+
             <div class="mobile-teams">
               <strong>${g.away_team}</strong>
               <span class="vs">vs</span>
@@ -1141,6 +1213,7 @@ function renderMobileRecord(list) {
               ${renderRecordMobileRole(g,'REC_TRAINEE','見習')}
               ${renderRecordMobileRole(g,'REC_VIDEO','影像')}
             </div>
+
           </div>
         `);
       });
@@ -1151,6 +1224,7 @@ function renderMobileRecord(list) {
     root.appendChild(dateBox);
   });
 }
+
 
 
 
@@ -1211,9 +1285,10 @@ function renderRecordMobileRole(g, role, label) {
 
 // 產生月班表
 function loadRecordGamesByMonth(year, month) {
+
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
 
-  showLoading('載入月份班表中...'); // ✅ 補 loading
+  showLoading('載入月份班表中...');
 
   callApi({
     action: 'getRecordGamesByMonth',
@@ -1222,16 +1297,18 @@ function loadRecordGamesByMonth(year, month) {
     user_id: session.user_id
   }, res => {
 
-    hideOverlay(); // ✅ 關 loading
+    hideOverlay();
+
+    console.log('month res:', res); // ✅ debug
 
     if (!res || res.result !== 'ok') {
       showMessage('載入失敗');
       return;
     }
 
-    games = (res.games || []).map(normalizeGame);
+    // ✅ ✅ ✅ 🔥 這行是很多人漏掉的
+    games = res.games || [];
 
-    // ✅ ✅ ✅ 補：空資料提示（你現在缺這個）
     if (!games.length) {
       showMessage('當月無賽事');
       document.getElementById('recordContainer').innerHTML = '';
@@ -1244,8 +1321,9 @@ function loadRecordGamesByMonth(year, month) {
   });
 }
 
-// 初始化月份
+// 初始化月份／年份
 let currentMonth = null;
+let currentYear = null;
 
 function initMonthTabs() {
 
@@ -1255,35 +1333,36 @@ function initMonthTabs() {
   const container = document.getElementById('month-tabs');
   container.innerHTML = '';
 
-  // ✅ ✅ ✅ 全年按鈕
+  /* ✅ 全年 */
   const allBtn = document.createElement('div');
   allBtn.className = 'month-tab active';
   allBtn.textContent = '📊 全年班表';
 
   allBtn.onclick = () => {
     currentMonth = null;
+    currentYear = null;
     setActiveTab(allBtn);
-    loadGames(); // ✅ 回原本全部
+
+    loadGames(); // ✅ 全年
   };
 
   container.appendChild(allBtn);
 
-
-  // ✅ 月份
+  /* ✅ 月份 */
   for (let m = 1; m <= 12; m++) {
 
     const div = document.createElement('div');
     div.className = 'month-tab';
     div.textContent = `${m}月`;
 
-    if (m === now.getMonth() + 1) {
-      // 預設不要 active（讓全年是預設）
-    }
-
     div.onclick = () => {
+
       currentMonth = m;
+      currentYear = year;   // ✅ ✅ ✅ 記住年份（關鍵）
+
       setActiveTab(div);
-      loadRecordGamesByMonth(year, m);
+
+      loadRecordGamesByMonth(year, m); // ✅ 月
     };
 
     container.appendChild(div);
