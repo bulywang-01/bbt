@@ -1006,28 +1006,33 @@ function renderSignupCell(g, role) {
   const slots = g.record_slots || {};
   const slot = slots[role];
 
-  console.log('CHECK:', g.game_id, role, slot); // ✅ debug
+  console.log('CHECK:', g.game_id, role, slot);
 
   /* ✅ 過期 */
   if (isPastGame(g.date)) {
 
-    if (slot) {
-      return `<span class="signup-other">${slot.name}</span>`;
+    if (slot && slot.user_id) {
+      return `<span class="signup-other">${slot.name || '（未命名）'}</span>`;
     }
 
     return `<span class="signup-other">—</span>`;
   }
 
-  /* ✅ ✅ ✅ 🔥 真正修正點（保證抓得到） */
+  /* ✅ ✅ ✅ 🔥 關鍵修正（保證顯示 signup） */
 
-  if (slot && slot.user_id) {
+  if (slot && String(slot.user_id).trim() !== '') {
+
+    // ✅ 🔥 防止 name 空被當作沒人
+    const displayName = slot.name && slot.name.trim()
+      ? slot.name
+      : ('ID:' + slot.user_id);
 
     const isMe = String(slot.user_id) === String(session.user_id);
 
     if (isMe) {
       return `
         <span class="signup-me">
-          ${slot.name || '我'}
+          ${displayName}
           <span class="cancel-btn"
             onclick="cancelSignup('${g.game_id}','${role}')">
             取消
@@ -1036,10 +1041,10 @@ function renderSignupCell(g, role) {
       `;
     }
 
-    return `<span class="signup-other">${slot.name}</span>`;
+    return `<span class="signup-other">${displayName}</span>`;
   }
 
-  /* ✅ 可報名 */
+  /* ✅ fallback（真的沒人） */
   return `
     <span class="signup-btn"
       onclick="signup('${g.game_id}','${role}')">
