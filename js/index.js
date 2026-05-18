@@ -163,64 +163,72 @@ function computeStats(judgeGames, recordGames) {
 function renderStats() {
 
   const now = new Date();
+  const currentYear = now.getFullYear();
 
-  let judgeDone = 0, judgePending = 0;
-  let recordDone = 0, recordPending = 0;
+  let judgeDone = 0, judgePending = 0, judgeCareer = 0;
+  let recordDone = 0, recordPending = 0, recordCareer = 0;
 
-  function isDone(g){
-    const d = new Date(g.date.replace(/\//g,'-'));
-    return d < now;
+  function parse(g){
+    return new Date(g.date.replace(/\//g,'-'));
   }
 
   /* ✅ 裁判 */
   judgeGames.forEach(g => {
+
     if (!g.role) return;
 
-    if (isDone(g)) judgeDone++;
-    else judgePending++;
+    const d = parse(g);
+
+    if (d < now) {
+      judgeCareer++;
+      if (d.getFullYear() === currentYear) judgeDone++;
+    } else {
+      judgePending++;
+    }
   });
 
   /* ✅ 紀錄 */
   recordGames.forEach(g => {
+
     if (!g.record_role) return;
 
-    if (isDone(g)) recordDone++;
-    else recordPending++;
-  });
+    const d = parse(g);
 
-  const judgeCareer = judgeDone;   // ✅ 生涯只算完賽
-  const recordCareer = recordDone;
+    if (d < now) {
+      recordCareer++;
+      if (d.getFullYear() === currentYear) recordDone++;
+    } else {
+      recordPending++;
+    }
+  });
 
   const totalDone = judgeDone + recordDone;
   const totalPending = judgePending + recordPending;
   const totalCareer = judgeCareer + recordCareer;
 
-  /* ✅ 👉 UI（有圖版） */
+  /* ✅ UI（橫排極簡版） */
 
   document.getElementById('stat-judge').innerHTML = `
     <div class="stat-main">${judgeDone}</div>
-    <div class="stat-subline">
-      <span class="badge done">✅ ${judgeDone}</span>
-      <span class="badge pending">🟡 ${judgePending}</span>
-      <span class="badge total">⚫ ${judgeCareer}</span>
+    <div class="stat-row">
+      <span class="icon pending">未 ${judgePending}</span>
+      <span class="icon career">生 ${judgeCareer}</span>
     </div>
   `;
 
   document.getElementById('stat-record').innerHTML = `
     <div class="stat-main">${recordDone}</div>
-    <div class="stat-subline">
-      <span class="badge done">✅ ${recordDone}</span>
-      <span class="badge pending">🟡 ${recordPending}</span>
-      <span class="badge total">⚫ ${recordCareer}</span>
+    <div class="stat-row">
+      <span class="icon pending">未 ${recordPending}</span>
+      <span class="icon career">生 ${recordCareer}</span>
     </div>
   `;
 
   document.getElementById('stat-total').innerHTML = `
     <div class="stat-main">${totalDone}</div>
-    <div class="stat-subline">
-      <span class="badge done">✅ ${totalDone}</span>
-      <span class="badge pending">🟡 ${totalPending}</span>
-      <span class="badge total">⚫ ${totalCareer}</span>
+    <div class="stat-row">
+      <span class="icon pending">未 ${totalPending}</span>
+      <span class="icon career">生 ${totalCareer}</span>
     </div>
   `;
 }
