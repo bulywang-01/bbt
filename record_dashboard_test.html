@@ -562,6 +562,29 @@ td:nth-child(5) {
   border-top: 2px dashed #e0e0e0;
 }
 
+// 月班表選項
+.month-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.month-tab {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #e5e7eb;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.month-tab.active {
+  background: #2563eb;
+  color: #fff;
+}
+
 </style>
 </head>
 
@@ -1101,7 +1124,7 @@ function loadRecordGamesByMonth(year, month) {
       return;
     }
 
-    allGames = res.games || [];
+    games = res.games || [];   // ✅ 改這行（關鍵）
 
     renderRecordDashboard(games);
     renderMobileRecord(games);
