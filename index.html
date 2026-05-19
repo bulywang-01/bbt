@@ -72,7 +72,7 @@
     .weekly-card {
       background: linear-gradient(180deg, #ffffff, #f9fafc);
       border-radius: 16px;
-      padding: 16px 18px;
+      padding: 16px;
       margin-bottom: 18px;
     
       box-shadow: 
@@ -386,18 +386,23 @@
 
     /* 本週班表關閉紐 */
     .close-btn.full{
-        width: 100%;
-        padding: 14px 0;
-        border-radius: 12px;
-      
-        background: #4a7ef5;
-        color: #fff;
-      
-        font-size: 16px;
-        font-weight: 800;
-      
-        border: none;
-        margin-top: 16px;
+
+      width: 100%;
+      padding: 14px 0;
+    
+      border-radius: 12px;
+      border: none;
+    
+      background: linear-gradient(135deg, #4a7ef5, #3b6eea);
+      color: #fff;
+    
+      font-size: 16px;
+      font-weight: 800;
+    
+      margin-top: 16px;
+    
+      box-shadow: 0 6px 16px rgba(74,126,245,0.35);
+
     }
     
     /* 手機更貼底 */
@@ -427,26 +432,37 @@
     .row-all{
       margin-top:6px;
       overflow: hidden;   /* ✅ 防止內容溢出 */
+      width: 100%;
     }
     
+    .row-inner{
+      width: 100%;
+      margin: 0 auto;   /* ✅ 置中關鍵 */
+      max-width: 100%;  /* ✅ 不超出 */
+    }
+
     /* ✅ 控制兩排 */
     .row-line{
-      display:flex;
-      gap:8px;
+      display: flex;
+      gap:０px;
       font-size:13px;　/* ✅ 超重要：縮小讓6格能塞 */
     
       /* ✅ 關鍵：不換行 */
       flex-wrap: nowrap;
       width: 100%;
+      max-width: 100%;
 
-      /* ✅ 改這個（關鍵） */
+      /* ✅ 關鍵：不要space-between */
       justify-content: center;
+
+      /* ✅ 防止撐破 */
+      overflow: hidden;
     }
     
     /* ✅ 每格 */
     .col{
       text-align:center;
-      flex: 1;
+      flex: 1 1 0;   /* ✅ 真正平均分配（關鍵） */
       /* ✅ 真正置中關鍵 */
       display: flex;
       justify-content: center;
@@ -493,9 +509,9 @@
     .row-line.values .col {
       font-size: 15px;
       font-weight: 800;
-      color: #111;
+      color: #111827;
     }
-        
+
     .weekly-card:nth-child(even){
       background: linear-gradient(
         180deg,
@@ -798,7 +814,7 @@
   
       <div id="my-schedule-list"></div>
   
-      <button class="close-btn full" onclick="hideOverlay('schedule-overlay')">
+      <button class="close-btn" onclick="hideOverlay('schedule-overlay')">
         關閉
       </button>
     </div>
