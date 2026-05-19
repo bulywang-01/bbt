@@ -59,8 +59,13 @@
       padding: 20px 16px;
       overflow-y: auto;
       box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+      
+      /* ✅ 重點 */
+      box-sizing: border-box;
+    
+      /* ✅ ✅ ✅ 關鍵補這個 */
+      padding-right: 6px;
     }
-
     
     .weekly-card:hover{
       transform: translateY(-1px);
@@ -382,7 +387,6 @@
     
     .schedule-role-group{
       margin-top: 4px;
-      font-size: 16px;
     }
 
     /* 本週班表關閉紐 */
@@ -444,51 +448,52 @@
 
     /* ✅ 控制兩排 */
     .row-line{
-      display: flex;
-      gap:０px;
-      font-size:13px;　/* ✅ 超重要：縮小讓6格能塞 */
+      display: grid;
+      font-size:14px;　/* ✅ 超重要：縮小讓6格能塞 */
     
       /* ✅ 關鍵：不換行 */
       flex-wrap: nowrap;
       width: 100%;
       max-width: 100%;
-
-      /* ✅ 關鍵：不要space-between */
-      justify-content: center;
-
       /* ✅ 防止撐破 */
       overflow: hidden;
+      /* ✅ 固定六欄（關鍵） */
+      grid-template-columns: repeat(6, 1fr);
     }
     
     /* ✅ 每格 */
     .col{
-      text-align:center;
-      flex: 1 1 0;   /* ✅ 真正平均分配（關鍵） */
-      /* ✅ 真正置中關鍵 */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      
-      /* ✅ 防止撐開 */
+      text-align:center;      
       min-width: 0;
+      text-align: center;
+    }
+
+    /* ✅ 每格 */
+    .row-line > div {
+      text-align: center;
+    
+      /* ✅ 關鍵：強制填滿 */
+      width: 100%;
     }
 
     .row-line.header{
       color:#9ca3af;
       width: 100%;
+      margin-top:2px;    
+      padding: 0 !important;
     }
     
-    .row-line.values{
-      color:#111827;
-      width: 100%;
-    }
-
     /* ✅ 上排（職稱）→ 清楚但不搶眼 */
     .row-line.header .role{
       font-size:12px;
       color:#8a94a6;
       font-weight:600;
     }
+
+    .row-line.header .col {
+      font-size: 12px;
+      color: #9aa5b1;
+    }    
     
     /* ✅ 下排（名字）→ 主體 */
     .row-line.values .name{
@@ -500,13 +505,10 @@
     /* ✅ 讓整體更穩 */
     .row-line.values{
       margin-top:2px;
+      color:#111827;
+      width: 100%;
     }
 
-    .row-line.header .col {
-      font-size: 12px;
-      color: #9aa5b1;
-    }
-    
     .row-line.values .col {
       font-size: 15px;
       font-weight: 800;
@@ -519,6 +521,56 @@
         #ffffff 0%,
         #f8fbff 100%
       );
+    }
+
+    #schedule-tip {
+      display: none;  /* ✅ 預設隱藏 */
+    
+      margin: 12px 0;
+      padding: 12px 16px;
+    
+      border-radius: 12px;
+    
+      /* ✅ 主色（偏藍，符合你目前系統） */
+      background: linear-gradient(135deg, #e7f0ff, #f2f7ff);
+    
+      color: #1e40af;
+      font-size: 14px;
+      font-weight: 700;
+    
+      border: 1px solid #d6e4ff;
+    
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    
+      /* ✅ 讓文字好讀 */
+      line-height: 1.5;
+    
+      /* ✅ 微動畫（出現比較自然） */
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: all 0.2s ease;
+    }
+
+    #schedule-tip.show {
+      display: block;
+    
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    #weeklyContent .row-line {
+      display: grid !important;
+      grid-template-columns: repeat(6, 1fr) !important;
+      width: 100% !important;
+    }
+    
+    #weeklyContent .row-line > div,
+    #weeklyContent .row-line > .col {
+      width: 100% !important;
+      text-align: center !important;
+    
+      /* ❗ 強制取消 flex */
+      display: block !important;
     }
 
   </style>
