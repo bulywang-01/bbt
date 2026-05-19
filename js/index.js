@@ -671,26 +671,33 @@ function renderRecordSlots(records) {
 // 裁判和紀錄合併成一列
 function renderAllRolesRow(g, judges, records){
 
-  const judgeRoles = [
-    ['PU','主審'],
-    ['U1','一壘'],
-    ['U2','二壘'],
-    ['U3','三壘']
-  ];
+  const count = Number(g.umpire_count);
 
+  // ✅ 裁判動態
+  const judgeRoles = [];
+  if (count >= 1) judgeRoles.push(['PU','主審']);
+  if (count >= 2) judgeRoles.push(['U1','一壘']);
+  if (count >= 4) judgeRoles.push(['U2','二壘']);
+  if (count >= 3) judgeRoles.push(['U3','三壘']);
+
+  // ✅ 紀錄固定
   const recordRoles = [
     ['REC_MAIN','記錄'],
     ['REC_TRAINEE','見習'],
     ['REC_VIDEO','影像']
   ];
 
-  // ✅ 組 header（上排）
-  const header = [
+  const allRoles = [
     ...judgeRoles,
     ...recordRoles
-  ].map(([k,label]) => `<div class="col role">${label}</div>`).join('');
+  ];
 
-  // ✅ 組值（下排）
+  // ✅ 上排（職稱）
+  const header = allRoles.map(([k,label]) =>
+    `<div class="col role">${label}</div>`
+  ).join('');
+
+  // ✅ 下排（名字）
   const values = [
     ...judgeRoles.map(([k]) => judges[k] || '—'),
     ...recordRoles.map(([k]) => records[k] || '—')
