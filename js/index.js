@@ -719,15 +719,14 @@ function renderAllRolesRow(g, judges, records){
 
   return `
     <div class="row-all">
-
-      <div class="row-line header">
-        ${header}
+      <div class="row-inner">   <!-- ✅ 新增這層 -->
+        <div class="row-line header">
+          ${header}
+        </div>
+        <div class="row-line values">
+          ${values}
+        </div>
       </div>
-
-      <div class="row-line values">
-        ${values}
-      </div>
-
     </div>
   `;
 }
