@@ -449,7 +449,7 @@
     /* ✅ 控制兩排 */
     .row-line{
       display: grid;
-      font-size:13px;　/* ✅ 超重要：縮小讓6格能塞 */
+      font-size:14px;　/* ✅ 超重要：縮小讓6格能塞 */
     
       /* ✅ 關鍵：不換行 */
       flex-wrap: nowrap;
@@ -474,6 +474,14 @@
       text-align: center;
     }
 
+    /* ✅ 每格 */
+    .row-line > div {
+      text-align: center;
+    
+      /* ✅ 關鍵：強制填滿 */
+      width: 100%;
+    }
+
     .row-line > .col{
       flex: 1;
       text-align: center;
@@ -495,6 +503,11 @@
       color:#8a94a6;
       font-weight:600;
     }
+
+    .row-line.header .col {
+      font-size: 12px;
+      color: #9aa5b1;
+    }    
     
     /* ✅ 下排（名字）→ 主體 */
     .row-line.values .name{
@@ -510,11 +523,6 @@
       width: 100%;
     }
 
-    .row-line.header .col {
-      font-size: 12px;
-      color: #9aa5b1;
-    }
-    
     .row-line.values .col {
       font-size: 15px;
       font-weight: 800;
