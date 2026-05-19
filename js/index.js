@@ -710,4 +710,3 @@ function renderAllRolesRow(g, judges, records){
     </div>
   `;
 }
-
