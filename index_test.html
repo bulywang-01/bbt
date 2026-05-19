@@ -26,11 +26,14 @@
     }
     
     .panel {
-      background: #fff;
-      border-radius: 16px;
+      background: #fdfefe;
+      border-radius: 18px;
       padding: 20px 16px;
       margin-bottom: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    
+      box-shadow: 
+        0 8px 20px rgba(0,0,0,.06),
+        0 1px 0 rgba(255,255,255,0.7) inset;
     }
     
     /* ===== Overlay ===== */
@@ -170,12 +173,30 @@
     
     /* ===== stats ===== */
     .stat-card {
-      background: linear-gradient(135deg, #f8fbff, #ffffff);
+      background: #fff;
       border-radius: 14px;
-      padding: 12px 8px;
+      padding: 14px 10px;
+    
+      text-align: center;
+    
       border: 1px solid #e5e7eb;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    
+      /* ✅ 這個就是差別 */
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    
+      transition: all 0.2s ease;
     }
+    
+    /* ✅ hover */
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    }
+    
+    /* ✅ 上色條（保留你的） */
+    .stat-card:nth-child(1) { border-top: 4px solid #1976d2; }
+    .stat-card:nth-child(2) { border-top: 4px solid #2e7d32; }
+    .stat-card:nth-child(3) { border-top: 4px solid #ef6c00; }
     
     .stat-main{
       font-size:28px;
@@ -189,6 +210,37 @@
       gap:14px;
       margin-top:6px;
       font-size:13px;
+    }
+    
+    .pill {
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+    
+      border: none;
+      cursor: pointer;
+    
+      transition: all 0.2s ease;
+    }
+    
+    .pill-blue {
+      background: #e7f0ff;
+      color: #2563eb;
+    }
+    
+    .pill-green {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .pill-orange {
+      background: #fff1e6;
+      color: #ea580c;
+    }
+    
+    .pill:hover {
+      transform: translateY(-1px);
     }
 
   </style>
