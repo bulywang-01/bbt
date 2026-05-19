@@ -463,13 +463,7 @@
     
     /* ✅ 每格 */
     .col{
-      text-align:center;
-      flex: 1 1 0;   /* ✅ 真正平均分配（關鍵） */
-      /* ✅ 真正置中關鍵 */
-      display: flex;
-      align-items: center;
-      
-      /* ✅ 防止撐開 */
+      text-align:center;      
       min-width: 0;
       text-align: center;
     }
@@ -480,15 +474,6 @@
     
       /* ✅ 關鍵：強制填滿 */
       width: 100%;
-    }
-
-    .row-line > .col{
-      flex: 1;
-      text-align: center;
-    
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
     .row-line.header{
