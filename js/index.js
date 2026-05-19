@@ -488,7 +488,7 @@ function closeWeeklyModal() {
 /* =========================
  * ✅ Render 主畫面
  * ========================= */
-/* 直式的格式
+/* 直式的格式　*/
 function renderWeeklySchedule(games) {
 
   const root = document.getElementById('weeklyContent');
@@ -549,125 +549,6 @@ function renderWeeklySchedule(games) {
 
     root.appendChild(div);
   });
-}
-*/
-
-/* 橫式的格式 */
-function renderWeeklySchedule(games) {
-
-  const root = document.getElementById('weeklyContent');
-  root.innerHTML = '';
-
-  if (!games.length) {
-    root.innerHTML = '<div class="empty">本週沒有賽事</div>';
-    return;
-  }
-
-  games.forEach(g => {
-
-    const judges = g.judges || {};
-    const records = g.records || {};
-
-    const div = document.createElement('div');
-    div.className = 'weekly-card pro';
-
-    div.innerHTML = `
-
-      <div class="row">
-
-        <!-- ✅ 左邊 -->
-        <div class="left">
-
-          <div class="game-code">${g.game_code}</div>
-          <div class="group">${g.group}</div>
-
-          <div class="teams">
-            ${g.away} <span>vs</span> ${g.home}
-          </div>
-
-          <div class="time">
-            ${formatZhDate(g.date)} ${formatTimeOnly(g.time)}
-          </div>
-
-          <div class="field">
-            📍 ${g.field}
-          </div>
-
-        </div>
-
-        <!-- ✅ 右邊（重點） -->
-        <div class="right">
-
-          <!-- 裁判 -->
-          <div class="line">
-            <div class="label">🧑‍⚖️ 裁判</div>
-            <div class="slots">
-              ${renderJudgeBar(judges)}
-            </div>
-          </div>
-
-          <!-- 紀錄 -->
-          <div class="line">
-            <div class="label">📝 紀錄</div>
-            <div class="slots">
-              ${renderRecordBar(records)}
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    `;
-
-    root.appendChild(div);
-  });
-}
-
-
-// 接上，搭配的部份：裁判
-function renderJudgeBar(judges){
-
-  const roles = [
-    ['PU','主審'],
-    ['U1','一壘'],
-    ['U2','二壘'],
-    ['U3','三壘']
-  ];
-
-  return roles.map(([key,label]) => {
-
-    const name = judges[key] || '';
-
-    return `
-      <div class="pill">
-        <div class="role">${label}</div>
-        <div class="name">${name}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-
-// 接上，搭配的部份：紀錄
-function renderRecordBar(records){
-
-  const roles = [
-    ['REC_MAIN','記錄'],
-    ['REC_TRAINEE','見習'],
-    ['REC_VIDEO','影像']
-  ];
-
-  return roles.map(([key,label]) => {
-
-    const name = records[key] || '';
-
-    return `
-      <div class="pill">
-        <div class="role">${label}</div>
-        <div class="name">${name}</div>
-      </div>
-    `;
-  }).join('');
 }
 
 
