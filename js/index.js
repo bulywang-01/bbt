@@ -362,19 +362,20 @@ function renderMergedCards(games) {
   
     card.innerHTML = `
     
-      <!-- ✅ 第一段：日期 + 場次 + 組別 + 場地 -->
-      <div class="schedule-date-text">
-        ${formatZhDate(g.date)}　${g.game_code} -
-        <br>
-        ${g.group}　📍 ${g.field}
+      <!-- ✅ 第一列 -->
+      <div class="schedule-line-1">
+        ${formatZhDate(g.date)}　
+        ${g.game_code} - ${g.group}　
+        📍 ${g.field}
       </div>
     
-      <!-- ✅ 第二段：時間 + 對戰 -->
-      <div class="schedule-info-row">
-        <div>⏰ ${formatTimeOnly(g.time)}　${g.away} vs ${g.home}</div>
+      <!-- ✅ 第二列 -->
+      <div class="schedule-line-2">
+        ${formatTimeOnly(g.time)}　
+        ${g.away} vs ${g.home}
       </div>
     
-      <!-- ✅ 保留你原本角色 -->
+      <!-- ✅ 保留角色 -->
       <div class="schedule-role-group">
         ${roles}
       </div>
