@@ -579,13 +579,20 @@ function renderWeeklySchedule(games) {
     
     div.innerHTML = `
     
+      <!-- ✅ 兩列資訊 -->
       <div class="game-line-1">
         ${formatZhDate(g.date)}　${g.game_code} - ${g.group}　📍 ${g.field}
       </div>
-      
+    
       <div class="game-line-2">
         ${formatTimeOnly(g.time)}　${g.away} vs ${g.home}
       </div>
+    
+      <!-- ✅ 裁判 -->
+      <div class="section">${renderUmpireSlots(g, judges)}</div>
+    
+      <!-- ✅ 紀錄 -->
+      <div class="section">${renderRecordSlots(records)}</div>
     
     `;
 
