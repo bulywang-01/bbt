@@ -432,21 +432,25 @@
     /* ✅ 控制兩排 */
     .row-line{
       display:flex;
-      gap:8px;
+      gap:０px;
       font-size:13px;　/* ✅ 超重要：縮小讓6格能塞 */
     
       /* ✅ 關鍵：不換行 */
       flex-wrap: nowrap;
       width: 100%;
+      max-width: 100%;
 
-      /* ✅ 改這個（關鍵） */
+      /* ✅ 關鍵：不要space-between */
       justify-content: center;
+
+      /* ✅ 防止撐破 */
+      overflow: hidden;
     }
     
     /* ✅ 每格 */
     .col{
       text-align:center;
-      flex: 1;
+      flex: 1 1 0;   /* ✅ 真正平均分配（關鍵） */
       /* ✅ 真正置中關鍵 */
       display: flex;
       justify-content: center;
@@ -493,9 +497,9 @@
     .row-line.values .col {
       font-size: 15px;
       font-weight: 800;
-      color: #111;
+      color: #111827;
     }
-        
+
     .weekly-card:nth-child(even){
       background: linear-gradient(
         180deg,
