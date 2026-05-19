@@ -436,22 +436,31 @@
     
       /* ✅ 關鍵：不換行 */
       flex-wrap: nowrap;
+      width: 100%;
+      /* ✅ 平均分配 */
+      justify-content: space-between;
     }
     
     /* ✅ 每格 */
     .col{
-      flex:1;
       text-align:center;
+      flex: 1;
+      /* ✅ 真正置中關鍵 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .row-line.header{
       color:#9ca3af;
+      width: 100%;
     }
     
     .row-line.values{
       color:#111827;
+      width: 100%;
     }
-    
+
     /* ✅ 上排（職稱）→ 清楚但不搶眼 */
     .row-line.header .role{
       font-size:12px;
@@ -471,6 +480,17 @@
       margin-top:2px;
     }
 
+    .row-line.header .col {
+      font-size: 12px;
+      color: #9aa5b1;
+    }
+    
+    .row-line.values .col {
+      font-size: 15px;
+      font-weight: 800;
+      color: #111;
+    }
+        
     .weekly-card:nth-child(even){
       background: linear-gradient(
         180deg,
