@@ -437,8 +437,9 @@
       /* ✅ 關鍵：不換行 */
       flex-wrap: nowrap;
       width: 100%;
-      /* ✅ 平均分配 */
-      justify-content: space-between;
+
+      /* ✅ 改這個（關鍵） */
+      justify-content: center;
     }
     
     /* ✅ 每格 */
@@ -449,6 +450,9 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      
+      /* ✅ 防止撐開 */
+      min-width: 0;
     }
 
     .row-line.header{
