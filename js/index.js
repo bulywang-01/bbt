@@ -608,28 +608,30 @@ function renderWeeklySchedule(games) {
 function renderUmpireSlots(g, judges) {
 
   const count = Number(g.umpire_count);
+
   const slots = [];
 
-  if (count === 0) {
-    return `<div class="empty">不用裁判</div>`;
-  }
+  if (count >= 1) slots.push(['PU','主審']);
+  if (count >= 2) slots.push(['U1','一壘審']);
+  if (count >= 4) slots.push(['U2','二壘審']);
+  if (count >= 3) slots.push(['U3','三壘審']);
 
-  if (count >= 1) slots.push(['PU', '主審']);
-  if (count >= 2) slots.push(['U1', '一壘審']);
-  if (count >= 4) slots.push(['U2', '二壘審']);
-  if (count >= 3) slots.push(['U3', '三壘審']);
+  return `
+    <div class="grid">
+      ${slots.map(([key, label]) => {
 
-  return slots.map(([key, label]) => {
-    const name = judges[key] || '';
-    return `
-      <div class="slot">
-        <div class="role">${label}</div>
-        <div class="name">${name}</div>
-      </div>
-    `;
-  }).join('');
+        const name = judges[key] || '';
+
+        return `
+          <div class="slot">
+            <div class="role">${label}</div>
+            <div class="name">${name}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
 }
-
 
 /* =========================
  * ✅ 紀錄 slots（固定3格）
@@ -642,15 +644,22 @@ function renderRecordSlots(records) {
     ['REC_VIDEO', '影像']
   ];
 
-  return roles.map(([key, label]) => {
-    const name = records[key] || '';
-    return `
-      <div class="slot">
-        <div class="role">${label}</div>
-        <div class="name">${name}</div>
-      </div>
-    `;
-  }).join('');
+  return `
+    <div class="grid">
+      ${roles.map(([key, label]) => {
+
+        const name = records[key] || '';
+
+        return `
+          <div class="slot">
+            <div class="role">${label}</div>
+            <div class="name">${name}</div>
+          </div>
+        `;
+
+      }).join('')}
+    </div>
+  `;
 }
 
 
