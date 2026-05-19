@@ -243,6 +243,27 @@
       transform: translateY(-1px);
     }
 
+    .user-stats {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 12px;
+      min-height: 90px;    /* ✅ 控制高度 */
+      margin: 16px 0;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #1a237e;
+    }
+    
+    .stat-sub {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
   </style>
 
 </head>
