@@ -578,19 +578,24 @@ function renderWeeklySchedule(games) {
     
     div.innerHTML = `
     
-      <div class="game-code">${g.game_code || '-'}</div>
-      <div class="game-group ${groupClass}">${g.group || ''}</div>
-      <div class="game-match">${g.away} <span>vs</span> ${g.home}</div>
-      <div class="game-time">${formatZhDate(g.date)} ${formatTimeOnly(g.time)}</div>
-      <div class="game-field">📍 ${g.field || ''}</div>
-      <div class="section">
-        <div class="label">🧑‍⚖️ 裁判</div>
-        <div class="grid">${renderUmpireSlots(g, judges)}</div>
+      <div class="game-code">${g.game_code}</div>
+      <div class="game-group">${g.group}</div>
+      <div class="game-match">
+        ${g.away} <span>vs</span> ${g.home}
+      </div>
+      <div class="game-time">
+        ${formatZhDate(g.date)}　${formatTimeOnly(g.time)}
+      </div>
+      <div class="game-field">
+        📍 ${g.field}
       </div>
       <div class="section">
-        <div class="label">📝 紀錄</div>
-        <div class="grid">${renderRecordSlots(records)}</div>
+        ${renderUmpireSlots(g, judges)}
       </div>
+      <div class="section">
+        ${renderRecordSlots(records)}
+      </div>
+    
     `;
 
     root.appendChild(div);
