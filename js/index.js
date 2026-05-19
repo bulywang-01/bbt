@@ -488,7 +488,7 @@ function closeWeeklyModal() {
 /* =========================
  * ✅ Render 主畫面
  * ========================= */
-/* 直式的格式　*/
+/* 直式的格式
 function renderWeeklySchedule(games) {
 
   const root = document.getElementById('weeklyContent');
@@ -550,7 +550,47 @@ function renderWeeklySchedule(games) {
     root.appendChild(div);
   });
 }
+　*/
 
+function renderWeeklySchedule(games) {
+
+  const root = document.getElementById('weeklyContent');
+  root.innerHTML = '';
+
+  if (!games.length) {
+    root.innerHTML = '<div class="empty">本週沒有賽事</div>';
+    return;
+  }
+
+  games.forEach(g => {
+
+    const judges = g.judges || {};
+    const records = g.records || {};
+
+    const div = document.createElement('div');
+    div.className = 'weekly-card';
+    const groupClass = getGroupClass(g.group);
+    
+    div.innerHTML = `
+    
+      <div class="game-code">${g.game_code || '-'}</div>
+      <div class="game-group ${groupClass}">${g.group || ''}</div>
+      <div class="game-match">${g.away} <span>vs</span> ${g.home}</div>
+      <div class="game-time">${formatZhDate(g.date)} ${formatTimeOnly(g.time)}</div>
+      <div class="game-field">📍 ${g.field || ''}</div>
+      <div class="section">
+        <div class="label">🧑‍⚖️ 裁判</div>
+        <div class="grid">${renderUmpireSlots(g, judges)}</div>
+      </div>
+      <div class="section">
+        <div class="label">📝 紀錄</div>
+        <div class="grid">${renderRecordSlots(records)}</div>
+      </div>
+    `;
+
+    root.appendChild(div);
+  });
+}
 
 /* =========================
  * ✅ 裁判 slots（你規則完整版）
