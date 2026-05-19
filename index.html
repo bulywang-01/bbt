@@ -556,6 +556,21 @@
       opacity: 1;
       transform: translateY(0);
     }
+    
+    #weeklyContent .row-line {
+      display: grid !important;
+      grid-template-columns: repeat(6, 1fr) !important;
+      width: 100% !important;
+    }
+    
+    #weeklyContent .row-line > div,
+    #weeklyContent .row-line > .col {
+      width: 100% !important;
+      text-align: center !important;
+    
+      /* ❗ 強制取消 flex */
+      display: block !important;
+    }
 
   </style>
 
