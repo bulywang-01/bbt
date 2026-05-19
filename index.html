@@ -11,499 +11,217 @@
   <script src="js/index.js"></script>
 
   <style>
+
+    /* ===== 基本 ===== */
     body {
       margin: 0;
       background: #f5f6f8;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",　"PingFang TC", "Noto Sans TC", sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.2px;
     }
 
+    
     .main {
       max-width: 1100px;
       margin: auto;
       padding: 24px;
     }
-
+    
     .panel {
-      background: #fff;
-      border-radius: 14px;
-      padding: 22px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
-      margin-bottom: 18px;  /* ✅ 原本可能 14 → 加大 */
-    }
- 
-    h3 {
-      margin-top: 0;
-      border-left: 4px solid #4a7ef5;
-      padding-left: 10px;
-    }
-
-    /* ===== Welcome ===== */
-    .welcome-box {
-      background: linear-gradient(135deg,#f5f8ff,#fff);
-      border-radius: 16px;
-      /* padding: 26px; */
-      padding: 20px 16px 22px;   /* ✅ 上 左右 下（加下面空間） */
-    }
-
-    .welcome-role {
-      font-size: 22px;
-      font-weight: 800;
-      color: #1a237e;
-    }
-
-    .welcome-name {
-      font-size: 18px;
-      font-weight: 800;
-      margin: 6px 0;
-      margin-bottom: 6px;
-    }
-
-    .welcome-actions {
-      margin-top: 12px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .pill {
-      border: none;
-      border-radius: 999px;
-      padding: 8px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .pill-blue   { background:#e8f1ff; color:#1a237e; }
-    .pill-green  { background:#e8f5e9; color:#1b5e20; }
-    .pill-orange { background:#fff3e0; color:#e65100; }
-
-    /* ===== Tabs ===== */
-    .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .tabs button {
-      border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
-      background: #e9ecf4;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .tabs button.active {
-      background: #4a7ef5;
-      color: #fff;
-    }
-
-    .empty {
-      color: #777;
-      font-style: italic;
-    }
-
-    /* ===== Overlay（裁判守則 / 聯盟賽制 同款）===== */
-    @media (max-width: 768px) {
-      .panel {
-        padding: 18px 16px;   /* ✅ 整塊白卡變大 */
-        border-radius: 16px;  /* ✅ 稍微圓一點更柔和 */
-      }
+      background: #fdfefe;
+      border-radius: 18px;
+      padding: 20px 16px;
+      margin-bottom: 18px;
     
-      .welcome-box {
-        padding: 20px 16px 22px;
-      }
-    
-      .user-stats {
-        margin: 16px 0;
-      }
-    
-      .panel {
-        margin-bottom: 18px;
-      }
+      box-shadow: 
+        0 8px 20px rgba(0,0,0,.06),
+        0 1px 0 rgba(255,255,255,0.7) inset;
     }
     
+    /* ===== Overlay ===== */
     .overlay {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.45);
       display: none;
-      align-items: center;   /* ✅ 置中 */
+      align-items: center;
       justify-content: center;
       z-index: 9999;
-      padding-top: 60px;         /* ✅ 往上偏 */
     }
-
+    
     .overlay-box {
       background: #fff;
-      width: 92vw;              /* ✅ 有邊界 */
-      height: 100vh;             /* ✅ 直接變整頁 */
-      max-height: 80vh;         /* ✅ 不要滿版 */
-      max-width: 420px;         /* ✅ 不會太寬 */
-      border-radius: 16px;          /* ✅ 手機卡片感 */
+      width: 92vw;
+      max-width: 420px;
+      max-height: 80vh;
+      border-radius: 16px;
       padding: 20px 16px;
-      overflow-y: auto;          /* ✅ 正常往下滑 */
-      box-shadow: 0 12px 40px rgba(0,0,0,0.25);    /* 會像 App */
+      overflow-y: auto;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
     }
 
-    .overlay-box h2 {
-      position: sticky;
-      top: 0;
-      background: #fff;
-      padding-bottom: 8px;
+    
+    .weekly-card:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     }
 
-    .overlay-box ul {
-      padding-left: 20px;
-      line-height: 1.7;
-    }
-
-    .overlay-box li.important {
-      color: #c62828;
-      font-weight: 700;
-    }
-
-
-    .close-btn {
-      margin-top: 24px;
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      background: #4a7ef5;
-      color: #fff;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-  /* ===== 我的班表（專業卡片版） ===== */
-
-    .schedule-days {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
     
-    /* 每一天 */
-    .schedule-day {
-      display: flex;
-      gap: 12px;
-    }
-    
-    /* 日期欄 */
-    .schedule-date {
-      min-width: 72px;
-      text-align: center;
-      font-weight: 800;
-      color: #1a237e;
-    }
-    
-    .schedule-date .md {
-      font-size: 18px;
-    }
-    
-    .schedule-date .week {
-      font-size: 13px;
-      color: #666;
-    }
-    
-    /* 卡片容器 */
-    .schedule-cards {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    
-    /* 單一班表卡 */
-    .schedule-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px 16px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.06);
-    
-      display: grid;
-      gap: 6px;
-      font-size: 14px;
-    }
-    
-    .schedule-card .line {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
-    }
-    
-    /* 裁判 / 紀錄角色標示 */
-    .role-judge {
-      color: #0d47a1;
-      background: #e3f2fd;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-weight: 600;
-    }
-    
-    .role-record {
-      color: #1b5e20;
-      background: #e8f5e9;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-weight: 600;
-    }
-
-  /* ===== 班表卡（手機專用） ===== */
-    .schedule-card {
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 12px 14px;
-      box-shadow: 0 3px 10px rgba(0,0,0,.08);
-    
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    
-      font-size: 14px;
-    }
-    
-    /* 日期 */
-    .schedule-date-text {
-      font-size: 14px;
-      font-weight: 800;
-      color: #1a237e;
-      white-space: nowrap;   /* ✅ 日期不換行 */
-    }
-    
-    /* 時間 + 場地（同一列） */
-    .schedule-info-row {
-      display: flex;
-      gap: 10px;
-      font-weight: 600;
-    }
-    
-    /* 角色 badge（裁判 / 紀錄） */
-    .schedule-role {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;   /* ✅ badge 不斷行 */
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      width: fit-content;
-    }
-    
-    /* ✅ 裁判（藍） */
-    .schedule-role.judge {
-      background: #e3f2fd;
-      color: #0d47a1;
-    }
-    
-    /* ✅ 紀錄（綠） */
-    .schedule-role.record {
-      background: #e8f5e9;
-      color: #1b5e20;
-    }
-    
-    /* 日期 + 角色 同一列 */
-    .schedule-top-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;   /* ✅ 就用這個控制間距 */
-    }
-    
-    /* 角色群組 */
-    .schedule-role-group {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;   /* ✅ 多角色不會爆 */
-    }
-
-    /* 本週有班表通知 */
-    #schedule-tip {
-      margin-top: 12px;
-      font-size: 16px;
-      font-weight: 800;
-      color: #d32f2f;
-      display: flex;              /* ✅ 關鍵 */
-      justify-content: center;    /* ✅ 水平置中 */
-      align-items: center;        /* ✅ 垂直置中 */
-      text-align: center;
-      min-height: 36px;           /* ✅ 給高度，才能垂直置中 */
-      animation: pulse-soft 1.6s infinite;
-      /*
-      border-radius: 10px;
-      background: #fff5f5;
-      padding: 6px 10px;
-      */
-    }
-    
-    /* ✅ 推薦用這個（比較舒服） */
-    @keyframes pulse-soft {
-      0%   { transform: scale(1); opacity: 1; }
-      50%  { transform: scale(1.03); opacity: 0.7; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    
-    #schedule-tip.show {
-      animation: pulse-soft 1.6s infinite;
-    }
-
-    /* 個人生涯／站場／紀錄數據 */
-    .user-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 16px;
-      margin-bottom: 14px;
-      margin: 16px 0;
-    }
-    
-    .stat-card {
-      background: linear-gradient(135deg, #f8fbff, #ffffff);
-    
-      border-radius: 14px;
-      padding: 12px 8px;
-    
-      text-align: center;
-    
-      border: 1px solid #e5e7eb;
-    
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .stat-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 18px rgba(0,0,0,0.15);
-    }
-    
-    /* 標題 */
-    .stat-title {
-      font-size: 12px;
-      color: #666;
-      margin-bottom: 4px;
-    }
-    
-    /* 大數字 */
-    .stat-value {
-      font-size: 20px;
-      font-weight: 800;
-      color: #1a237e;
-    }
-    
-    /* 子資訊 */
-    .stat-sub {
-      color: #666;
-      font-size: 12px;
-      margin-top: 2px;
-    }
-    
-    /* 左側色條（更有層次） */
-    .stat-card:nth-child(1) { border-top: 4px solid #1976d2; }
-    .stat-card:nth-child(2) { border-top: 4px solid #2e7d32; }
-    .stat-card:nth-child(3) { border-top: 4px solid #ef6c00; }
-
-    /* 本週班表 */
+    /* ===== 本週卡片（最終版） ===== */
     .weekly-card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 14px 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      background: linear-gradient(180deg, #ffffff, #f9fafc);
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+    
+      box-shadow: 
+        0 6px 18px rgba(0,0,0,0.06),
+        0 1px 0 rgba(255,255,255,0.8) inset;
+    
+      border: 1px solid #e7eaf0;
+    
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
+      
+      border: 1px solid #e6eaf0;
+      transition: all 0.15s ease;
     }
     
-    .game-title {
-      font-size: 16px;
+    /* ===== 文字層級 ===== */
+    .game-code {
+      font-size: 18px;
       font-weight: 800;
       color: #1a237e;
-      line-height: 1.4;
-    }
-
-    .game-sub {
-      font-size: 12px;
-      color: #777;
+      letter-spacing: 0.5px;
     }
     
+    .game-group {
+      font-size: 13px;
+      color: #5c6b7a;
+    }
+    
+    .game-match {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 6px 0;
+      color: #111;
+    }
+    
+    .game-match span {
+      font-size: 15px;
+      color: #9aa5b1;
+      margin: 0 6px;
+    }
+    
+    .game-time {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .game-field {
+      font-size: 13px;
+      color: #666;
+    }
+    
+    /* ===== 區塊分隔 ===== */
     .section {
-      border-top: 1px solid #eee;
-      padding-top: 8px;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed #e4e7eb;
+      display: block;
     }
     
     .label {
       font-size: 14px;
       font-weight: 700;
-      color: #555;
-      margin-bottom: 6px;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    /* 裁判 & 紀錄之間再貼一點 */
+    .section + .section {
+      margin-top: 4px;
     }
     
+    /* ===== 裁判格（最終升級版） ===== */
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
+      gap: 8px;
+      font-size: 12px;
     }
     
     .slot {
-      background: #f8f9fb;
+      background: linear-gradient(180deg, #f6f8fb, #eef2f6);
       border-radius: 10px;
-      padding: 8px;
+      padding: 8px 6px;
       text-align: center;
+      display: flex;
+      width: 100%;
+      border: 1px solid #e3e7ee;
+      box-shadow:
+        0 1px 2px rgba(0,0,0,0.04),
+        0 0 0 1px rgba(255,255,255,0.6) inset;
       transition: all 0.15s ease;
+      flex-direction: column;
+      align-items: center;
+
     }
     
     .slot:hover {
-      background: #eef3ff;
+      transform: translateY(-1px);
+      box-shadow:
+        0 4px 10px rgba(0,0,0,0.08);
     }
     
     .slot .role {
       font-size: 11px;
-      color: #888;
-      margin-bottom: 2px;
+      color: #8a94a6;
     }
-
+    
     .slot .name {
-      font-size: 14px;
-      font-weight: 700;
-      color: #222;
+      font-size: 15px;
+      font-weight: 800;
+      color: #111;
     }
     
-    .empty {
-      color: #aaa;
-    }
-
-    /* ✅ 場次 / 組別 */
-    .game-meta {
-      font-size: 14px;
-      font-weight: 700;
-      color: #4a7ef5;
-      background: #eef3ff;
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 6px;
-      width: fit-content;
-    }
-
-    .game-meta.big {
-      background: #e3f2fd;
-      color: #1565c0;
+    .slot .name:empty::after {
+      content: '—';
+      color: #c0c6cf;
     }
     
-    .game-meta.small {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
+    /* ===== stats ===== */
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px 8px;
+      text-align: center;
+      border: 1px solid #e5e7eb;
 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: all 0.2s ease;
+      min-height: 85px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+
+    }
+    
+    /* ✅ hover */
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    }
+    
+    /* ✅ 上色條（保留你的） */
+    .stat-card:nth-child(1) { border-top: 4px solid #1976d2; }
+    .stat-card:nth-child(2) { border-top: 4px solid #2e7d32; }
+    .stat-card:nth-child(3) { border-top: 4px solid #ef6c00; }
+    
     .stat-main{
       font-size:28px;
       font-weight:800;
@@ -516,14 +234,278 @@
       gap:14px;
       margin-top:6px;
       font-size:13px;
+    }
+    
+    .pill {
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+    
+      border: none;
+      cursor: pointer;
+    
+      transition: all 0.2s ease;
+    }
+    
+    .pill-blue {
+      background: #e7f0ff;
+      color: #2563eb;
+    }
+    
+    .pill-green {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .pill-orange {
+      background: #fff1e6;
+      color: #ea580c;
+    }
+    
+    .pill:hover {
+      transform: translateY(-1px);
+    }
+
+    .user-stats {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 12px;
+      min-height: 90px;    /* ✅ 控制高度 */
+      margin: 16px 0;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #1a237e;
+    }
+    
+    .stat-sub {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .welcome-role {
+      font-size: 20px;
+      font-weight: 700;   /* 原本太粗 */
+      color: #1a237e;
+    }
+    
+    .welcome-name {
+      font-size: 18px;
+      font-weight: 800;
+      margin: 6px 0;
+      margin-bottom: 6px;
+    }
+
+    .stat-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+    }
+    
+    /* ✅ 數字不要太炸 */
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a237e;
+      line-height: 1.2;
+    }
+    
+    /* ✅ 底下文字要收緊 */
+    .stat-sub {
+      font-size: 12px;
+      margin-top: 2px;
+    
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .stat-sub span:first-child {
+      color: #1e40af;
+    }
+    
+    .stat-sub span:last-child {
+      color: #f97316;
+    }
+
+    .game-line-1{
+      font-size:14px;
+      font-weight:700;
+      color:#374151;
+      line-height: 1.4;
+    }
+    
+    /* 日期 */
+    .game-line-1 span.date{
+      color:#1a237e;
+      font-weight:800;
+    }
+    
+    /* 場次 */
+    .game-line-1 span.code{
+      color:#2563eb;
+      font-weight:700;
+    }
+    
+    /* 組別 */
+    .game-line-1 span.group{
+      color:#6b7280;
+    }
+    
+    .game-line-2{
+      font-size:16px;
+      font-weight:800;
+      color:#111;
+      margin-top: 2px;
+      margin-bottom: 2px;    }
+    
+    /* vs 弱化 */
+    .game-line-2 span{
+      color:#9aa5b1;
+      font-weight:500;
+      margin:0 4px;
+    }
+    
+    .schedule-date-text{
+      line-height: 1.4;
+    }
+    
+    .schedule-info-row{
+      margin-top: 2px;
+      margin-bottom: 4px;
+    }
+    
+    .schedule-role-group{
+      margin-top: 4px;
+    }
+
+    /* 本週班表關閉紐 */
+    .close-btn.full{
+        width: 100%;
+        padding: 14px 0;
+        border-radius: 12px;
+      
+        background: #4a7ef5;
+        color: #fff;
+      
+        font-size: 16px;
+        font-weight: 800;
+      
+        border: none;
+        margin-top: 16px;
+    }
+    
+    /* 手機更貼底 */
+    .overlay-box{
+      padding-bottom: 10px;
+    }
+
+    .schedule-line-1{
+      font-size:14px;
+      font-weight:800;
+      color:#1a237e;
+      line-height:1.4;
+    }
+    
+    .schedule-line-2{
+      font-size:15px;
+      font-weight:700;
+      margin-top:2px;
+      margin-bottom:4px;
+    }
+    
+    /* 小細節 */
+    .schedule-line-2 span {
+      color:#9aa5b1;
+    }
+
+    .row-all{
+      margin-top:6px;
+      overflow: hidden;   /* ✅ 防止內容溢出 */
+    }
+    
+    /* ✅ 控制兩排 */
+    .row-line{
+      display:flex;
+      gap:8px;
+      font-size:13px;　/* ✅ 超重要：縮小讓6格能塞 */
+    
+      /* ✅ 關鍵：不換行 */
+      flex-wrap: nowrap;
+      width: 100%;
+
+      /* ✅ 改這個（關鍵） */
+      justify-content: center;
+    }
+    
+    /* ✅ 每格 */
+    .col{
+      text-align:center;
+      flex: 1;
+      /* ✅ 真正置中關鍵 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      
+      /* ✅ 防止撐開 */
+      min-width: 0;
+    }
+
+    .row-line.header{
+      color:#9ca3af;
+      width: 100%;
+    }
+    
+    .row-line.values{
+      color:#111827;
+      width: 100%;
+    }
+
+    /* ✅ 上排（職稱）→ 清楚但不搶眼 */
+    .row-line.header .role{
+      font-size:12px;
+      color:#8a94a6;
       font-weight:600;
     }
     
-    .stat-line .pending{
-      color:#f57c00;
+    /* ✅ 下排（名字）→ 主體 */
+    .row-line.values .name{
+      font-size:15px;
+      font-weight:800;
+      color:#111;
+    }
+    
+    /* ✅ 讓整體更穩 */
+    .row-line.values{
+      margin-top:2px;
+    }
+
+    .row-line.header .col {
+      font-size: 12px;
+      color: #9aa5b1;
+    }
+    
+    .row-line.values .col {
+      font-size: 15px;
+      font-weight: 800;
+      color: #111;
+    }
+        
+    .weekly-card:nth-child(even){
+      background: linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f8fbff 100%
+      );
     }
 
   </style>
+
 </head>
 
 <body>
@@ -613,9 +595,7 @@
       <div class="overlay-box">
         <h2>📊 本週聯盟賽事班表</h2>
         <div id="weeklyContent"></div>
-        <button class="close-btn" onclick="hideOverlay('weekly-overlay')">
-          關閉
-        </button>
+        <button class="close-btn full" onclick="hideOverlay('weekly-overlay')">關閉</button>
       </div>
     </div>
     
@@ -747,7 +727,7 @@
         <li>請安排雙方球隊列隊，<strong>清楚告知比賽結果並致謝</strong>。</li>
       </ul>
       
-      <button class="close-btn" onclick="hideOverlay('rules-overlay')">關閉</button>
+      <button class="close-btn full" onclick="hideOverlay('rules-overlay')">關閉</button>
 
     </div>
   </div>
@@ -803,7 +783,7 @@
         <li>開放範圍：跨隊交流案、熱身賽、冬季聯盟。</li>
       </ul>
   
-      <button onclick="document.getElementById('league-overlay').style.display='none'" class="close-btn">
+      <button onclick="document.getElementById('league-overlay').style.display='none'" class="close-btn full">
         關閉
       </button>
     </div>
@@ -818,7 +798,7 @@
   
       <div id="my-schedule-list"></div>
   
-      <button class="close-btn" onclick="hideOverlay('schedule-overlay')">
+      <button class="close-btn full" onclick="hideOverlay('schedule-overlay')">
         關閉
       </button>
     </div>
