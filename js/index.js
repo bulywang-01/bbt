@@ -673,63 +673,38 @@ function renderAllRolesRow(g, judges, records){
 
   const count = Number(g.umpire_count);
 
-  // ✅ 裁判動態
   const judgeRoles = [];
   if (count >= 1) judgeRoles.push(['PU','主審']);
   if (count >= 2) judgeRoles.push(['U1','一壘']);
   if (count >= 4) judgeRoles.push(['U2','二壘']);
   if (count >= 3) judgeRoles.push(['U3','三壘']);
 
-  // ✅ 紀錄固定
   const recordRoles = [
     ['REC_MAIN','記錄'],
     ['REC_TRAINEE','見習'],
     ['REC_VIDEO','影像']
   ];
 
-  // ✅ 🔥 關鍵：mapping function（直接內嵌）
+  /* ✅ ✅ ✅ 核心：把 signup 陣列轉為 map */
+  const signupMap = {};
+  (g.judge_signup || []).forEach(s => {
+    signupMap[s.preferred_position] = s.name;
+  });
+
+  const recordSignupMap = {};
+  (g.record_signup || []).forEach(s => {
+    recordSignupMap[s.record_role] = s.name;
+  });
+
+  /* ✅ 判斷函式 */
   function getJudge(k){
-
-    // 1️⃣ assignment（英文）
-    if (judges && judges[k]) return judges[k];
-
-    // 2️⃣ signup（中文）
-    const map = {
-      PU: '主審',
-      U1: '一壘',
-      U2: '二壘',
-      U3: '三壘'
-    };
-
-    const zh = map[k];
-
-    if (g.judge_signup && g.judge_signup[zh]) {
-      return g.judge_signup[zh];
-    }
-
-    return '—';
+    return judges[k] || signupMap[k] || '—';
   }
 
   function getRecord(k){
-
-    if (records && records[k]) return records[k];
-
-    const map = {
-      REC_MAIN: '記錄',
-      REC_TRAINEE: '見習',
-      REC_VIDEO: '影像'
-    };
-
-    const zh = map[k];
-
-    if (g.record_signup && g.record_signup[zh]) {
-      return g.record_signup[zh];
-    }
-
-    return '—';
+    return records[k] || recordSignupMap[k] || '—';
   }
 
-  // ✅ 上排
   const header = [
     ...judgeRoles,
     ...recordRoles
@@ -737,7 +712,6 @@ function renderAllRolesRow(g, judges, records){
     `<div class="col role">${label}</div>`
   ).join('');
 
-  // ✅ 下排（🔥 用 mapping）
   const values = [
     ...judgeRoles.map(([k]) => getJudge(k)),
     ...recordRoles.map(([k]) => getRecord(k))
