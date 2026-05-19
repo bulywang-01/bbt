@@ -581,11 +581,11 @@ function renderWeeklySchedule(games) {
     
       <!-- ✅ 兩列資訊 -->
       <div class="game-line-1">
-        ${formatZhDate(g.date)}　${g.game_code} - ${g.group}　📍 ${g.field}
+        <span class="date">${formatZhDate(g.date)}</span>　<span class="code">${g.game_code}</span> - <span class="group">${g.group}</span>　📍 ${g.field}
       </div>
     
       <div class="game-line-2">
-        ${formatTimeOnly(g.time)}　${g.away} vs ${g.home}
+        ${formatTimeOnly(g.time)}　${g.away} <span>vs</span> ${g.home}
       </div>
 
       <!-- ✅ 裁判+紀錄 -->
