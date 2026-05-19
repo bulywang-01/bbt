@@ -448,17 +448,17 @@
 
     /* ✅ 控制兩排 */
     .row-line{
-      display: flex;
-      gap:0;
+      display: grid;
       font-size:13px;　/* ✅ 超重要：縮小讓6格能塞 */
     
       /* ✅ 關鍵：不換行 */
       flex-wrap: nowrap;
       width: 100%;
       max-width: 100%;
-      justify-content: space-between;
       /* ✅ 防止撐破 */
       overflow: hidden;
+      /* ✅ 固定六欄（關鍵） */
+      grid-template-columns: repeat(6, 1fr);
     }
     
     /* ✅ 每格 */
@@ -467,7 +467,6 @@
       flex: 1 1 0;   /* ✅ 真正平均分配（關鍵） */
       /* ✅ 真正置中關鍵 */
       display: flex;
-      justify-content: center;
       align-items: center;
       
       /* ✅ 防止撐開 */
