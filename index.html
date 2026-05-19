@@ -444,17 +444,14 @@
     /* ✅ 控制兩排 */
     .row-line{
       display: flex;
-      gap:０px;
+      gap:0px;
       font-size:13px;　/* ✅ 超重要：縮小讓6格能塞 */
     
       /* ✅ 關鍵：不換行 */
       flex-wrap: nowrap;
       width: 100%;
       max-width: 100%;
-
-      /* ✅ 關鍵：不要space-between */
-      justify-content: center;
-
+      justify-content: space-between;
       /* ✅ 防止撐破 */
       overflow: hidden;
     }
@@ -470,6 +467,7 @@
       
       /* ✅ 防止撐開 */
       min-width: 0;
+      text-align: center;
     }
 
     .row-line.header{
