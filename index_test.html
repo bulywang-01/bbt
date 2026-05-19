@@ -141,6 +141,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
+      font-size: 12px;
     }
     
     .slot {
@@ -383,7 +384,43 @@
     .schedule-line-2 span {
       color:#9aa5b1;
     }
+
+    .row-all{
+      margin-top:6px;
+    }
     
+    /* ✅ 上下兩行 */
+    .row-line{
+      display:flex;
+      justify-content:space-between;
+      gap:6px;
+    
+      /* ✅ 關鍵！！永遠不換行 */
+      flex-wrap: nowrap;
+    }
+    
+    /* ✅ 每一格 */
+    .col{
+      flex:1;
+      text-align:center;
+    }
+    
+    /* ✅ 上排（職位） */
+    .row-line.header .role{
+      font-size:11px;
+      color:#888;
+    }
+    
+    /* ✅ 下排（名字） */
+    .row-line.values .name{
+      font-size:14px;
+      font-weight:700;
+    }
+    
+    /* ✅ 超重要：縮小讓6格能塞 */
+    .row-line{
+      font-size:13px;
+    }
   </style>
 
 </head>
