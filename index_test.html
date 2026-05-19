@@ -60,6 +60,13 @@
       overflow-y: auto;
       box-shadow: 0 12px 40px rgba(0,0,0,0.25);
     }
+
+    
+    .weekly-card:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+
     
     /* ===== 本週卡片（最終版） ===== */
     .weekly-card {
@@ -77,6 +84,9 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      
+      border: 1px solid #e6eaf0;
+      transition: all 0.15s ease;
     }
     
     /* ===== 文字層級 ===== */
@@ -323,15 +333,44 @@
       color: #f97316;
     }
 
-    .game-line1 {
+    .game-line-1{
+      font-size:14px;
+      font-weight:700;
+      color:#374151;
       line-height: 1.4;
-      }
-      
-    .game-line2 {
-      margin-top: 2px;
-      margin-bottom: 2px;
     }
-
+    
+    /* 日期 */
+    .game-line-1 span.date{
+      color:#1a237e;
+      font-weight:800;
+    }
+    
+    /* 場次 */
+    .game-line-1 span.code{
+      color:#2563eb;
+      font-weight:700;
+    }
+    
+    /* 組別 */
+    .game-line-1 span.group{
+      color:#6b7280;
+    }
+    
+    .game-line-2{
+      font-size:15px;
+      font-weight:700;
+      color:#111;
+      margin-top: 2px;
+      margin-bottom: 2px;    }
+    
+    /* vs 弱化 */
+    .game-line-2 span{
+      color:#9aa5b1;
+      font-weight:500;
+      margin:0 4px;
+    }
+    
     .schedule-date-text{
       line-height: 1.4;
     }
@@ -404,6 +443,14 @@
       flex:1;
       text-align:center;
     }
+
+    .row-line.header{
+      color:#9ca3af;
+    }
+    
+    .row-line.values{
+      color:#111827;
+    }
     
     /* ✅ 上排（職稱）→ 清楚但不搶眼 */
     .row-line.header .role{
@@ -422,6 +469,14 @@
     /* ✅ 讓整體更穩 */
     .row-line.values{
       margin-top:2px;
+    }
+
+    .weekly-card:nth-child(even){
+      background: linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f8fbff 100%
+      );
     }
 
   </style>
