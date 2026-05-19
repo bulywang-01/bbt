@@ -687,20 +687,60 @@ function renderAllRolesRow(g, judges, records){
     ['REC_VIDEO','影像']
   ];
 
-  const allRoles = [
+  // ✅ 🔥 關鍵：mapping function（直接內嵌）
+  function getJudge(k){
+
+    // 1️⃣ assignment（英文）
+    if (judges && judges[k]) return judges[k];
+
+    // 2️⃣ signup（中文）
+    const map = {
+      PU: '主審',
+      U1: '一壘',
+      U2: '二壘',
+      U3: '三壘'
+    };
+
+    const zh = map[k];
+
+    if (g.judge_signup && g.judge_signup[zh]) {
+      return g.judge_signup[zh];
+    }
+
+    return '—';
+  }
+
+  function getRecord(k){
+
+    if (records && records[k]) return records[k];
+
+    const map = {
+      REC_MAIN: '記錄',
+      REC_TRAINEE: '見習',
+      REC_VIDEO: '影像'
+    };
+
+    const zh = map[k];
+
+    if (g.record_signup && g.record_signup[zh]) {
+      return g.record_signup[zh];
+    }
+
+    return '—';
+  }
+
+  // ✅ 上排
+  const header = [
     ...judgeRoles,
     ...recordRoles
-  ];
-
-  // ✅ 上排（職稱）
-  const header = allRoles.map(([k,label]) =>
+  ].map(([k,label]) =>
     `<div class="col role">${label}</div>`
   ).join('');
 
-  // ✅ 下排（名字）
+  // ✅ 下排（🔥 用 mapping）
   const values = [
-    ...judgeRoles.map(([k]) => judges[k] || '—'),
-    ...recordRoles.map(([k]) => records[k] || '—')
+    ...judgeRoles.map(([k]) => getJudge(k)),
+    ...recordRoles.map(([k]) => getRecord(k))
   ].map(v => `<div class="col name">${v}</div>`).join('');
 
   return `
