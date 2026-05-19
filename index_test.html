@@ -389,38 +389,41 @@
       margin-top:6px;
     }
     
-    /* ✅ 上下兩行 */
+    /* ✅ 控制兩排 */
     .row-line{
       display:flex;
-      justify-content:space-between;
-      gap:6px;
+      gap:8px;
+      font-size:13px;　/* ✅ 超重要：縮小讓6格能塞 */
     
-      /* ✅ 關鍵！！永遠不換行 */
+      /* ✅ 關鍵：不換行 */
       flex-wrap: nowrap;
     }
     
-    /* ✅ 每一格 */
+    /* ✅ 每格 */
     .col{
       flex:1;
       text-align:center;
     }
     
-    /* ✅ 上排（職位） */
+    /* ✅ 上排（職稱）→ 清楚但不搶眼 */
     .row-line.header .role{
-      font-size:11px;
-      color:#888;
+      font-size:12px;
+      color:#8a94a6;
+      font-weight:600;
     }
     
-    /* ✅ 下排（名字） */
+    /* ✅ 下排（名字）→ 主體 */
     .row-line.values .name{
-      font-size:14px;
-      font-weight:700;
+      font-size:15px;
+      font-weight:800;
+      color:#111;
     }
     
-    /* ✅ 超重要：縮小讓6格能塞 */
-    .row-line{
-      font-size:13px;
+    /* ✅ 讓整體更穩 */
+    .row-line.values{
+      margin-top:2px;
     }
+
   </style>
 
 </head>
