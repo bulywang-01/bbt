@@ -1016,13 +1016,21 @@ function renderGameRow(g, today) {
 
   if (isPast) tr.classList.add('expired');
 
-  const filled = Object.keys(g.occupied_positions || {}).length;
+  /* ✅ ✅ ✅ 正確計算人數（關鍵修正） */
+  const occupied = g.occupied_positions || {};
+  const assigned = Object.values(occupied).filter(v => v && v !== '').length;
 
-  let umpireCell = g.need_count;
-  if (g.need_count === 0) {
+  const need = Number(g.need_count) || 0;
+
+  let umpireCell = '';
+
+  if (need === 0) {
     umpireCell = '<span class="umpire-na">不需裁判</span>';
-  } else if (filled >= g.need_count) {
+  } else if (assigned >= need) {
     umpireCell = '<span class="umpire-full"><strong>已額滿</strong></span>';
+    tr.classList.add('full');
+  } else {
+    umpireCell = `${assigned}/${need}`;
   }
 
   tr.innerHTML = `
@@ -1032,8 +1040,12 @@ function renderGameRow(g, today) {
     <td>${g.away_team || ''}</td>
     <td>${g.home_team || ''}</td>
     <td>${g.field || ''}</td>
-    <td>${g.duration || ''}</td>
+
+    <!-- ✅ ✅ ✅ 時長修正 -->
+    <td>${g.duration ? g.duration + ' 分鐘' : '-'}</td>
+
     <td>${umpireCell}</td>
+
     ${['PU','U1','U2','U3'].map(role => {
       return `<td>${renderPos(g, role, isPast)}</td>`;
     }).join('')}
@@ -1450,7 +1462,9 @@ function cancelMySignup(signupId) {
     res => {
       if (res && res.result === 'ok') {
         showMessage('✅ 已取消站位');
-        setTimeout(() => location.reload(), 800);
+        setTimeout(() => {
+          reloadCurrentView();
+        }, 600);
       } else {
         showMessage(res?.message || '❌ 取消失敗');
       }
@@ -1477,7 +1491,9 @@ function signupJudgeInstant(gameId, position) {
     res => {
       if (res && res.result === 'ok') {
         showMessage('✅ 報名成功');
-        setTimeout(() => location.reload(), 800);
+        setTimeout(() => {
+          reloadCurrentView();
+        }, 600);
       } else {
         showMessage(res?.message || '❌ 報名失敗');
       }
@@ -1571,6 +1587,17 @@ function loadJudgeGamesByMonth(year, month) {
     render();
     renderMobile();
   });
+}
+
+function reloadCurrentView(){
+
+  if (currentMonth !== null){
+    const now = new Date();
+    loadJudgeGamesByMonth(now.getFullYear(), currentMonth);
+  } else {
+    loadGames();
+  }
+
 }
 
 </script>
