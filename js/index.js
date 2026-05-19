@@ -587,13 +587,10 @@ function renderWeeklySchedule(games) {
       <div class="game-line-2">
         ${formatTimeOnly(g.time)}　${g.away} vs ${g.home}
       </div>
-    
-      <!-- ✅ 裁判 -->
-      <div class="section">${renderUmpireSlots(g, judges)}</div>
-    
-      <!-- ✅ 紀錄 -->
-      <div class="section">${renderRecordSlots(records)}</div>
-    
+
+      <!-- ✅ 裁判+紀錄 -->
+      <div class="section"><div class=" ${renderAllRolesRow(g, judges, records)}</div>
+   
     `;
 
     root.appendChild(div);
@@ -670,3 +667,47 @@ function renderRecordSlots(records) {
   
     return '';
   }
+
+// 裁判和紀錄合併成一列
+function renderAllRolesRow(g, judges, records){
+
+  const judgeRoles = [
+    ['PU','主審'],
+    ['U1','一壘'],
+    ['U2','二壘'],
+    ['U3','三壘']
+  ];
+
+  const recordRoles = [
+    ['REC_MAIN','記錄'],
+    ['REC_TRAINEE','見習'],
+    ['REC_VIDEO','影像']
+  ];
+
+  // ✅ 組 header（上排）
+  const header = [
+    ...judgeRoles,
+    ...recordRoles
+  ].map(([k,label]) => `<div class="col role">${label}</div>`).join('');
+
+  // ✅ 組值（下排）
+  const values = [
+    ...judgeRoles.map(([k]) => judges[k] || '—'),
+    ...recordRoles.map(([k]) => records[k] || '—')
+  ].map(v => `<div class="col name">${v}</div>`).join('');
+
+  return `
+    <div class="row-all">
+
+      <div class="row-line header">
+        ${header}
+      </div>
+
+      <div class="row-line values">
+        ${values}
+      </div>
+
+    </div>
+  `;
+}
+
