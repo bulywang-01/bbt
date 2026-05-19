@@ -76,7 +76,7 @@
     
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
     }
     
     /* ===== 文字層級 ===== */
@@ -118,8 +118,8 @@
     
     /* ===== 區塊分隔 ===== */
     .section {
-      margin-top: 10px;
-      padding-top: 10px;
+      margin-top: 6px;
+      padding-top: 6px;
       border-top: 1px dashed #e4e7eb;
     }
     
@@ -128,6 +128,11 @@
       font-weight: 700;
       color: #374151;
       margin-bottom: 8px;
+    }
+
+    /* 裁判 & 紀錄之間再貼一點 */
+    .section + .section {
+      margin-top: 4px;
     }
     
     /* ===== 裁判格（最終升級版） ===== */
@@ -312,6 +317,28 @@
     
     .stat-sub span:last-child {
       color: #f97316;
+    }
+
+    .game-line1 {
+      line-height: 1.4;
+      }
+      
+    .game-line2 {
+      margin-top: 2px;
+      margin-bottom: 2px;
+    }
+
+    .schedule-date-text{
+      line-height: 1.4;
+    }
+    
+    .schedule-info-row{
+      margin-top: 2px;
+      margin-bottom: 4px;
+    }
+    
+    .schedule-role-group{
+      margin-top: 4px;
     }
 
   </style>
