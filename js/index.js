@@ -579,22 +579,12 @@ function renderWeeklySchedule(games) {
     
     div.innerHTML = `
     
-      <div class="game-code">${g.game_code}</div>
-      <div class="game-group">${g.group}</div>
-      <div class="game-match">
-        ${g.away} <span>vs</span> ${g.home}
+      <div class="game-line-1">
+        ${formatZhDate(g.date)}　${g.game_code} - ${g.group}　📍 ${g.field}
       </div>
-      <div class="game-time">
-        ${formatZhDate(g.date)}　${formatTimeOnly(g.time)}
-      </div>
-      <div class="game-field">
-        📍 ${g.field}
-      </div>
-      <div class="section">
-        ${renderUmpireSlots(g, judges)}
-      </div>
-      <div class="section">
-        ${renderRecordSlots(records)}
+      
+      <div class="game-line-2">
+        ${formatTimeOnly(g.time)}　${g.away} vs ${g.home}
       </div>
     
     `;
