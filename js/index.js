@@ -569,45 +569,48 @@ function renderWeeklySchedule(games) {
     const records = g.records || {};
 
     const div = document.createElement('div');
-    div.className = 'weekly-card new-style';
+    div.className = 'weekly-card pro';
 
     div.innerHTML = `
-      <div class="card-row">
 
-        <!-- ✅ 左側比賽資訊 -->
-        <div class="card-left">
-          <div class="game-code">${g.game_code || '-'}</div>
-          <div class="game-group">${g.group || ''}</div>
+      <div class="row">
 
-          <div class="game-teams">
-            ${g.away} <span class="vs">vs</span> ${g.home}
+        <!-- ✅ 左邊 -->
+        <div class="left">
+
+          <div class="game-code">${g.game_code}</div>
+          <div class="group">${g.group}</div>
+
+          <div class="teams">
+            ${g.away} <span>vs</span> ${g.home}
           </div>
 
-          <div class="game-time">
+          <div class="time">
             ${formatZhDate(g.date)} ${formatTimeOnly(g.time)}
           </div>
 
-          <div class="game-field">
-            📍 ${g.field || ''}
+          <div class="field">
+            📍 ${g.field}
           </div>
+
         </div>
 
-        <!-- ✅ 右側裁判 + 紀錄 -->
-        <div class="card-right">
+        <!-- ✅ 右邊（重點） -->
+        <div class="right">
 
           <!-- 裁判 -->
-          <div class="role-block">
-            <div class="role-title">🧑‍⚖️ 裁判</div>
-            <div class="grid-4">
-              ${renderUmpireSlotsFlat(g, judges)}
+          <div class="line">
+            <div class="label">🧑‍⚖️ 裁判</div>
+            <div class="slots">
+              ${renderJudgeBar(judges)}
             </div>
           </div>
 
           <!-- 紀錄 -->
-          <div class="role-block">
-            <div class="role-title">📝 紀錄</div>
-            <div class="grid-3">
-              ${renderRecordSlotsFlat(records)}
+          <div class="line">
+            <div class="label">📝 紀錄</div>
+            <div class="slots">
+              ${renderRecordBar(records)}
             </div>
           </div>
 
@@ -620,8 +623,9 @@ function renderWeeklySchedule(games) {
   });
 }
 
+
 // 接上，搭配的部份：裁判
-function renderUmpireSlotsFlat(g, judges){
+function renderJudgeBar(judges){
 
   const roles = [
     ['PU','主審'],
@@ -630,12 +634,12 @@ function renderUmpireSlotsFlat(g, judges){
     ['U3','三壘']
   ];
 
-  return roles.map(([key, label]) => {
+  return roles.map(([key,label]) => {
 
-    const name = judges[key] || '—';
+    const name = judges[key] || '';
 
     return `
-      <div class="slot">
+      <div class="pill">
         <div class="role">${label}</div>
         <div class="name">${name}</div>
       </div>
@@ -643,21 +647,22 @@ function renderUmpireSlotsFlat(g, judges){
   }).join('');
 }
 
+
 // 接上，搭配的部份：紀錄
-function renderRecordSlotsFlat(records){
+function renderRecordBar(records){
 
   const roles = [
-    ['REC_MAIN','記錄員'],
+    ['REC_MAIN','記錄'],
     ['REC_TRAINEE','見習'],
     ['REC_VIDEO','影像']
   ];
 
-  return roles.map(([key, label]) => {
+  return roles.map(([key,label]) => {
 
-    const name = records[key] || '—';
+    const name = records[key] || '';
 
     return `
-      <div class="slot">
+      <div class="pill">
         <div class="role">${label}</div>
         <div class="name">${name}</div>
       </div>
