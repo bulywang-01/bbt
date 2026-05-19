@@ -449,7 +449,7 @@
     /* ✅ 控制兩排 */
     .row-line{
       display: flex;
-      gap:0px;
+      gap:0;
       font-size:13px;　/* ✅ 超重要：縮小讓6格能塞 */
     
       /* ✅ 關鍵：不換行 */
@@ -473,6 +473,15 @@
       /* ✅ 防止撐開 */
       min-width: 0;
       text-align: center;
+    }
+
+    .row-line > .col{
+      flex: 1;
+      text-align: center;
+    
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .row-line.header{
@@ -518,6 +527,41 @@
         #ffffff 0%,
         #f8fbff 100%
       );
+    }
+
+    #schedule-tip {
+      display: none;  /* ✅ 預設隱藏 */
+    
+      margin: 12px 0;
+      padding: 12px 16px;
+    
+      border-radius: 12px;
+    
+      /* ✅ 主色（偏藍，符合你目前系統） */
+      background: linear-gradient(135deg, #e7f0ff, #f2f7ff);
+    
+      color: #1e40af;
+      font-size: 14px;
+      font-weight: 700;
+    
+      border: 1px solid #d6e4ff;
+    
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    
+      /* ✅ 讓文字好讀 */
+      line-height: 1.5;
+    
+      /* ✅ 微動畫（出現比較自然） */
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: all 0.2s ease;
+    }
+
+    #schedule-tip.show {
+      display: block;
+    
+      opacity: 1;
+      transform: translateY(0);
     }
 
   </style>
