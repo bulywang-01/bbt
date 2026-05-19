@@ -291,15 +291,24 @@ function checkThisWeekNotice(list) {
  * 合併 裁判＋紀錄（同一場一張）
  * ========================= */
 function mergeMySchedules(judgeGames, recordGames) {
+
   const map = {};
 
   function ensure(g) {
     if (!map[g.game_id]) {
       map[g.game_id] = {
         game_id: g.game_id,
+
+        // ✅ ✅ ✅ 補齊這些（關鍵）
+        game_code: g.game_code,
+        group: g.group,
+        away: g.away,
+        home: g.home,
+
         date: g.date,
         time: g.time,
         field: g.field,
+
         roles: []
       };
     }
@@ -309,13 +318,19 @@ function mergeMySchedules(judgeGames, recordGames) {
   // ✅ 裁判
   judgeGames.forEach(g => {
     if (!g.role) return;
-    ensure(g).roles.push(g.role);
+
+    const obj = ensure(g);
+
+    obj.roles.push(g.role);
   });
 
   // ✅ 紀錄
   recordGames.forEach(g => {
     if (!g.record_role) return;
-    ensure(g).roles.push(g.record_role);
+
+    const obj = ensure(g);
+
+    obj.roles.push(g.record_role);
   });
 
   return Object.values(map);
