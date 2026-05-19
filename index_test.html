@@ -427,11 +427,18 @@
     .row-all{
       margin-top:6px;
       overflow: hidden;   /* ✅ 防止內容溢出 */
+      width: 100%;
     }
     
+    .row-inner{
+      width: 100%;
+      margin: 0 auto;   /* ✅ 置中關鍵 */
+      max-width: 100%;  /* ✅ 不超出 */
+    }
+
     /* ✅ 控制兩排 */
     .row-line{
-      display:flex;
+      display: flex;
       gap:０px;
       font-size:13px;　/* ✅ 超重要：縮小讓6格能塞 */
     
