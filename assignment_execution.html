@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>出勤管理系統</title>
+
+<script src="js/auth.js"></script>
+<script src="js/config.js"></script>
+ 
+<style>
+
+body{
+  font-family: system-ui;
+  background:#f5f6f8;
+  margin:0;
+}
+
+.main{
+  max-width:1100px;
+  margin:auto;
+  padding:16px;
+}
+
+.game-card{
+  background:#fff;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.header-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.game-title{
+  font-weight:800;
+}
+
+.btn-complete-all{
+  margin-left:10px;
+  background:#16a34a;
+  color:#fff;
+  border:none;
+  padding:4px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* =========================
+   人員卡
+========================= */
+.person{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+
+  padding:10px;
+  margin-bottom:6px;
+  border-radius:10px;
+  border-bottom:1px dashed #ddd;
+
+  transition:all .2s ease;
+}
+
+.person:last-child{
+  border-bottom:none;
+}
+
+.person:hover{
+  background:#f9fafb;
+}
+
+/* 狀態底色 */
+.person.completed{ background:#ecfdf5; }
+.person.no_show{ background:#fef2f2; }
+.person.late{ background:#fffbeb; }
+
+/* 支援左側線 */
+.person.replacement{
+  border-left:4px solid #6366f1;
+}
+
+/* =========================
+   左側資訊
+========================= */
+.info{
+  min-width:160px;
+}
+
+.info-line{
+  font-size:14px;
+  font-weight:500;
+}
+
+.role{ font-weight:700; }
+
+/* =========================
+   操作區
+========================= */
+.actions-box{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.select-user{
+  padding:4px;
+  border-radius:6px;
+}
+
+/* =========================
+   按鈕
+========================= */
+.btn{
+  padding:4px 10px;
+  border:none;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:600;
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 1px 2px rgba(0,0,0,.1);
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+}
+
+.btn-ok{background:#16a34a;}
+.btn-no{background:#dc2626;}
+.btn-late{background:#f59e0b;}
+.btn-assign{background:#3b82f6;}
+.btn-replace{background:#4f46e5;}
+
+/* =========================
+   標籤（重點）
+========================= */
+.tag{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:10px;
+  font-size:12px;
+  margin-left:4px;
+}
+
+.tag-ok{
+  background:#16a34a;
+  color:#fff;
+}
+
+.tag-late{
+  background:#f59e0b;
+  color:#fff;
+}
+
+.tag-no{
+  background:#dc2626;
+  color:#fff;
+}
+
+.tag-replace{
+  background:#4f46e5;
+  color:#fff;
+}
+
+/* =========================
+   小狀態字
+========================= */
+.status-mini{
+  font-weight:700;
+  margin-left:4px;
+}
+
+/* =========================
+   Tabs
+========================= */
+.tabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.tab{
+  padding:8px 14px;
+  border-radius:20px;
+  background:#e5e7eb;
+  cursor:pointer;
+}
+
+.tab.active{
+  background:#2563eb;
+  color:#fff;
+}
+
+/* =========================
+   空資料
+========================= */
+.empty{
+  text-align:center;
+  color:#999;
+  padding:40px;
+}
+
+/* =========================
+   RWD
+========================= */
+@media(max-width:600px){
+  .person{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.modal.hidden{
+  display:none;
+}
+
+.modal-box{
+  width:90%;
+  max-width:900px;
+  background:#ffffff;
+  opacity:1;
+  border-radius:12px;
+  padding:12px;
+  max-height:85vh;
+  overflow:auto;
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  font-weight:800;
+  margin-bottom:8px;
+}
+
+.year-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+
+.year-table th{
+  text-align:left;
+  padding:6px;
+  border-bottom:2px solid #ddd;
+}
+
+.year-table td{
+  padding:6px;
+  border-bottom:1px solid #eee;
+}
+
+/* ✅ 卡片 */
+.stat-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+@media(max-width:600px){
+  .stat-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+.stat-card{
+  background:#fff;
+  border-radius:12px;
+  padding:10px;
+  text-align:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+.stat-title{
+  font-size:12px;
+  color:#666;
+  margin-bottom:4px;
+}
+
+.stat-value{
+  font-size:18px;
+  font-weight:700;
+}
+
+
+/* ✅ 小表格 */
+.mini-table{
+  width:100%;
+  border-collapse:collapse;
+  text-align:center;
+  font-size:14px;
+}
+
+.mini-table th,
+.mini-table td{
+  padding:6px;
+  border-bottom:1px solid #eee;
+}
+
+.mini-table th{
+  color:#666;
+  font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="header-container"></div>
+
+<div class="main">
+
+  <!-- 年度統計 Modal -->
+  <div id="yearModal" class="modal hidden">
+    <div class="modal-box">
+  
+      <div class="modal-header">
+        <span>📊 年度統計</span>
+        <button onclick="closeYearModal()">✖</button>
+      </div>
+  
+      <div id="yearContent">載入中...</div>
+  
+    </div>
+  </div>
+
+ <!-- 個人分析 Modal -->
+ <div id="userModal" class="modal hidden">
+   <div class="modal-box">
+ 
+     <div class="modal-header">
+       <span>📊 個人數據分析</span>
+       <button onclick="closeUserModal()">✖</button>
+     </div>
+ 
+     <div id="userContent">載入中...</div>
+ 
+   </div>
+ </div>
+ 
+  <div class="header-bar">
+    <h2>✅ 出勤管理</h2>
+  
+    <button class="btn-create"
+      onclick="runAutoAssign()">
+      ⚙️ 建立出勤
+    </button>
+    <button onclick="loadYearly()">
+      📊 年度統計
+    </button>
+    <button class="btn-recalc"
+      onclick="recalcScore()">
+      🔄 重算分數
+    </button>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<script>
+
+  /* ========================
+     按是否鎖定只顯示更正鍵
+  ======================== */
+function isGameLocked(g){
+  // return g.list.every(p => p.status !== 'scheduled');
+ 
+  return g.list.every(p => 
+    p.status === 'completed' || p.status === 'late'
+  );
+
+}
+
+  /* ========================
+     Header
+  ======================== */ 
+  let userList = [];
+  
+  // ✅ 初始化
+  document.addEventListener('DOMContentLoaded',()=>{
+    loadHeader();
+    loadUsers();
+  });
+ 
+    function loadHeader() {
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => {
+        const hc = document.getElementById('header-container');
+        if (!hc) return;
+  
+        hc.innerHTML = html;
+  
+        // ✅ 一律從 session 重新設定 role（唯一正解）
+        const session = (typeof getSession === 'function')
+          ? getSession()
+          : JSON.parse(localStorage.getItem('session_user') || '{}');
+  
+        document.body.classList.remove(
+          'role-admin',
+          'role-judge',
+          'role-record'
+        );
+  
+        if (session && session.role) {
+          const roles = session.role.split(',').map(r => r.trim());
+  
+          if (roles.includes('admin')) {
+            document.body.classList.add('role-admin');
+          }
+          if (roles.includes('judge') || roles.includes('chief_judge')) {
+            document.body.classList.add('role-judge');
+          }
+          if (roles.includes('record') || roles.includes('record_chief')) {
+            document.body.classList.add('role-record');
+          }
+        }
+  
+        // ✅ 顯示登入者姓名
+        if (session && session.name) {
+          const nameEl = document.getElementById('header-username');
+          if (nameEl) nameEl.textContent = session.name;
+        }
+      })
+      .catch(err => console.error('Header 載入失敗', err));
+  }
+ 
+  /* ========================
+     Users
+  ======================== */
+function loadUsers(){
+  callApi({action:'getUsers'}, res=>{
+
+    if(!res){
+      toast('API 無回應','error');
+      return;
+    }
+
+    if(res.result !== 'ok'){
+      toast('讀取使用者失敗','error');
+      return;
+    }
+
+    userList = res.users || [];
+    load();
+    console.log(userList);
+  });
+}
+
+ // 只顯示已完賽
+function isGameReady(g){
+
+  if (!g) return false;
+
+  const gameDate = new Date(g.date);
+  if (isNaN(gameDate)) return false;
+
+  const today = new Date();
+
+  today.setHours(0,0,0,0);
+  gameDate.setHours(0,0,0,0);
+
+  const isPast = gameDate < today;
+
+  const status = String(g.status || '').toLowerCase();
+
+  return isPast && (
+    status === '0' ||
+    status === 'completed' ||
+    status === ''
+  );
+}
+ 
+/* ========================
+   主載入
+ ======================== */
+
+  
+  /* ========================
+     Render 核心程式
+  ======================== */
+let currentTab = 'pending';
+
+function render(list){
+
+  const el = document.getElementById('list');
+
+  if (!list.length){
+    el.innerHTML = '<div class="empty">目前沒有出勤資料</div>';
+    return;
+  }
+
+  const pending = list.filter(g => !isGameCompleted(g));
+  const done = list.filter(g => isGameCompleted(g));
+
+  const data = currentTab === 'pending' ? pending : done;
+
+  el.innerHTML = `
+    <div class="tabs">
+      <div class="tab ${currentTab==='pending'?'active':''}"
+           onclick="switchTab('pending')">
+        🔴 未完成 (${pending.length})
+      </div>
+
+      <div class="tab ${currentTab==='done'?'active':''}"
+           onclick="switchTab('done')">
+        ✅ 已完成 (${done.length})
+      </div>
+    </div>
+
+    ${data.map(renderGame).join('')}
+  `;
+}
+
+function switchTab(t){
+  currentTab = t;
+  load();
+}
+
+
+
+   /* ========================
+     收合功能
+  ======================== */
+  function toggleDone(){
+   const el = document.getElementById('doneSection');
+   el.style.display = el.style.display === 'none' ? 'block' : 'none';
+ }
+  
+  /* ========================
+     下拉選單
+  ======================== */
+  function renderUserSelect(p){
+  
+    return `
+      <select data-id="${p.assignment_id}">
+        <option value="">--換人--</option>
+        ${userList.map(u=>
+          `<option value="${u.user_id}">
+            ${u.name} ${u.note ? '('+u.note+')' : ''}
+          </option>`
+        ).join('')}
+      </select>
+    `;
+  }
+
+// 主入口
+function load(){
+
+  const el = document.getElementById('list');
+
+  el.innerHTML = `<div class="empty">⏳ 資料載入中...</div>`;
+
+  callApi({action:'getAssignments'}, res=>{
+
+    if(!res || !res.data){
+      el.innerHTML = `<div class="empty">❌ 讀取失敗</div>`;
+      return;
+    }
+
+    const games = res.data;
+
+    // ✅ ✅ ✅ 重點：
+    const data = games.filter(g => isGameReady(g));
+
+    // ✅ ✅ ✅ 用分頁 render（不要再組 html）
+    render(data);
+
+  });
+}
+
+// 每場 render，支援＋鎖定＋更正＋顏色
+function renderGame(g){
+
+  return `
+    <div class="game-card" data-game-id="${g.game_id}">
+
+      <div class="game-title">
+        📅 ${g.date} ｜ ${g.game_code || ''} ｜ ${g.field || ''}
+
+      ${!isGameLocked(g) ? `
+        <button class="btn-complete-all"
+          onclick="completeGame('${g.game_id}')">
+          ✅ 整場完成
+        </button>
+      ` : `
+        <span style="margin-left:10px;color:#16a34a;font-weight:700;">
+          ✅ 已完成
+        </span>
+      `}
+
+      </div>
+
+      ${renderGroup(g)}
+
+    </div>
+  `;
+}
+
+
+// 支援一定在原人下面
+function renderGroup(g){
+
+  const list = g.list || [];
+
+  // ✅ 分 role
+  const roleMap = {};
+
+  list.forEach(p=>{
+    if (!roleMap[p.role]) roleMap[p.role] = [];
+    roleMap[p.role].push(p);
+  });
+
+  let html = '';
+
+  Object.keys(roleMap).forEach(role=>{
+
+    const rows = roleMap[role];
+
+    // ✅ 原人 / 支援
+    const main = rows.filter(x => x.is_replacement != 1);
+    const repl = rows.filter(x => x.is_replacement == 1);
+
+    main.forEach(p=>{
+
+      html += renderRow(p, g);
+
+      // ✅ ✅ ✅ 🔥 支援強制接在下面
+      repl.forEach(r=>{
+        html += renderRow(r, g, true);
+      });
+
+    });
+
+  });
+
+  return html;
+}
+
+ 
+// ✅ 共用 render row（避免重複）
+function renderRow(p, g, isReplacement=false){
+
+  const list = g.list || [];
+
+  const isNoShow = p.status === 'no_show';
+  const isCompleted = p.status === 'completed';
+  const isLate = p.status === 'late';
+  const isScheduled = p.status === 'scheduled';
+
+  const hasUser = !!p.name;
+  const usedUserIds = list.map(x => String(x.user_id || ''));
+
+  // ✅ 判斷該角色是否已有支援
+  const hasSupport = list.some(x =>
+    x.role === p.role && Number(x.is_replacement) === 1
+  );
+
+  const locked = isGameLocked(g);
+  const done = (p.status === 'completed' || p.status === 'late');
+
+  const replaceTag = p.is_replacement == 1
+    ? '<span class="tag tag-replace">支</span>'
+    : '';
+
+  const statusTag = {
+    completed:'<span class="tag tag-ok">完成</span>',
+    late:'<span class="tag tag-late">遲</span>',
+    no_show:'<span class="tag tag-no">缺</span>',
+    scheduled:''
+  };
+
+  /* ========================
+     🎯 狀態機核心
+  ======================== */
+
+  let actionHTML = '';
+
+  // ✅ 已鎖定 / 已完成
+  if (locked || done){
+
+    actionHTML = `
+      <button onclick="unlock('${p.assignment_id}')">
+        ✏️ 更正
+      </button>
+    `;
+  }
+
+  // ✅ 可操作狀態
+  else{
+
+    // ✅ 正常按鈕
+    actionHTML += `
+      <button class="btn btn-ok"
+        onclick="updateStatus('${p.assignment_id}','completed',this)">
+        完成
+      </button>
+
+      <button class="btn btn-late"
+        onclick="updateStatus('${p.assignment_id}','late',this)">
+        遲到
+      </button>
+
+      <button class="btn btn-no"
+        onclick="updateStatus('${p.assignment_id}','no_show',this)">
+        缺席
+      </button>
+    `;
+
+    // ✅ 改派（沒缺席才能）
+    if (!isNoShow){
+      actionHTML += `
+        <button class="btn btn-assign"
+          onclick="quickAssign('${p.assignment_id}', this)">
+          改派
+        </button>
+      `;
+    }
+
+    // ✅ ⭐⭐⭐ 核心：缺席 → 顯示支援
+    if (isNoShow){
+
+      if (!hasSupport){
+
+        // ✅ 顯示支援按鈕
+        actionHTML += `
+          <button class="btn btn-replace"
+            onclick="quickReplace('${g.game_id}','${p.role}', this)">
+            + 支援
+          </button>
+        `;
+      }
+      else{
+
+        // ✅ 已支援 → 鎖顯示
+        actionHTML += `
+          <span style="color:#2563eb;font-weight:700;">
+            ✅ 已支援
+          </span>
+        `;
+      }
+    }
+
+    // ✅ 人員選單
+    actionHTML += `
+      <select class="select-user">
+        <option value="">選擇人員</option>
+        ${
+          userList
+            .filter(u => !usedUserIds.includes(String(u.user_id)))
+            .map(u =>
+              `<option value="${u.user_id}">
+                ${u.name || u.username}
+              </option>`
+            ).join('')
+        }
+      </select>
+    `;
+  }
+
+  return `
+    <div class="person ${p.status} ${isReplacement ? 'replacement' : ''}"
+         data-id="${p.assignment_id}"
+         data-role="${p.role}">
+
+      <div class="info">
+        <div class="info-line">
+          ${getRoleText(p.role)} ${replaceTag}
+          ｜ ${p.name || '（待位）'}
+          ｜ ${
+            hasUser
+              ? `<span class="status-mini">${statusTag[p.status] || ''}</span>`
+              : getStatusText(p.status)
+          }
+        </div>
+      </div>
+
+      <div class="actions-box">
+        ${actionHTML}
+      </div>
+    </div>
+  `;
+}
+
+
+  
+  /* ========================
+     更新狀態
+  ======================== */
+  function updateStatus(id, status, btn){
+  
+    if (btn && btn.disabled) return;
+    if (btn) btn.disabled = true;
+  
+    const textMap = {
+      completed:'完成',
+      no_show:'缺席',
+      late:'遲到'
+    };
+  
+    toast(`更新「${textMap[status]}」中...`,'loading');
+  
+    callApi({
+      action:'updateAssignment',
+      assignment_id:id,
+      status:status
+    }, res=>{
+  
+      // ✅ 🔥 先清 loading
+      toast('', 'ok'); 
+  
+
+
+     if (res && res.result === 'ok'){
+     
+       toast(`✅ 已標記：${textMap[status]}`);
+     
+       updateRowUI(id, status);
+     
+       // ✅ ✅ ✅ 🔥 如果是 no_show，要刷新（讓 "支" 出現）
+       if (status === 'no_show'){
+         setTimeout(load, 0);
+       }
+     }
+      else{
+        toast(res.message || '更新失敗','error');
+        if (btn) btn.disabled = false;
+      }
+  
+    });
+  }
+  
+  /* ========================
+     ✅ Toast通知（關鍵）
+  ======================== */
+  let currentToast = null;
+  
+  function toast(msg,type='ok'){
+  
+    // ✅ 清掉舊的
+    if (currentToast){
+      currentToast.remove();
+      currentToast = null;
+    }
+  
+    const div = document.createElement('div');
+  
+    const colorMap = {
+      ok:'#16a34a',
+      error:'#dc2626',
+      warn:'#f59e0b',
+      loading:'#374151'
+    };
+  
+    div.innerHTML = msg;
+  
+    div.style = `
+      position:fixed;
+      bottom:20px;
+      left:50%;
+      transform:translateX(-50%);
+      background:${colorMap[type]};
+      color:#fff;
+      padding:10px 16px;
+      border-radius:8px;
+      z-index:9999;
+      font-size:14px;
+    `;
+  
+    document.body.appendChild(div);
+    currentToast = div;
+  
+    // ✅ loading 不自動消失
+    if (type !== 'loading'){
+      setTimeout(()=>{
+        if (div === currentToast){
+          div.remove();
+          currentToast = null;
+        }
+      },1500);
+    }
+  }
+
+  /* ========================
+     ✅ 異動出勤狀態，解鎖按鍵
+  ======================== */
+ function unlock(id){
+
+  if (!confirm('確定要更正這筆出勤狀態？')) return;
+
+  toast('解鎖中...','loading');
+
+  callApi({
+    action:'updateAssignment',
+    assignment_id:id,
+    status:'scheduled'
+  }, res => {
+
+    if (res.result === 'ok'){
+      toast('✅ 已解鎖，可重新編輯');
+      load();
+    }else{
+      toast(res.message || '解鎖失敗','error');
+    }
+
+  });
+}
+
+// 支援時「原人自動 no_show」
+ function autoNoShow(gameId, role){
+
+  callApi({
+    action:'autoNoShow',
+    game_id:gameId,
+    role:role
+  });
+}
+
+// 判斷是否已完成
+function isGameCompleted(g){
+
+  const roleDone = {};
+
+  g.list.forEach(p=>{
+    if (p.status === 'completed'){
+      roleDone[p.role] = true;
+    }
+  });
+
+  const roleCount = new Set(g.list.map(x=>x.role)).size;
+
+  return Object.keys(roleDone).length === roleCount;
+}
+
+
+// 狀態中文化
+function getStatusText(s){
+
+  const map = {
+    scheduled:'待確認',
+    completed:'已完成',
+    late:'遲到',
+    no_show:'缺席'
+  };
+
+  return map[s] || s;
+}
+
+
+function getRoleText(role){
+
+  const map = {
+    PU:'主審',
+    U1:'一壘審',
+    U2:'二壘審',
+    U3:'三壘審',
+    REC_MAIN:'紀錄員',
+    REC_TRAINEE:'實習紀錄員',
+    REC_VIDEO:'影像紀錄員'
+  };
+
+  return map[role] || role;
+}
+
+// 狀態 badge
+function getStatusBadge(s){
+
+  const map = {
+    completed:'<span class="badge done">已完成</span>',
+    no_show:'<span class="badge no">缺席</span>',
+    late:'<span class="badge late">遲到</span>',
+    scheduled:'<span class="badge">待確認</span>'
+  };
+
+  return map[s] || '';
+}
+
+// 快速改派
+function quickAssign(id, btn){
+
+  const row = btn.closest('.person');
+  const select = row.querySelector('.select-user');
+
+  const uid = select.value;
+
+  if (!uid){
+    toast('請先選人','warn');
+    return;
+  }
+
+  callApi({
+    action:'updateAssignment',
+    assignment_id:id,
+    user_id:uid,
+    source:'assign'
+  }, ()=>{
+    toast('✅ 已改派');
+    load();
+  });
+}
+
+/* ========================
+   快速支援（最終穩定版）
+======================== */
+function quickReplace(gameId, role, btn){
+
+  const row = btn.closest('.person');
+  const select = row.querySelector('.select-user');
+  const uid = select?.value;
+
+  if (!uid){
+    toast('請先選支援人員','warn');
+    return;
+  }
+
+  toast('新增支援中...','loading');
+
+  callApi({
+    action:'addReplacement',
+    game_id:gameId,
+    role:role,
+    user_id:uid
+  }, (res)=>{
+
+    if(!res){
+      toast('API 無回應','error');
+      return;
+    }
+
+    if(res.result !== 'ok'){
+      toast(res.message || '新增失敗','error');
+      return;
+    }
+
+    autoNoShow(gameId, role);
+
+    toast('✅ 支援成功');
+    load();
+  });
+}
+
+
+// 判斷是否有遲到，才能遞補
+function checkRoleNoShow(gameId, role){
+
+  const card = document.querySelector(`[data-game-id="${gameId}"]`);
+  if (!card) return false;
+
+  const rows = card.querySelectorAll('.person');
+
+  for (let r of rows){
+
+    if (
+      r.getAttribute('data-role') === role &&
+      r.classList.contains('no_show')
+    ){
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+// 一鍵整場完成
+function completeGame(gameId){
+
+  if(!confirm('確定將本場全部標記為完成？')) return;
+
+  toast('整場處理中...','loading');
+
+  callApi({
+    action:'completeGame',
+    game_id:gameId,
+    status:'completed'
+  }, res=>{
+
+    if(res.result==='ok'){
+      toast('✅ 本場已全部完成');
+      load();
+    }else{
+      toast('❌ 處理失敗','error');
+    }
+
+  });
+}
+
+// 單一完成
+function completeOne(btn){
+
+  const row = btn.closest('.person');
+
+  const assignmentId = row.dataset.id;   // ✅ 每一個人都要有
+  if(!assignmentId){
+    console.error('❌ 找不到 assignment_id');
+    return;
+  }
+
+  toast('處理中...','loading');
+
+  callApi({
+    action:'updateAssignment',
+    assignment_id: assignmentId,
+    status: 'completed'
+  }, res => {
+
+    console.log('updateAssignment=',res);
+
+    if(res.result==='ok'){
+      toast('✅ 已完成');
+      load();
+    }else{
+      toast('❌ 失敗','error');
+    }
+
+  });
+}
+ 
+//
+function updateRowUI(id, status){
+
+  const row = document.querySelector(`[data-id="${id}"]`);
+  if (!row) return;
+
+  // ✅ 更新顏色
+  row.classList.remove('completed','no_show','late','scheduled');
+  row.classList.add(status);
+
+  // ✅ ✅ ✅ 🔥 更新狀態文字（你現在缺這行）
+  const statusEl = row.querySelector('.status');
+  if (statusEl){
+    statusEl.innerHTML = getStatusText(status);
+  }
+
+  // ✅ 如果變回 scheduled → 重新開啟按鈕
+  if (status !== 'completed'){
+    const actions = row.querySelector('.actions-box');
+    if (actions && actions.innerHTML.includes('更正')){
+      setTimeout(()=>{
+        load();   // ✅ 保證回復完整UI
+      },100);
+    }
+  }
+
+  // ✅ ✅ ✅ 🔥 如果完成 → 切換為鎖定UI
+  if (status === 'completed'){
+
+    const actions = row.querySelector('.actions-box');
+
+    if (actions){
+      actions.innerHTML = `
+        <button onclick="unlock('${id}')">
+          ✏️ 更正
+        </button>
+      `;
+    }
+  }
+}
+
+// 一鍵重新計算分數
+function recalcScore(){
+
+  if(!confirm('確定重新計算所有分數？')) return;
+
+  const btn = document.querySelector('.btn-recalc');
+
+  // ✅ 防連點
+  if (btn && btn.dataset.loading === '1') return;
+
+  if (btn){
+    btn.dataset.loading = '1';
+    btn.disabled = true;
+    btn.innerText = '計算中...';
+  }
+
+  toast('分數計算中...','loading');
+
+  callApi({action:'recalcAllScores'}, res=>{
+
+    console.log('recalc result =', res);
+
+    // ✅ 清按鈕狀態
+    if (btn){
+      btn.dataset.loading = '0';
+      btn.disabled = false;
+      btn.innerText = '🔄 重算分數';
+    }
+
+    // ✅ ✅ ✅ 正確判斷（只看 result）
+    if (!res || res.result !== 'ok'){
+      toast(res?.message || '❌ 計算失敗','error');
+      return;
+    }
+
+    // ✅ ✅ ✅ 統一欄位（關鍵）
+    const count =
+      res.users_updated ??
+      res.updated ??
+      res.count ??
+      0;
+
+    // ✅ 永遠成功（不看 count）
+    toast(`✅ 分數已更新（${count}人）`);
+
+  });
+}
+
+// 建立出勤資料
+function runAutoAssign(){
+
+  if(!confirm('建立尚未產生的出勤資料？')) return;
+
+  toast('建立中...','loading');
+
+  callApi({action:'autoCreateAssignment'}, res=>{
+
+    if (res.result === 'ok'){
+      toast(`✅ 已建立 ${res.created} 筆`);
+      load();
+    }else{
+      toast('❌ 建立失敗','error');
+    }
+
+  });
+}
+
+// 年度統計
+function loadYearly(){
+
+  const year = new Date().getFullYear();
+
+  document.getElementById('yearModal').classList.remove('hidden');
+  document.getElementById('yearContent').innerHTML = '載入中...';
+
+  callApi({
+    action:'getYearlyExperience',
+    year:year
+  }, res=>{
+
+    if (!res || res.result !== 'ok'){
+      document.getElementById('yearContent').innerHTML =
+        '<div class="empty">❌ 讀取失敗</div>';
+      return;
+    }
+
+    const judge = res.judge || [];
+    const record = res.record || [];
+    const all = [...judge, ...record];
+
+    window._yearRaw = {
+      judge,
+      record,
+      allAssignments: []
+    };
+
+    window._yearData = all;
+    window._yearType = 'all';
+
+    // ✅ ✅ ✅ 關鍵：一定要先抓 assignment
+    callApi({action:'getAssignments'}, res2=>{
+
+      window._yearRaw.allAssignments = res2?.data || [];
+
+      console.log('✅ assignments loaded',
+        window._yearRaw.allAssignments.length
+      );
+
+      renderYearTable('all');
+
+    });
+
+  });
+}
+
+
+// 切換（裁判 / 紀錄）
+function renderYearTable(type){
+
+  window._yearType = type;
+
+  let list = [];
+
+  if (type === 'judge'){
+    list = window._yearRaw.judge;
+  }
+  else if (type === 'record'){
+    list = window._yearRaw.record;
+  }
+  else{
+    list = window._yearData;
+  }
+
+  if (!list.length){
+    document.getElementById('yearContent').innerHTML =
+      '<div class="empty">此分類沒有資料</div>';
+    return;
+  }
+
+  drawTable(list);
+}
+
+// 年度統計 Tab 抽出
+function renderYearTabs(){
+  return `
+    <button onclick="switchYearType('all')"
+      style="${window._yearType==='all'?'background:#2563eb;color:#fff':''}">
+      全部(${window._yearData.length})
+    </button>
+
+    <button onclick="switchYearType('judge')"
+      style="${window._yearType==='judge'?'background:#2563eb;color:#fff':''}">
+      裁判(${window._yearRaw.judge.length})
+    </button>
+
+    <button onclick="switchYearType('record')"
+      style="${window._yearType==='record'?'background:#2563eb;color:#fff':''}">
+      紀錄(${window._yearRaw.record.length})
+    </button>
+  `;
+}
+
+ 
+// 年度統計的表格
+// ✅ 狀態
+window._yearType = 'all';
+window._yearData = [];
+window._yearRaw = { judge:[], record:[] };
+
+// ✅ 分數格式
+function fmt(n){
+  const num = Number(n ?? 0);
+  return Number.isInteger(num) ? num : num.toFixed(2);
+}
+
+// ✅ 排名 icon
+function rankIcon(r){
+  if (r === 1) return '🥇';
+  if (r === 2) return '🥈';
+  if (r === 3) return '🥉';
+  return r;
+}
+ 
+// 表格（最終UI）
+function drawTable(list){
+
+  list.sort((a,b)=>{
+    if ((b.final_score ?? 0) !== (a.final_score ?? 0)){
+      return (b.final_score ?? 0) - (a.final_score ?? 0);
+    }
+    if ((b.completed ?? 0) !== (a.completed ?? 0)){
+      return (b.completed ?? 0) - (a.completed ?? 0);
+    }
+    return (a.no_show ?? 0) - (b.no_show ?? 0);
+  });
+
+  list.forEach((u,i)=> u.rank = i+1);
+
+  function fmt(n){
+    const num = Number(n ?? 0);
+    return Number.isInteger(num) ? num : num.toFixed(2);
+  }
+
+  function rankIcon(r){
+    if (r === 1) return '🥇';
+    if (r === 2) return '🥈';
+    if (r === 3) return '🥉';
+    return r;
+  }
+
+  let html = '';
+
+  html += '<div style="margin-bottom:10px;">';
+  html += renderYearTabs();
+  html += '</div>';
+
+  html += '<table class="year-table">';
+  html += '<thead><tr>';
+
+  html += '<th>排名</th>';
+  html += '<th>姓名</th>';
+  html += '<th>等級</th>';
+  html += '<th>出勤</th>';
+  html += '<th>完成</th>';
+  html += '<th>遲到</th>';
+  html += '<th>缺席</th>';
+  html += '<th>經驗值</th>';
+  html += '<th>參與度</th>';
+  html += '<th>出勤品質</th>';
+  html += '<th>排位分數</th>';
+
+  html += '</tr></thead><tbody>';
+
+  list.forEach(p=>{
+
+    const total = p.attendance ?? 0;
+    const career = p.career_attendance ?? total;
+
+    const rate = total > 0
+      ? Math.round((p.completed / total) * 100)
+      : 0;
+
+    const stable =
+      (p.no_show === 0 && p.completed >= 10) ? '🔥' : '';
+
+    html += '<tr>';
+
+    html += '<td>'+rankIcon(p.rank)+'</td>';
+
+    html += '<td style="font-weight:700;">';
+    html += '<span style="cursor:pointer;color:#2563eb;" onclick="openUserDetail(\''+p.user_id+'\')">';
+    html += (p.name || '-') + ' ' + stable;
+    html += '</span>';
+
+    html += '<div style="font-size:11px;color:#6b7280;">';
+    html += '生涯 ' + career + ' 場';
+    html += '</div>';
+    html += '</td>';
+
+    html += '<td>'+renderLevel(p.league_level)+'</td>';
+
+    html += '<td>'+total+'</td>';
+
+    html += '<td style="color:#16a34a">';
+    html += p.completed;
+    html += '<div style="font-size:11px;color:#999;">'+rate+'%</div>';
+    html += '</td>';
+
+    html += '<td style="color:#f59e0b">'+p.late+'</td>';
+    html += '<td style="color:#dc2626">'+p.no_show+'</td>';
+
+    html += '<td>'+fmt(p.score_total)+'</td>';
+    html += '<td>'+total+'</td>';
+    html += '<td>'+fmt(p.quality)+'</td>';
+    html += '<td style="font-weight:800;">'+fmt(p.final_score)+'</td>';
+
+    html += '</tr>';
+
+  });
+
+  html += '</tbody></table>';
+
+  document.getElementById('yearContent').innerHTML = html;
+}
+
+// 等級
+function renderLevel(lv){
+
+  const map = {
+    S:{c:'#9333ea',t:'S'},
+    A:{c:'#2563eb',t:'A'},
+    B:{c:'#16a34a',t:'B'},
+    C:{c:'#d97706',t:'C'},
+    N:{c:'#6b7280',t:'N'}
+  };
+
+  const m = map[lv] || map.N;
+
+  return `<span style="color:${m.c};font-weight:700">${m.t}</span>`;
+}
+
+// 關閉年度統計的按
+function closeYearModal(){
+  document.getElementById('yearModal').classList.add('hidden');
+}
+
+//
+function switchYearType(type){
+  window._yearType = type;
+  renderYearTable(type);
+}
+
+// 個人分析模組
+function openUserDetail(userId){
+
+  if (!window._yearRaw?.allAssignments?.length){
+    alert('資料尚未載入完成');
+    return;
+  }
+
+  const all = window._yearData || [];
+  const p = all.find(x => String(x.user_id) === String(userId));
+  if (!p) return;
+
+  document.getElementById('userModal').classList.remove('hidden');
+
+  // =========================
+  // ✅ 年度資料
+  // =========================
+  const total = p.attendance ?? 0;
+  const completed = p.completed ?? 0;
+  const late = p.late ?? 0;
+  const no_show = p.no_show ?? 0;
+
+  const rate = total ? Math.round((completed/total)*100) : 0;
+
+  // =========================
+  // ✅ 生涯資料（從 assignment 算🔥）
+  // =========================
+  let career_completed = 0;
+  let career_late = 0;
+  let career_no_show = 0;
+
+  const roleTableHTML = (()=>{
+  
+    const roleCount = p.role_count || {};
+    const roleCompleted = p.role_completed || {};
+    const roleCareer = p.role_career_count || {};
+  
+    const roles = Object.keys(roleCount);
+  
+    if (!roles.length){
+      return '<div class="empty">無角色資料</div>';
+    }
+  
+    let html = `
+      <table class="mini-table">
+        <thead>
+          <tr>
+            <th>角色</th>
+            <th>年度</th>
+            <th>生涯</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+  
+    roles.forEach(r=>{
+      const total = roleCount[r] || 0;
+      const done  = roleCompleted[r] || 0;
+      const career = roleCareer[r] || 0;
+  
+      html += `
+        <tr>
+          <td>${mapRole(r)}</td>
+          <td>
+            <span style="font-weight:700;color:#111;">
+              ${done} / ${total}
+            </span>
+          </td>
+          <td>${career}</td>
+        </tr>
+      `;
+    });
+  
+    html += '</tbody></table>';
+  
+    return html;
+  })();
+
+  const career_total = career_completed + career_late + career_no_show;
+
+  const stable =
+    no_show === 0 && completed >= 10 ? '🔥 穩定' : '';
+
+    document.getElementById('userContent').innerHTML = `
+    <div style="padding:12px;">
+  
+      <h3 style="margin-bottom:6px;">
+        ${p.name} ${stable}
+      </h3>
+  
+      <div style="color:#666;margin-bottom:14px;">
+        聯盟等級：${renderLevel(p.league_level)}
+      </div>
+  
+      <!-- ✅ ✅ ✅ 卡片（自適應） -->
+      <div class="stat-grid">
+  
+        ${card('經驗值', fmt(p.score_total))}
+        ${card('參與度', total)}
+        ${card('出勤品質', fmt(p.quality))}
+        ${card('排位分數', fmt(p.final_score))}
+  
+      </div>
+  
+      <hr style="margin:14px 0;">
+  
+      <!-- ✅ ✅ ✅ 表格 -->
+      <table class="mini-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>完成</th>
+            <th>遲到</th>
+            <th>缺席</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>年度</td>
+            <td>${completed}</td>
+            <td>${late}</td>
+            <td>${no_show}</td>
+          </tr>
+          <tr>
+            <td>生涯</td>
+            <td>${career_completed}</td>
+            <td>${career_late}</td>
+            <td>${career_no_show}</td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <hr style="margin:14px 0;">
+  
+      <h4>📊 各角色分布（生涯）</h4>
+        ${roleTableHTML}
+      <canvas id="roleChart" width="380" height="260"></canvas>
+  
+    </div>
+  `;
+
+
+  drawRoleChart(roleMap);
+}
+
+
+// 畫圓餅圖
+function drawRoleChart(data){
+
+  const canvas = document.getElementById('roleChart');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const values = Object.values(data);
+  const labels = Object.keys(data);
+
+  const total = values.reduce((a,b)=>a+b, 0);
+
+  if (!total){
+    ctx.font = "14px sans-serif";
+    ctx.fillText('無資料', 90, 130);
+    return;
+  }
+
+  const colorMap = {
+    '主審':'#2563eb',
+    '一壘審':'#16a34a',
+    '二壘審':'#f59e0b',
+    '三壘審':'#dc2626',
+    '紀錄員':'#9333ea',
+    '影像紀錄員':'#0ea5e9',
+    '實習紀錄員':'#6b7280'
+  };
+
+  let start = 0;
+
+  // ✅ 圓餅
+  values.forEach((v,i)=>{
+
+    const slice = (v/total) * Math.PI * 2;
+
+    ctx.beginPath();
+    ctx.moveTo(110,130);
+    ctx.arc(110,130,90, start, start+slice);
+    ctx.closePath();
+
+    const color = colorMap[labels[i]] || '#999';
+
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    start += slice;
+  });
+
+  // ✅ ✅ 中心數（只畫一次）
+  ctx.fillStyle = "#111";
+  ctx.font = "bold 16px sans-serif";
+  ctx.fillText(total + '場', 90, 135);
+
+  // ✅ 圖例
+  ctx.font = "13px sans-serif";
+
+  labels.forEach((l,i)=>{
+
+    const count = data[l];
+    const percent = Math.round((count/total) * 100);
+
+    const y = 60 + i * 26;
+
+    const color = colorMap[l] || '#999';
+
+
+    // ✅ ① 先畫色塊
+    ctx.fillStyle = color;
+    ctx.fillRect(210, y, 12, 12);
+  
+    // ✅ ② 再畫文字（蓋在上面）
+    ctx.fillStyle = "#333";
+    ctx.font = "13px sans-serif";
+
+    // 調整圖示文字位置
+    ctx.fillText(
+      `${l}  ${count} (${percent}%)`,
+       230,
+      y + 10
+    );
+
+  });
+}
+
+
+// 關閉個人分析模組
+function closeUserModal(){
+  document.getElementById('userModal').classList.add('hidden');
+}
+
+// 英文代碼中文化
+function mapRole(role){
+
+  const m = {
+    PU:'主審',
+    U1:'一壘審',
+    U2:'二壘審',
+    U3:'三壘審',
+    REC_MAIN:'紀錄員',
+    REC_VIDEO:'影像紀錄員',
+    REC_TRAINEE:'實習紀錄員'
+  };
+
+  return m[role] || role;
+}
+
+// 卡片美化用
+function card(label, value){
+  return `
+    <div class="stat-card">
+      <div class="stat-title">${label}</div>
+      <div class="stat-value">${value}</div>
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>

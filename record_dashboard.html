@@ -6,584 +6,53 @@
 <title>紀錄員報名</title>
 
 <style>
+/* ===============================
+ ✅ 基本
+================================ */
 body {
   margin: 0;
   font-family: system-ui, -apple-system;
-  background: #f3f5f7;
+  background: #f5f6f8;
+  font-size: 15px;
 }
 
-/* ===== 標題 ===== */
-.hint {
-  font-size: 13px;
-  color: #555;
-  margin: 8px 12px;
-}
-
-/* ===== 日期 / 組別 ===== */
-.date-title {
-  margin: 20px 12px 8px;
-  font-size: 20px;
-  font-weight: 800;
-}
-.group-title {
-  margin: 10px 12px 6px;
-  font-weight: 700;
-  border-left: 4px solid #1976d2;
-  padding-left: 8px;
-}
-
-/* ===== 表格 ===== */
-.record-table {
-  width: calc(100% - 24px);
-  margin: 0 12px 16px;
-  border-collapse: collapse;
-  background: #fff;
-  margin-bottom: 12px;
-  border-radius: 8px;
-  overflow: hidden;
-
-}
-.record-table th,
-.record-table td {
-  border: 1px solid #ccc;
-  padding: 6px 8px;
-  text-align: center;
-}
-.record-table th {
-  background: #0d4c63;
-  color: #fff;
-}
-
-/* ===== select ===== */
-select {
-  width: 100%;
-  padding: 4px 6px;
-  border-radius: 12px;
-  font-weight: 600;
-}
-select.me {
-  background: #e8f5e9;
-  border: 2px solid #2e7d32;
-}
-select.locked {
-  background: #e0e0e0;
-}
-
-/* ✅ 四、搭配的 CSS（視覺就是裁判頁）*/
-.signup-btn {
-  color: #1976d2;
-  cursor: pointer;
-  font-weight: 700;
-}
-.signup-btn:hover {
-  text-decoration: underline;
-}
-
-.signup-me {
-  color: #2e7d32;
-  font-weight: 700;
-}
-  
-.cancel-btn {
-  margin-left: 8px;
-  color: #c62828;
-  cursor: pointer;
-  font-size: 12px;
-}
-  
-.cancel-btn:hover {
-  text-decoration: underline;
-}
-
-.signup-other {
-  color: #555;
-  font-weight: 700;
-}
-
-/* ===== 操作提示 toast ===== */
-.toast {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 200px;
-  background: #323232;
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 9999;
-}
-
-.toast.show {
-  opacity: 1;
-}
-
-.toast.success {
-  background: #2e7d32;
-}
-
-.toast.error {
-  background: #c62828;
-}
-
-/* ===== 報名狀態 ===== */
-.signup-btn {
-  color: #1565c0;          /* 藍：可操作 */
-  font-weight: 700;
-  cursor: pointer;
-}
-.signup-btn:hover {
-  text-decoration: underline;
-}
-
-.signup-me {
-  color: #2e7d32;          /* 綠：自己 */
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.signup-other {
-  color: #555;             /* 灰：他人 */
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* 取消按鈕（小而明確） */
-.cancel-btn {
-  margin-left: 8px;
-  font-size: 12px;
-  color: #c62828;          /* 紅：危險操作 */
-  cursor: pointer;
-}
-.cancel-btn:hover {
-  text-decoration: underline;
+.main {
+  padding: 16px;
 }
 
 /* ===============================
- RWD：桌機 / 手機切換（比照裁判頁）
+ ✅ Header
 ================================ */
-#desktopView { display: block; }
-#mobileView { display: none; }
-
-@media (max-width: 768px) {
-  #desktopView { display: none; }
-  #mobileView { display: block; padding: 12px; }
+#header .nav,
+#header .header,
+#header .header-right {
+  display: flex;
+  align-items: center;
 }
 
-.section-title {
-  margin: 16px 12px 8px;
-  font-size: 18px;
-  font-weight: 800;
-  color: #1a237e;
+#header #u_name {
+  font-weight: 600;
+  margin-left: 8px;
 }
 
 /* ===============================
- 手機卡片
+ ✅ 月份
 ================================ */
-.record-card {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 18px;   /* ✅ ✅ ✅ 關鍵：拉開下一場 */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
-  overflow: hidden;      /* ✅ 防止內部“外溢看起來黏” */
-  /* ✅ 這兩行最重要 */
-  border: 1px solid #e5e7eb;
-}
-
-.record-card + .record-card {
-  margin-top: 10px;
-
-  /* ✅ 視覺分隔（超重要） */
-  border-top: 3px solid #e3f2fd;
-}
-
-.record-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 18px;
-  margin-bottom: 6px;
-}
-
-.record-main {
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-s {
-  margin-top: 10px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  text-align: center;
-  border-top: 1px dashed #e0e0e0;   /* ✅ 視覺上連在上面 */
-  padding-top: 8px;
-}
-
-/* ===== 手機版名單強化 ===== */
-
-.record-roles {
-  margin-top: 8px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  text-align: center;
-}
-  
-/* 基本名單 */
-.record-role {
-  font-size: 14px;              /* ✅ 字稍微變大 */
-  font-weight: 600;
-  line-height: 1.3;
-  padding: 8px 6px;
-  border-radius: 10px;
-  min-width: 0;
-  white-space: normal;      /* ✅ 允許換行 */
-  word-break: break-word;   /* ✅ 中文也不撐爆 */
-}
-
-/* ✅ 自己（我報名的 / 被指派） */
-.record-role.me {
-  background: #e8f5e9;          /* 淡綠底 */
-  border: 2px solid #2e7d32;    /* 明確邊框 */
-  color: #1b5e20;
-  font-size: 18px;              /* ✅ 字稍微變大 */
-}
-
-/* ✅ 他人 */
-.record-role.other {
-  background: #f1f1f1;
-  border: 1px solid #cfcfcf;
-  color: #424242;
-  font-size: 16px;              /* ✅ 字稍微變大 */
-}
-
-/* ✅ 可操作（尚未報名） */
-.record-role.action {
-  background: #e3f2fd;
-  border: 2px dashed #1976d2;
-  color: #0d47a1;
-}
-
-/* 可選狀態 hover 回饋 */
-.record-role.action:active {
-  background: #bbdefb;
-}
-
-/* ===== 日期大框 ===== */
-.m-date-box {
-  background: #f5f8ff;
-  border-radius: 14px;
-  padding: 10px;
-  margin-bottom: 16px;
-}
-
-.m-date-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: #1a237e;
-  margin-bottom: 6px;
-}
-
-/* ===== 單場賽事卡片 ===== */
-.m-game-action {
-  margin-top: 4px;
-}
-
-/* ===== 日期大格（桌機） ===== */
-.panel {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 18px 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-}
-
-.date-title {
-  font-size: 20px;
-  font-weight: 800;
-  color: #1a237e;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.date-title::before {
-  content: "📅";
-}
-
-/* ===== 組別中格（桌機） ===== */
-.group-title {
-  margin-top: 18px;
-  margin-bottom: 8px;
-  font-weight: 700;
-  font-size: 16px;
-  color: #0d47a1;
-  border-left: 4px solid #0d47a1;
-  padding-left: 10px;
-}
-
-/* ===== 日期大格（手機） ===== */
-.m-date-box {
-  background: #f5f8ff;
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 20px;
-}
-
-.m-date-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: #1a237e;
-  margin-bottom: 10px;
-}
-
-/* ===== 組別中格（手機） ===== */
-.m-group-box {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 10px;
-  margin-bottom: 14px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-  
-  /* ✅ 關鍵：加出「群組感」 */
-  border: 2px solid #e3f2fd;
-
-}
-
-.m-group-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: #0d47a1;
-
-  border-left: 6px solid #0d47a1;
-  padding-left: 10px;
-  margin-bottom: 12px;
-}
-
-/* ===== 裁判頁手機：時間 / 場地 同列 ===== */
-.mobile-time-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 6px;
-  
-  /* ✅ 加分隔 */
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 6px;
-
-}
-
-.mobile-time-row .time {
-  color: #d32f2f;     /* 時間偏紅，與你原本一致 */
-  min-width: 70px;     /* 保住左欄 */
-  text-align: left;
-  font-size: 16px;
-}
-
-.mobile-time-row .game-code {
-  flex: ０;
-  text-align: center; /* ✅ 場次正中央 */
-  font-size: 16px;
-  color: #333;
-}
-
-.mobile-time-row .field {
-  min-width: 72px;     /* 保住右欄 */
-  text-align: right;
-  font-size: 16px;
-  color: #555;
-  white-space: nowrap;
-}
-
-/* ✅ 對戰列（置中） */
-.mobile-teams {
-  text-align: center;
-  font-size: 18px;      /* 比時間略大，僅次於組別 */
-  font-weight: 800;
-  margin: 6px 0 10px;
-}
-
-.mobile-teams .vs {
-  margin: 0 6px;
-  font-weight: 600;
-  color: #999;
-  font-size: 16px;
-}
-
-/* ✅ 場次 badge：保證文字一定可見 */
-.game-code.badge {
-  display: inline-block;
-  height: 22px;          /* ✅ 固定高度 */
-  padding: 0px 8px;        /* 只管左右 */
-  line-height: 20px;     /* ✅ 文字垂直置中，避免被切掉 */
-  border-radius: 999px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
-  white-space: nowrap;
-}
-
-/* ===== 場次 badge：已完賽 ===== */
-.game-code.badge.expired {
-  background: #9ca3af !important; /* 灰 */
-  color: #ffffff;
-  opacity: 0.9;
-}
-  
-
-/* ===== 升級：桌機專業表格 ===== */
-.record-table {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-.record-table th {
-  background: linear-gradient(135deg,#0d4c63,#1976d2);
-  font-size: 16px;
-  letter-spacing: 0.5px;
-}
-
-.record-table td {
-  font-size: 16px;
-}
-
-.record-table tr:nth-child(even) {
-  background: #f8fafc;
-}
-
-.record-table tr:hover {
-  background: #e3f2fd;
-}
-
-/* 場次欄 */
-.col-game {
-  font-weight: 800;
-  color: #0d47a1;
-}
-
-/* 對戰強化 */
-/* 場次窄一點 */
-td:first-child,
-th:first-child {
-  width: 70px;
-}
-
-/* 時間 */
-td:nth-child(2),
-th:nth-child(2) {
-  width: 90px;
-}
-
-/* 對戰給最大空間 */
-td:nth-child(4),
-td:nth-child(5) {
-  min-width: 100px;
-}
-
-.upgraded-hint {
-  background: #fff3cd;
-  border-left: 5px solid #ff9800;
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-weight: 600;
-}
-
-/* loading 狀態 */
-#overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-
-  background: rgba(0,0,0,0.35);
-
-  display: none;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 9999;
-}
-
-/* ✅ 顯示時 */
-#overlay.show {
-  display: flex;
-}
-
-#overlay-box {
-  background: #fff;
-  padding: 20px 26px;
-  border-radius: 10px;
-  min-width: 260px;
-  text-align: center;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-}
-
-#overlay-box {
-  transform: translateY(-10px); /* ✅ 微微往上，視覺更正中 */
-}
-
-@keyframes dots {
-  0%   { content: '...'; }
-  33%  { content: '.  '; }
-  66%  { content: '.. '; }
-  100% { content: '...'; }
-}
-
-.game-card {
-  background: #fafafa;   /* ✅ 和白底區隔 */
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 12px;
-
-  /* ✅ 關鍵：分隔線 */
-  border: 1px solid #e5e7eb;
-}
-
-.m-group-box .game-card:last-child {
-  margin-bottom: 4px;
-}
-
-/* 在卡片頂部加一條分隔線（讓每場更獨立）*/
-.game-card + .game-card {
-  border-top: 2px dashed #e0e0e0;
-}
-
-/* ===== 月班表選擇 ===== */
 .month-tabs {
   display: flex;
-  gap: 10px;
-  margin: 10px 0 16px;
+  gap: 8px;
+  margin: 10px 0 14px;
   flex-wrap: wrap;
 }
 
 .month-tab {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 999px;
   background: #f1f5f9;
   color: #444;
-  transition: 0.2s;
-}
-
-.month-tab:hover {
-  background: #e3f2fd;
-  color: #1976d2;
 }
 
 .month-tab.active {
@@ -591,112 +60,423 @@ td:nth-child(5) {
   color: #fff;
 }
 
-/* 過期卡片 */
-.expired-card {
-  background: #f3f4f6 !important;
-  border: 1px solid #d1d5db;
+/* ===============================
+ ✅ 日期標題
+================================ */
+.date-header{
+  font-size:16px;
+  font-weight:800;
+  color:#1d4ed8;
+  margin:22px 10px 10px;
+  padding-left:6px;
+  border-left:4px solid #1d4ed8;
 }
 
-/* 讓文字偏灰 */
-.expired-card .record-role,
-.expired-card .mobile-teams,
-.expired-card .time {
-  color: #6b7280;
+/* ===============================
+ ✅ 卡片 Grid（核心修正）
+================================ */
+.card-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;                 /* ✅ 原本太小 */
+  margin-bottom:18px;       /* ✅ 關鍵 */
 }
-  
+
+/* ===============================
+ ✅ 卡片
+================================ */
+.game-card {
+  background:#fff;
+  border-radius:12px;
+  padding:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);  /* ✅ 換陰影 */
+  transition:.15s;
+  font-size: 14px;
+}
+
+ 
+.game-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* ===============================
+ ✅ 第一列
+================================ */
+.row-top{
+  justify-content:space-between;
+  font-weight:700;
+  font-size:13px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.row-top .left{ color:#2563eb;}
+ 
+.row-top .center{ 
+ flex:1;
+ text-align:center;
+ font-weight: 600;
+}
+ 
+.row-top .right{ 
+ justify-self: end;
+ background: #6b7280;  /* 灰底 */
+ color: #fff;
+ padding: 3px 8px;
+ border-radius: 999px;  /* 圓滑 */
+ font-size: 12px;
+ font-weight: 500;
+}
+
+/* ===============================
+ ✅ 第二列
+================================ */
+.row-mid{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:6px 0 4px;
+}
+
+.team{
+  flex:1;
+  text-align:center;
+  font-size:16px;
+  font-weight:800;
+}
+
+/* 中央 */
+.center-box{
+  flex:1;
+  text-align:center;
+}
+
+.game-code{
+  color:#2563eb;
+  font-weight:700;
+  font-size:13px;
+}
+
+.time{
+  color:#dc2626;
+  font-size:16px;
+  font-weight:900;
+}
+
+/* ===============================
+ ✅ 第三列（裁判/紀錄）
+================================ */
+.row-bottom{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:4px;
+  border-top:1px dashed #ddd;
+  padding-top:6px;
+  margin-top:6px;
+  text-align:center;
+}
+
+.slot{
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;   /* ✅ 核心 */
+}
+
+.slot.waiting {
+  background:#f3f4f6;     /* 淡灰底 */
+  border-radius:6px;
+  color:#9ca3af;          /* 灰字 */
+  font-weight:600;
+}
+
+.slot.waiting .name{
+  color:#9ca3af;
+}
+
+/* label */
+.label{
+  font-size:11px;
+  color:#888;
+}
+
+/* 名字 */
+.name{
+  font-size:16px;
+  font-weight:700;    /* ✅ 加粗 */
+  white-space:nowrap;   /* ✅ 防止斷行炸版 */
+}
+
+.name.me{
+  font-size:16px;
+  font-weight:800;
+  background:#dbeafe;
+  color:#1d4ed8;
+  padding:3px 6px;
+  border-radius:6px;
+}
+
+/* 按鈕 */
+.btn{
+  background:#2563eb;
+  color:#fff;
+  border-radius:4px;
+  font-size:11px;
+  padding:1px 0;
+  margin-top:2px;
+}
+
+/* 取消 */
+.cancel{
+  color:#dc2626;
+  cursor:pointer;
+  margin-top: 4px;
+  font-size: 12px;
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #fef2f2;
+}
+
+/* 無需裁判 */
+.no-judge{
+  grid-column:1/-1;
+  text-align:center;
+  color:#999;
+}
+
+/* ===============================
+ ✅ 過期
+================================ */
+.expired-card{
+  background:#e5e7eb;
+  opacity:0.6;
+  border:1px solid #d1d5db;
+}
+
+/* ===============================
+ ✅ RWD（真正版本）
+================================ */
+@media (max-width:768px){
+
+  .card-grid{
+    grid-template-columns:1fr;   /* ✅ 手機永遠單欄 */
+  }
+
+  .team{
+    font-size:17px;
+    font-weight:800;
+    letter-spacing:0.5px;
+  }
+
+  .time{
+    color:#dc2626;
+    font-size:17px;
+    font-weight:900;
+  }
+
+  .row-bottom{
+    grid-template-columns:repeat(4,1fr); /* ✅ 不要太擠 */
+  }
+}
+
+#overlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.35);
+  z-index:9999;
+}
+
+#overlay-box{
+  position:relative;
+  background:#fff;
+  padding:18px 22px;
+  border-radius:10px;
+  text-align:center;
+  font-size:15px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.25);
+  min-width:220px;
+}
+
+.category-title{
+  font-size:14px;
+  font-weight:700;
+  color:#1976d2;
+  margin:14px 10px 6px;
+}
+
+.game-card.loading{
+  opacity:0.5;
+  pointer-events:none;
+}
+
+.row-warning{
+  background:#fff7ed;
+  border:1px solid #fb923c;
+  color:#c2410c;
+  font-size:13px;
+  font-weight:600;
+  padding:6px 8px;
+  border-radius:8px;
+  margin:6px 0;
+  text-align:center;
+}
+
+.row-warning .sub{
+  font-size:11px;
+  color:#666;
+  margin-top:2px;
+}
+
+/* ✅ 鎖定整張卡片 */
+.game-card.locked{
+  background:#f3f4f6;
+  opacity:0.7;
+}
+
+/* ✅ slot 鎖定 */
+.slot.locked{
+  background:#e5e7eb;
+  color:#666;
+  cursor:not-allowed;
+}
+
+/* ✅ 延賽 */
+.game-card.postponed{
+  border-left: 6px solid #f59e0b;
+  background: #fffbeb;
+}
+
+/* ✅ 停賽 */
+.game-card.stopped{
+  border-left: 6px solid #dc2626;
+  background: #fef2f2;
+}
+
+/* ✅ 鎖定（強化） */
+.game-card.locked{
+  border-left: 6px solid #6b7280;
+  background: #f3f4f6;
+}
+
 </style>
+  
 </head>
 
-<body>
-<div id="header-container"></div>
 
-  
+<!-- 共用 Header -->
+<body data-page-title="紀錄報名" class="page-record">
+
+
 <script src="js/auth.js"></script>
 <script src="js/config.js"></script>
-  
-<script>
-  function loadHeader() {
-    fetch('header.html')
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById('header-container').innerHTML = html;
-  
-        // ✅ 只用 body class 控制身份
-        const session = (typeof getSession === 'function') ? getSession() : null;
-        document.body.classList.remove(
-          'role-admin', 'role-judge', 'role-record'
-        );
-  
-        if (session && session.role) {
-          const roles = session.role.split(',').map(r => r.trim());
-  
-          if (roles.includes('admin')) {
-            document.body.classList.add('role-admin');
-          }
-          if (roles.includes('judge') || roles.includes('chief_judge')) {
-            document.body.classList.add('role-judge');
-          }
-          if (roles.includes('record') || roles.includes('record_chief')) {
-            document.body.classList.add('role-record');
-          }
-        }
-      })
-      .catch(err => console.error('Header 載入失敗', err));
-    }
-    
-    // 裁入報名頁面重要function
-    document.addEventListener('DOMContentLoaded', () => {
-      loadHeader();   // 只負責 header
-      loadGames();    // 或該頁真正的資料初始化
-      initMonthTabs();  // 初始化月班表選擇
-
-    });
-</script>
-  
-  <div id="toast" class="toast"></div>
-
-<!--
-<div class="page-title">BBT 軟式棒球聯盟｜紀錄員班表</div>
-<div class="hint upgraded-hint">※ 只能在「無」的欄位選擇自己</div>
--->
+<script src="js/core.js?v=2"></script>
 
 
-<!-- 月班表選擇 -->
-<div id="month-tabs" class="month-tabs"></div>
-  
-<!-- ✅ 唯一主容器 -->
-<div id="desktopView">
-  <h2 class="section-title">紀錄員班表</h2>
-  <div id="recordContainer"></div>
-</div>
-
+<!-- 畫面中間呈現訊息
 <div id="overlay">
   <div id="overlay-box">
     <div id="overlay-text">處理中...</div>
     <button id="overlay-ok">確定</button>
   </div>
-</div>
+</div> -->
 
-<div id="mobileView"></div>
-  
+<div id="header-container"></div>
+
 <script>
-/* ===== 全域 ===== */
-let session;
-let games = [];
+const session = getSession
+  ? getSession() 
+  : JSON.parse(localStorage.getItem('session_user')||'{}');
+ 
+function loadHeader() {
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
 
-function reloadCurrentView() {
+      // ✅ 只用 body class 控制身份
+      const session = (typeof getSession === 'function') ? getSession() : null;
+      document.body.classList.remove(
+        'role-admin', 'role-judge', 'role-record'
+      );
 
-  // ✅ 強制重新抓 session（避免 cache 問題）
-  session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (session && session.role) {
+        const roles = session.role.split(',').map(r => r.trim());
 
-  if (currentMonth === null) {
-    loadGames();
-  } else {
-    loadRecordGamesByMonth(currentYear, currentMonth);
+        if (roles.includes('admin')) {
+          document.body.classList.add('role-admin');
+        }
+        if (roles.includes('judge') || roles.includes('chief_judge')) {
+          document.body.classList.add('role-judge');
+        }
+        if (roles.includes('record') || roles.includes('record_chief')) {
+          document.body.classList.add('role-record');
+        }
+      }
+    })
+    .catch(err => console.error('Header 載入失敗', err));
   }
+  
+  // 裁入報名頁面重要function
+  document.addEventListener('DOMContentLoaded', () => {
+    loadHeader();   // 只負責 header
+    loadGames();    // 或該頁真正的資料初始化
+    initMonthTabs();  // 初始化月班表選擇
+  });
+</script>
+
+  <div class="main">
+  
+    <!-- 篩選 -->
+    <!-- 先暫時關閉不顯示
+    <div class="filter-bar">
+      目前顯示的資料是：
+      <select id="filterRange" onchange="render()">
+        <option value="all">全部</option>
+        <option value="month">本月</option>
+        <option value="week">本週</option>
+      </select>
+  
+      <label style="margin-left:10px;">
+        <input type="checkbox" id="showPast" onchange="render()"> 顯示過期賽事　　　
+      </label>
+      關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninput="render()">
+    </div>
+    -->
+
+    <!-- 月班表選擇 -->
+    <div id="month-tabs" class="month-tabs"></div>
+
+    <!-- 桌機表格 -->
+    <div id="content"></div>
+  
+    <!-- 手機卡片 -->
+    <div id="mobileView"></div>
+  
+    <!-- ✅ 全站唯一的送出按鈕 -->
+    <!--
+    <div class="submit-bar">
+      <button onclick="submitSignup()">送出報名</button>
+    </div>
+    -->
+  
+  </div>
+
+<script>
+
+const s = JSON.parse(localStorage.getItem('session_user')||'{}');
+  
+function getName(v){
+  if (!v) return '—';
+  if (typeof v === 'object') return v.name || '—';
+  return v;
 }
 
-  
 // 組別對應顏色
 function applyCategoryBadgeColor() {
   const colorMap = {
@@ -714,617 +494,386 @@ function applyCategoryBadgeColor() {
   });
 }
 
-// 過期判斷工具
-function isPastGame(gameDateStr) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const d = new Date(gameDateStr.replace(/\//g, '-'));
-  d.setHours(0, 0, 0, 0);
-
-  return d < today;
+function hideLoading() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) overlay.remove();
 }
 
-/* ===== Page / Data ===== */
-function initPage() {
-  const raw = localStorage.getItem('session_user');
-  if (!raw) {
-    location.replace('login.html');
-    return;
-  }
+/* ===== 狀態 ===== */
+let allGames = [];
+let selectedPositions = {}; // game_id -> role
+let games = [];
 
-  session = JSON.parse(raw);          // ✅ 關鍵修正：指定給全域
-  if (!session.user_id) {
-    location.replace('login.html');
-    return;
-  }
-
-  loadGames();
-}
-
-function normalizeGame(g) {
-  return {
-    ...g,
-
-    // ✅ 統一欄位
-    game_id: g.game_id || g.id,
-    game_code: g.game_code || '',
-
-    date: g.date || g.game_date || '',
-    time: g.time || g.game_time || '',
-
-    category: g.category || g.group || '未分類',
-
-    away_team: g.away_team || g.team_a || '',
-    home_team: g.home_team || g.team_b || '',
-
-    field: g.field || g.location || '',
-
-    // ✅ 統一紀錄欄位
-    record_slots: g.record_slots || {
-      REC_MAIN: g.recorder ? {
-        user_id: g.recorder,
-        name: g.recorder_name
-      } : null,
-
-      REC_TRAINEE: g.recorder_trainee ? {
-        user_id: g.recorder_trainee,
-        name: g.recorder_trainee_name
-      } : null,
-
-      REC_VIDEO: g.recorder_video ? {
-        user_id: g.recorder_video,
-        name: g.recorder_video_name
-      } : null
-    }
-  };
-}
-
-
-/* ===== Toast ===== */
-function showToast(msg, type = 'success') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `toast show ${type}`;
-  setTimeout(() => el.className = 'toast', 2000);
-}
-
-/* ===== 取資料 ===== */
+/* ===== API ===== */
 function loadGames() {
-  session = session || JSON.parse(localStorage.getItem('session_user') || '{}');
-  
-  // ✅ 顯示置中 loading
-  showLoading('載入賽事資料中...');
+  const s = JSON.parse(localStorage.getItem('session_user')||'{}');
+ showToast('載入賽事資料中...');
 
-  callApi({
-    action: 'getRecordSignableGames',
-    user_id: session.user_id
-  }, res => {
+  callApi(
+    { action:'getRecordGames', user_id: s.user_id || '' },
+    res => {
 
-      // ✅ 關掉 loading
-      hideOverlay();
+      if (!res || res.result !== 'ok') {
+        showToast(res?.message || '無法取得賽事資料');
+        return;
+      }
 
-    if (!res || res.result !== 'ok') {
-      showToast('載入賽事失敗', 'error');
-      return;
+      allGames = res.games || [];
+      games = allGames;
+      
+      if (typeof setGameCache === 'function'){
+        setGameCache(allGames);   // ✅ 關鍵
+      }
+
+      console.log(games.map(g => g.status));
+      render();
+      ;
+
     }
-
-    // games = Array.isArray(res.games) ? res.games : [];
-    games = (res.games || []).map(normalizeGame);
-    renderRecordDashboard(games);
-    renderMobileRecord(games);   // ✅ 新增
-  });
+  );
 }
 
-// 1️⃣ 顯示 loading（不要可點）
-function showLoading(msg) {
-  const overlay = document.getElementById('overlay');
+/* ===== 工具 ===== */
+function cancelSelected(gameId) {
+  delete selectedPositions[gameId];
+  render();
+}
+  
+function cancelSelectedByDate() {
+  if (!Object.keys(selectedPositions).length) {
+    alert('目前沒有已選擇的站位');
+    return;
+  }
 
-  const textEl = document.getElementById('overlay-text');
-  if (textEl) textEl.textContent = msg;
+  const date = prompt('請輸入要取消的日期（yyyy/MM/dd）');
+  if (!date) return;
 
-  const ok = document.getElementById('overlay-ok');
-  if (ok) ok.style.display = 'none';
+  let removed = 0;
 
-  if (overlay) {
-    overlay.onclick = null;
-    overlay.classList.add('show', 'loading');
+  allGames.forEach(g => {
+    if (g.date === date && selectedPositions[g.game_id]) {
+      delete selectedPositions[g.game_id];
+      removed++;
+    }
+  });
+
+  if (!removed) {
+    alert('該日期沒有已選擇的站位');
+  } else {
+    alert(`已取消 ${date} 的 ${removed} 筆選擇`);
+    render();
   }
 }
 
-
-// 2️⃣ 顯示訊息（可以點關閉）
-function showMessage(msg) {
-  const overlay = document.getElementById('overlay');
-  const text = document.getElementById('overlay-text');
-  const ok = document.getElementById('overlay-ok');
-
-  text.textContent = msg;
-
-  ok.style.display = 'inline-block';
-
-  // ✅ 點擊關閉
-  ok.onclick = hideOverlay;
-  overlay.onclick = hideOverlay;
-
-  overlay.classList.add('show');
+function formatTime(t){
+  const d = new Date(t);
+  return d.getHours().toString().padStart(2,'0') + ':' +
+         d.getMinutes().toString().padStart(2,'0');
 }
 
-// ✅ 3️⃣ 關閉統一
-function hideOverlay() {
-  const overlay = document.getElementById('overlay');
-  if (overlay) overlay.classList.remove('show', 'loading');
+function rememberSelection(gameId, role, btn) {
+  // 清掉舊選擇
+  // delete selectedPositions[gameId];
+  selectedPositions[gameId] = role;
+
+  // 清除同場所有已選外觀
+  document
+    .querySelectorAll(`.signup-btn[data-game="${gameId}"]`)
+    .forEach(b => b.classList.remove('selected'));
+
+  // 標記目前按下的按鈕
+  if (btn) {
+    btn.classList.add('selected');
+  }
+
+  // ✅ 一定要在 if 外
+  render();
+}
+
+/* ✅ ✅ ✅ 核心：統一時間 */
+function timeToMinutes(t){
+  if (!t) return 0;
+  const [h,m] = t.split(':').map(Number);
+  return h*60+m;
+}
+
+function timeToMinutesSafe(t){
+  return timeToMinutes(t);
 }
 
 
-/* ===============================
- * 共用排序工具
- * =============================== */
+/* ✅ ========= 主 render ========= */
+function render(){
 
-// ✅ 日期排序（字串 yyyy/mm/dd ➜ Date）
-function sortDatesAsc(dates) {
-  return dates.sort((a, b) => new Date(a) - new Date(b));
-}
+  const root = document.getElementById('content');
+  root.innerHTML = '';
 
-// ✅ 組別排序（桌機用：大 ➜ 中 ➜ 小，其餘放後面）
-const CATEGORY_ORDER = ['大聯盟組', '中聯盟組', '小聯盟組'];
+  if (!games || !games.length){
+    root.innerHTML = '<div>沒有資料</div>';
+    return;
+  }
 
-function sortCategoriesForDesktop(categories) {
-  return categories.sort((a, b) => {
-    const ia = CATEGORY_ORDER.indexOf(a);
-    const ib = CATEGORY_ORDER.indexOf(b);
+  const dateMap = {};
 
-    if (ia === -1 && ib === -1) return a.localeCompare(b);
-    if (ia === -1) return 1;
-    if (ib === -1) return -1;
-    return ia - ib;
+  // ✅ 分日期
+  games.forEach(g => {
+  
+    const s = Number(g.status || 0);
+  
+    // ✅ 1️⃣ 暫存 → 不顯示
+    if (s === 3) return;
+  
+    const d = new Date(g.date.replace(/\//g,'-'));
+    d.setHours(0,0,0,0);
+  
+    const today = new Date();
+    today.setHours(0,0,0,0);
+  
+    // ✅ ✅ ✅ 月份模式（最高優先）
+    if (window.currentMonth !== null){
+      const m = d.getMonth() + 1;
+      if (m !== window.currentMonth) return;
+    }
+  
+    // ✅ ✅ ✅ 全年模式
+    else if (window.isFullYear){
+      // 不過濾
+    }
+  
+    // ✅ ✅ ✅ 預設（本週之後）
+    else {
+      const day = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+      monday.setHours(0,0,0,0);
+  
+      if (d < monday) return;
+    }
+  
+    if (!dateMap[g.date]) dateMap[g.date] = [];
+    dateMap[g.date].push(g);
+  
   });
+
+
+  // ✅ 日期排序
+  Object.keys(dateMap)
+    .sort((a,b)=>new Date(a) - new Date(b))
+    .forEach(date=>{
+
+      root.innerHTML += `
+        <div class="date-header">
+          📅 ${formatDateTW(date)}
+        </div>
+      `;
+
+      const list = dateMap[date];
+
+      // ✅ ✅ ✅ 場地分組（核心）
+      const fieldMap = {};
+
+      list.forEach(g=>{
+        const field = g.field || '未分類場地';
+        if (!fieldMap[field]) fieldMap[field] = [];
+        fieldMap[field].push(g);
+      });
+
+      // ✅ ✅ ✅ 每個場地處理
+      Object.keys(fieldMap).forEach(field=>{
+
+        const gamesInField = fieldMap[field];
+
+        // ✅ 是否多組別
+        const hasMultiCategory =
+          new Set(gamesInField.map(x=>x.category)).size > 1;
+
+        let finalList = [];
+
+        if (hasMultiCategory){
+
+          // ✅ ✅ ✅ 同場地不同組 → 全部依時間排序（關鍵）
+          finalList = gamesInField.sort((a,b)=>
+            timeToMinutes(getTime(a)) - timeToMinutes(getTime(b))
+          );
+
+          root.innerHTML += `
+            <div class="category-title">${field}</div>
+            <div class="card-grid">
+              ${
+                finalList
+                  .filter(g => Number(g.status || 0) !== 3)   // ✅ 先過濾
+                  .map(g => renderGameCard(g,{ session, type:'record' }))
+                  .join('')
+              }
+            </div>
+          `;
+
+        } else {
+
+          // ✅ ✅ ✅ 單一組別 → 保留 category 分組
+          const categoryMap = {};
+
+          gamesInField.forEach(g=>{
+            const cat = g.category || '未分類';
+            if (!categoryMap[cat]) categoryMap[cat] = [];
+            categoryMap[cat].push(g);
+          });
+
+          Object.keys(categoryMap).forEach(cat=>{
+
+            const sorted = categoryMap[cat]
+              .sort((a,b)=>
+                timeToMinutes(getTime(a)) - timeToMinutes(getTime(b))
+              );
+
+            root.innerHTML += `
+              <div class="category-title">${cat}</div>
+              <div class="card-grid">
+                ${
+                  sorted
+                    .filter(g => Number(g.status || 0) !== 3)
+                    .map(g => renderGameCard(g,{ session, type:'record' }))
+                    .join('')
+                }
+              </div>
+            `;
+          });
+        }
+
+      });
+
+    });
 }
 
 
-/* ===== 分組 ===== */
-function groupGames(list) {
+// ✅ 裁判頁手機版：依 日期 → 組別 → 場次 分組
+function groupGamesForMobile(games) {
   const map = {};
-  list.forEach(g => {
-    const date = formatDateTW(g.date);
-    const cat  = g.category || '未分類';
+
+  games.forEach(g => {
+    const date = g.date; // yyyy/MM/dd
+    const category = g.category || '未分類';
 
     if (!map[date]) map[date] = {};
-    if (!map[date][cat]) map[date][cat] = [];
-    map[date][cat].push(g);
+    if (!map[date][category]) map[date][category] = [];
+
+    map[date][category].push(g);
   });
 
+  // ✅ 每個組別內依「裁判頁時間欄位」排序
   Object.values(map).forEach(catMap => {
-    Object.values(catMap).forEach(arr => {
-//      arr.sort((a, b) => a.time.localeCompare(b.time)); // ✅ 正確排序
-      arr.sort((a, b) => (a.time || a.game_time || '').localeCompare(b.time || b.game_time || ''));
+    Object.values(catMap).forEach(list => {
+      list.sort((a, b) =>
+        timeToMinutesSafe(a.time_range) -
+        timeToMinutesSafe(b.time_range)
+      );
     });
   });
 
   return map;
 }
 
-/* ===== Render（桌機） ===== */
-function renderRecordDashboard(list) {
+function renderMobilePosGrid(g) {
 
-  const root = document.getElementById('recordContainer');
-  root.innerHTML = '';
+  const isPast = isPastGame(g.date);
 
-  const grouped = groupGames(list);
-
-  const dates = sortDatesAsc(Object.keys(grouped));
-
-  // ✅ ✅ ✅ 全年模式提示
-  if (currentMonth === null) {
-    root.insertAdjacentHTML(
-      'beforeend',
-      `<div class="hint">※ 過期賽事請看「單月班表」</div>`
-    );
-  }
-
-  dates.forEach(date => {
-
-    const isPast = isPastGame(date);
-
-    // ✅ ✅ ✅ 全年：過期不顯示
-    if (currentMonth === null && isPast) return;
-
-    // ✅ 日期區塊
-    const dateBox = document.createElement('div');
-    dateBox.className = 'panel';
-
-    // ✅ ✅ ✅ 單月：過期加灰底
-    if (currentMonth !== null && isPast) {
-      dateBox.style.background = '#f3f4f6';     // 淺灰底
-      dateBox.style.opacity = '0.85';           // 微淡
-    }
-
-    dateBox.insertAdjacentHTML(
-      'beforeend',
-      `<div class="date-title">${date}</div>`
-    );
-
-    const categories = sortCategoriesForDesktop(
-      Object.keys(grouped[date])
-    );
-
-    categories.forEach(cat => {
-
-      dateBox.insertAdjacentHTML(
-        'beforeend',
-        `<div class="group-title">│ ${cat}</div>`
-      );
-
-      dateBox.insertAdjacentHTML(
-        'beforeend',
-        buildGroupTable(grouped[date][cat])
-      );
-    });
-
-    root.appendChild(dateBox);
-  });
-}
-
-
-/* ===== Table ===== */
-function buildGroupTable(list) {
-  return `
-  <table class="record-table">
-    <thead>
-      <tr>
-        <th>場次</th><th>時間</th>
-        <th>客隊（三壘）</th>
-        <th>主隊（一壘）</th>
-        <th>地點</th>
-        <th>記錄員</th>
-        <th>見習記錄</th>
-        <th>影像記錄</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${list.map(buildRow).join('')}
-    </tbody>
-  </table>`;
-}
-
-function buildRow(g) {
-  return `
-  <tr>
-    <td class='col-game'>${g.game_code || ''}</td><td>${formatTimeTW(g.time)}</td>
-    <td>${g.away_team}</td>
-    <td>${g.home_team}</td>
-    <td>${g.field}</td>
-    <td>${renderSignupCell(g,'REC_MAIN')}</td>
-    <td>${renderSignupCell(g,'REC_TRAINEE')}</td>
-    <td>${renderSignupCell(g,'REC_VIDEO')}</td>
-  </tr>`;
-}
-
-/* ===== 桌機版紀錄報名　Signup UI ===== */
-function renderSignupCell(g, role) {
-
-  const slot = g.record_slots?.[role];
-
-  if (isPastGame(g.date)) {
-    if (slot && slot.user_id) {
-      return `<span class="signup-other">${slot.name}</span>`;
-    }
-    return `<span class="signup-other">—</span>`;
-  }
-
-  if (slot && String(slot.user_id).trim() !== '') {
-
-    const name = slot.name || ('ID:' + slot.user_id);
-
-    if (String(slot.user_id) === String(session.user_id)) {
-      return `
-        <span class="signup-me">
-          ${name}
-          <span class="cancel-btn"
-            onclick="cancelSignup('${g.game_id}','${role}')">
-            取消
-          </span>
-        </span>
-      `;
-    }
-
-    return `<span class="signup-other">${name}</span>`;
-  }
+  const roles = [
+    ['REC_MAIN','紀錄'],
+    ['REC_TRAINEE','見習'],
+    ['REC_VIDEO','影像']
+  ];
 
   return `
-    <span class="signup-btn"
-      onclick="signup('${g.game_id}','${role}')">
-      ＋報名
-    </span>
-  `;
-}
+  <div class="mobile-pos-grid">
+    ${
+      roles.map(([role,label])=>{
 
-/* ===== Actions ===== */
-function signup(gameId, role) {
+        const slot = g.records?.[role];
+        const isMe = g.my_position === role;
 
-  showToast('報名中...');
-
-  callApi({
-    action: 'recordSignup',
-    user_id: session.user_id,
-    game_id: gameId,
-    record_role: role
-  }, res => {
-
-    console.log('signup res:', res);  // ✅ debug
-
-    if (!res) {
-      showToast('系統無回應', 'error');
-      return;
-    }
-
-    if (res.result === 'ok') {
-
-      showToast('報名成功');
-
-      // ✅ ✅ ✅ 🔥 強制 reload（重點）
-      reloadCurrentView();
-
-    } else {
-      showToast(res.message || '報名失敗', 'error');
-    }
-  });
-}
-
-
-
-function cancelSignup(gameId, role) {
-
-  if (!confirm('確定取消此場紀錄？')) return;
-
-  showToast('取消中...');
-
-  callApi({
-    action: 'cancelRecordSignup',
-    user_id: session.user_id,
-    game_id: gameId,
-    record_role: role
-  }, res => {
-
-    console.log('cancel res:', res);
-
-    if (!res) {
-      showToast('系統無回應', 'error');
-      return;
-    }
-
-    if (res.result === 'ok') {
-
-      showToast('已取消');
-
-      // ✅ ✅ ✅ 🔥 同樣 reload
-      reloadCurrentView();
-
-    } else {
-      showToast(res.message || '取消失敗', 'error');
-    }
-  });
-}
-
-
-function recordSignup(gameId, role) {
-  const session = getSession();
-  if (!session) {
-    alert('登入狀態失效，請重新登入');
-    location.replace('../login.html');
-    return;
-  }
-
-  callApi({
-    action: 'recordSignup',
-    user_id: session.user_id,   // ✅ 唯一正解
-    game_id: gameId,
-    record_role: role
-  }, res => {
-    if (res.result === 'ok') {
-      location.reload();
-    } else {
-      alert(res.message || '報名失敗');
-    }
-  });
-}
-
-/* ===== 時間 ===== */
-function formatDateTW(v) {
-  return new Date(v).toLocaleDateString('zh-TW',{timeZone:'Asia/Taipei'});
-}
-function formatTimeTW(v) {
-  return v; // 已是 HH:mm
-}
-
-/* ===== 手機版 render（完整）===== */
-function renderMobileRecord(list) {
-
-  const root = document.getElementById('mobileView');
-  if (!root) return;
-
-  root.innerHTML = '';
-
-  const grouped = groupGames(list);
-
-  // ✅ ✅ ✅ 日期排序（關鍵修正）
-  const dates = Object.keys(grouped).sort((a, b) => {
-    return new Date(a.replace(/\//g, '-')) - new Date(b.replace(/\//g, '-'));
-  });
-
-  // ✅ 全年提示
-  if (currentMonth === null) {
-    root.insertAdjacentHTML(
-      'beforeend',
-      '<div class="hint">※ 過期賽事請看「單月班表」</div>'
-    );
-  }
-
-  dates.forEach(date => {
-
-    const isPast = isPastGame(date);
-
-    // ✅ 全年隱藏過期
-    if (currentMonth === null && isPast) return;
-
-    const dateBox = document.createElement('div');
-    dateBox.className = 'm-date-box';
-
-    // ✅ 單月灰底
-    if (currentMonth !== null && isPast) {
-      dateBox.style.background = '#f3f4f6';
-      dateBox.style.opacity = '0.85';
-    }
-
-    dateBox.insertAdjacentHTML(
-      'beforeend',
-      `<div class="m-date-title">📅 ${date}</div>`
-    );
-
-    Object.keys(grouped[date]).forEach(cat => {
-
-      const groupBox = document.createElement('div');
-      groupBox.className = 'm-group-box';
-
-      groupBox.insertAdjacentHTML(
-        'beforeend',
-        `<div class="m-group-title">${cat}</div>`
-      );
-
-      grouped[date][cat].forEach(g => {
-
-        groupBox.insertAdjacentHTML('beforeend', `
-          <div class="record-card ${isPast ? 'expired-card' : ''}">
-
-            <div class="mobile-time-row">
-              <div class="time">⏰ ${g.time}</div>
-              <div class="game-code badge">${g.game_code}</div>
-              <div class="field">📍 ${g.field}</div>
+        // ✅ 已有人
+        if (slot){
+          return `
+            <div class="mobile-pos">
+              <span class="${isMe?'mobile-judge-me':''}">
+                ${getName(slot)}
+              </span>
+              ${
+                isMe && !isPast
+                ? `<div class="mobile-cancel"
+                      onclick="handleSlotClick('${g.game_id}','${role}')">
+                      取消
+                   </div>`
+                : ''
+              }
             </div>
+          `;
+        }
 
-            <div class="mobile-teams">
-              <strong>${g.away_team}</strong>
-              <span class="vs">vs</span>
-              <strong>${g.home_team}</strong>
+        // ✅ 過期
+        if (isPast){
+          return `<div class="mobile-pos">—</div>`;
+        }
+
+        // ✅ 已有其它位置
+        if (g.my_position){
+          return `<div class="mobile-pos">待位</div>`;
+        }
+
+        // ✅ 可報名
+        return `
+          <div class="mobile-pos">
+            <div class="mobile-pos-btn"
+              onclick="handleSlotClick('${g.game_id}','${role}')">
+              ${label}
             </div>
-
-            <div class="record-roles">
-              ${renderRecordMobileRole(g,'REC_MAIN','紀錄')}
-              ${renderRecordMobileRole(g,'REC_TRAINEE','見習')}
-              ${renderRecordMobileRole(g,'REC_VIDEO','影像')}
-            </div>
-
           </div>
-        `);
-      });
+        `;
 
-      dateBox.appendChild(groupBox);
-    });
-
-    root.appendChild(dateBox);
-  });
-}
-
-
-
-
-function renderRecordMobileRole(g, role, label) {
-
-  const slot = g.record_slots && g.record_slots[role];
-
-  // ✅ ✅ ✅ 過期：保留名單（關鍵修正）
-  if (isPastGame(g.date)) {
-
-    if (slot) {
-      return `
-        <div class="record-role other">
-          ${label}<br>${slot.name}
-        </div>
-      `;
+      }).join('')
     }
-
-    return `
-      <div class="record-role other">
-        ${label}<br>—
-      </div>
-    `;
-  }
-
-  // ✅ 沒人 → 可報名
-  if (!slot) {
-    return `
-      <div class="record-role action"
-        onclick="signup('${g.game_id}','${role}')">
-        ＋${label}
-      </div>
-    `;
-  }
-
-  const isMe = String(slot.user_id) === String(session.user_id);
-
-  // ✅ 自己
-  if (isMe) {
-    return `
-      <div class="record-role me">
-        ${label}<br>${slot.name || '我'}
-        <div class="cancel-btn"
-          onclick="cancelSignup('${g.game_id}','${role}')">
-          取消
-        </div>
-      </div>
-    `;
-  }
-
-  // ✅ 他人
-  return `
-    <div class="record-role other">
-      ${label}<br>${slot.name}
-    </div>
+  </div>
   `;
 }
+ 
+function renderTimeHHmm(t) {
+  if (!t) return '';
 
-// 產生月班表
-function loadRecordGamesByMonth(year, month) {
-
-  const session = JSON.parse(localStorage.getItem('session_user') || '{}');
-
-  showLoading('載入月份班表中...');
-
-  callApi({
-    action: 'getRecordGamesByMonth',
-    year: year,
-    month: month,
-    user_id: session.user_id
-  }, res => {
-
-    hideOverlay();
-
-    console.log('month res:', res); // ✅ debug
-
-    if (!res || res.result !== 'ok') {
-      showMessage('載入失敗');
-      return;
+  // ✅ 已經是字串（08:30）
+  if (typeof t === 'string') {
+    // 保險：如果已經是 HH:mm，直接回傳
+    if (/^\d{1,2}:\d{2}$/.test(t)) {
+      return t;
     }
+    // 其他字串就原樣回
+    return t;
+  }
 
-    // ✅ ✅ ✅ 🔥 這行是很多人漏掉的
-    games = res.games || [];
+  // ✅ 是 Date 物件（1899-12-30）
+  if (t instanceof Date) {
+    return (
+      t.getHours().toString().padStart(2, '0') +
+      ':' +
+      t.getMinutes().toString().padStart(2, '0')
+    );
+  }
 
-    if (!games.length) {
-      showMessage('當月無賽事');
-      document.getElementById('recordContainer').innerHTML = '';
-      document.getElementById('mobileView').innerHTML = '';
-      return;
-    }
+  // 其他型別（保險）
+  return String(t);
+}
+ 
+// 訊息function
 
-    renderRecordDashboard(games);
-    renderMobileRecord(games);
-  });
+function logout(){
+  localStorage.clear();
+  location.replace('login.html');
 }
 
-// 初始化月份／年份
-let currentMonth = null;
-let currentYear = null;
 
+// 初始化月份
+window.currentMonth = null;
+window.isFullYear = false;
+  
 function initMonthTabs() {
 
   const now = new Date();
@@ -1333,37 +882,40 @@ function initMonthTabs() {
   const container = document.getElementById('month-tabs');
   container.innerHTML = '';
 
-  /* ✅ 全年 */
+  // ✅ ✅ ✅ 全年按鈕
   const allBtn = document.createElement('div');
   allBtn.className = 'month-tab active';
   allBtn.textContent = '📊 全年班表';
 
   allBtn.onclick = () => {
-    currentMonth = null;
-    currentYear = null;
+    window.currentMonth = null;
+    window.isFullYear = true;
     setActiveTab(allBtn);
-
-    loadGames(); // ✅ 全年
+    loadGames();
+    showToast(`載入全年班表`, 'success');
   };
 
   container.appendChild(allBtn);
 
-  /* ✅ 月份 */
+
+  // ✅ 月份
   for (let m = 1; m <= 12; m++) {
 
     const div = document.createElement('div');
     div.className = 'month-tab';
     div.textContent = `${m}月`;
 
-    div.onclick = () => {
+    if (m === now.getMonth() + 1) {
+      // 預設不要 active（讓全年是預設）
+    }
 
-      currentMonth = m;
-      currentYear = year;   // ✅ ✅ ✅ 記住年份（關鍵）
-
-      setActiveTab(div);
-
-      loadRecordGamesByMonth(year, m); // ✅ 月
-    };
+   div.onclick = () => {
+     window.currentMonth = m;
+     window.isFullYear = false;
+     setActiveTab(div);
+     loadRecordGamesByMonth(year, m);
+     showToast(`載入 ${m}月 班表`, 'success');
+   };
 
     container.appendChild(div);
   }
@@ -1375,7 +927,64 @@ function setActiveTab(el) {
   el.classList.add('active');
 }
 
-</script>
+// 呼叫API
+function loadRecordGamesByMonth(year, month){
 
+  const s = JSON.parse(localStorage.getItem('session_user')||'{}');
+
+  callApi({
+    action:'getRecordGamesByMonth',   // ✅ ✅ ✅
+    year: year,
+    month: month,
+    user_id: s.user_id
+  }, res => {
+
+    if (!res || res.result !== 'ok') {
+      showToast('載入失敗');
+      return;
+    }
+
+    allGames = res.games || [];
+
+    if (typeof setGameCache === 'function'){
+      setGameCache(allGames);
+    }
+
+    render();
+  });
+}
+
+function safeMerge(g){
+
+  // ✅ 如果後端已經整理好就直接用
+  if (g.judges && Object.keys(g.judges).some(v => g.judges[v])){
+    return g;
+  }
+
+  // ✅ 初始化
+  g.judges = g.judges || {};
+  g.records = g.records || {};
+
+  // ✅ 裁判
+  ['PU','U1','U2','U3'].forEach(r=>{
+    g.judges[r] =
+      g.assignment_judges?.[r] ||
+      g.signup_judges?.[r] ||
+      '';
+  });
+
+  // ✅ 紀錄
+  ['REC_MAIN','REC_TRAINEE','REC_VIDEO'].forEach(r=>{
+    g.records[r] =
+      g.assignment_records?.[r] ||
+      g.signup_records?.[r] ||
+      '';
+  });
+
+  g.status = Number(g.status || 0);
+  return g;
+}
+
+</script>
 </body>
 </html>

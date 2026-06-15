@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>管理中心</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- ✅ 你原本就有的 JS（一定要） -->
+  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+
+  <style>
+/* =====================================================
+   🌐 基本頁面
+   ===================================================== */
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:#f5f6f8;
+  font-size:16px;
+  line-height:1.6;
+  color:#1f2937;
+}
+
+.main{
+  max-width:1100px;
+  margin:0 auto;
+  padding:20px;
+}
+
+h2{
+  margin:0 0 10px;
+  font-size:24px;
+  font-weight:800;
+}
+
+/* =====================================================
+   🧩 標題
+   ===================================================== */
+.section-title{
+  margin:28px 0 12px;
+  font-size:20px;
+  font-weight:700;
+}
+
+.group-title{
+  margin:18px 0 8px;
+  font-size:18px;
+  font-weight:800;
+  color:#4b5563;
+}
+
+/* =====================================================
+   🧱 卡片布局
+   ===================================================== */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(240px,1fr));
+  gap:12px;
+}
+
+.group-grid{
+  display:grid;
+  gap:10px;
+}
+
+/* =====================================================
+   🎯 卡片（✅ 已統一，移除衝突）
+   ===================================================== */
+.card{
+  height:64px;
+  padding:0 16px;
+
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+
+  font-size:18px;
+  font-weight:700;
+
+  border-radius:12px;
+  border:1px solid #e5e7eb;
+  background:#ffffff;
+
+  cursor:pointer;
+  user-select:none;
+  transition:all .15s ease;
+}
+
+.card:hover{
+  background:#f8fafc;
+  border-color:#c7d2fe;
+  transform:translateY(-1px);
+}
+
+.card .icon{
+  width:26px;
+  font-size:18px;
+  margin-right:10px;
+  text-align:center;
+}
+
+/* =====================================================
+   🎨 類別色（左側條）
+   ===================================================== */
+.card-schedule{ border-left:4px solid #22c55e; }
+.card-execution{ border-left:4px solid #16a34a; }
+.card-admin{ border-left:4px solid #a855f7; }
+.card-report{ 
+  border-left:4px solid #3b82f6;
+  margin-bottom:14px;
+}
+
+/* =====================================================
+   🪟 Modal
+   ===================================================== */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.modal.hidden{ display:none; }
+
+.modal-content{
+  background:#fff;
+  width:90%;
+  max-width:1000px;
+  max-height:90vh;
+  overflow-y:auto;
+  border-radius:18px;
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+
+  padding:14px 16px;
+  border-bottom:1px solid #e5e7eb;
+
+  position:sticky;
+  top:0;
+  background:#fff;
+}
+
+.modal-body{
+  padding:16px;
+}
+
+.modal-tools{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* =====================================================
+   📊 年度報表
+   ===================================================== */
+.annual-layout{
+  display:flex;
+  gap:20px;
+  align-items:flex-start;
+}
+
+.annual-left{
+  flex:1;
+  min-width:0;
+}
+
+.annual-right{
+  flex:0 0 260px;
+  max-width:280px;
+
+  background:#fafafa;
+  padding:14px;
+  border-radius:12px;
+
+  font-size:14px;
+  line-height:1.6;
+
+  position:sticky;
+  top:80px;
+
+  white-space:normal;
+  overflow-wrap:break-word;
+}
+
+/* =====================================================
+   📋 表格
+   ===================================================== */
+.annual-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:15px;
+}
+
+.annual-table th{
+  background:#f3f4f6;
+  padding:12px;
+  text-align:left;
+  font-weight:700;
+}
+
+.annual-table td{
+  padding:12px;
+  border-bottom:1px solid #e5e7eb;
+}
+
+.annual-table td.num{
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+
+.score{
+  font-weight:700;
+  color:#2563eb;
+}
+
+/* 防止亂斷字 */
+th, td{ white-space:nowrap; }
+
+/* 右側說明允許換行 */
+.annual-right, .annual-right *{
+  white-space:normal !important;
+}
+
+/* =====================================================
+   👤 個人資料卡
+   ===================================================== */
+.person-row{
+  background:#fff;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,.06);
+}
+
+.person-name{
+  font-size:18px;
+  font-weight:800;
+  margin-bottom:6px;
+}
+
+.person-stats{
+  font-size:14px;
+  margin-bottom:8px;
+}
+
+.stat-box{
+  background:#f3f4f6;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
+  font-size:14px;
+}
+
+/* =====================================================
+   📱 響應式（手機）
+   ===================================================== */
+@media (max-width:768px){
+
+  body{ font-size:18px; }
+
+  h2{ font-size:22px; }
+
+  .group-title{ font-size:20px; }
+
+  .card{
+    height:70px;
+    font-size:20px;
+    padding:0 18px;
+  }
+
+  .card .icon{
+    font-size:20px;
+  }
+
+  .annual-layout{
+    flex-direction:column;
+  }
+
+  .annual-right{
+    order:2;
+    position:static;
+    width:100%;
+  }
+
+}
+
+.annual-person{
+  margin-bottom:12px;
+}
+
+/* ✅ 手機排序 */
+@media (max-width:768px){
+
+  .annual-layout{
+    display:flex;
+    flex-direction:column;
+  }
+
+  .annual-person{ order:1; }
+  .annual-left{ order:2; }
+  .annual-right{ order:3; }
+
+}
+
+/* 圖餅圖大小 */
+.chart-box{
+  max-width: 220px;   /* ✅ 控制大小（可調 220~300） */
+  margin: 10px auto;  /* ✅ 置中 */
+  display:flex;
+  justify-content:center;
+}
+  </style>
+  
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div id="header-container"></div>
+
+  <script>
+
+    function guardAdminPage(){
+      const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (!session.user_id){
+        alert('尚未登入');
+        location.replace('login.html');
+        return false;
+      }
+      return true;
+    }
+
+    function loadHeader() {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+          // 1️⃣ 插入 header
+          document.getElementById('header-container').innerHTML = html;
+    
+          // 2️⃣ 設定身分 → 只影響 body class
+          const session = (typeof getSession === 'function') ? getSession() : null;
+          document.body.classList.remove(
+            'role-admin','role-judge','role-record'
+          );
+    
+          if (session && session.role) {
+            const roles = session.role.split(',').map(r => r.trim());
+    
+            if (roles.includes('admin')) {
+              document.body.classList.add('role-admin');
+            }
+            if (roles.includes('judge') || roles.includes('chief_judge')) {
+              document.body.classList.add('role-judge');
+            }
+            if (roles.includes('record') || roles.includes('record_chief')) {
+              document.body.classList.add('role-record');
+            }
+          }
+        })
+        .catch(err => console.error('Header 載入失敗', err));
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadHeader);
+</script>
+  
+  <div class="main">
+    <h2>BBT出勤系統管理中心</h2>
+    <div class="section-title"></div>
+
+    <!-- ✅ 功能框，固定存在 -->
+      <div class="cards">
+      
+        <!-- 排班管理 -->
+        <div class="card-group">
+          <div class="group-title">📅 排班管理</div>
+          <div class="group-grid">
+      
+            <a href="judge_dashboard_admin.html">
+              <div class="card card-schedule">
+                <span class="icon">⚾</span> 裁判員班表安排
+              </div>
+            </a>
+      
+            <a href="record_dashboard_admin.html">
+              <div class="card card-schedule">
+                <span class="icon">📋</span> 紀錄員班表安排
+              </div>
+            </a>
+      
+          </div>
+        </div>
+      
+        <!-- 出勤 -->
+        <div class="card-group">
+          <div class="group-title">✅ 出勤與執行</div>
+          <div class="group-grid">
+      
+            <a href="assignment_execution.html">
+              <div class="card card-execution">
+                <span class="icon">✅</span> 出勤確認
+              </div>
+            </a>
+      
+          </div>
+        </div>
+      
+        <!-- 系統 -->
+        <div class="card-group">
+          <div class="group-title">⚙️ 系統管理</div>
+          <div class="group-grid">
+      
+            <a href="admin_users.html">
+              <div class="card card-admin">
+                <span class="icon">👤</span> 帳號管理
+              </div>
+            </a>
+      
+            <a href="admin_games.html">
+              <div class="card card-admin">
+                <span class="icon">🏟️</span> 賽事管理
+              </div>
+            </a>
+      
+          </div>
+        </div>
+      
+        <!-- 報表 -->
+        <div class="card-group">
+          <div class="group-title">📊 統計與報表</div>
+          <div class="group-grid">
+      
+            <div class="card card-report" onclick="openAnnualModal('judge')">
+              <span class="icon">📈</span> 裁判員年度總表
+            </div>
+      
+            <div class="card card-report" onclick="openAnnualModal('record')">
+              <span class="icon">📝</span> 紀錄員年度總表
+            </div>
+      
+            <div class="card card-report" onclick="goReport()">
+              <span class="icon">📊</span> 出勤報表
+            </div>
+      
+          </div>
+        </div>
+      
+      </div>
+
+  <!-- ✅ Modal 永遠在最外層，而且預設 hidden -->
+  <div id="annualModal" class="modal hidden">
+    <div class="modal-content">
+          <!-- 桌機 -->
+          <div class="desktop-only">
+          </div>
+
+      <!-- 工具列 -->
+      <div class="modal-header">
+        <h3 id="annualModalTitle">全員年度總表</h3>
+        <div class="modal-tools">
+          <select id="annualYearSelect" onchange="reloadAnnualByYear()"></select>
+          <!-- <button class="btn-export" onclick="exportCSV()">匯出</button> -->
+          <button class="btn-close" onclick="closeAnnualModal()">✕</button>
+        </div>
+      </div>
+
+      <!-- ✅ 個人資料 Modal -->
+      <div id="personModal" class="modal hidden">
+        <div class="modal-content" style="max-width:500px;">
+      
+          <div class="modal-header">
+            <h3>📊 個人數據分析</h3>
+            <button class="btn-close" onclick="closePersonModal()">✕</button>
+          </div>
+      
+          <div class="modal-body" id="personModalBody">
+          </div>
+      
+          <div style="padding:12px 16px; border-top:1px solid #e5e7eb; text-align:right;">
+            <button onclick="closePersonModal()" 
+              style="padding:8px 16px; border-radius:8px; border:none; background:#2563eb; color:white; font-weight:600;">
+              關閉
+            </button>
+          </div>
+      
+        </div>
+      </div>
+
+        <!-- 內容 -->
+        <div class="modal-body">
+          <div id="annualList"></div>
+        </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ===== 初始化：只做 header，不碰 modal ===== */
+    document.addEventListener('DOMContentLoaded', function () {
+      guardAdminPage();
+
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById('header-container').innerHTML = html;
+          // initHeaderVisibility();
+        });
+    });
+
+    /* 出勤報表 */
+    function goReport(){
+      location.href = 'report.html';
+    }
+
+/* ===== 年度總表 Modal ===== */
+let currentAnnualType = null;
+
+function openAnnualModal(type){
+
+  currentAnnualType = type;
+
+  document.getElementById('annualModalTitle').textContent =
+    type === 'judge' ? '裁判員年度總表' : '紀錄員年度總表';
+
+  document.getElementById('annualList').textContent = '載入中…';
+  document.getElementById('annualModal').classList.remove('hidden');
+
+  loadAvailableYears();
+}
+
+function closeAnnualModal(){
+  document.getElementById('annualModal').classList.add('hidden');
+}
+
+function loadAvailableYears(){
+
+  callApi({ action:'getAvailableGameYears' }, res=>{
+
+    if (!res || res.result !== 'ok'){
+      document.getElementById('annualList').textContent = '讀取失敗';
+      return;
+    }
+
+    const sel = document.getElementById('annualYearSelect');
+    sel.innerHTML = '';
+
+    res.years.forEach((y,i)=>{
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y + ' 年';
+      if (i===0) opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+    reloadAnnualByYear();
+  });
+}
+
+function reloadAnnualByYear(){
+
+  const year = document.getElementById('annualYearSelect').value;
+
+  callApi({
+    action:'getYearlySummary',
+    year: year
+  }, res=>{
+
+    console.log(res); // ✅ debug
+
+    if (!res || res.result !== 'ok'){
+      document.getElementById('annualList').textContent =
+        res?.message || '讀取失敗';
+      return;
+    }
+
+    const list = currentAnnualType === 'judge'
+      ? (res.judge || [])
+      : (res.record || []);
+
+    renderAnnualList(list);
+  });
+}
+
+function renderAnnualList(list){
+
+  list = list.filter(u => (u.attendance||0) > 0);
+
+  list.sort((a,b)=>{
+    if (b.final_score !== a.final_score)
+      return b.final_score - a.final_score;
+
+    return (b.attendance||0) - (a.attendance||0);
+  });
+
+  list.forEach((u,i)=>u.rank=i+1);
+
+    document.getElementById('annualList').innerHTML = `
+      <div class="annual-layout">
+    
+        <div id="personDetail" class="annual-person"></div>
+    
+        <div class="annual-left">
+          ${renderTable(list)}
+        </div>
+    
+        <div class="annual-right">
+          ${renderScoreNote()}
+        </div>
+    
+      </div>
+    `;
+
+}
+
+function renderTable(list){
+
+  return `
+  <table class="annual-table">
+  <thead>
+    <tr>
+      <th>排名</th>
+      <th>姓名</th>
+      <th>等級</th>
+      <th>出勤</th>
+      <th>完成</th>
+      <th>遲到</th>
+      <th>缺席</th>
+      <th>出勤分</th>
+      <th>品質</th>
+      <th>總分</th>
+    </tr>
+  </thead>
+
+  <tbody>
+  ${list.map(p=>{
+
+
+    let note = '';
+    
+    if (p.attendance < 3){
+      note = ' ⚠️';
+    }
+    else if (p.attendance < 5){
+      note = ' ⭐';
+    }
+
+    let badge='';
+    if(p.rank===1) badge='🏆';
+    else if(p.rank===2) badge='🥈';
+    else if(p.rank===3) badge='🥉';
+    else if(p.rank<=10) badge='⭐';
+
+    return `
+    <tr onclick='showPersonDetail(${JSON.stringify(p)})' style="cursor:pointer;">
+      <td>${badge} ${p.rank}</td>
+      <td style="font-weight:700;">${note}${p.name}</td>
+      <td class="num" style="color:#16a34a;font-weight:600;">${renderLevel(p.league_level)}</td>
+      <td class="num" style="color:#16a34a;font-weight:600;">${p.attendance}</td>
+      <td class="num" style="color:#16a34a">${p.completed}</td>
+      <td class="num" style="color:#d97706">${p.late}</td>
+      <td class="num" style="color:#dc2626">${p.no_show}</td>
+      <td class="num">
+        <div style="font-weight:700;color:#2563eb;">${Number(p.score_total || 0).toFixed(0)}</div>
+        <div style="font-size:11px;color:#6b7280;">${p.attendance}場</div>
+      </td>
+      <td class="num" style="color:#16a34a;font-weight:600;">${p.quality.toFixed(2)}</td>
+      <td class="score">${p.final_score.toFixed(0)}</td>
+    </tr>
+    `;
+
+  }).join('')}
+  </tbody>
+  </table>
+  `;
+}
+
+function renderScoreNote(){
+
+  return `
+  <div style="line-height:1.8">
+
+    <div style="font-weight:700;">📌 評分公式</div>
+
+    ✅ 總分 = 出勤分（角色加權） + 品質分
+
+    <div style="margin-top:10px;">
+    <b>1️⃣ 出勤分（左表）</b><br>
+    每場分數 = 角色基礎分 × 出勤狀態 × 權重 × 比賽倍率 × 支援折算
+    </div>
+
+    <div style="margin-top:10px;">
+    <b>2️⃣ 品質分（左表）</b><br>
+
+    品質反映「可靠度與穩定性」，計算方式如下：
+    </div>
+
+    <div style="margin-top:6px;">
+
+    ✅ 基礎分：<br>
+    ・完成率越高 → 分數越高<br>
+    ・遲到會扣分（影響中）<br>
+    ・缺席會大幅扣分（影響高）<br><br>
+
+    ✅ 穩定補強：<br>
+    ・完成場次越多 → 額外加分（上限 +2）<br><br>
+
+    ✅ 懲罰機制：<br>
+    ・缺席 ≥ 2 場 → 額外扣分（-2）<br><br>
+
+    ✅ 分數範圍：<br>
+    ・最低 0 分，最高 10 分
+    </div>
+
+    <div style="margin-top:10px;">
+    <b>3️⃣ 總分（左表）</b><br>
+    總分 = 出勤分 + (品質 × 10)，並依出勤場次進行權重調整
+    </div>
+
+    <div style="margin-top:12px;">
+    <b>📌 聯盟等級（左表）</b><br>
+    等級依「生涯出勤 + 分數 + 品質」綜合判定
+    </div>
+
+    <div style="margin-top:10px;">
+    <b>📌 場次不足判定</b><br>
+    ・出勤 < 3 場 → 不列入評比（N）<br>
+    ・出勤 3～4 場 → 僅供參考（C）<br>
+    ・出勤 ≥ 5 場 → 正式評分
+    </div>
+
+  </div>
+  `;
+}
+
+// 顯示等級
+function renderLevel(lv){
+
+  const map = {
+    S:{color:'#9333ea', icon:'🟣'},
+    A:{color:'#2563eb', icon:'🔵'},
+    B:{color:'#16a34a', icon:'🟢'},
+    C:{color:'#d97706', icon:'🟠'},
+    N:{color:'#6b7280', icon:'⚪'}
+  };
+
+  const m = map[lv] || map['N'];
+
+  return `
+  <span style="font-weight:700;color:${m.color}">
+    ${m.icon} ${lv}
+  </span>`;
+}
+
+// 品質顏色
+
+function getQualityColor(q){
+  if (q >= 9) return '#16a34a';   // 綠
+  if (q >= 7) return '#2563eb';   // 藍
+  if (q >= 5) return '#d97706';   // 橘
+  return '#dc2626';              // 紅
+}
+
+// 個人資訊
+function showPersonDetail(p){
+
+  const html = `
+  <div style="font-size:16px;font-weight:800;margin-bottom:10px;">
+    📊 個人數據分析
+  </div>
+
+  <div style="font-size:18px;font-weight:700;margin-bottom:10px;">
+    ${p.name}
+  </div>
+
+  <div style="margin-bottom:10px;">
+    聯盟等級：<b>${p.league_level}</b>
+  </div>
+
+  <!-- KPI -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+    <div class="stat-box">經驗值<br><b>${p.attendance}</b></div>
+    <div class="stat-box">參與度<br><b>${p.completed}</b></div>
+    <div class="stat-box">出勤品質<br><b>${p.quality.toFixed(1)}</b></div>
+    <div class="stat-box">排名分數<br><b>${p.final_score.toFixed(0)}</b></div>
+  </div>
+
+  <hr/>
+
+  <!-- 出勤狀況 -->
+  <div style="margin-top:10px;">
+    <b>📊 出勤概況</b>
+  
+    <table style="width:100%; margin-top:6px; border-collapse:collapse; font-size:14px;">
+      <tr style="background:#f3f4f6;">
+        <th style="padding:8px;">完成</th>
+        <th style="padding:8px;">(含)支援</th>
+        <th style="padding:8px;">遲到</th>
+        <th style="padding:8px;">缺席</th>
+      </tr>
+      <tr>
+        <td style="padding:8px; text-align:center; color:#16a34a; font-weight:700;">
+          ${p.completed}
+        </td>
+        <td style="padding:8px; text-align:center; color:#2563eb; font-weight:700;">
+          ${p.substitute || 0}
+        </td>
+        <td style="padding:8px; text-align:center; color:#d97706; font-weight:700;">
+          ${p.late}
+        </td>
+        <td style="padding:8px; text-align:center; color:#dc2626; font-weight:700;">
+          ${p.no_show}
+        </td>
+
+      </tr>
+    </table>
+  </div>
+
+  <hr/>
+
+  <!-- 圓餅圖容器 -->
+  <div style="margin-top:10px;">
+    <b>📊 角色分布</b>
+    
+    ${renderRoleStats(p)}
+    
+    <div class="chart-box">
+      <canvas id="roleChart"></canvas>
+    </div>
+
+  </div>
+  `;
+
+  // document.getElementById('personDetail').innerHTML = html;
+
+  document.getElementById('personModalBody').innerHTML = html;
+  document.getElementById('personModal').classList.remove('hidden');
+
+  renderRoleChart(p);
+
+}
+
+function renderRoleChart(p){
+
+  // ✅ 從 API 帶來（你後面要補）
+  const roleCount = p.role_count || {};
+
+  // ✅ 判斷類型（裁判 or 紀錄）
+  const isJudge = currentAnnualType === 'judge';
+
+  const roleMapJudge = {
+    PU: '主審',
+    U1: '一壘審',
+    U2: '二壘審',
+    U3: '三壘審'
+  };
+
+  const roleMapRecord = {
+    REC_MAIN: '紀錄員',
+    REC_VIDEO: '影像紀錄',
+    REC_TRAINEE: '見習紀錄'
+  };
+
+  const roleMap = isJudge ? roleMapJudge : roleMapRecord;
+
+  const labels = [];
+  const data = [];
+
+  Object.keys(roleMap).forEach(k=>{
+    const val = roleCount[k] || 0;
+    if(val > 0){
+      labels.push(roleMap[k]);
+      data.push(val);
+    }
+  });
+
+  if(labels.length === 0){
+    labels.push('無資料');
+    data.push(1);
+  }
+
+  new Chart(document.getElementById('roleChart'),{
+    type:'pie',
+    data:{
+      labels,
+      datasets:[{
+        data,
+        backgroundColor:[
+          '#22c55e','#3b82f6','#f59e0b','#ef4444','#8b5cf6'
+        ]
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+  
+      plugins:{
+        legend:{
+          position:'right',   // ✅ ✅ ✅ 關鍵在這
+          labels:{
+            boxWidth:12,      // ✅ 小一點比較精緻
+            font:{
+              size:12         // ✅ 字體調整
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// 關閉個人資料視窗
+function closePersonModal(){
+  document.getElementById('personModal').classList.add('hidden');
+}
+
+// 個人資料 - 年度及生涯資料
+function renderRoleStats(p){
+
+  const roleCount = p.role_count || {};
+  const roleCareer = p.role_career_count || {};
+
+  const isJudge = currentAnnualType === 'judge';
+
+  const roleMapJudge = {
+    PU:'主審',
+    U1:'一壘審',
+    U2:'二壘審',
+    U3:'三壘審'
+  };
+
+  const roleMapRecord = {
+    REC_MAIN:'紀錄員',
+    REC_VIDEO:'影像紀錄',
+    REC_TRAINEE:'見習紀錄'
+  };
+
+  const roleMap = isJudge ? roleMapJudge : roleMapRecord;
+
+  const hasCareer = Object.keys(roleCareer).length > 0;
+
+  const rows = Object.keys(roleMap)
+    .filter(k => (roleCount[k] || 0) > 0)   // ✅ ✅ ✅ 過濾 0（關鍵）
+    .map(k => {
+      return `
+      <tr>
+        <td style="padding:6px;">${roleMap[k]}</td>
+        <td style="padding:6px; text-align:right;">${roleCount[k] || 0}</td>
+        ${hasCareer ? `
+        <td style="padding:6px; text-align:right;">
+          ${roleCareer[k] || 0}
+        </td>` : ''}
+      </tr>
+      `;
+    }).join('');
+
+  if (!rows){
+    return `<div style="font-size:13px;color:#6b7280;">無角色資料</div>`;
+  }
+
+  return `
+  <table style="width:100%; font-size:13px; margin-top:6px; border-collapse:collapse;">
+    <thead>
+      <tr style="background:#f3f4f6;">
+        <th style="padding:6px; text-align:left;">角色</th>
+        <th style="padding:6px; text-align:right;">年度</th>
+        ${hasCareer ? `<th style="padding:6px; text-align:right;">生涯</th>` : ''}
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+    </tbody>
+  </table>
+  `;
+}
+  </script>
+</body>
+</html>

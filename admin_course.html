@@ -1,0 +1,44 @@
+<div id="list"></div>
+
+<script>
+function loadAdmin(){
+
+  callApi({action:'getTrainingLog'}, res=>{
+
+    const html = res.data.map(r=>`
+      <div class="person-row">
+
+        <b>${r.course_name}</b>｜${r.name}
+
+        <select onchange="setStatus('${r.log_id}',this.value)">
+          <option value="applied">報名</option>
+          <option value="confirmed">確認</option>
+          <option value="attended">出席</option>
+          <option value="absent">缺席</option>
+        </select>
+
+        <button onclick="pay('${r.log_id}')">
+          ${r.payment_status==='paid'?'已繳':'繳費'}
+        </button>
+
+      </div>
+    `).join('');
+
+    document.getElementById('list').innerHTML = html;
+  });
+}
+
+function setStatus(id,status){
+  callApi({action:'updateTrainingStatus',log_id:id,status});
+}
+
+function pay(id){
+  callApi({
+    action:'updateTrainingStatus',
+    log_id:id,
+    payment_status:'paid'
+  },loadAdmin);
+}
+
+loadAdmin();
+</script>

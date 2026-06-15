@@ -160,7 +160,8 @@ function login() {
       return;
     }
 
-    localStorage.setItem('session_user', JSON.stringify(res));
+    localStorage.setItem('session_user', JSON.stringify(res.user));
+
 
     if (res.must_change_pwd === 'Y') {
       location.href = 'change_password.html';

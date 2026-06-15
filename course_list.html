@@ -1,0 +1,57 @@
+<div id="courseList"></div>
+
+<script>
+function mapCategory(c){
+  return {
+    lecture:'講習',
+    training:'訓練',
+    meeting:'討論會',
+    workshop:'工作坊'
+  }[c] || c;
+}
+
+function loadCourses(){
+
+  callApi({action:'getCourses'}, res=>{
+
+    const html = res.data.map(c=>{
+
+      const full = c.count >= c.capacity;
+
+      return `
+        <div class="card">
+          <h3>${c.course_name}</h3>
+
+          <div>📅 ${c.date}</div>
+          <div>📍 ${c.location}</div>
+          <div>👨‍🏫 ${c.instructor}</div>
+          <div>🏷 ${mapCategory(c.category)}</div>
+          <div>👥 ${c.count}/${c.capacity}</div>
+
+          <button ${full?'disabled':''}
+            onclick="enroll('${c.course_id}')">
+            ${full?'已滿':'報名'}
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('courseList').innerHTML = html;
+  });
+}
+
+function enroll(cid){
+  const session = JSON.parse(localStorage.getItem('session_user'));
+
+  callApi({
+    action:'enrollCourse',
+    course_id:cid,
+    user_id:session.user_id
+  },res=>{
+    alert(res.message || '✅ 成功');
+    loadCourses();
+  });
+}
+
+loadCourses();
+</script>

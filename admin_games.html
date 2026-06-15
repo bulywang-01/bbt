@@ -154,6 +154,33 @@
       border: 1px solid #d6a300;
     }
 
+    /* 比賽狀態呈現 */
+    .status-badge{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:10px;
+      font-size:12px;
+      font-weight:600;
+    }
+    
+    /* ✅ 正常（綠） */
+    .status-0{
+      background:#dcfce7;
+      color:#166534;
+    }
+    
+    /* ✅ 延賽（黃） */
+    .status-1{
+      background:#fef9c3;
+      color:#854d0e;
+    }
+    
+    /* ✅ 停賽（灰） */
+    .status-2{
+      background:#e5e7eb;
+      color:#374151;
+    }
+
   </style>
 </head>
 
@@ -238,27 +265,10 @@
         顯示已完成
       </label>
   
-      <input id="searchInput" placeholder="搜尋賽事 / 場地 / 球隊">
+      <!-- <input id="searchInput" placeholder="搜尋賽事 / 場地 / 球隊"> -->
   
     </div>
   </div>
-
-  <!-- 新增賽事 -->
-    <div class="filter-bar">
-    <button
-    style="margin-left:auto"
-    onclick="addNewGameRow()">
-    ＋ 新增賽事
-  </button>
-  </div>
-  
-  <!-- 儲存賽事 -->
-  <div id="batchSaveBar" style="display:none; margin-top:12px; text-align:right;">
-    <button onclick="saveAllNewGames()">
-      ✅ 儲存全部新增賽事
-    </button>
-  </div>
-    
 </div>
 
 <div id="gamesContainer"></div>
@@ -372,14 +382,6 @@
 ">
 </div>
 
-<div class="filter-bar">
-  <button
-  style="margin-left:auto"
-  onclick="addNewGameRow()">
-  ＋ 新增賽事
-</button>
-</div>
-
   <!-- 外部 JS：一行一個 script，一定要成對 -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -417,7 +419,7 @@ function callApiAdminBatch(params, callback) {
   qs.set('callback', cbname);
 
   const script = document.createElement('script');
-  script.src = API_URL + '?' + qs.toString();
+  script.src = API_BASE + '?' + qs.toString();
 
   window[cbname] = function (res) {
     try {
@@ -553,186 +555,35 @@ function isInThisWeekByDateStr(dateStr) {
 }
 
 // 裁入賽事資料
+function loadGames(){
 
-function loadGames() {
+  showLoading('載入中...');
 
-  showLoading('賽事資料載入中...');
-  // callApi({ action: 'getGames' }, function (res) 
-  
-  callApiPost({ action: 'getGames' })
-    .then(res => {
-      if (!res || res.result !== 'ok') {
-        document.getElementById('gamesContainer').innerHTML = '資料讀取失敗';
-        return;
-      }
-          try {
-              const container = document.getElementById('gamesContainer');
-              container.innerHTML = '';
-          
-              if (!res || res.result !== 'ok' || !Array.isArray(res.games) || res.games.length === 0) {
-                container.innerHTML = '<div class="panel">目前沒有賽事</div>';
-                return;
-              }
-          
-              const range = currentRange;
-              
-              document.getElementById('rangeAll').addEventListener('change', function () {
-                if (this.checked) {
-                  currentRange = 'all';
-                  loadGames();
-                }
-              });
-          
-              document.getElementById('rangeWeek').addEventListener('change', function () {
-                if (this.checked) {
-                  currentRange = 'week';
-                  loadGames();
-                }
-              });
-              
-              document.getElementById('rangeMonth').addEventListener('change', function () {
-                if (this.checked) {
-                  currentRange = 'month';
-                  loadGames();
-                }
-              });
+  callApi({ action:'getGames' }, function(res){
+
+    const container = document.getElementById('gamesContainer');
+
+    // ✅ 永遠先畫新增區
+    container.innerHTML = `
+      <div id="createArea"></div>
+      <div id="tableArea"></div>
+    `;
+
+    renderCreateArea();
+
+    const games = (res.games || []).map(g => ({
+      ...g,
+      game_id: Number(g.game_id),   // ✅ 關鍵
+      status: Number(g.status || 0)
+    }));
     
-              const showExpired = document.getElementById('showExpired')?.checked || false;
-              const keyword = document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
-          
-              // 正規化資料
-              const games = res.games.map(g => ({
-                ...g,
-                _date: normalizeDate(g.date),
-                _time: normalizeTime(g.time)
-              }));
-          
-              // 日期時間排序
-              games.sort((a, b) => {
-                return new Date(a._date + 'T' + a._time) - new Date(b._date + 'T' + b._time);
-              });
-          
-              // 依年月分組
-              const groups = {};
-          
-              games.forEach(g => {
-          
-                if (keyword) {
-                  const hit = [
-                    g.tournament, g.field, g.home_team, g.away_team, g.category
-                  ].some(v => (v || '').toLowerCase().includes(keyword));
-                  if (!hit) return;
-                }
-          
-                const gameDT = new Date(g._date + 'T' + g._time);
-                const expired = gameDT < new Date();
-                
-                // 已完成的顯示控制
-                if (expired && !showExpired) return;
-                
-                // 只有「未完成」才套用本週 / 本月
-                if (!expired) {
-                  if (range === 'week' && !isInThisWeekByDateStr(g._date)) return;
-                  if (range === 'month' && !isInThisMonthByDateStr(g._date)) return;
-                }
-          
-                const year = g._date.slice(0, 4);
-                const month = g._date.slice(5, 7);
-                const ymKey = year + '-' + month;
-          
-                if (!groups[ymKey]) groups[ymKey] = [];
-                groups[ymKey].push({ ...g, expired });
-              });
-          
-              // 輸出畫面
-              Object.keys(groups).sort().forEach(ym => {
-          
-                const [year, month] = ym.split('-');
-                const list = groups[ym];
-          
-                let html = '';
-                html += '<div class="panel">';
-                html += `<div class="month-title">📅 ${year} 年 ${month} 月</div>`;
-                html += '<table class="styled-table">';
-                html += '<thead><tr>';
-                html += '<th>場次</th>';
-                html += '<th>日期</th>';
-                html += '<th>時間</th>';
-                html += '<th>比賽時間長度</th>';
-                html += '<th>賽事名稱</th>';
-                html += '<th>組別</th>';
-                html += '<th>場地</th>';
-                html += '<th>客隊(三壘)</th>';
-                html += '<th>主隊(一壘)</th>';
-                html += '<th>裁判人數</th>';
-                html += '<th>站位選擇方式</th>';
-                html += '<th>操作</th>';
-          
-                html += '</tr></thead><tbody>';
-          
-                list.forEach(g => {
-                  if (g.expired) {
-                    html += `
-                      <tr class="expired">
-                        <td>${g.game_code || ''}</td>
-                        <td>${g._date}</td>
-                        <td>${g._time}</td>
-                        <td>${g.duration || ''}</td>
-                        <td>${g.tournament || ''}</td>
-                        <td>${g.category || ''}</td>
-                        <td>${g.field || ''}</td>
-                        <td>${g.away_team || ''}</td>
-                        <td>${g.home_team || ''}</td>
-                        <td>${g.umpire_count}</td>
-                        <td>${positionModeText(g.position_mode)}</td>
-                        <td class="finished">已完賽</td>
-                      </tr>`;
-                    } 
-                  else {
-                    const dateValue = g.date ? g.date.replace(/\//g, '-') : '';
+    renderGames(games);
 
-                    html += `
-                      <tr>
-                        <td><input value="${g.game_code || ''}" onchange="updateGame('${g.game_id}','game_code',this.value)"></td>
-                        <td><input type="date"
-                             value="${normalizeDateValue(g.date)}"
-                             onchange="updateGame('${g.game_id}','date',this.value)">
-                        </td>
-                        <td><input type="time" value="${g._time}" onchange="updateGame('${g.game_id}','time',this.value)"></td>
-                        <td><input type="number" value="${g.duration || ''}" onchange="updateGame('${g.game_id}','duration',this.value)"></td>
-                        <td><input value="${g.tournament || ''}" onchange="updateGame('${g.game_id}','tournament',this.value)"></td>
-                        <td><input value="${g.category || ''}" onchange="updateGame('${g.game_id}','category',this.value)"></td>
-                        <td><input value="${g.field || ''}" onchange="updateGame('${g.game_id}','field',this.value)"></td>
-                        <td><input value="${g.away_team || ''}" onchange="updateGame('${g.game_id}','away_team',this.value)"></td>
-                        <td><input value="${g.home_team || ''}" onchange="updateGame('${g.game_id}','home_team',this.value)"></td>
-                        <td>
-                          <select onchange="updateGame('${g.game_id}','umpire_count',this.value)">
-                            ${[0,1,2,3,4].map(n =>
-                              `<option value="${n}" ${Number(g.umpire_count)===n?'selected':''}>${n}</option>`
-                            ).join('')}
-                          </select>
-                        </td>
-                        <td>${positionModeText(g.position_mode)}</td>
-                        <td>
-                          <button class="delete-btn" onclick="deleteGame('${g.game_id}')">刪除</button>
-                        </td>
-                      </tr>`;
-                    }
-                });
-          
-                html += '</tbody></table></div>';
-                container.insertAdjacentHTML('beforeend', html);
-              });
-            
-              if (Object.keys(groups).length === 0) {
-                container.innerHTML = '<div class="panel">本範圍沒有賽事</div>';
-                return;
-              }
-            } 
-    finally {hideLoading();}
-  
-   }); //callAPI
-} //原本的結束點
+    hideLoading();
+  });
+}
+
+
 
 // 儲存功能
 function updateGame(id, field, value) {
@@ -908,65 +759,7 @@ function previewImport(){
 // 新增賽事
 const MAX_NEW_ROWS = 10;  // 一次最多可新增的列數
   
-function addNewGameRow() {
-
-  const tbody = document.querySelector('.styled-table tbody');
-  if (!tbody) {
-    alert('請先載入賽事列表');
-    return;
-  }
-
-  const existing = document.querySelectorAll('.new-game-row').length;
-  if (existing >= MAX_NEW_ROWS) {
-    alert(`一次最多只能新增 ${MAX_NEW_ROWS} 筆賽事`);
-    return;
-  }
-
-  const idx = Date.now(); // 用時間戳確保唯一
-  const tr = document.createElement('tr');
-  tr.className = 'new-game-row';
-
-  tr.innerHTML = `
-    <td><input id="ng_${idx}_code" placeholder="場次"></td>
-    <td><input type="date" id="ng_${idx}_date"></td>
-    <td><input type="time" id="ng_${idx}_time"></td>
-    <td><input type="number" id="ng_${idx}_duration" value="90"></td>
-    <td><input id="ng_${idx}_tournament"></td>
-    <td><input id="ng_${idx}_category"></td>
-    <td><input id="ng_${idx}_field"></td>
-    <td><input id="ng_${idx}_away"></td>
-    <td><input id="ng_${idx}_home"></td>
-    <td>
-      <select id="ng_${idx}_umpires">
-        <option value="0">0</option>
-        <option value="1">1</option>
-        <option value="2" selected>2</option>
-        <option value="3">3</option>
-      </select>
-    </td>
-    <td>
-      <select id="ng_${idx}_position">
-        <option value="allow_select">自行選</option>
-        <option value="auto_only">系統排</option>
-      </select>
-    </td>
-    <td>
-     <!-- <button onclick="saveSingleNewGame(${idx})">儲存</button> -->
-      <button onclick="cancelSingleNewGame(this)">取消</button>
-    </td>
-  `;
-
-  tbody.prepend(tr);
-  document.getElementById('batchSaveBar').style.display = 'block';
-}
-
-
 // 取消新增
-function cancelNewGame() {
-  const tr = document.getElementById('newGameRow');
-  if (tr) tr.remove();
-}
-
 function cancelSingleNewGame(btn) {
   const tr = btn.closest('tr');
   if (tr) tr.remove();
@@ -1022,110 +815,6 @@ function saveSingleNewGame(idx) {
   });
 }
 
-
-// 儲存2筆以上
-function saveAllNewGames() {
-
-  const rows = Array.from(document.querySelectorAll('.new-game-row'));
-  if (rows.length === 0) {
-    alert('沒有可儲存的新增賽事');
-    return;
-  }
-
-  const games = rows.map(tr => {
-    const q = s => tr.querySelector(s)?.value || '';
-    return {
-      action: 'createGame',
-      game_code: q('input[id*="_code"]'),
-      date: q('input[type="date"]'),
-      time: q('input[type="time"]'),
-      duration: q('input[type="number"]'),
-      tournament: q('input[id*="_tournament"]'),
-      category: q('input[id*="_category"]'),
-      field: q('input[id*="_field"]'),
-      away_team: q('input[id*="_away"]'),
-      home_team: q('input[id*="_home"]'),
-      umpire_count: q('select[id*="_umpires"]'),
-      position_mode: q('select[id*="_position"]')
-    };
-  });
-
-  // 基本驗證
-  for (let i = 0; i < games.length; i++) {
-    if (!games[i].date || !games[i].time || !games[i].field) {
-      alert(`第 ${i + 1} 筆：日期 / 時間 / 場地 必填`);
-      return;
-    }
-    if (!games[i].game_code) {
-      alert(`第 ${i + 1} 筆：場次必填`);
-      return;
-    }
-  }
-
-  showSaving(`儲存中（0 / ${games.length}）`);
-
-  let index = 0;
-  let success = 0;
-
-  function saveNext() {
-
-    if (index >= games.length) {
-      hideSaving();
-      showToast(`✅ 成功新增 ${success} 筆賽事`);
-      document.getElementById('batchSaveBar').style.display = 'none';
-      loadGames();
-      return;
-    }
-
-    showSaving(`儲存中（${index + 1} / ${games.length}）`);
-
-    callApiAdminBatch(games[index], function (res) {
-      if (res && res.result === 'ok') {
-        success++;
-        index++;
-        saveNext();   // ✅ 下一筆一定在 callback completion 之後
-      } else {
-        hideSaving();
-        alert(`❌ 第 ${index + 1} 筆儲存失敗`);
-      }
-    });
-  }
-
-  saveNext();
-}
-
-// 儲存....我忘了
-function saveNewGame() {
-
-  const data = {
-    action: 'createGame',
-    date: document.getElementById('ng_date').value,
-    time: document.getElementById('ng_time').value,
-    duration: document.getElementById('ng_duration').value,
-    tournament: document.getElementById('ng_tournament').value,
-    category: document.getElementById('ng_category').value,
-    field: document.getElementById('ng_field').value,
-    away_team: document.getElementById('ng_away').value,
-    home_team: document.getElementById('ng_home').value,
-    umpire_count: document.getElementById('ng_umpires').value,
-    position_mode: document.getElementById('ng_position').value
-  };
-
-  // 最基本驗證
-  if (!data.date || !data.time || !data.field) {
-    alert('日期、時間、場地必填');
-    return;
-  }
-
-  callApi(data, function (res) {
-    if (res.result === 'ok') {
-      alert('✅ 新增賽事成功');
-      loadGames();
-    } else {
-      alert('❌ 新增失敗');
-    }
-  });
-}
   
 // 匯入賽事資料
 // 確認匯入
@@ -1138,7 +827,7 @@ function confirmImport() {
 
   showLoading('賽事匯入中，請稍候…');
 
-  fetch(API_URL, {
+  fetch(API_BASE, {
     method: 'POST',
     headers: {
       // ✅ 注意：這一行一定要有
@@ -1168,49 +857,6 @@ function confirmImport() {
   });
 }
 
-// 用POST方式
-/*
-function importGamesPost(data) {
-
-
-  const rows = data.rows || [];
-  if (!rows.length) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ result:'error', msg:'no data' })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  const ss = SpreadsheetApp.openById('1utTD1TbwBjiIfOpJhrcUkREztQrQlWoBQhSQb_eI8rk');
-  const sheet = ss.getSheetByName('Games');
-
-  const values = rows.map(r => [
-    Utilities.getUuid(),   // game_id
-    r.date,               // date
-    r.time,               // time
-    r.duration,           // duration
-    r.field,              // field
-    r.tournament,         // tournament
-    r.category,           // category
-    r.away_team,          // away_team
-    r.home_team,          // home_team
-    r.umpire_count,       // umpire_count
-    r.position_mode       // position_mode
-  ]);
-
-  sheet.getRange(
-    sheet.getLastRow() + 1,
-    1,
-    values.length,
-    11
-  ).setValues(values);
-
-  return ContentService.createTextOutput(
-    JSON.stringify({ result:'ok', count: values.length })
-  ).setMimeType(ContentService.MimeType.JSON);
-
-}
-*/
-  
 function getGamesPost() {
 
   const ss = SpreadsheetApp.openById('你的SheetID');
@@ -1294,7 +940,7 @@ function outputJSON(obj) {
 }
 
 function callApiPost(payload) {
-  return fetch(API_URL, {
+  return fetch(API_BASE, {
     method: 'POST',
     headers: {
       'Content-Type': 'text/plain;charset=utf-8'
@@ -1371,6 +1017,673 @@ function normalizeDateValue(d) {
 
   return '';
 }
+
+
+// 115.5.29 新增
+
+// 賽事狀態
+function statusText(s, g){
+
+  s = Number(s);
+
+  // ✅ 1~4 直接判斷
+  if (s === 1) return '延賽';
+  if (s === 2) return '停賽';
+  if (s === 3) return '暫存';   // ✅ 改這裡
+  if (s === 4) return '鎖定';
+
+  // ✅ ✅ ✅ status=0 才判斷是否過期
+  if (s === 0 && g){
+    const partsD = (g.date || '').split('-');
+    const partsT = (g.time || '').split(':');
+
+    if (partsD.length === 3 && partsT.length >= 2){
+      const dt = new Date(
+        Number(partsD[0]),
+        Number(partsD[1]) - 1,
+        Number(partsD[2]),
+        Number(partsT[0]),
+        Number(partsT[1])
+      );
+
+      if (dt < new Date()){
+        return '已結束';   // ✅ ✅ ✅ 用時間判斷
+      }
+    }
+  }
+
+  return '正常';
+}
+
+
+
+
+// 過濾：本週/本月/顯示已完成
+function filterGames(list){
+
+  const mode = document.querySelector('input[name="range"]:checked')?.value || 'all';
+  const showFinished = document.getElementById('showExpired')?.checked;
+
+  const now = new Date();
+
+  return list.filter(g => {
+
+    const partsD = (g.date || '').split('-');
+    const partsT = (g.time || '').split(':');
+    
+    let dt = null;
+    
+    if (partsD.length === 3 && partsT.length >= 2){
+      dt = new Date(
+        Number(partsD[0]),
+        Number(partsD[1]) - 1,
+        Number(partsD[2]),
+        Number(partsT[0]),
+        Number(partsT[1])
+      );
+    }
+    
+    if (!dt || isNaN(dt)) return false;
+
+
+    // ✅ 已完成
+    if (!showFinished && dt < now){
+      return false;
+    }
+
+    if (mode === 'week'){
+      const start = new Date();
+      start.setDate(now.getDate() - now.getDay());
+      start.setHours(0,0,0,0);
+
+      const end = new Date(start);
+      end.setDate(start.getDate() + 7);
+
+      return dt >= start && dt < end;
+    }
+
+    if (mode === 'month'){
+      return dt.getMonth() === now.getMonth()
+          && dt.getFullYear() === now.getFullYear();
+    }
+
+    return true;
+  });
+}
+
+function renderGames(list){
+
+  // ✅ 先處理日期時間（後端已是字串，這裡只做保險）
+  const rawList = list.map(g => {
+
+    let _date = g.date || '';
+    let _time = g.time || '';
+
+    return {
+      ...g,
+      _date,
+      _time
+    };
+  });
+
+  // ✅ ✅ 排序（重點）
+  rawList.sort((a, b) => {
+
+    // 1️⃣ 日期
+    if (a._date !== b._date){
+      return a._date.localeCompare(b._date);
+    }
+
+    // 2️⃣ 同場地不同組 → 先比時間
+    if (a.field === b.field){
+      if (a._time !== b._time){
+        return a._time.localeCompare(b._time);
+      }
+    }
+
+    // 3️⃣ 組別
+    if ((a.category || '') !== (b.category || '')){
+      return (a.category || '').localeCompare(b.category || '');
+    }
+
+    // 4️⃣ 時間
+    return a._time.localeCompare(b._time);
+  });
+
+  // ✅ 篩選
+  const filtered = filterGames(rawList);
+
+  const container = document.getElementById('tableArea');
+  container.innerHTML = '';
+
+  if (!filtered.length){
+    container.innerHTML = `<div class="panel">沒有資料</div>`;
+    return;
+  }
+
+  let html = `
+  <div class="panel">
+  <table class="styled-table">
+  <thead>
+    <tr>
+      <th>場次</th>
+      <th>日期</th>
+      <th>時間</th>
+      <th>時長</th>
+      <th>賽事</th>
+      <th>場地</th>
+      <th>組別</th>
+      <th>對戰</th>
+      <th>裁判數</th>
+      <th>狀態</th>
+      <th>操作</th>
+    </tr>
+  </thead><tbody>
+  `;
+
+  filtered.forEach(g => {
+  
+    html += `
+      <tr id="row_${g.game_id}">
+        
+        <td>${g.game_code || ''}</td>
+        <td>${g._date || '-'}</td>
+        <td>${g._time || '-'}</td>
+        <td>${g.duration ?? '-'}</td>
+        <td>${g.tournament || '-'}</td>
+        <td>${g.field || ''}</td>
+        <td>${g.category || '-'}</td>
+        <td>${g.away_team || ''} vs ${g.home_team || ''}</td>
+        <td>${g.umpire_count ?? '-'}</td>
+  
+        <td>
+          <span class="status-badge status-${g.status || 0}">
+            ${statusText(g.status, g)}
+          </span>
+        </td>
+  
+        <td>
+          <button onclick="editRow(${g.game_id})">✏️ 修改</button>
+          <button onclick="deleteGame(${g.game_id})">刪除</button>
+        </td>
+  
+      </tr>
+    `;
+  });
+
+
+  html += '</tbody></table></div>';
+
+  container.innerHTML = html;
+}
+
+
+
+// 115.5.29新增
+// 多筆新增
+function renderNewGameBlock(){
+
+  return `
+    <div style="margin-bottom:12px;">
+      <b>➕ 快速新增賽事</b>
+    </div>
+
+    <div id="newGameList"></div>
+
+    <button onclick="addNewRowUI()">＋新增一筆</button>
+    <button onclick="saveAllNewRows()" style="margin-left:10px;">
+      ✅ 一次送出
+    </button>
+  `;
+}
+
+function addNewRowUI(){
+
+  const box = document.getElementById('newGameList');
+
+  const id = Date.now();
+
+  const div = document.createElement('div');
+  div.className = 'panel';
+  div.style.background = '#fff7d6';
+
+  div.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">
+
+      <input placeholder="場次" id="code_${id}">
+      <input type="date" id="date_${id}">
+      <input type="time" id="time_${id}">
+      <input placeholder="場地" id="field_${id}">
+
+      <input placeholder="客隊" id="away_${id}">
+      <input placeholder="主隊" id="home_${id}">
+      <input placeholder="賽事名稱" id="t_${id}">
+      <input placeholder="組別" id="c_${id}">
+    </div>
+
+    <button onclick="this.parentElement.remove()">取消</button>
+  `;
+
+  box.appendChild(div);
+}
+
+// 批次送出
+function saveAllNewRows(){
+
+  const rows = document.querySelectorAll('#newGameList > div');
+
+  if (!rows.length){
+    alert('沒有資料');
+    return;
+  }
+
+  let index = 0;
+
+  function next(){
+
+    if (index >= rows.length){
+      alert('✅ 完成');
+      loadGames();
+      return;
+    }
+
+    const row = rows[index];
+
+    const q = s => row.querySelector(s)?.value || '';
+
+    const data = {
+      action: 'createGame',
+      game_code: q('[id^="code_"]'),
+      date: q('[id^="date_"]'),
+      time: q('[id^="time_"]'),
+      field: q('[id^="field_"]'),
+      away_team: q('[id^="away_"]'),
+      home_team: q('[id^="home_"]'),
+      tournament: q('[id^="t_"]'),
+      category: q('[id^="c_"]')
+    };
+
+    if (!data.date || !data.time){
+      alert('日期時間必填');
+      return;
+    }
+
+    callApi(data,function(res){
+
+      if (res.result !== 'ok'){
+        alert('❌ 第 ' + (index+1) + ' 筆失敗');
+        return;
+      }
+
+      index++;
+      next();
+
+    });
+
+  }
+
+  next();
+}
+
+// 新增
+function renderCreateArea(){
+
+  const box = document.getElementById('createArea') || document.createElement('div');
+
+  box.id = 'createArea';
+  box.className = 'panel';
+
+  box.innerHTML = `
+    <div style="margin-bottom:8px;"><b>➕ 新增賽事</b></div>
+
+    <div id="newList"></div>
+
+    <div style="margin-top:8px;">
+      <button onclick="addRow()">＋ 新增一筆</button>
+      <button onclick="saveAll()" style="margin-left:10px;">
+        ✅ 批次送出
+      </button>
+    </div>
+  `;
+
+  document.getElementById('gamesContainer').prepend(box);
+}
+
+
+// 新增列（手機友善版）
+function addRow(){
+
+  const wrap = document.getElementById('newList');
+
+  const div = document.createElement('div');
+  div.className = 'new-game-row';
+
+  div.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+      <input placeholder="場次" data="code">
+      <input type="date" data="date">
+      <input type="time" data="time">
+      <input placeholder="場地" data="field">
+      <input placeholder="客隊" data="away">
+      <input placeholder="主隊" data="home">
+
+      <!-- ✅ status -->
+      <select data="status">
+        <option value="0">正常</option>
+        <option value="1">延賽</option>
+        <option value="2">停賽</option>
+        <option value="3">暫存</option>
+      </select>
+    </div>
+
+    <button onclick="this.parentElement.remove()">取消</button>
+  `;
+
+  wrap.appendChild(div);
+}
+
+
+// 批次送出
+function saveAll(){
+
+  const rows = document.querySelectorAll('#newList .new-game-row');
+
+  if (!rows.length){
+    alert('沒有資料');
+    return;
+  }
+
+  let i = 0;
+  let success = 0;
+  let fail = 0;
+
+  showSaving(`儲存中 (0 / ${rows.length})`);
+
+  function next(){
+
+    if (i >= rows.length){
+
+      hideSaving();
+      showToast(`✅ ${success} 成功 / ❌ ${fail} 失敗`,3000);
+      loadGames();
+      return;
+    }
+
+    const r = rows[i];
+    const get = k => r.querySelector(`[data="${k}"]`)?.value || '';
+
+    const data = {
+      action:'createGame',
+      game_code:get('code'),
+      date:get('date'),
+      time:get('time'),
+      field:get('field'),
+      away_team:get('away'),
+      home_team:get('home'),
+      // status:get('status') || '0'
+    };
+
+    showSaving(`儲存中 (${i+1} / ${rows.length})`);
+
+    // ✅ ✅ ✅ 驗證
+    const err = validateGame(data);
+
+    if (err){
+      fail++;
+      markRow(r,'error',err);
+      i++;
+      next();
+      return;
+    }
+
+    callApi(data,function(res){
+
+      if (res && res.result === 'ok'){
+        success++;
+        markRow(r,'success');
+      }else{
+        fail++;
+        markRow(r,'error',res?.message || 'API錯誤');
+      }
+
+      i++;
+      next();
+    });
+  }
+
+  next();
+}
+
+
+// 失敗可單筆送出
+function retryRow(row){
+
+  row.style.background = '';
+  const err = row.querySelector('.err');
+  if (err) err.remove();
+
+  const get = k => row.querySelector(`[data="${k}"]`)?.value || '';
+
+  const data = {
+    action:'createGame',
+    game_code:get('code'),
+    date:get('date'),
+    time:get('time'),
+    field:get('field'),
+    away_team:get('away'),
+    home_team:get('home')
+  };
+
+  callApi(data,function(res){
+
+    if (res && res.result === 'ok'){
+      markRow(row,'success');
+    }else{
+      markRow(row,'error','重送失敗');
+    }
+  });
+}
+
+// 標記（成功 / 失敗）
+function markRow(row,type,msg=''){
+
+  if (type==='success'){
+    row.style.background='#dcfce7';
+
+    // ✅ 1秒後自動消失
+    setTimeout(()=>{
+      row.remove();
+    },1000);
+  }
+
+  if (type==='error'){
+    row.style.background='#fee2e2';
+
+    let el=row.querySelector('.err');
+    if(!el){
+      el=document.createElement('div');
+      el.className='err';
+      el.style.fontSize='12px';
+      el.style.color='#b91c1c';
+      row.appendChild(el);
+    }
+    el.textContent=msg;
+
+    // ✅ 加重送按鈕（重要）
+    if (!row.querySelector('.retry-btn')){
+      const btn = document.createElement('button');
+      btn.textContent = '重送';
+      btn.className = 'retry-btn';
+      btn.style.marginTop = '6px';
+
+      btn.onclick = ()=>retryRow(row);
+
+      row.appendChild(btn);
+    }
+  }
+}
+
+// 驗證function
+function validateGame(data){
+
+  // ✅ 場次
+  if (!data.game_code){
+    return '請填寫場次';
+  }
+
+  // ✅ 日期
+  if (!data.date){
+    return '日期不可空白';
+  }
+
+  // ✅ 時間
+  if (!data.time){
+    return '時間不可空白';
+  }
+
+  // ✅ 時間格式檢查
+  if (!/^\d{2}:\d{2}$/.test(data.time)){
+    return '時間格式錯誤（HH:mm）';
+  }
+
+  const [hh, mm] = data.time.split(':').map(Number);
+
+  if (hh < 0 || hh > 23 || mm < 0 || mm > 59){
+    return '時間不合理';
+  }
+
+  // ✅ 場地
+  if (!data.field){
+    return '場地不可空白';
+  }
+
+  return '';
+}
+
+// 編輯功能
+function editRow(id){
+
+  const tr = document.getElementById('row_' + id);
+  const cells = tr.children;
+
+  const game_code = cells[0].textContent.trim();
+  const date      = cells[1].textContent.trim();
+  const time      = cells[2].textContent.trim();
+  const duration  = cells[3].textContent.trim();
+  const tournament= cells[4].textContent.trim();
+  const field     = cells[5].textContent.trim();
+  const category  = cells[6].textContent.trim();
+  const teams     = cells[7].textContent.trim();
+  const umpire    = cells[8].textContent.trim();
+  const status    = cells[9].textContent.trim();
+
+  function parseStatus(text){
+    if (text.includes('延賽')) return 1;
+    if (text.includes('停賽')) return 2;
+    if (text.includes('暫存')) return 3;
+    return 0;
+    }
+  
+  const [away, home] = teams.split(' vs ');
+
+  tr.innerHTML = `
+    <td><input id="e_code_${id}" value="${game_code}"></td>
+    <td><input type="date" id="e_date_${id}" value="${date !== '-' ? date.replace(/\//g,'-') : ''}"></td>
+    <td><input type="time" id="e_time_${id}" value="${time !== '-' ? normalizeTime(time) : ''}"></td>
+
+    <td>
+      <input type="number" min="0" max="300"
+        id="e_duration_${id}"
+        value="${duration !== '-' ? duration : ''}">
+    </td>
+
+    <td>
+      <input id="e_tournament_${id}"
+        value="${tournament !== '-' ? tournament : ''}">
+    </td>
+
+    <td><input id="e_field_${id}" value="${field}"></td>
+
+    <td>
+      <input id="e_category_${id}"
+        value="${category !== '-' ? category : ''}">
+    </td>
+
+    <td>
+      <input style="width:45%" id="e_away_${id}" value="${away || ''}">
+      vs
+      <input style="width:45%" id="e_home_${id}" value="${home || ''}">
+    </td>
+
+    <td>
+      <input type="number" min="0" max="4"
+        id="e_umpire_${id}"
+        value="${umpire !== '-' ? umpire : 0}">
+    </td>
+
+    <td>
+      <select id="e_status_${id}">
+        <option value="0" ${parseStatus(status)===0?'selected':''}>正常</option>
+        <option value="1" ${parseStatus(status)===1?'selected':''}>延賽</option>
+        <option value="2" ${parseStatus(status)===2?'selected':''}>停賽</option>
+        <option value="3" ${parseStatus(status)===3?'selected':''}>暫存</option>
+      </select>
+    </td>
+
+    <td colspan="2">
+      <button onclick="saveRow(${id})">✅ 儲存</button>
+      <button onclick="loadGames()">❌ 取消</button>
+    </td>
+  `;
+}
+
+// 編輯後儲存
+function saveRow(id){
+
+  const data = {
+    action: 'updateGameFull',
+    game_id: id,
+
+    game_code: document.getElementById(`e_code_${id}`).value,
+    date: document.getElementById(`e_date_${id}`).value,
+    time: document.getElementById(`e_time_${id}`).value,
+    duration: Number(document.getElementById(`e_duration_${id}`).value),
+    tournament: document.getElementById(`e_tournament_${id}`).value,
+    field: document.getElementById(`e_field_${id}`).value,
+    category: document.getElementById(`e_category_${id}`).value,
+    away_team: document.getElementById(`e_away_${id}`).value,
+    home_team: document.getElementById(`e_home_${id}`).value,
+    umpire_count: Number(document.getElementById(`e_umpire_${id}`).value),
+    status: Number(document.getElementById(`e_status_${id}`).value)
+  };
+
+  showSaving('儲存中...');
+
+  callApi(data, function(res){
+  
+    console.log('update res=', res); // ✅ 建議保留（debug用）
+  
+    hideSaving();
+  
+    const ok =
+      res === 'ok' ||
+      res?.result === 'ok';
+  
+    if (ok){
+      showToast('✅ 已儲存');
+  
+      setTimeout(()=>{
+        location.reload();
+      }, 300);
+  
+    } else {
+      showToast('❌ 儲存失敗');
+      console.warn('API回傳錯誤', res);
+    }
+  
+  });
+}
+  
 </script>
 
 <!-- Loading Overlay -->

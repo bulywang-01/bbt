@@ -1,0 +1,34 @@
+<div id="my"></div>
+
+<script>
+function loadMy(){
+
+  const session = JSON.parse(localStorage.getItem('session_user'));
+
+  callApi({action:'getTrainingLog'}, res=>{
+
+    const list = res.data.filter(x=>x.user_id === session.user_id);
+
+    const html = list.map(r=>`
+      <div class="card">
+        <b>${r.course_name}</b>
+        <div>狀態：${mapStatus(r.status)}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('my').innerHTML = html;
+  });
+}
+
+function mapStatus(s){
+  return {
+    applied:'已報名',
+    confirmed:'已確認',
+    attended:'已出席',
+    absent:'未到',
+    cancelled:'取消'
+  }[s];
+}
+
+loadMy();
+</script>

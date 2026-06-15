@@ -1,0 +1,80 @@
+.card {
+  background:#fff;
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* 上方 */
+.top-bar {
+  display:flex;
+  font-size:16px;
+  font-weight:700;
+}
+
+.top-left {
+  color:#2563eb;
+}
+
+.top-right {
+  margin-left:auto;
+}
+
+/* 中間資訊 */
+.center-info {
+  text-align:center;
+  margin-top:8px;
+}
+
+.game-time {
+  font-size:20px;
+  color:#dc2626;
+  font-weight:800;
+}
+
+.game-code {
+  font-size:16px;
+  color:#2563eb;
+  margin-top:2px;
+}
+
+.game-category {
+  font-size:20px;
+  margin-top:2px;
+}
+
+/* 對戰 */
+.match-row {
+  display:flex;
+  gap:10px;
+  margin:10px 0;
+}
+
+.team-box {
+  flex:1;
+  text-align:center;
+  padding:14px 0;
+  background:#f5f7fb;
+  border-radius:10px;
+  font-size:18px;
+  font-weight:700;
+}
+
+/* 名單 */
+.line-header,
+.line-values {
+  display:flex;
+  text-align:center;
+  font-size:13px;
+}
+
+.line-header div {
+  flex:1;
+  color:#666;
+}
+
+.line-values div {
+  flex:1;
+  font-weight:500;
+}

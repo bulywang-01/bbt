@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>課程報名</title>
+
+  <!-- ✅ 你原本就有的 JS（一定要） -->
+  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/index.js" defer></script>
+  <script src="js/core.js"></script>
+  
+<style>
+body{
+  font-family: Arial;
+  background:#f5f6f8;
+  padding:15px;
+}
+
+h2{
+  margin-bottom:10px;
+}
+
+.card{
+  background:#fff;
+  border-radius:8px;
+  padding:12px;
+  margin-bottom:10px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.1);
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+  margin-bottom:4px;
+}
+
+.btn{
+  padding:6px 10px;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+}
+
+.btn-join{
+  background:#1976d2;
+  color:#fff;
+}
+
+.btn-disabled{
+  background:#ccc;
+  color:#666;
+}
+
+.badge{
+  font-size:12px;
+  padding:2px 6px;
+  border-radius:4px;
+}
+
+.open{background:#2e7d32;color:#fff;}
+.closed{background:#999;color:#fff;}
+
+</style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div id="header-container"></div>
+
+<script>
+  function toast(msg, type){
+    console.log(type || 'info', msg);
+    alert(msg);
+  }
+      // Header
+
+    function loadHeader() {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+          // 1️⃣ 插入 header
+          document.getElementById('header-container').innerHTML = html;
+    
+          // 2️⃣ 設定身分 → 只影響 body class
+          const session = (typeof getSession === 'function') ? getSession() : null;
+          document.body.classList.remove(
+            'role-admin','role-judge','role-record'
+          );
+    
+          if (session && session.role) {
+            const roles = session.role.split(',').map(r => r.trim());
+    
+            if (roles.includes('admin')) {
+              document.body.classList.add('role-admin');
+            }
+            if (roles.includes('judge') || roles.includes('chief_judge')) {
+              document.body.classList.add('role-judge');
+            }
+            if (roles.includes('record') || roles.includes('record_chief')) {
+              document.body.classList.add('role-record');
+            }
+          }
+        })
+        .catch(err => console.error('Header 載入失敗', err));
+ 
+        // ✅ 顯示登入者姓名
+        if (session && session.name) {
+          const nameEl = document.getElementById('header-username');
+          if (nameEl) nameEl.textContent = session.name;
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadHeader);
+  
+  </script>
+
+  
+<h2>課程報名</h2>
+
+<div id="list"></div>
+
+<script>
+// ✅ 共用登入
+
+function getUserId(){
+  const session = getSession();
+  return session?.user_id || '';
+}
+
+
+// ----------------------
+function loadCourses(){
+
+  callApi({action:'getCourses'}, res=>{
+
+    if(!res){
+      toast('API 無回應','error');
+      return;
+    }
+
+    if(res.result !== 'ok'){
+      toast('讀取課程失敗','error');
+      return;
+    }
+
+    render(res.data || []);
+
+  });
+
+}
+
+
+// ----------------------
+function render(data){
+
+  const el = document.getElementById('list');
+
+  el.innerHTML = data.map(c=>{
+
+    const isFull = Number(c.count) >= Number(c.capacity);
+    const isOpen = c.course_status === 'open';
+
+    const canJoin = isOpen && !isFull;
+
+    return `
+      <div class="card">
+        
+        <div class="row">
+          <b>${c.course_name}</b>
+          <span class="badge ${isOpen ? 'open' : 'closed'}">
+            ${c.course_status}
+          </span>
+        </div>
+
+        <div class="row">日期：${c.date}</div>
+        <div class="row">地點：${c.location}</div>
+        <div class="row">講師：${c.instructor}</div>
+        <div class="row">費用：${c.fee} 元</div>
+        <div class="row">名額：${c.count} / ${c.capacity}</div>
+
+        <div class="row">
+          ${
+            canJoin
+            ? `<button class="btn btn-join"
+                 onclick="joinCourse('${c.course_id}')">
+                 報名
+               </button>`
+            : `<button class="btn btn-disabled" disabled>
+                 ${isFull ? '名額已滿' : '已關閉'}
+               </button>`
+          }
+        </div>
+
+      </div>
+    `;
+  }).join('');
+}
+
+// ----------------------
+function joinCourse(course_id){
+
+  const session = getSession();
+  const user_id = getUserId();
+
+  if (!user_id){
+    toast('請先登入','error');
+    return;
+  }
+
+  if (!confirm('確定報名？')) return;
+
+  callApi({
+    action:'enrollCourse',
+    user_id,
+    course_id
+  }, res=>{
+
+    if(res.result === 'ok'){
+      toast('✅ 報名成功');
+      loadCourses();
+    }else{
+      toast(res.message || '報名失敗','error');
+    }
+
+  });
+
+}
+
+// ----------------------
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadCourses();
+});
+
+</script>
+
+</body>
+</html>
