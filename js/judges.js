@@ -1,1 +1,0 @@
-apiGet("judges").then(j=>{list.innerHTML=j.map(x=>`<p><a href=judge.html?judge_id=${x.judge_id}>${x.name}</a></p>`).join("");});
