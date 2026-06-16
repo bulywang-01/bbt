@@ -28,7 +28,7 @@ function callApi(params, callback) {
     clearTimeout(timeout);
   }
 
-  // ✅ ✅ ✅ 關鍵：callback 必須掛在 window
+  // ✅ 關鍵：callback 必須掛在 window
   window[cbName] = function(res){
     cleanup();
 
