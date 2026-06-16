@@ -518,17 +518,15 @@ function isGameReady(g){
   today.setHours(0,0,0,0);
   gameDate.setHours(0,0,0,0);
 
-  const isPast = gameDate < today;
+  const isPast = gameDate <= today;   // ✅ 今天也算
 
   const status = Number(g.status);
 
-  // ✅ 0 正常
-  // ✅ 1 延賽（要顯示）
-  // ❌ 2 停賽（不要顯示）
-
+  // 顯示條件
   return isPast && (
     status === 0 ||   // 正常
-    status === 1      // 延賽
+    status === 1 ||   // 延賽
+    status === 4      // 完成
   );
 }
  
