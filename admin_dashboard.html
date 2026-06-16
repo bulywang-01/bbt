@@ -797,7 +797,7 @@ function showPersonDetail(p){
 
   <!-- 出勤狀況 -->
   <div style="margin-top:10px;">
-    <b>📊 出勤概況</b>
+    <b>📊 實際出勤紀錄</b>
   
     <table style="width:100%; margin-top:6px; border-collapse:collapse; font-size:14px;">
       <tr style="background:#f3f4f6;">
@@ -963,7 +963,7 @@ function renderRoleStats(p){
     }).join('');
 
   if (!rows){
-    return `<div style="font-size:13px;color:#6b7280;">無角色資料</div>`;
+    return `<div style="font-size:13px;color:#6b7280;">無資料</div>`;
   }
 
   return `
