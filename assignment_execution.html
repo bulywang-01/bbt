@@ -551,13 +551,22 @@ function render(list){
     return;
   }
 
-  const pending = list.filter(g => !isGameCompleted(g));
-  const done = list.filter(g => isGameCompleted(g));
+  // ✅ ✅ ✅ 最新分類（用 Game.status）
+  const pending = list.filter(g => Number(g.status) === 0);
+  const done = list.filter(g => Number(g.status) === 4);
+  const hold = list.filter(g => Number(g.status) === 1);
+  const resumed = list.filter(g => Number(g.status) === 4 && Number(g.from_hold) === 1);
 
-  const data = currentTab === 'pending' ? pending : done;
+  let data = [];
+
+  if (currentTab === 'pending') data = pending;
+  if (currentTab === 'done') data = done;
+  if (currentTab === 'hold') data = hold;
+  if (currentTab === 'resumed') data = resumed;
 
   el.innerHTML = `
     <div class="tabs">
+
       <div class="tab ${currentTab==='pending'?'active':''}"
            onclick="switchTab('pending')">
         🔴 未完成 (${pending.length})
@@ -567,12 +576,24 @@ function render(list){
            onclick="switchTab('done')">
         ✅ 已完成 (${done.length})
       </div>
+
+      <div class="tab ${currentTab==='hold'?'active':''}"
+           onclick="switchTab('hold')">
+        ⚠️ 延賽 (${hold.length})
+      </div>
+
+      <div class="tab ${currentTab==='resumed'?'active':''}"
+           onclick="switchTab('resumed')">
+        🔄 補賽 (${resumed.length})
+      </div>
+
     </div>
 
     ${data.map(renderGame).join('')}
   `;
 }
 
+// 切換資料的地方
 function switchTab(t){
   currentTab = t;
   load();
