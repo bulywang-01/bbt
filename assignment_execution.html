@@ -510,19 +510,20 @@ function isGameReady(g){
   if (isNaN(gameDate)) return false;
 
   const today = new Date();
-
   today.setHours(0,0,0,0);
   gameDate.setHours(0,0,0,0);
 
   const isPast = gameDate < today;
 
-  const status = String(g.status || '').toLowerCase();
+  const status = Number(g.status);
+
+  // ✅ 0 正常
+  // ✅ 1 延賽（要顯示）
+  // ❌ 2 停賽（不要顯示）
 
   return isPast && (
-    status === '0' ||
-    status === 'completed' ||
-    status === 'postponed' ||   // ✅ 延賽要顯示
-    status === ''
+    status === 0 ||   // 正常
+    status === 1      // 延賽
   );
 }
  
@@ -633,7 +634,7 @@ function renderGame(g){
       <div class="game-title">
         📅 ${g.date} ｜ ${g.game_code || ''} ｜ ${g.field || ''}
 
-      ${!isGameLocked(g) && g.status === 0 ? `
+      ${!isGameLocked(g) && Number(g.status) === 0 ? `
         <button class="btn-complete-all"
           onclick="completeGame('${g.game_id}')">
           ✅ 整場完成
@@ -713,8 +714,11 @@ function renderRow(p, g, isReplacement=false){
 
   const locked = isGameLocked(g);
   const done = (p.status === 'completed' || p.status === 'late');
-  const isHold = p.status === 'hold';
-  const isCancelled = p.status === 'ignore' || p.status === 'cancelled';
+  // const isHold = p.status === 'hold';
+  // const isCancelled = p.status === 'ignore' || p.status === 'cancelled';
+  const isHold = g.status_text === 'hold';
+  const isCancelled = g.status_text === 'ignore';
+
 
 
   const replaceTag = p.is_replacement == 1
