@@ -628,23 +628,57 @@ function load(){
 // 每場 render，支援＋鎖定＋更正＋顏色
 function renderGame(g){
 
+  const statusNum = Number(g.status || 0);
+  const statusText = g.status_text || 'normal';
+
+  // ✅ 狀態顯示（整場）
+  let statusHTML = '';
+
+  if (statusNum === 1){ // 延賽
+    statusHTML = `
+      <span style="margin-left:10px;color:#f59e0b;font-weight:700;">
+        ⚠️ 延賽
+      </span>
+    `;
+  }
+  else if (statusNum === 2){ // 停賽
+    statusHTML = `
+      <span style="margin-left:10px;color:#6b7280;font-weight:700;">
+        ⛔ 停賽
+      </span>
+    `;
+  }
+  else if (statusNum === 3){ // 已完成
+    statusHTML = `
+      <span style="margin-left:10px;color:#16a34a;font-weight:700;">
+        ✅ 已完成
+      </span>
+    `;
+  }
+  else{
+    // ✅ 正常狀態（可操作）
+    if (!isGameLocked(g)){
+      statusHTML = `
+        <button class="btn-complete-all"
+          onclick="completeGame('${g.game_id}')">
+          ✅ 整場完成
+        </button>
+      `;
+    }else{
+      statusHTML = `
+        <span style="margin-left:10px;color:#16a34a;font-weight:700;">
+          ✅ 已完成
+        </span>
+      `;
+    }
+  }
+
   return `
     <div class="game-card" data-game-id="${g.game_id}">
 
       <div class="game-title">
         📅 ${g.date} ｜ ${g.game_code || ''} ｜ ${g.field || ''}
-
-      ${!isGameLocked(g) && Number(g.status) === 0 ? `
-        <button class="btn-complete-all"
-          onclick="completeGame('${g.game_id}')">
-          ✅ 整場完成
-        </button>
-      ` : `
-        <span style="margin-left:10px;color:#16a34a;font-weight:700;">
-          ✅ 已完成
-        </span>
-      `}
-
+        ${statusHTML}
       </div>
 
       ${renderGroup(g)}
@@ -718,6 +752,7 @@ function renderRow(p, g, isReplacement=false){
   // const isCancelled = p.status === 'ignore' || p.status === 'cancelled';
   const isHold = g.status_text === 'hold';
   const isCancelled = g.status_text === 'ignore';
+  const isCompleted = Number(g.status) === 3;
 
 
 
