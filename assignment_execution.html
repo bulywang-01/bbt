@@ -1928,15 +1928,25 @@ function reopenGame(gameId){
     game_id:gameId
   }, res=>{
 
+    console.log('reopenGame result =', res);  // ✅ 🔥 debug用
+
+    if (!res){
+      toast('❌ API 無回應','error');
+      return;
+    }
+
     if (res.result === 'ok'){
       toast('✅ 已開放補賽，可重新指派');
       load();
-    }else{
-      toast('❌ 失敗','error');
+      return;
     }
+
+    // ✅ ✅ ✅ 🔥 顯示後端錯誤訊息（關鍵）
+    toast(res.message || '❌ 補賽失敗','error');
 
   });
 }
+
 
 // 延賽
 function setGameHold(gameId){
