@@ -633,7 +633,7 @@ function renderGame(g){
       <div class="game-title">
         📅 ${g.date} ｜ ${g.game_code || ''} ｜ ${g.field || ''}
 
-      ${!isGameLocked(g) ? `
+      ${!isGameLocked(g) && g.status === 0 ? `
         <button class="btn-complete-all"
           onclick="completeGame('${g.game_id}')">
           ✅ 整場完成
