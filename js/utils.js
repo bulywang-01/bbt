@@ -39,3 +39,19 @@ function isGameCompleted(g){
 function isResumedGame(g){
   return Number(g.status) === 4 && Number(g.from_hold || 0) === 1;
 }
+
+// 
+function normalizeStatus(s){
+
+  if (!s) return 'scheduled';
+
+  s = String(s).toLowerCase();
+
+  if (s.includes('complete')) return 'completed';
+  if (s.includes('late')) return 'late';
+  if (s.includes('no_show') || s.includes('noshow')) return 'no_show';
+  if (s.includes('hold')) return 'hold';
+  if (s.includes('cancel') || s.includes('ignore')) return 'ignore';
+
+  return 'scheduled';
+}
