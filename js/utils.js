@@ -1,3 +1,4 @@
+// 賽事名稱
 function getTournamentTypeInfo(t){
 
   const key = String(t || '').toLowerCase().trim();
@@ -17,6 +18,7 @@ function getTournamentTypeInfo(t){
   return map[key] || { text:`未定義(${key})`, color:'#999' };
 }
 
+// 賽事權重
 function getTournamentWeight(type){
 
   const map = {
@@ -32,4 +34,9 @@ function getTournamentWeight(type){
   };
 
   return map[type] || 1;  // ✅ 預設1（避免炸）
+}
+
+// 判斷是否完成（統一入口）
+function isGameCompleted(g){
+  return Number(g.status) === 4;
 }
