@@ -355,6 +355,11 @@ body{
   background:#6b7280;  /* 停賽 */
   color:#fff;
 }
+
+.person.ignore{
+  background:#e5e7eb;
+  opacity:0.6;
+}
 </style>
 </head>
 
@@ -629,42 +634,83 @@ function load(){
 function renderGame(g){
 
   const statusNum = Number(g.status || 0);
-  const statusText = g.status_text || 'normal';
 
-  // ✅ 狀態顯示（整場）
   let statusHTML = '';
 
-  if (statusNum === 1){ // 延賽
+  // ✅ ① 延賽（可補賽）
+  if (statusNum === 1){
     statusHTML = `
       <span style="margin-left:10px;color:#f59e0b;font-weight:700;">
         ⚠️ 延賽
       </span>
+
+      <button class="btn"
+        style="margin-left:8px;background:#2563eb;"
+        onclick="reopenGame('${g.game_id}')">
+        🔄 補賽
+      </button>
     `;
   }
-  else if (statusNum === 2){ // 停賽
+
+  // ✅ ② 停賽（完全鎖）
+  else if (statusNum === 2){
     statusHTML = `
       <span style="margin-left:10px;color:#6b7280;font-weight:700;">
         ⛔ 停賽
       </span>
     `;
   }
-  else if (statusNum === 3){ // 已完成
+
+  // ✅ ③ 已完成（最終狀態）
+  else if (statusNum === 3){
     statusHTML = `
       <span style="margin-left:10px;color:#16a34a;font-weight:700;">
         ✅ 已完成
       </span>
     `;
   }
+
+  // ✅ ④ 補賽中（resumed）
+  else if (statusNum === 4){
+    statusHTML = `
+      <span style="margin-left:10px;color:#2563eb;font-weight:700;">
+        🔄 補賽中
+      </span>
+
+      ${
+        !isGameLocked(g) ? `
+          <button class="btn-complete-all"
+            onclick="completeGame('${g.game_id}')">
+            ✅ 完成補賽
+          </button>
+        ` : `
+          <span style="margin-left:8px;color:#16a34a;font-weight:700;">
+            ✅ 已完成
+          </span>
+        `
+      }
+    `;
+  }
+
+  // ✅ ⑤ 正常比賽
   else{
-    // ✅ 正常狀態（可操作）
+
     if (!isGameLocked(g)){
       statusHTML = `
         <button class="btn-complete-all"
           onclick="completeGame('${g.game_id}')">
           ✅ 整場完成
         </button>
+
+        <!-- ✅ 可選：手動延賽 -->
+        <button class="btn"
+          style="margin-left:8px;background:#f59e0b;"
+          onclick="setGameHold('${g.game_id}')">
+          ⚠️ 延賽
+        </button>
       `;
-    }else{
+    }
+    else{
       statusHTML = `
         <span style="margin-left:10px;color:#16a34a;font-weight:700;">
           ✅ 已完成
@@ -686,6 +732,7 @@ function renderGame(g){
     </div>
   `;
 }
+
 
 
 // 支援一定在原人下面
@@ -750,9 +797,11 @@ function renderRow(p, g, isReplacement=false){
   const done = (p.status === 'completed' || p.status === 'late');
   // const isHold = p.status === 'hold';
   // const isCancelled = p.status === 'ignore' || p.status === 'cancelled';
-  const isHold = g.status_text === 'hold';
-  const isCancelled = g.status_text === 'ignore';
-  const isCompleted = Number(g.status) === 3;
+  // const isHold = g.status_text === 'hold';
+  // const isCancelled = g.status_text === 'ignore';
+  const isHold = Number(g.status) === 1;
+  const isCancelled = Number(g.status) === 2
+  const isGameCompleted = Number(g.status) === 3;
 
 
 
@@ -1019,15 +1068,21 @@ function renderRow(p, g, isReplacement=false){
 // 判斷是否已完成
 function isGameCompleted(g){
 
+  // ✅ ✅ ✅ ① 優先使用 Game.status（正式標準）
+  if (g && g.status !== undefined){
+    return Number(g.status) === 3;
+  }
+
+  // ✅ ✅ ✅ ② fallback（避免舊資料或 API 沒帶 status）
   const roleDone = {};
 
-  g.list.forEach(p=>{
+  (g.list || []).forEach(p=>{
     if (p.status === 'completed'){
       roleDone[p.role] = true;
     }
   });
 
-  const roleCount = new Set(g.list.map(x=>x.role)).size;
+  const roleCount = new Set((g.list || []).map(x=>x.role)).size;
 
   return Object.keys(roleDone).length === roleCount;
 }
@@ -1178,7 +1233,7 @@ function completeGame(gameId){
   callApi({
     action:'completeGame',
     game_id:gameId,
-    status:'completed'
+    // status:'completed'
   }, res=>{
 
     if(res.result==='ok'){
@@ -1841,6 +1896,50 @@ function card(label, value){
     </div>
   `;
 }
+
+// 補賽
+function reopenGame(gameId){
+
+  if (!confirm('確定要重新開放此場比賽（補賽）？')) return;
+
+  toast('補賽開啟中...','loading');
+
+  callApi({
+    action:'reopenGame',
+    game_id:gameId
+  }, res=>{
+
+    if (res.result === 'ok'){
+      toast('✅ 已開放補賽，可重新指派');
+      load();
+    }else{
+      toast('❌ 失敗','error');
+    }
+
+  });
+}
+
+// 延賽
+function setGameHold(gameId){
+
+  if (!confirm('確定要將本場設為延賽？')) return;
+
+  toast('更新中...','loading');
+
+  callApi({
+    action:'setGameStatus',
+    game_id:gameId,
+    status:1   // hold
+  }, res=>{
+    if (res.result === 'ok'){
+      toast('✅ 已延賽');
+      load();
+    }else{
+      toast('❌ 失敗','error');
+    }
+  });
+}
+
 </script>
 
 </body>
