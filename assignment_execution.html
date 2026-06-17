@@ -957,6 +957,23 @@ function renderRow(p, g, isReplacement=false){
         ${
           userList
             .filter(u => !usedUserIds.includes(String(u.user_id)))
+            .filter(u => {
+          
+              if (p.role.startsWith('REC')){
+                return (
+                  u.role.includes('record') ||
+                  u.role.includes('record_chief') ||
+                  u.role.includes('admin')
+                );
+              }
+          
+              return (
+                u.role.includes('judge') ||
+                u.role.includes('chief_judge') ||
+                u.role.includes('admin')
+              );
+          
+            })
             .map(u =>
               `<option value="${u.user_id}">
                 ${u.name || u.username}
@@ -1212,23 +1229,41 @@ function quickAssign(id, btn){
   const role = row.getAttribute('data-role');
   const gameId = btn.closest('.game-card').getAttribute('data-game-id');
 
+  let params = {};
   let action = '';
 
-  // ✅ ✅ ✅ 判斷裁判 / 紀錄
-  if (role.startsWith('REC')){
-    action = 'assignRecord_admin';   // 紀錄 API
-  }else{
-    action = 'assignJudgeToPosition_admin_'; // 裁判 API
+  // ✅ ✅ ✅ 裁判
+  if (!role.startsWith('REC')){
+
+    action = 'assignJudgeToPosition_admin_';
+
+    params = {
+      action,
+      game_id: gameId,
+      role: role,
+      judge_id: uid
+    };
+
+  }
+  // ✅ ✅ ✅ 紀錄
+  else{
+
+    action = 'assignRecord_admin';
+
+    params = {
+      action,
+      game_id: gameId,
+      record_role: role,
+      user_id: uid
+    };
   }
 
-  callApi({
-    action,
-    game_id: gameId,
-    role: role,
-    record_role: role,   // ✅ 給紀錄用
-    judge_id: uid,       // ✅ 裁判用
-    user_id: uid         // ✅ 紀錄用
-  }, (res)=>{
+  // ✅ ✅ ✅ debug（超重要）
+  console.log('assign payload =', params);
+
+  callApi(params, (res)=>{
+
+    console.log('assign result =', res);
 
     if (!res || res.result !== 'ok'){
       toast(res?.message || '❌ 改派失敗','error');
