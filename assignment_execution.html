@@ -1343,14 +1343,13 @@ function checkRoleNoShow(gameId, role){
 function completeGame(e){
 
   /* ========================
-     ✅ ① 安全取 gameId（避免你剛剛的錯🔥）
+     ✅ ① 安全取 gameId（保留你的）
   ======================== */
   let gameId = '';
 
   if (e && e.parameter){
     gameId = String(e.parameter.game_id || '').trim();
   }else{
-    // ✅ fallback（避免直接 call 爆掉）
     gameId = String(e || '').trim();
   }
 
@@ -1368,20 +1367,29 @@ function completeGame(e){
   let total = 0;
 
   /* ========================
-     ✅ ② 處理 Assignment
+     ✅ ② 批次更新用（效能強化🔥）
+  ======================== */
+  const statusUpdates = [];
+
+  /* ========================
+     ✅ ③ 處理 Assignment
   ======================== */
   for (let i=1; i<data.length; i++){
 
     const row = data[i];
 
-    if (String(row[ai.game_id]).trim() !== gameId) continue;
+    // ✅ 防呆：整列空
+    if (!row || row.length === 0) continue;
+
+    const rowGameId = String(row[ai.game_id] || '').trim();
+    if (rowGameId !== gameId) continue;
 
     total++;
 
     const status = String(row[ai.status] || '').toLowerCase();
     const role   = String(row[ai.role] || '').trim();
 
-    // ✅ ✅ ✅ 防呆：沒角色直接跳過（避免壞資料）
+    // ✅ ✅ ✅ 沒角色跳過
     if (!role) continue;
 
     // ✅ ✅ ✅ 已確定狀態不動
@@ -1393,14 +1401,24 @@ function completeGame(e){
       continue;
     }
 
-    // ✅ ✅ ✅ 核心：轉 completed
-    sh.getRange(i+1, ai.status+1).setValue('completed');
+    // ✅ ✅ ✅ 記錄要更新
+    statusUpdates.push({
+      row: i+1,
+      value: 'completed'
+    });
 
     count++;
   }
 
   /* ========================
-     ✅ ③ Game 狀態同步
+     ✅ ④ 批次寫入（重要🔥）
+  ======================== */
+  statusUpdates.forEach(x=>{
+    sh.getRange(x.row, ai.status+1).setValue(x.value);
+  });
+
+  /* ========================
+     ✅ ⑤ Game 狀態同步
   ======================== */
   const gsh = ss.getSheetByName('Games');
   const gdata = gsh.getDataRange().getValues();
@@ -1408,14 +1426,15 @@ function completeGame(e){
 
   for (let i=1; i<gdata.length; i++){
 
-    if (String(gdata[i][gi.game_id]).trim() !== gameId) continue;
+    const gId = String(gdata[i][gi.game_id] || '').trim();
+    if (gId !== gameId) continue;
 
     const currentStatus = Number(gdata[i][gi.status] || 0);
 
-    // ✅ ✅ ✅ 只在未完成時改
+    // ✅ ✅ ✅ 只在未完成時才改
     if (currentStatus !== 4){
 
-      gsh.getRange(i+1, gi.status+1).setValue(4); // ✅ 完成
+      gsh.getRange(i+1, gi.status+1).setValue(4);
 
     }
 
@@ -1423,7 +1442,17 @@ function completeGame(e){
   }
 
   /* ========================
-     ✅ ④ 回傳結果（加資訊）
+     ✅ ⑥ Debug（你之後查問題會用到🔥）
+  ======================== */
+  console.log({
+    action: 'completeGame',
+    gameId,
+    updated: count,
+    total
+  });
+
+  /* ========================
+     ✅ ⑦ 回傳
   ======================== */
   return {
     result:'ok',
