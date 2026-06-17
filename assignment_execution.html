@@ -33,8 +33,9 @@ body{
 
 /* ✅ 補賽卡 */
 .game-card.resumed{
-  border:2px solid #3b82f6;   /* 藍框 */
-  box-shadow:0 0 0 2px rgba(59,130,246,0.2);
+  border:2px solid #3b82f6;
+  box-shadow:0 4px 12px rgba(59,130,246,0.2);
+  background:#eff6ff; /* ✅ 淡藍底 */
 }
 
 .header-bar{
@@ -831,7 +832,20 @@ function renderRow(p, g, isReplacement=false){
   const isLate = p.status === 'late';
   const isScheduled = p.status === 'scheduled';
 
-  const hasUser = !!p.name;
+  // const hasUser = !!p.name;
+  
+  // ✅ ✅ ✅ 若沒 name，用 user_id 補查
+  let displayName = p.name;
+  
+  if (!displayName && p.user_id){
+    const u = userList.find(x => String(x.user_id) === String(p.user_id));
+    if (u){
+      displayName = u.name || u.username;
+    }
+  }
+  
+  const hasUser = !!displayName;
+
   const usedUserIds = list.map(x => String(x.user_id || ''));
 
   // ✅ 判斷該角色是否已有支援
@@ -961,7 +975,7 @@ function renderRow(p, g, isReplacement=false){
       <div class="info">
         <div class="info-line">
           ${getRoleText(p.role)} ${replaceTag}
-          ｜ ${p.name || '（待位）'}
+          ｜ ${displayName || '（待位）'}
           ｜ ${
             hasUser
               ? `<span class="status-mini">${statusTag[p.status] || ''}</span>`
