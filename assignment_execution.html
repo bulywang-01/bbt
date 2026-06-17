@@ -1342,53 +1342,96 @@ function checkRoleNoShow(gameId, role){
 // 一鍵整場完成
 function completeGame(e){
 
-  const gameId = String(e.parameter.game_id || '').trim();
+  /* ========================
+     ✅ ① 安全取 gameId（避免你剛剛的錯🔥）
+  ======================== */
+  let gameId = '';
+
+  if (e && e.parameter){
+    gameId = String(e.parameter.game_id || '').trim();
+  }else{
+    // ✅ fallback（避免直接 call 爆掉）
+    gameId = String(e || '').trim();
+  }
 
   if (!gameId){
     return { result:'error', message:'no game_id' };
   }
 
   const ss = SpreadsheetApp.openById(SHEET_ID);
+
   const sh = ss.getSheetByName('Assignment');
   const data = sh.getDataRange().getValues();
   const ai = indexByHeader(data[0]);
 
   let count = 0;
+  let total = 0;
 
+  /* ========================
+     ✅ ② 處理 Assignment
+  ======================== */
   for (let i=1; i<data.length; i++){
 
     const row = data[i];
 
     if (String(row[ai.game_id]).trim() !== gameId) continue;
 
-    const status = String(row[ai.status]).toLowerCase();
+    total++;
 
-    // ✅ ✅ ✅ 已完成的不動
-    if (status === 'completed' || status === 'late') continue;
+    const status = String(row[ai.status] || '').toLowerCase();
+    const role   = String(row[ai.role] || '').trim();
 
-    // ✅ ✅ ✅ 允許「空人」也完成（關鍵🔥）
+    // ✅ ✅ ✅ 防呆：沒角色直接跳過（避免壞資料）
+    if (!role) continue;
+
+    // ✅ ✅ ✅ 已確定狀態不動
+    if (
+      status === 'completed' ||
+      status === 'late' ||
+      status === 'no_show'
+    ){
+      continue;
+    }
+
+    // ✅ ✅ ✅ 核心：轉 completed
     sh.getRange(i+1, ai.status+1).setValue('completed');
 
     count++;
   }
 
-  /* ✅ ✅ ✅ Game 狀態同步 */
+  /* ========================
+     ✅ ③ Game 狀態同步
+  ======================== */
   const gsh = ss.getSheetByName('Games');
   const gdata = gsh.getDataRange().getValues();
   const gi = indexByHeader(gdata[0]);
 
   for (let i=1; i<gdata.length; i++){
-    if (String(gdata[i][gi.game_id]).trim() === gameId){
+
+    if (String(gdata[i][gi.game_id]).trim() !== gameId) continue;
+
+    const currentStatus = Number(gdata[i][gi.status] || 0);
+
+    // ✅ ✅ ✅ 只在未完成時改
+    if (currentStatus !== 4){
+
       gsh.getRange(i+1, gi.status+1).setValue(4); // ✅ 完成
-      break;
+
     }
+
+    break;
   }
 
+  /* ========================
+     ✅ ④ 回傳結果（加資訊）
+  ======================== */
   return {
     result:'ok',
-    updated: count
+    updated: count,
+    total: total
   };
 }
+
 
 // 單一完成
 function completeOne(btn){
