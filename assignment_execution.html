@@ -1343,7 +1343,7 @@ function checkRoleNoShow(gameId, role){
 function completeGame(e){
 
   /* ========================
-     ✅ ① 安全取 gameId（保留你的）
+     ✅ ① 取 gameId（保留你）
   ======================== */
   let gameId = '';
 
@@ -1357,6 +1357,11 @@ function completeGame(e){
     return { result:'error', message:'no game_id' };
   }
 
+  /* ========================
+     ✅ ✅ ✅ 🔥 補上這行（你剛剛漏的）
+  ======================== */
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+
   const sh = ss.getSheetByName('Assignment');
   const data = sh.getDataRange().getValues();
   const ai = indexByHeader(data[0]);
@@ -1365,7 +1370,7 @@ function completeGame(e){
   let total = 0;
 
   /* ========================
-     ✅ ② 批次更新用（效能強化🔥）
+     ✅ ② 批次更新用
   ======================== */
   const statusUpdates = [];
 
@@ -1376,7 +1381,6 @@ function completeGame(e){
 
     const row = data[i];
 
-    // ✅ 防呆：整列空
     if (!row || row.length === 0) continue;
 
     const rowGameId = String(row[ai.game_id] || '').trim();
@@ -1387,10 +1391,8 @@ function completeGame(e){
     const status = String(row[ai.status] || '').toLowerCase();
     const role   = String(row[ai.role] || '').trim();
 
-    // ✅ ✅ ✅ 沒角色跳過
     if (!role) continue;
 
-    // ✅ ✅ ✅ 已確定狀態不動
     if (
       status === 'completed' ||
       status === 'late' ||
@@ -1399,7 +1401,6 @@ function completeGame(e){
       continue;
     }
 
-    // ✅ ✅ ✅ 記錄要更新
     statusUpdates.push({
       row: i+1,
       value: 'completed'
@@ -1409,14 +1410,14 @@ function completeGame(e){
   }
 
   /* ========================
-     ✅ ④ 批次寫入（重要🔥）
+     ✅ ④ 批次寫入
   ======================== */
   statusUpdates.forEach(x=>{
     sh.getRange(x.row, ai.status+1).setValue(x.value);
   });
 
   /* ========================
-     ✅ ⑤ Game 狀態同步
+     ✅ ⑤ 更新 Games
   ======================== */
   const gsh = ss.getSheetByName('Games');
   const gdata = gsh.getDataRange().getValues();
@@ -1429,18 +1430,15 @@ function completeGame(e){
 
     const currentStatus = Number(gdata[i][gi.status] || 0);
 
-    // ✅ ✅ ✅ 只在未完成時才改
     if (currentStatus !== 4){
-
       gsh.getRange(i+1, gi.status+1).setValue(4);
-
     }
 
     break;
   }
 
   /* ========================
-     ✅ ⑥ Debug（你之後查問題會用到🔥）
+     ✅ ⑥ Debug
   ======================== */
   console.log({
     action: 'completeGame',
