@@ -1360,8 +1360,6 @@ function completeGame(e){
   /* ========================
      ✅ ✅ ✅ 🔥 補上這行（你剛剛漏的）
   ======================== */
-  const ss = SpreadsheetApp.openById(SHEET_ID);
-
   const sh = ss.getSheetByName('Assignment');
   const data = sh.getDataRange().getValues();
   const ai = indexByHeader(data[0]);
