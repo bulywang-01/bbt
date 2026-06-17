@@ -64,8 +64,8 @@ body {
  ✅ 日期標題
 ================================ */
 .date-header{
-  font-size:16px;
-  font-weight:800;
+  font-size:18px;
+  font-weight:1000;
   color:#1d4ed8;
   margin:22px 10px 10px;
   padding-left:6px;
@@ -797,108 +797,6 @@ function renderRow(g){
   `;
 }
 
-
-/* ✅ ✅ ✅ 拆出：render 每一列 
-function renderGameRow(g, today) {
-
-  const tr = document.createElement('tr');
-
-  const gd = new Date(g.date.replace(/\//g,'-'));
-  const isPast = gd < today;
-
-  if (isPast) tr.classList.add('expired');
-
-  const occupied = g.judges || {};
-  const assigned = Object.values(occupied).filter(v => v && v !== '').length;
-
-  const need = Number(g.need_count) || 0;
-
-  let umpireCell = '';
-
-  if (need === 0) {
-    umpireCell = '<span class="umpire-na">不需裁判</span>';
-  } else if (assigned >= need) {
-    umpireCell = '<span class="umpire-full"><strong>已額滿</strong></span>';
-    tr.classList.add('full');
-  } else {
-    umpireCell = `${assigned}/${need}`;
-  }
-
-  tr.innerHTML = `
-    <td><span class="game-badge ${isPast ? 'expired' : ''}">${g.game_code}</span></td>
-    <td>${getTime(g)}</td>
-    <td>${g.category || ''}</td>
-    <td>${g.away_team || ''}</td>
-    <td>${g.home_team || ''}</td>
-    <td>${g.field || ''}</td>
-
-    <!-- ✅ ✅ ✅ 時長修正 -->
-    <td>${g.duration ? g.duration + ' 分鐘' : '-'}</td>
-
-    <td>${umpireCell}</td>
-
-    ${['PU','U1','U2','U3'].map(role => {
-      return `<td>${renderPos(g, role, isPast)}</td>`;
-    }).join('')}
-  `;
-
-  return tr;
-}
-*/
-
-/* ✅ ========= 報名核心 ========= 
-
-function renderPos(g, role, isPast){
-
-  const need = g.need_count || 0;
-
-  if (
-    need===0 ||
-    (need===1 && role!=='PU') ||
-    (need===2 && ['U2','U3'].includes(role)) ||
-    (need===3 && role==='U2')
-  ){
-    return '<span style="color:#999">—</span>';
-  }
-
-  const occupied = g.judges||{};
-  const name = occupied[role] || '';
-
-  // ✅ 過期鎖死
-  if (isPast){
-    return name || '';
-  }
-
-  if (name){
-
-    if (g.my_position === role){
-      return `
-        <span style="color:#2e7d32;font-weight:700">
-          ${name}
-          <span style="color:red;cursor:pointer"
-            onclick="cancelMySignup('${g.my_signup_id}')">
-            [取消]
-          </span>
-        </span>
-      `;
-    }
-
-    return name;
-  }
-
-  if (g.my_position){
-    return '<span style="color:#999">待位</span>';
-  }
-
-  return `
-    <span style="color:#1976d2;cursor:pointer;font-weight:700"
-      onclick="signupJudgeInstant('${g.game_id}','${role}')">
-      點選
-    </span>
-  `;
-}
-*/
-
 // ✅ 裁判頁手機版：依 日期 → 組別 → 場次 分組
 function groupGamesForMobile(games) {
   const map = {};
@@ -926,103 +824,6 @@ function groupGamesForMobile(games) {
   return map;
 }
 
-/*
-function renderMobilePosGrid(g) {
-  if (isPastGame(g.date)){
-    return `
-      <div class="mobile-pos-grid">
-        ${['PU','U1','U2','U3'].map(role=>{
-          return `<div>${getName(g.judges[role])}</div>`;
-        }).join('')}
-      </div>
-    `;
-  }
-
-  
-  const ROLE_NAME = {
-  PU: '主審',
-  U1: '一壘',
-  U2: '二壘',
-  U3: '三壘'
-  };
-  
-  const roles = ['PU', 'U1', 'U2', 'U3'];
-  const today = new Date(); today.setHours(0,0,0,0);
-  const isPast = new Date(g.date.replace(/\//g,'-')) < today;
-
-
-  const occupied = g.judges || {};
-
-  function needNA(role) {
-    return (
-      g.need_count === 0 ||
-      (g.need_count === 1 && role !== 'PU') ||
-      (g.need_count === 2 && ['U2','U3'].includes(role)) ||
-      (g.need_count === 3 && role === 'U2')
-    );
-  }
-
-  return `
-  
-     <!-- ✅ 站位標籤列 -->
-     <div class="mobile-pos-labels">
-       <div>主審</div>
-       <div>一壘</div>
-       <div>二壘</div>
-       <div>三壘</div>
-     </div>
-   
-     <!-- ✅ 站位內容 -->
-
-    <div class="mobile-pos-grid">
-      ${roles.map(role => {
-        if (needNA(role)) {
-          return `<div class="mobile-pos"><span class="mobile-pos-na">-</span></div>`;
-        }
-
-        if (occupied[role]) {
-          const isMe = g.my_position === role;
-          return `
-            <div class="mobile-pos">
-              <span class="${isMe ? 'mobile-judge-me' : ''}">
-                ${getName(occupied[role])}
-              </span>
-              ${
-                isMe
-                  ? `<span class="mobile-cancel"
-                         onclick="cancelMySignup('${g.my_signup_id}')">取消</span>`
-                  : ''
-              }
-            </div>
-          `;
-        }
-
-        if (g.my_position) {
-          return `<div class="mobile-pos"><span class="mobile-pos-hint">待位中</span></div>`;
-        }
-
-        if (selectedPositions[g.game_id] === role) {
-          return `
-            <div class="mobile-pos">
-              <div class="mobile-pos-btn selected"
-                   onclick="cancelSelected('${g.game_id}')">選定</div>
-            </div>
-          `;
-        }
-
-        return `
-          <div class="mobile-pos">
-            <div class="mobile-pos-btn"
-              onclick="signupJudgeInstant('${g.game_id}','${role}')">
-              ${ROLE_NAME[role]}
-            </div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-}
-*/
  
 function renderTimeHHmm(t) {
   if (!t) return '';
