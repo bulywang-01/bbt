@@ -1357,8 +1357,6 @@ function completeGame(e){
     return { result:'error', message:'no game_id' };
   }
 
-  const ss = SpreadsheetApp.openById(SHEET_ID);
-
   const sh = ss.getSheetByName('Assignment');
   const data = sh.getDataRange().getValues();
   const ai = indexByHeader(data[0]);
