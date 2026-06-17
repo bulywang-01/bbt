@@ -1340,26 +1340,54 @@ function checkRoleNoShow(gameId, role){
 
 
 // 一鍵整場完成
-function completeGame(gameId){
+function completeGame(e){
 
-  if(!confirm('確定將本場全部標記為完成？')) return;
+  const gameId = String(e.parameter.game_id || '').trim();
 
-  toast('整場處理中...','loading');
+  if (!gameId){
+    return { result:'error', message:'no game_id' };
+  }
 
-  callApi({
-    action:'completeGame',
-    game_id:gameId,
-    // status:'completed'
-  }, res=>{
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sh = ss.getSheetByName('Assignment');
+  const data = sh.getDataRange().getValues();
+  const ai = indexByHeader(data[0]);
 
-    if(res.result==='ok'){
-      toast('✅ 本場已全部完成');
-      load();
-    }else{
-      toast('❌ 處理失敗','error');
+  let count = 0;
+
+  for (let i=1; i<data.length; i++){
+
+    const row = data[i];
+
+    if (String(row[ai.game_id]).trim() !== gameId) continue;
+
+    const status = String(row[ai.status]).toLowerCase();
+
+    // ✅ ✅ ✅ 已完成的不動
+    if (status === 'completed' || status === 'late') continue;
+
+    // ✅ ✅ ✅ 允許「空人」也完成（關鍵🔥）
+    sh.getRange(i+1, ai.status+1).setValue('completed');
+
+    count++;
+  }
+
+  /* ✅ ✅ ✅ Game 狀態同步 */
+  const gsh = ss.getSheetByName('Games');
+  const gdata = gsh.getDataRange().getValues();
+  const gi = indexByHeader(gdata[0]);
+
+  for (let i=1; i<gdata.length; i++){
+    if (String(gdata[i][gi.game_id]).trim() === gameId){
+      gsh.getRange(i+1, gi.status+1).setValue(4); // ✅ 完成
+      break;
     }
+  }
 
-  });
+  return {
+    result:'ok',
+    updated: count
+  };
 }
 
 // 單一完成
