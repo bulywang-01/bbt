@@ -1340,119 +1340,30 @@ function checkRoleNoShow(gameId, role){
 
 
 // 一鍵整場完成
-function completeGame(e){
+function completeGame(gameId){
 
-  /* ========================
-     ✅ ① 取 gameId（保留你）
-  ======================== */
-  let gameId = '';
+  if(!confirm('確定將本場全部標記為完成？')) return;
 
-  if (e && e.parameter){
-    gameId = String(e.parameter.game_id || '').trim();
-  }else{
-    gameId = String(e || '').trim();
-  }
+  toast('整場處理中...','loading');
 
-  if (!gameId){
-    return { result:'error', message:'no game_id' };
-  }
+  callApi({
+    action:'completeGame',
+    game_id: gameId
+  }, res=>{
 
-  /* ========================
-     ✅ ✅ ✅ 🔥 補上這行（你剛剛漏的）
-  ======================== */
-  const sh = ss.getSheetByName('Assignment');
-  const data = sh.getDataRange().getValues();
-  const ai = indexByHeader(data[0]);
-
-  let count = 0;
-  let total = 0;
-
-  /* ========================
-     ✅ ② 批次更新用
-  ======================== */
-  const statusUpdates = [];
-
-  /* ========================
-     ✅ ③ 處理 Assignment
-  ======================== */
-  for (let i=1; i<data.length; i++){
-
-    const row = data[i];
-
-    if (!row || row.length === 0) continue;
-
-    const rowGameId = String(row[ai.game_id] || '').trim();
-    if (rowGameId !== gameId) continue;
-
-    total++;
-
-    const status = String(row[ai.status] || '').toLowerCase();
-    const role   = String(row[ai.role] || '').trim();
-
-    if (!role) continue;
-
-    if (
-      status === 'completed' ||
-      status === 'late' ||
-      status === 'no_show'
-    ){
-      continue;
+    if (!res){
+      toast('❌ API 無回應','error');
+      return;
     }
 
-    statusUpdates.push({
-      row: i+1,
-      value: 'completed'
-    });
-
-    count++;
-  }
-
-  /* ========================
-     ✅ ④ 批次寫入
-  ======================== */
-  statusUpdates.forEach(x=>{
-    sh.getRange(x.row, ai.status+1).setValue(x.value);
-  });
-
-  /* ========================
-     ✅ ⑤ 更新 Games
-  ======================== */
-  const gsh = ss.getSheetByName('Games');
-  const gdata = gsh.getDataRange().getValues();
-  const gi = indexByHeader(gdata[0]);
-
-  for (let i=1; i<gdata.length; i++){
-
-    const gId = String(gdata[i][gi.game_id] || '').trim();
-    if (gId !== gameId) continue;
-
-    const currentStatus = Number(gdata[i][gi.status] || 0);
-
-    if (currentStatus !== 4){
-      gsh.getRange(i+1, gi.status+1).setValue(4);
+    if(res.result==='ok'){
+      toast('✅ 本場已全部完成');
+      load();
+    }else{
+      toast(res.message || '❌ 處理失敗','error');
     }
 
-    break;
-  }
-
-  /* ========================
-     ✅ ⑥ Debug
-  ======================== */
-  console.log({
-    action: 'completeGame',
-    gameId,
-    updated: count,
-    total
   });
-
-  /* ========================
-     ✅ ⑦ 回傳
-  ======================== */
-  return {
-    result:'ok',
-    updated: count,
-    total: total
-  };
 }
 
 
