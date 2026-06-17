@@ -12,13 +12,25 @@ const TOURNAMENT_MAP = {
 
 /* ✅ 取得完整資訊 */
 function getTournamentInfo(type){
+
   const key = String(type || '').toLowerCase().trim();
+
+  // ✅ ✅ ✅ 核心修正（擋掉 0 / 空值）
+  if (!key || key === '0'){
+    return {
+      text:'一般賽',
+      weight:1,
+      color:'#6b7280'
+    };
+  }
+
   return TOURNAMENT_MAP[key] || {
-    text:`未定義(${key})`,
+    text:'一般賽',
     weight:1,
-    color:'#999'
+    color:'#6b7280'
   };
 }
+
 
 /* ✅ 只要文字 */
 function getTournamentTypeText(type){
@@ -37,7 +49,7 @@ function isGameCompleted(g){
 
 /* ✅ 判斷補賽 */
 function isResumedGame(g){
-  return Number(g.status) === 4 && Number(g.from_hold || 0) === 1;
+  return Number(g.from_hold || 0) === 1;
 }
 
 // 
@@ -45,13 +57,14 @@ function normalizeStatus(s){
 
   if (!s) return 'scheduled';
 
-  s = String(s).toLowerCase();
+  s = String(s).toLowerCase().trim();
 
   if (s.includes('complete')) return 'completed';
   if (s.includes('late')) return 'late';
   if (s.includes('no_show') || s.includes('noshow')) return 'no_show';
-  if (s.includes('hold')) return 'hold';
-  if (s.includes('cancel') || s.includes('ignore')) return 'ignore';
+
+  if (s.includes('hold') || s.includes('postpone')) return 'hold';
+  if (s.includes('cancel') || s.includes('ignore') || s.includes('stop')) return 'ignore';
 
   return 'scheduled';
 }
