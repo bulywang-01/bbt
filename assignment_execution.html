@@ -554,7 +554,11 @@ function render(list){
   const pending = list.filter(g => Number(g.status) === 0);
   const done = list.filter(g => Number(g.status) === 4);
   const hold = list.filter(g => Number(g.status) === 1);
-  const resumed = list.filter(g => Number(g.status) === 4 && Number(g.from_hold) === 1);
+  // const resumed = list.filter(g => Number(g.status) === 4 && Number(g.from_hold) === 1);
+ 
+  // ✅ ✅ ✅ 補賽（全部）
+  const resumed = list.filter(g =>Number(g.from_hold) === 1);
+
 
   let data = [];
 
@@ -654,8 +658,9 @@ function load(){
 function renderGame(g){
 
   const statusNum = Number(g.status || 0);
+  const isResumed = Number(g.from_hold || 0) === 1;
 
-  // ✅ ✅ ✅ ✅ 先取賽事資訊（這裡！！）
+  // ✅ 賽事資訊
   const info = getTournamentInfo(g.tournament_type);
 
   let statusHTML = '';
@@ -684,7 +689,7 @@ function renderGame(g){
     `;
   }
 
-  // ✅ ③ 已完成（你現在實際不用，保留或拿掉都可）
+  // ✅ ③ 已完成（保留）
   else if (statusNum === 3){
     statusHTML = `
       <span style="margin-left:10px;color:#16a34a;font-weight:700;">
@@ -693,18 +698,16 @@ function renderGame(g){
     `;
   }
 
-  // ✅ ④ 完成 or 補賽
+  // ✅ ④ 完成（含補賽完成）
   else if (statusNum === 4){
 
-    if (Number(g.from_hold || 0) === 1){
-      // ✅ 補賽完成
+    if (isResumed){
       statusHTML = `
         <span style="margin-left:10px;color:#2563eb;font-weight:700;">
           🔄 補賽完成
         </span>
       `;
     }else{
-      // ✅ 正常完成
       statusHTML = `
         <span style="margin-left:10px;color:#16a34a;font-weight:700;">
           ✅ 已完成
@@ -713,11 +716,20 @@ function renderGame(g){
     }
   }
 
-  // ✅ ⑤ 正常比賽
+  // ✅ ⑤ 未完成（含補賽中🔥）
   else{
 
+    // ✅ ✅ ✅ 補賽中顯示
+    if (isResumed){
+      statusHTML += `
+        <span style="margin-left:10px;color:#2563eb;font-weight:700;">
+          🔄 補賽中
+        </span>
+      `;
+    }
+
     if (!isGameLocked(g)){
-      statusHTML = `
+      statusHTML += `
         <button class="btn-complete-all"
           onclick="completeGame('${g.game_id}')">
           ✅ 整場完成
@@ -731,7 +743,7 @@ function renderGame(g){
       `;
     }
     else{
-      statusHTML = `
+      statusHTML += `
         <span style="margin-left:10px;color:#16a34a;font-weight:700;">
           ✅ 已完成
         </span>
