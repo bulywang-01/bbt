@@ -1209,16 +1209,37 @@ function quickAssign(id, btn){
     return;
   }
 
+  const role = row.getAttribute('data-role');
+  const gameId = btn.closest('.game-card').getAttribute('data-game-id');
+
+  let action = '';
+
+  // ✅ ✅ ✅ 判斷裁判 / 紀錄
+  if (role.startsWith('REC')){
+    action = 'assignRecord_admin';   // 紀錄 API
+  }else{
+    action = 'assignJudgeToPosition_admin_'; // 裁判 API
+  }
+
   callApi({
-    action:'updateAssignment',
-    assignment_id:id,
-    user_id:uid,
-    source:'assign'
-  }, ()=>{
+    action,
+    game_id: gameId,
+    role: role,
+    record_role: role,   // ✅ 給紀錄用
+    judge_id: uid,       // ✅ 裁判用
+    user_id: uid         // ✅ 紀錄用
+  }, (res)=>{
+
+    if (!res || res.result !== 'ok'){
+      toast(res?.message || '❌ 改派失敗','error');
+      return;
+    }
+
     toast('✅ 已改派');
     load();
   });
 }
+
 
 /* ========================
    快速支援（最終穩定版）
