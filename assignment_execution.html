@@ -31,6 +31,12 @@ body{
   box-shadow:0 4px 12px rgba(0,0,0,.08);
 }
 
+/* ✅ 補賽卡 */
+.game-card.resumed{
+  border:2px solid #3b82f6;   /* 藍框 */
+  box-shadow:0 0 0 2px rgba(59,130,246,0.2);
+}
+
 .header-bar{
   display:flex;
   justify-content:space-between;
@@ -751,8 +757,12 @@ function renderGame(g){
     }
   }
 
+
+  const cardClass = isResumed ? 'game-card resumed' : 'game-card';
+  
   return `
-    <div class="game-card" data-game-id="${g.game_id}">
+    <div class="${cardClass}" data-game-id="${g.game_id}">
+
 
       <div class="game-title">
         📅 ${g.date} ｜ ${g.game_code || ''} ｜ ${g.field || ''}
