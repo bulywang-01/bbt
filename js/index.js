@@ -992,34 +992,38 @@ function openUserDetail(userId){
 
   const rate = total ? Math.round((completed/total)*100) : 0;
 
-  // =========================
-  // ✅ 生涯資料（從 assignment 算🔥）
-  // =========================
-  let career_completed = 0;
-  let career_late = 0;
-  let career_no_show = 0;
+// =========================
+// ✅ 生涯資料（從 assignment 算🔥）
+// =========================
+let career_completed = 0;
+let career_late = 0;
+let career_no_show = 0;
 
-  const roleMap = {};
+const roleMap = {};
 
-  window._yearRaw.allAssignments.forEach(g=>{
+// ✅ ✅ ✅ 修正：只算 completed 才進圓餅圖
+window._yearRaw.allAssignments.forEach(g=>{
 
-    (g.list || []).forEach(item=>{
+  (g.list || []).forEach(item=>{
 
-      if (String(item.user_id) !== String(userId)) return;
+    if (String(item.user_id) !== String(userId)) return;
 
-      // ✅ 生涯出勤狀態
-      if (item.status === 'completed') career_completed++;
-      if (item.status === 'late') career_late++;
-      if (item.status === 'no_show') career_no_show++;
+    // ✅ 生涯出勤狀態（全部保留）
+    if (item.status === 'completed') career_completed++;
+    if (item.status === 'late') career_late++;
+    if (item.status === 'no_show') career_no_show++;
 
-      // ✅ 生涯角色分布
-      const role = mapRole(item.role);
+    // ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
+    // 🔥 圓餅圖只算 completed（關鍵🔥）
+    if (item.status !== 'completed') return;
 
-      roleMap[role] = (roleMap[role] || 0) + 1;
-
-    });
+    const role = mapRole(item.role);
+    roleMap[role] = (roleMap[role] || 0) + 1;
 
   });
+
+});
+
 
   const career_total = career_completed + career_late + career_no_show;
 
