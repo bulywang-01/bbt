@@ -177,13 +177,12 @@ function loadDashboard(){
 
     const s = session;
 
-    const map = {};   // ✅ ✅ ✅ 用來去重（關鍵🔥）
+    const map = {};  // ✅ 去重（game_id）
 
     rawGames.forEach(g => {
 
       let myPos = null;
 
-      // ✅ 裁判
       if (g.judges){
         for (let [role, val] of Object.entries(g.judges)){
           if (isMySlot(val, s)){
@@ -192,7 +191,6 @@ function loadDashboard(){
         }
       }
 
-      // ✅ 紀錄
       if (g.records){
         for (let [role, val] of Object.entries(g.records)){
           if (isMySlot(val, s)){
@@ -201,20 +199,18 @@ function loadDashboard(){
         }
       }
 
-      // ✅ ✅ ✅ 沒有我的 → 跳過
       if (!myPos) return;
 
-      // ✅ ✅ ✅ 用 game_id 去重（核心🔥）
+      // ✅ ✅ ✅ 只保留一場（避免重複）
       if (!map[g.game_id]){
         map[g.game_id] = {
           ...g,
           my_position: myPos
         };
       }
-
     });
 
-    const games = Object.values(map);   // ✅ ✅ ✅ 去重後資料
+    const games = Object.values(map);
 
     const today = new Date();
     today.setHours(0,0,0,0);
@@ -233,21 +229,26 @@ function loadDashboard(){
 
       const isRecord = g.my_position.startsWith('REC');
 
+      /************* ✅ ✅ ✅ 重點在這 *************/
+
       if (d < today){
+        // ✅ ✅ ✅ 只算已完成（主數據來源）
         isRecord ? recordDone++ : judgeDone++;
-      } else {
+      }
+      else {
+        // ✅ ✅ ✅ 只是顯示（不進主數）
         isRecord ? recordFuture++ : judgeFuture++;
       }
 
     });
 
-    // ✅ 主數字
+    /************* ✅ ✅ ✅ 主數字（只用 done） *************/
     document.getElementById('stat-judge').textContent = judgeDone;
     document.getElementById('stat-record').textContent = recordDone;
     document.getElementById('stat-total').textContent =
       judgeDone + recordDone;
 
-    // ✅ 子數據
+    /************* ✅ ✅ ✅ 子數據（才顯示 future） *************/
     document.getElementById('stat-judge-sub').textContent =
       `生 ${judgeDone}　預 ${judgeFuture}`;
 
@@ -259,6 +260,7 @@ function loadDashboard(){
 
   });
 }
+
 
 
 
