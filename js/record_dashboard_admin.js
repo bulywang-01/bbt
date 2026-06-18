@@ -113,16 +113,25 @@ function renderPos(g, role, label) {
     `;
   }
 
-  // ✅ 尚未指派，但有人報名
-  const signupNames = signups.map(s => s.name).join('、');
+  // ✅ ✅ ✅ 多人報名（新版🔥）
+  let signupHtml = '';
+
+  if (signups.length){
+    signupHtml = `
+      <div class="signup-list">
+        ${signups.map((s, i) => `
+          <div class="signup-name signup">
+            ${signups.length > 1 ? `(${i+1}) ` : ''}${s.name}
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
   return `
     <div class="pos-cell">
       <div class="role">${label}</div>
-      ${
-        signupNames
-          ? `<div class="signup-name signup">${signupNames}</div>`
-          : ''
-      }
+      ${signupHtml}
       <button class="btn-assign"
         onclick="openRecordModal('${g.game_id}','${role}')">
         指派
@@ -130,6 +139,7 @@ function renderPos(g, role, label) {
     </div>
   `;
 }
+
 
 
 /* ===== Modal ===== */
