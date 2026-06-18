@@ -1,4 +1,50 @@
 /*********************************************************
+ ✅ category 顏色系統（5色制）
+*********************************************************/
+
+// ✅ 固定三組
+const CATEGORY_COLOR_MAP = {
+  '大聯盟': 'card-mlb',
+  '小聯盟': 'card-minor',
+  '週六育成': 'card-training'
+};
+
+// ✅ 備用兩組
+const CATEGORY_FALLBACK = [
+  'card-extra-1',
+  'card-extra-2'
+];
+
+// ✅ 動態分配
+function getCategoryClass(category){
+
+  if (!category) return '';
+
+  // ✅ 固定命中（改這裡）
+  for (let key in CATEGORY_COLOR_MAP){
+    if (category.indexOf(key) === 0){
+      return CATEGORY_COLOR_MAP[key];
+    }
+  }
+
+  // ✅ fallback pool
+  if (!window.__catPool){
+    window.__catPool = {};
+  }
+
+  if (!window.__catPool[category]){
+
+    const keys = Object.keys(window.__catPool);
+    const idx = keys.length;
+
+    window.__catPool[category] =
+      CATEGORY_FALLBACK[idx % CATEGORY_FALLBACK.length];
+  }
+
+  return window.__catPool[category];
+}
+
+/*********************************************************
  ✅ 班表主卡片（唯一UI）
 *********************************************************/
 function renderGameCard(g, opt={}){
@@ -88,7 +134,8 @@ function renderGameCard(g, opt={}){
     return '';
   }
 
-
+    const catClass = getCategoryClass(g.category);
+ 
     let statusBanner = '';
     
     if (s === 1){
@@ -104,6 +151,7 @@ function renderGameCard(g, opt={}){
   return `
 
       <div class="game-card 
+        ${catClass}
         ${isPast?'expired-card':''} 
         ${s === 1 ? 'postponed' : ''} 
         ${s === 2 ? 'stopped' : ''}
