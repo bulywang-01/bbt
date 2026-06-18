@@ -99,7 +99,7 @@ function renderPos(g, role, label) {
   const assign = g.record_assignments?.[role];
   const signups = g.record_signups?.[role] || [];
 
-  // ✅ 有指派（最高優先）
+  // ✅ 已指派（最高優先）
   if (assign) {
     return `
       <div class="pos-cell assigned">
@@ -113,17 +113,34 @@ function renderPos(g, role, label) {
     `;
   }
 
-  // ✅ ✅ ✅ 多人報名（新版🔥）
+  // ✅ ✅ ✅ 裁判同款顯示（核心🔥）
   let signupHtml = '';
 
   if (signups.length){
+
     signupHtml = `
       <div class="signup-list">
-        ${signups.map((s, i) => `
-          <div class="signup-name signup">
-            ${signups.length > 1 ? `(${i+1}) ` : ''}${s.name}
-          </div>
-        `).join('')}
+        ${signups.map((s, i) => {
+
+          // ✅ 第一位 → 主人（有底色）
+          if (i === 0){
+            return `
+              <div class="signup-name primary">
+                ${s.name}
+              </div>
+            `;
+          }
+
+          // ✅ 其他 → 圓圈數字
+          const num = ['①','②','③','④','⑤'][i] || `(${i+1})`;
+
+          return `
+            <div class="signup-name sub">
+              ${num} ${s.name}
+            </div>
+          `;
+
+        }).join('')}
       </div>
     `;
   }
