@@ -265,6 +265,49 @@ button {
   color: #777;
   padding: 12px 0;
 }
+
+/* ✅ 容器 */
+.signup-list{
+  margin-top: 6px;
+  margin-bottom: 6px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* ✅ ✅ ✅ 第一順位（主顯示） */
+.signup-name.primary{
+  background:#dbeafe;      /* 淡藍底 */
+  color:#1d4ed8;           /* 藍字 */
+  font-weight:800;
+  font-size:16px;
+
+  padding:3px 8px;
+  border-radius:6px;
+
+  margin-bottom:4px;
+  line-height:1.4;
+}
+
+/* ✅ ✅ ✅ 其他順位 */
+.signup-name.sub{
+  color:#444;
+  font-size:14px;
+  line-height:1.3;
+  margin-top:2px;
+}
+
+/* ✅ ✅ ✅ 圓圈數字更好看 */
+.signup-name.sub::before{
+  margin-right:4px;
+}
+
+/* ✅ ✅ ✅ hover（選擇感）*/
+.pos-cell:hover .signup-name.primary{
+  background:#bfdbfe;
+}
+
+
 </style>
 </head>
 
