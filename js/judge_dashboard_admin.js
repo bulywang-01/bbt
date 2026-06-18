@@ -180,10 +180,33 @@ function renderPosCell(game, role) {
       </div>`;
   }
 
-  const preferredText =
-    pos.preferred && pos.preferred.length > 0
-      ? pos.preferred.map(j => j.name).join('、')
-      : '尚未報名';
+      let preferredText = '尚未報名';
+      
+      if (pos.preferred && pos.preferred.length > 0){
+      
+        preferredText = pos.preferred.map((j, i) => {
+      
+          const rank = i + 1;
+      
+          if (rank === 1){
+            return `<span style="color:#2563eb;font-weight:800;">
+              ① ${j.name}
+            </span>`;
+          }
+      
+          if (rank === 2){
+            return `<span style="color:#555;">
+              ② ${j.name}
+            </span>`;
+          }
+      
+          return `<span style="color:#999;">
+            ${rank} ${j.name}
+          </span>`;
+      
+        }).join('<br>');
+      }
+
 
   return `
     <div class="pos-cell">
