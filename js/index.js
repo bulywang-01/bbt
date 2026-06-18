@@ -490,20 +490,22 @@ function openWeeklySchedule(){
       return;
     }
 
-    const games = res.games || [];
-
+    // const games = res.games || [];
+    const games = (res.games || []).map(safeMerge);
+    
     /************* ✅ 本週範圍 *************/
     const now = new Date();
     const day = now.getDay() === 0 ? 7 : now.getDay();
-
+    
     const monday = new Date(now);
     monday.setDate(now.getDate() - (day - 1));
     monday.setHours(0,0,0,0);
-
+    
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
     sunday.setHours(23,59,59,999);
-
+    
+    // ✅ ✅ ✅ 關鍵修正
     const weekGames = games.filter(g=>{
       const d = parseDate(g.date);
       return d && d >= monday && d <= sunday;
