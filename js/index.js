@@ -164,6 +164,9 @@ function loadWeeklyReminder(){
 /*********************************************************
  * ✅ Dashboard
  *********************************************************/
+/*********************************************************
+ * ✅ Dashboard（最終修正版）
+ *********************************************************/
 function loadDashboard(){
 
   callApi({
@@ -174,11 +177,15 @@ function loadDashboard(){
     if (!res || res.result !== 'ok') return;
 
     const games = (res.games || []).map(safeMerge);
-    
+
     const s = session;
-    
+
+    /************* ✅ ✅ ✅ 建立 my_position（唯一來源） *************/
     games.forEach(g => {
-    
+
+      g.my_position = null;
+
+      // ✅ 裁判
       if (g.judges){
         for (let [role, val] of Object.entries(g.judges)){
           if (isMySlot(val, s)){
@@ -186,7 +193,8 @@ function loadDashboard(){
           }
         }
       }
-    
+
+      // ✅ 紀錄
       if (g.records){
         for (let [role, val] of Object.entries(g.records)){
           if (isMySlot(val, s)){
@@ -194,7 +202,7 @@ function loadDashboard(){
           }
         }
       }
-    
+
     });
 
     const today = new Date();
@@ -204,34 +212,27 @@ function loadDashboard(){
     let recordDone = 0;
     let recordFuture = 0;
 
+    /************* ✅ ✅ ✅ 核心統計（只用 my_position） *************/
     games.forEach(g => {
 
-    const hasWork =
-      g.my_position ||
-      g.judges?.PU === session.name ||
-      g.judges?.U1 === session.name ||
-      g.judges?.U2 === session.name ||
-      g.judges?.U3 === session.name ||
-      g.records?.REC_MAIN === session.name ||
-      g.records?.REC_TRAINEE === session.name ||
-      g.records?.REC_VIDEO === session.name;
-    
-    if (!hasWork) return;
-          
+      // ✅ ✅ ✅ 只認這個（重點🔥）
+      if (!g.my_position) return;
+
       const d = new Date(g.date);
 
-      const isRecord = g.my_position.startsWith('REC');
+      // ✅ 防呆（避免 null crash）
+      const isRecord =
+        g.my_position && g.my_position.startsWith('REC');
 
       if (d < today){
         isRecord ? recordDone++ : judgeDone++;
       } else {
         isRecord ? recordFuture++ : judgeFuture++;
       }
+
     });
 
-    /************* ✅ ✅ ✅ 核心修正 *************/
-    // 👉 主數字 = 已完成（不是總數）
-
+    /************* ✅ 主數字 *************/
     document.getElementById('stat-judge').textContent = judgeDone;
     document.getElementById('stat-record').textContent = recordDone;
     document.getElementById('stat-total').textContent =
@@ -246,8 +247,10 @@ function loadDashboard(){
 
     document.getElementById('stat-total-sub').textContent =
       `生 ${judgeDone + recordDone}　預 ${judgeFuture + recordFuture}`;
+
   });
 }
+
 
 function loadHomeGames(){
 
