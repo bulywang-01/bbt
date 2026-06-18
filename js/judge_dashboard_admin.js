@@ -184,28 +184,34 @@ function renderPosCell(game, role) {
       
       if (pos.preferred && pos.preferred.length > 0){
       
-        preferredText = pos.preferred.map((j, i) => {
+        const list = pos.preferred;
       
-          const rank = i + 1;
+        // ✅ 只有一人 → 不顯示順位
+        if (list.length === 1){
       
-          if (rank === 1){
-            return `<span style="color:#2563eb;font-weight:800;">
-              ① ${j.name}
-            </span>`;
-          }
+          preferredText = `<span class="rank-1">${list[0].name}</span>`;
       
-          if (rank === 2){
-            return `<span style="color:#555;">
-              ② ${j.name}
-            </span>`;
-          }
+        } else {
       
-          return `<span style="color:#999;">
-            ${rank} ${j.name}
-          </span>`;
+          // ✅ 多人 → 顯示順位
+          preferredText = list.map((j, i) => {
       
-        }).join('<br>');
+            const rank = i + 1;
+      
+            if (rank === 1){
+              return `<span class="rank-1">① ${j.name}</span>`;
+            }
+      
+            if (rank === 2){
+              return `<span class="rank-2">② ${j.name}</span>`;
+            }
+      
+            return `<span class="rank-3">${rank} ${j.name}</span>`;
+      
+          }).join('');
+        }
       }
+
 
 
   return `
