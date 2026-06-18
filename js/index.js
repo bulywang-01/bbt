@@ -505,8 +505,8 @@ function openWeeklySchedule(){
     sunday.setHours(23,59,59,999);
 
     const weekGames = games.filter(g=>{
-      const d = new Date(g.date);
-      return d >= monday && d <= sunday;
+      const d = parseDate(g.date);
+      return d && d >= monday && d <= sunday;
     });
 
     if (!weekGames.length){
