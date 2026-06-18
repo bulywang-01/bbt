@@ -454,9 +454,9 @@ function loadHeader() {
   // 裁入報名頁面重要function
   document.addEventListener('DOMContentLoaded', () => {
     loadHeader();   // 只負責 header
+  });
     loadGames();    // 或該頁真正的資料初始化
     initMonthTabs();  // 初始化月班表選擇
-  });
 </script>
 
   <div class="main">
@@ -527,48 +527,6 @@ function hideLoading() {
   const overlay = document.getElementById('loadingOverlay');
   if (overlay) overlay.remove();
 }
-
-// 分組色系
-// ✅ 固定分類
-const CATEGORY_COLOR_MAP = {
-  '大聯盟': 'card-mlb',
-  '小聯盟': 'card-minor',
-  '週六育成': 'card-training'
-};
-
-// ✅ 備用（最多2種）
-const CATEGORY_FALLBACK = [
-  'card-extra-1',
-  'card-extra-2'
-];
-
-// ✅ 動態分類（核心）
-function getCategoryClass(category){
-
-  if (!category) return '';
-
-  // ✅ 固定
-  for (let key in CATEGORY_COLOR_MAP){
-    if (category.includes(key)){
-      return CATEGORY_COLOR_MAP[key];
-    }
-  }
-
-  // ✅ ✅ ✅ fallback（記住分類 → 不會一直亂跳）
-  if (!window.__categoryPool){
-    window.__categoryPool = {};
-    window.__categoryIndex = 0;
-  }
-
-  if (!window.__categoryPool[category]){
-    const idx = window.__categoryIndex++;
-    window.__categoryPool[category] =
-      CATEGORY_FALLBACK[idx % CATEGORY_FALLBACK.length];
-  }
-
-  return window.__categoryPool[category];
-}
-
 
 /* ===== 狀態 ===== */
 let allGames = [];
