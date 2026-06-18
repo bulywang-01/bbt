@@ -41,13 +41,24 @@ function renderGameCard(g, opt={}){
   ];
 
 
-  const conflict = isTimeConflict(g);
+  // const conflict = isTimeConflict(g);
+  const conflictInfo = checkConflictFront(g, __GAME_CACHE, session);
+  const conflict = conflictInfo.conflict;
   const myRole = g.my_position;
-
 
   function getReason(targetRole, isRecordSlot){
   
-    if (conflict) return '時間衝突';
+    // ✅ ✅ ✅ 改用新的衝突判斷（含 buffer + 場地）
+    if (conflict){
+  
+      if (conflictInfo){
+        return conflictInfo.isSameField
+          ? '⏱️衝突(+30m)'
+          : '🚗衝突(+60m)';
+      }
+  
+      return '時間衝突';
+    }
   
     if (!myRole) return '';
   
@@ -60,9 +71,9 @@ function renderGameCard(g, opt={}){
       }
     }
   
-    // ✅ ✅ ✅ 紀錄 VS 紀錄（放開，不限制）
+    // ✅ ✅ ✅ 紀錄 VS 紀錄（放開）
     if (myIsRecord && isRecordSlot){
-      return '';  // ✅ 不限制 ✅
+      return '';
     }
   
     // ✅ ✅ ✅ 裁判 vs 紀錄（互斥）
@@ -158,12 +169,17 @@ function renderGameCard(g, opt={}){
           }
         
           // ✅ ✅ ✅ 再判斷「同時間其他場」
-          const other = getOtherGameSameDay(g);
-        
-          if (other && !isPast){
+          if (conflict && !isPast){
+          
+            const ref = conflictInfo.ref;
+          
             return `
               <div class="row-warning">
-                ⚠️ 此時段已於另一場地擔任${roleTextMap(other.role)}
+                ⚠️ 時間衝突（本日已有其他場次）
+                <div class="sub">
+                  ${ref.game_code} ${getTime(ref)}｜${ref.field}
+                  ${conflictInfo.isSameField ? '（同場地 +30m）' : '（跨場地 +60m）'}
+                </div>
               </div>
             `;
           }
@@ -596,7 +612,9 @@ function renderRecordSlots(g, isPast, session){
         }
 
       // ✅ ✅ ✅ 同場已有角色 或 時間衝突 → 待位
-      const conflict = isTimeConflict(g);
+      // const conflict = isTimeConflict(g);
+      const conflictInfo = checkConflictFront(g, __GAME_CACHE, session);
+      const conflict = conflictInfo.conflict;
       
       if (
         (g.my_position && g.my_position !== role)
@@ -1372,4 +1390,46 @@ function isBeforeThisWeek(dateStr){
   d.setHours(0,0,0,0);
 
   return d < monday; // 在本週以前
+}
+
+
+/* ============================
+ ✅ 班表報名共用衝突檢查（前端版）
+============================ */
+function checkConflictFront(game, allGames, session){
+
+  const BASE_BUFFER = 30;
+  const FIELD_BUFFER = 60;
+
+  // const tStart = new Date(game.date + ' ' + game.time).getTime();
+  const tStart = new Date(game.date + ' ' + getTime(game)).getTime();
+  const tDuration = Number(game.duration || 120);
+
+  for (let g of allGames){
+
+    if (!g.my_position) continue;
+    if (g.game_id === game.game_id) continue;
+    if (g.date !== game.date) continue;
+
+    const gStart = new Date(g.date + ' ' + g.time).getTime();
+    const gDuration = Number(g.duration || 120);
+
+    const isSameField = (g.field === game.field);
+
+    const buffer = isSameField ? BASE_BUFFER : FIELD_BUFFER;
+
+    const tEnd = tStart + (tDuration + buffer) * 60000;
+    const gEnd = gStart + (gDuration + buffer) * 60000;
+
+    if (tStart < gEnd && tEnd > gStart){
+
+      return {
+        conflict:true,
+        ref:g,
+        isSameField
+      };
+    }
+  }
+
+  return { conflict:false };
 }
