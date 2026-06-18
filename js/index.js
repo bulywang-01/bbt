@@ -162,9 +162,6 @@ function loadWeeklyReminder(){
 
 
 /*********************************************************
- * ✅ Dashboard
- *********************************************************/
-/*********************************************************
  * ✅ Dashboard（最終修正版）
  *********************************************************/
 function loadDashboard(){
@@ -176,20 +173,21 @@ function loadDashboard(){
 
     if (!res || res.result !== 'ok') return;
 
-    const games = (res.games || []).map(safeMerge);
+    const rawGames = (res.games || []).map(safeMerge);
 
     const s = session;
 
-    /************* ✅ ✅ ✅ 建立 my_position（唯一來源） *************/
-    games.forEach(g => {
+    const map = {};   // ✅ ✅ ✅ 用來去重（關鍵🔥）
 
-      g.my_position = null;
+    rawGames.forEach(g => {
+
+      let myPos = null;
 
       // ✅ 裁判
       if (g.judges){
         for (let [role, val] of Object.entries(g.judges)){
           if (isMySlot(val, s)){
-            g.my_position = role;
+            myPos = role;
           }
         }
       }
@@ -198,31 +196,42 @@ function loadDashboard(){
       if (g.records){
         for (let [role, val] of Object.entries(g.records)){
           if (isMySlot(val, s)){
-            g.my_position = role;
+            myPos = role;
           }
         }
       }
 
+      // ✅ ✅ ✅ 沒有我的 → 跳過
+      if (!myPos) return;
+
+      // ✅ ✅ ✅ 用 game_id 去重（核心🔥）
+      if (!map[g.game_id]){
+        map[g.game_id] = {
+          ...g,
+          my_position: myPos
+        };
+      }
+
     });
 
+    const games = Object.values(map);   // ✅ ✅ ✅ 去重後資料
+
     const today = new Date();
+    today.setHours(0,0,0,0);
 
     let judgeDone = 0;
     let judgeFuture = 0;
     let recordDone = 0;
     let recordFuture = 0;
 
-    /************* ✅ ✅ ✅ 核心統計（只用 my_position） *************/
     games.forEach(g => {
 
-      // ✅ ✅ ✅ 只認這個（重點🔥）
-      if (!g.my_position) return;
+      const d = parseDate(g.date);
+      if (!d) return;
 
-      const d = new Date(g.date);
+      d.setHours(0,0,0,0);
 
-      // ✅ 防呆（避免 null crash）
-      const isRecord =
-        g.my_position && g.my_position.startsWith('REC');
+      const isRecord = g.my_position.startsWith('REC');
 
       if (d < today){
         isRecord ? recordDone++ : judgeDone++;
@@ -232,13 +241,13 @@ function loadDashboard(){
 
     });
 
-    /************* ✅ 主數字 *************/
+    // ✅ 主數字
     document.getElementById('stat-judge').textContent = judgeDone;
     document.getElementById('stat-record').textContent = recordDone;
     document.getElementById('stat-total').textContent =
       judgeDone + recordDone;
 
-    /************* ✅ 子數據 *************/
+    // ✅ 子數據
     document.getElementById('stat-judge-sub').textContent =
       `生 ${judgeDone}　預 ${judgeFuture}`;
 
@@ -250,6 +259,7 @@ function loadDashboard(){
 
   });
 }
+
 
 
 function loadHomeGames(){
