@@ -53,8 +53,8 @@ function renderGameCard(g, opt={}){
   
       if (conflictInfo){
         return conflictInfo.isSameField
-          ? '⏱️衝突(+30m)'
-          : '🚗衝突(+60m)';
+          ? '⏱️'
+          : '🚗';
       }
   
       return '時間衝突';
