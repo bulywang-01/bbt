@@ -1466,7 +1466,7 @@ function saveAll(){
   const rows = document.querySelectorAll('#newList .new-game-row');
 
   if (!rows.length){
-    alert('沒有資料');
+    showToast('沒有資料');
     return;
   }
 
@@ -1497,23 +1497,29 @@ function saveAll(){
       field:get('field'),
       away_team:get('away'),
       home_team:get('home'),
-      // status:get('status') || '0'
+      category:get('category')
     };
 
     showSaving(`儲存中 (${i+1} / ${rows.length})`);
 
-    // ✅ ✅ ✅ 驗證
+    // ✅ 驗證
     const err = validateGame(data);
 
     if (err){
       fail++;
       markRow(r,'error',err);
+
       i++;
-      next();
+      setTimeout(next, 0);   // ✅ 防卡死
       return;
     }
 
+    let finished = false;   // ✅ ✅ ✅ 防 callback 不回來
+
     callApi(data,function(res){
+
+      if (finished) return;
+      finished = true;
 
       if (res && res.result === 'ok'){
         success++;
@@ -1526,6 +1532,19 @@ function saveAll(){
       i++;
       next();
     });
+
+    // ✅ ✅ ✅ 超時保護（超重要🔥）
+    setTimeout(()=>{
+      if (!finished){
+        finished = true;
+        fail++;
+        markRow(r,'error','Timeout');
+
+        i++;
+        next();
+      }
+    }, 5000); // 5秒沒回當失敗
+
   }
 
   next();
