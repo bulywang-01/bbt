@@ -368,6 +368,39 @@ body{
   background:#e5e7eb;
   opacity:0.6;
 }
+
+.person-group{
+  margin-bottom:10px;
+  padding:10px;
+  background:#fafafa;
+  border-radius:10px;
+}
+
+.role-title{
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.candidate-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:6px;
+}
+
+.candidate{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  background:#fff;
+  padding:4px 8px;
+  border-radius:6px;
+}
+
+.name{
+  font-size:13px;
+}
+
 </style>
 </head>
 
@@ -787,9 +820,8 @@ function renderGroup(g){
 
   const list = g.list || [];
 
-  // ✅ 分 role
+  // ✅ group by role
   const roleMap = {};
-
   list.forEach(p=>{
     if (!roleMap[p.role]) roleMap[p.role] = [];
     roleMap[p.role].push(p);
@@ -801,26 +833,131 @@ function renderGroup(g){
 
     const rows = roleMap[role];
 
-    // ✅ 原人 / 支援
-    const main = rows.filter(x => x.is_replacement != 1);
-    const repl = rows.filter(x => x.is_replacement == 1);
-
-    main.forEach(p=>{
-
-      html += renderRow(p, g);
-
-      // ✅ ✅ ✅ 🔥 支援強制接在下面
-      repl.forEach(r=>{
-        html += renderRow(r, g, true);
-      });
-
-    });
+    // ✅ ✅ ✅ 橫排（多人）
+    html += renderRoleRow(role, rows, g);
 
   });
 
   return html;
 }
 
+// 配合上面的程式新增
+function renderRoleRow(role, rows, g){
+
+  // ✅ 排序（用 create_at）
+  rows.sort((a,b)=>{
+    return new Date(a.create_at || 0) - new Date(b.create_at || 0);
+  });
+
+  const multiple = rows.length > 1;
+
+  // ✅ ✅ ✅ 預設第一位
+  const selectedId = rows[0]?.assignment_id;
+
+  return `
+    <div class="person-group">
+
+      <div class="role-title">
+        ${getRoleText(role)}
+      </div>
+
+      <div class="candidate-row">
+
+        ${rows.map((p,i)=>{
+
+          const checked = (!multiple && i===0) || (multiple && i===0)
+            ? 'checked' : '';
+
+          return `
+            <label class="candidate">
+
+              ${multiple ? `
+                <input type="radio"
+                  name="select_${g.game_id}_${role}"
+                  value="${p.assignment_id}"
+                  ${checked}
+                >
+              ` : ''}
+
+              <span class="name">
+                ${p.name || '（待）'}
+              </span>
+
+            </label>
+          `;
+        }).join('')}
+
+      </div>
+
+      <div class="actions-box">
+
+        <button class="btn btn-ok"
+          onclick="handleMultiSelect('${g.game_id}','${role}','completed')">
+          完成
+        </button>
+
+        <button class="btn btn-late"
+          onclick="handleMultiSelect('${g.game_id}','${role}','late')">
+          遲到
+        </button>
+
+        <button class="btn btn-no"
+          onclick="handleMultiSelect('${g.game_id}','${role}','no_show')">
+          缺席
+        </button>
+
+      </div>
+
+    </div>
+  `;
+}
+
+// 「選人＋送出」核心
+function handleMultiSelect(gameId, role, status){
+
+  // ✅ 找所有 radio
+  const radios = document.querySelectorAll(
+    `input[name="select_${gameId}_${role}"]`
+  );
+
+  let selected = null;
+
+  radios.forEach(r=>{
+    if (r.checked) selected = r.value;
+  });
+
+  // ✅ ✅ ✅ 多人但沒選 → 擋住
+  if (radios.length > 0 && !selected){
+    toast('請先選擇實際出席人','warn');
+    return;
+  }
+
+  // ✅ ✅ ✅ 單人（沒有 radio） → 自動取第一筆
+  if (!selected){
+    const first = document.querySelector(
+      `.person-group input[name="select_${gameId}_${role}"]`
+    );
+
+    if (first){
+      selected = first.value;
+    }else{
+      // fallback：單人
+      const el = document.querySelector(
+        `[data-role="${role}"][data-game-id="${gameId}"]`
+      );
+
+      selected = el?.dataset?.id;
+    }
+  }
+
+  if (!selected){
+    toast('找不到人員','error');
+    return;
+  }
+
+  // ✅ ✅ ✅ 送 API
+  updateStatus(selected, status);
+}
  
 // ✅ 共用 render row（避免重複）
 function renderRow(p, g, isReplacement=false){
@@ -1342,27 +1479,40 @@ function checkRoleNoShow(gameId, role){
 // 一鍵整場完成
 function completeGame(gameId){
 
-  if(!confirm('確定將本場全部標記為完成？')) return;
+  // ✅ 🔥 檢查是否有未選
+  const groups = document.querySelectorAll(
+    `[data-game-id="${gameId}"] .candidate-row`
+  );
 
-  toast('整場處理中...','loading');
+  for (let g of groups){
+
+    const radios = g.querySelectorAll('input[type="radio"]');
+
+    if (radios.length > 0){
+
+      let ok = false;
+
+      radios.forEach(r=>{
+        if (r.checked) ok = true;
+      });
+
+      if (!ok){
+        toast('有位置尚未選擇人員','warn');
+        return;
+      }
+    }
+  }
+
+  if(!confirm('確定整場完成？')) return;
 
   callApi({
     action:'completeGame',
-    game_id: gameId
+    game_id:gameId
   }, res=>{
-
-    if (!res){
-      toast('❌ API 無回應','error');
-      return;
-    }
-
-    if(res.result==='ok'){
-      toast('✅ 本場已全部完成');
+    if (res.result === 'ok'){
+      toast('✅ 完成');
       load();
-    }else{
-      toast(res.message || '❌ 處理失敗','error');
     }
-
   });
 }
 
