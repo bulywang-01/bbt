@@ -233,31 +233,26 @@ function loadDashboard(){
         const d = parseDate(g.date);
         if (!d || d < new Date()) return;
 
-        // ✅ 我有報名
+        // ✅ 我有報名（改成用 mapping）
         let hasSignup = false;
         let isRecord = false;
         
-        // ✅ 裁判報名（多筆）
-        (g.signup_judge_list || []).forEach(s => {
-          if (
-            String(s.user_id) === String(session.user_id) &&
-            s.status === 'approved'
-          ){
+        // ✅ 裁判報名（mapping）
+        Object.entries(g.signup_judges || {}).forEach(([role, name]) => {
+          if (name === session.name){
             hasSignup = true;
             isRecord = false;
           }
         });
         
-        // ✅ 紀錄報名（多筆）
-        (g.signup_record_list || []).forEach(s => {
-          if (
-            String(s.user_id) === String(session.user_id) &&
-            s.status === 'approved'
-          ){
+        // ✅ 紀錄報名（mapping）
+        Object.entries(g.signup_records || {}).forEach(([role, name]) => {
+          if (name === session.name){
             hasSignup = true;
             isRecord = true;
           }
         });
+
 
         if (!hasSignup) return;
 
