@@ -237,16 +237,16 @@ function loadDashboard(){
         let hasSignup = false;
         let isRecord = false;
         
-        // ✅ 裁判報名（mapping）
-        Object.entries(g.signup_judges || {}).forEach(([role, name]) => {
+        // ✅ 裁判（merge後）
+        Object.entries(g.judges || {}).forEach(([role, name]) => {
           if (name === session.name){
             hasSignup = true;
             isRecord = false;
           }
         });
         
-        // ✅ 紀錄報名（mapping）
-        Object.entries(g.signup_records || {}).forEach(([role, name]) => {
+        // ✅ 紀錄（merge後）
+        Object.entries(g.records || {}).forEach(([role, name]) => {
           if (name === session.name){
             hasSignup = true;
             isRecord = true;
