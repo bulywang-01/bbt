@@ -236,18 +236,24 @@ function loadDashboard(){
         // ✅ 我有報名
         let hasSignup = false;
         let isRecord = false;
-
-        // ✅ 裁判報名
-        Object.entries(g.signup_judges || {}).forEach(([role, name]) => {
-          if (name === session.name){
+        
+        // ✅ 裁判報名（多筆）
+        (g.signup_judge_list || []).forEach(s => {
+          if (
+            String(s.user_id) === String(session.user_id) &&
+            s.status === 'approved'
+          ){
             hasSignup = true;
             isRecord = false;
           }
         });
-
-        // ✅ 紀錄報名
-        Object.entries(g.signup_records || {}).forEach(([role, name]) => {
-          if (name === session.name){
+        
+        // ✅ 紀錄報名（多筆）
+        (g.signup_record_list || []).forEach(s => {
+          if (
+            String(s.user_id) === String(session.user_id) &&
+            s.status === 'approved'
+          ){
             hasSignup = true;
             isRecord = true;
           }
