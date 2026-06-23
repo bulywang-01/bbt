@@ -166,84 +166,123 @@ function loadWeeklyReminder(){
  *********************************************************/
 function loadDashboard(){
 
-  callApi({
-    action:'getAssignments'
-  }, res => {
+  // ✅ 1️⃣ 先抓 assignment（已排）
+  callApi({ action:'getAssignments' }, resAssign => {
 
-    if (!res || res.result !== 'ok') return;
+    if (!resAssign || resAssign.result !== 'ok') return;
 
-    const list = res.data || [];
+    // ✅ 2️⃣ 再抓 signup（未排）
+    callApi({
+      action:'getSignableGames',
+      user_id: session.user_id
+    }, resSignup => {
 
-    const uid = String(session.user_id);
+      const uid = String(session.user_id);
+      const year = new Date().getFullYear();
 
-    const year = new Date().getFullYear();
+      let judgeDone = 0;
+      let judgeFuture = 0;
+      let recordDone = 0;
+      let recordFuture = 0;
 
-    let judgeDone = 0;
-    let judgeFuture = 0;
-    let recordDone = 0;
-    let recordFuture = 0;
+      const assignedGameSet = new Set();  // ✅ 防重複🔥
 
-    list.forEach(g => {
+      /************* ✅ 已完成 + 已排 *************/
+      (resAssign.data || []).forEach(g => {
 
-      const gameDate = parseDate(g.date);
-      if (!gameDate) return;
+        const d = parseDate(g.date);
+        if (!d) return;
 
-      const isThisYear =
-        gameDate.getFullYear() === year;
+        const isFuture = d >= new Date();
+        const isThisYear = d.getFullYear() === year;
 
-      (g.list || []).forEach(item => {
+        (g.list || []).forEach(item => {
 
-        if (String(item.user_id) !== uid) return;
+          if (String(item.user_id) !== uid) return;
 
-        const isRecord = item.role.startsWith('REC');
+          const isRecord = item.role.startsWith('REC');
 
-        /************* ✅ ✅ ✅ 已完成 *************/
-        if (item.status === 'completed'){
-
-          if (isThisYear){
+          // ✅ completed
+          if (item.status === 'completed' && isThisYear){
             isRecord ? recordDone++ : judgeDone++;
           }
 
-        }
-
-        /************* ✅ ✅ ✅ 未來 *************/
-        else if (
-          item.status === 'assigned' ||
-          item.status === 'scheduled'
-        ){
-
-          if (isThisYear){
+          // ✅ 已排未來
+          if (
+            (item.status === 'assigned' || item.status === 'scheduled') &&
+            isFuture && isThisYear
+          ){
             isRecord ? recordFuture++ : judgeFuture++;
+
+            // ✅ ✅ ✅ 記錄 game_id → 避免 signup 再加一次
+            assignedGameSet.add(g.game_id);
           }
 
-        }
-
-        /************* ❌ 不算 *************/
-        // late / no_show / cancelled → 全部排除主數
+        });
 
       });
 
+      /************* ✅ ✅ ✅ 補「報名但尚未指派」 *************/
+      const games = (resSignup.games || []).map(safeMerge);
+
+      games.forEach(g => {
+
+        // ✅ 已在 assignment → 跳過
+        if (assignedGameSet.has(g.game_id)) return;
+
+        const d = parseDate(g.date);
+        if (!d || d < new Date()) return;
+
+        // ✅ 我有報名
+        let hasSignup = false;
+        let isRecord = false;
+
+        // ✅ 裁判報名
+        Object.entries(g.signup_judges || {}).forEach(([role, name]) => {
+          if (name === session.name){
+            hasSignup = true;
+            isRecord = false;
+          }
+        });
+
+        // ✅ 紀錄報名
+        Object.entries(g.signup_records || {}).forEach(([role, name]) => {
+          if (name === session.name){
+            hasSignup = true;
+            isRecord = true;
+          }
+        });
+
+        if (!hasSignup) return;
+
+        // ✅ ✅ ✅ 只算「第一順位」（這行你很重要🔥）
+        // 👉 如果不是第一順位 → 不算
+        // 👉 這部分要靠你後端排序（現在先假設 signup 已是 winner）
+
+        isRecord ? recordFuture++ : judgeFuture++;
+
+      });
+
+      /************* ✅ UI *************/
+      document.getElementById('stat-judge').textContent = judgeDone;
+      document.getElementById('stat-record').textContent = recordDone;
+      document.getElementById('stat-total').textContent =
+        judgeDone + recordDone;
+
+      document.getElementById('stat-judge-sub').textContent =
+        `生 ${judgeDone}　預 ${judgeFuture}`;
+
+      document.getElementById('stat-record-sub').textContent =
+        `生 ${recordDone}　預 ${recordFuture}`;
+
+      document.getElementById('stat-total-sub').textContent =
+        `生 ${judgeDone + recordDone}　預 ${judgeFuture + recordFuture}`;
+
     });
-
-    // ✅ 主數字（年度 completed）
-    document.getElementById('stat-judge').textContent = judgeDone;
-    document.getElementById('stat-record').textContent = recordDone;
-    document.getElementById('stat-total').textContent =
-      judgeDone + recordDone;
-
-    // ✅ 子數據
-    document.getElementById('stat-judge-sub').textContent =
-      `生 ${judgeDone}　預 ${judgeFuture}`;
-
-    document.getElementById('stat-record-sub').textContent =
-      `生 ${recordDone}　預 ${recordFuture}`;
-
-    document.getElementById('stat-total-sub').textContent =
-      `生 ${judgeDone + recordDone}　預 ${judgeFuture + recordFuture}`;
 
   });
 }
-``
+
 
 function loadHomeGames(){
 
