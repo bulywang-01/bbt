@@ -181,6 +181,23 @@
       color:#374151;
     }
 
+    .new-game-row{
+      background:#fff7d6;
+      border-radius:6px;
+      padding:8px;
+      margin-bottom:8px;
+      transition:0.2s;
+    }
+    
+    .new-game-row input{
+      height:30px;
+      font-size:13px;
+    }
+    
+    .new-game-row:hover{
+      background:#ffefb0;
+    }
+
   </style>
 </head>
 
@@ -969,17 +986,27 @@ function hideSaving() {
   document.getElementById('savingOverlay').style.display = 'none';
 }
 
+// 刪除賽事資料及相關報名資訊
 function deleteGame(id){
-  if (!confirm('⚠️ 此動作將刪除賽事並清除所有裁判報名，確定？')) return;
+
+  if (!confirm(
+`⚠️ 確定刪除？
+將同步刪除：
+- 賽事
+- 裁判報名
+- 紀錄報名
+- 裁判指派
+- 紀錄指派`
+  )) return;
 
   const session = JSON.parse(localStorage.getItem('session_user') || '{}');
 
   callApi({
     action: 'deleteGame',
     game_id: id,
-    user_id: session.user_id   // ✅ 一定要傳，給後端驗 admin
+    user_id: session.user_id
   }, function(res){
-    alert(res.message || '刪除完成');
+    showToast(res.message || '✅ 已刪除');
     loadGames();
   });
 }
@@ -1359,30 +1386,80 @@ function addRow(){
   div.className = 'new-game-row';
 
   div.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+    <div style="
+      display:grid;
+      grid-template-columns:80px 120px 90px 110px 110px 110px 100px;
+      gap:6px;
+      align-items:center;
+    ">
+
       <input placeholder="場次" data="code">
       <input type="date" data="date">
       <input type="time" data="time">
       <input placeholder="場地" data="field">
       <input placeholder="客隊" data="away">
       <input placeholder="主隊" data="home">
+      <input placeholder="組別" data="category">
 
-      <!-- ✅ status -->
-      <select data="status">
-        <option value="0">正常</option>
-        <option value="1">延賽</option>
-        <option value="2">停賽</option>
-        <option value="3">暫存</option>
-      </select>
     </div>
 
-    <button onclick="this.parentElement.remove()">取消</button>
+    <div style="margin-top:6px; display:flex; gap:6px;">
+      <button onclick="saveSingleRow(this)">✅ 儲存</button>
+      <button onclick="this.closest('.new-game-row').remove()">❌ 取消</button>
+    </div>
   `;
 
   wrap.appendChild(div);
 }
 
+// 單筆快速儲存
+function saveSingleRow(btn){
 
+  const row = btn.closest('.new-game-row');
+
+  const get = k => row.querySelector(`[data="${k}"]`)?.value || '';
+
+  const data = {
+    action:'createGame',
+    game_code:get('code'),
+    date:get('date'),
+    time:get('time'),
+    field:get('field'),
+    away_team:get('away'),
+    home_team:get('home'),
+    category:get('category')
+  };
+
+  // ✅ 驗證
+  const err = validateGame(data);
+  if (err){
+    showToast(err);
+    return;
+  }
+
+  showSaving('新增中...');
+
+  callApi(data,function(res){
+
+    hideSaving();
+
+    if (res && res.result === 'ok'){
+
+      showToast('✅ 已新增');
+
+      // ✅ 成功後淡出（視覺好很多）
+      row.style.background = '#dcfce7';
+      setTimeout(()=> row.remove(), 800);
+
+      loadGames();
+
+    }else{
+      showToast('❌ 新增失敗');
+    }
+
+  });
+}
+  
 // 批次送出
 function saveAll(){
 
