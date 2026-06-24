@@ -68,3 +68,60 @@ function normalizeStatus(s){
 
   return 'scheduled';
 }
+
+// 共用計算引擎 - 個人紀錄用
+function calcUserStats(userId, allAssignments){
+
+  let completed = 0;
+  let late = 0;
+  let no_show = 0;
+
+  const roleMap = {};
+
+  (allAssignments || []).forEach(g => {
+
+    (g.list || []).forEach(a => {
+
+      if (String(a.user_id) !== String(userId)) return;
+
+      // ✅ 完成
+      if (a.status === 'completed'){
+        completed++;
+      }
+
+      // ✅ 遲到
+      if (a.status === 'late'){
+        late++;
+      }
+
+      // ✅ 缺席（只統計，不納入有效）
+      if (a.status === 'no_show'){
+        no_show++;
+      }
+
+      // ✅ ✅ ✅ 角色統計（只算有效）
+      if (a.status === 'completed' || a.status === 'late'){
+
+        if (!roleMap[a.role]) roleMap[a.role] = 0;
+        roleMap[a.role]++;
+      }
+
+    });
+
+  });
+
+  const totalValid = completed + late;
+
+  const quality = totalValid
+    ? (completed / totalValid)
+    : 0;
+
+  return {
+    completed,
+    late,
+    no_show,
+    totalValid,
+    roleMap,
+    quality
+  };
+}
