@@ -854,7 +854,12 @@ function renderRoleRow(role, rows, g){
   });
 
   const multiple = rows.length > 1;
-  const hasNoShow = rows.some(p => p.status === 'no_show');
+  const hasNoShow = rows.some(p => p.status === 'no_show') ||
+  window._lastData
+    ?.find(x => x.game_id == g.game_id)
+    ?.list
+    ?.some(x => x.role === role && x.status === 'no_show');
+
 
   // ✅ ✅ ✅ 預設第一位
   const selectedId = rows[0]?.assignment_id;
@@ -912,7 +917,8 @@ function renderRoleRow(role, rows, g){
           </button>
         
           ${
-            rows.length === 1 && rows[0].status !== 'no_show'
+            // rows.length === 1 && rows[0].status !== 'no_show'
+            !hasNoShow
             ? `
               <button class="btn btn-assign"
                 onclick="quickAssign('${rows[0].assignment_id}', this)">
@@ -1131,39 +1137,39 @@ function renderRow(p, g, isReplacement=false){
     }
 
     // ✅ 人員選單
-    actionHTML += `
-      const usedUserIds = rows.map(x => String(x.user_id || ''));
-      
-      <select class="select-user">
-        <option value="">選擇人員</option>
-        ${
-          userList
-            .filter(u => !usedUserIds.includes(String(u.user_id)))
-            .filter(u => {
-      
-              if (role.startsWith('REC')){
-                return (
-                  u.role.includes('record') ||
-                  u.role.includes('record_chief') ||
-                  u.role.includes('admin')
-                );
-              }
-      
-              return (
-                u.role.includes('judge') ||
-                u.role.includes('chief_judge') ||
-                u.role.includes('admin')
-              );
-      
-            })
-            .map(u =>
-              `<option value="${u.user_id}">
-                ${u.name || u.username}
-              </option>`
-            ).join('')
-        }
-      </select>
-    `;
+   const usedUserIds = list.map(x => String(x.user_id || ''));
+   
+   actionHTML += `
+     <select class="select-user">
+       <option value="">選擇人員</option>
+       ${
+         userList
+           .filter(u => !usedUserIds.includes(String(u.user_id)))
+           .filter(u => {
+   
+             if (p.role.startsWith('REC')){
+               return (
+                 u.role.includes('record') ||
+                 u.role.includes('record_chief') ||
+                 u.role.includes('admin')
+               );
+             }
+   
+             return (
+               u.role.includes('judge') ||
+               u.role.includes('chief_judge') ||
+               u.role.includes('admin')
+             );
+   
+           })
+           .map(u =>
+             `<option value="${u.user_id}">
+               ${u.name || u.username}
+             </option>`
+           ).join('')
+       }
+     </select>
+   `;
   }
 
   return `
