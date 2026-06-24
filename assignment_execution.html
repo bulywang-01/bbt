@@ -1132,27 +1132,29 @@ function renderRow(p, g, isReplacement=false){
 
     // ✅ 人員選單
     actionHTML += `
+      const usedUserIds = rows.map(x => String(x.user_id || ''));
+      
       <select class="select-user">
         <option value="">選擇人員</option>
         ${
           userList
             .filter(u => !usedUserIds.includes(String(u.user_id)))
             .filter(u => {
-          
-              if (p.role.startsWith('REC')){
+      
+              if (role.startsWith('REC')){
                 return (
                   u.role.includes('record') ||
                   u.role.includes('record_chief') ||
                   u.role.includes('admin')
                 );
               }
-          
+      
               return (
                 u.role.includes('judge') ||
                 u.role.includes('chief_judge') ||
                 u.role.includes('admin')
               );
-          
+      
             })
             .map(u =>
               `<option value="${u.user_id}">
@@ -1397,8 +1399,12 @@ function getStatusBadge(s){
 function quickAssign(id, btn){
 
   const group = btn.closest('.person-group');
-  const select = group.querySelector('.select-user');
+  if (!group){
+    toast('找不到區塊','error');
+    return;
+  }
 
+  const select = group.querySelector('.select-user');
   const uid = select?.value;
 
   if (!uid){
@@ -1406,30 +1412,31 @@ function quickAssign(id, btn){
     return;
   }
 
-  const role = group.querySelector('.role-title')?.innerText;
   const gameId = btn.closest('.game-card')?.dataset.gameId;
+
+  const g = window._lastData?.find(x => x.game_id == gameId);
+  const p = (g?.list || []).find(x => x.assignment_id == id);
+
+  if (!p){
+    toast('找不到人員資料','error');
+    return;
+  }
+
+  const role = p.role;
 
   let params = {};
   let action = '';
 
-  // ✅ ✅ ✅ 裁判
   if (!role.startsWith('REC')){
-
     action = 'assignJudgeToPosition_admin';
-
     params = {
       action,
       game_id: gameId,
       role: role,
       judge_id: uid
     };
-
-  }
-  // ✅ ✅ ✅ 紀錄
-  else{
-
+  }else{
     action = 'assignRecord_admin';
-
     params = {
       action,
       game_id: gameId,
@@ -1438,12 +1445,9 @@ function quickAssign(id, btn){
     };
   }
 
-  // ✅ ✅ ✅ debug（超重要）
   console.log('assign payload =', params);
 
   callApi(params, (res)=>{
-
-    console.log('assign result =', res);
 
     if (!res || res.result !== 'ok'){
       toast(res?.message || '❌ 改派失敗','error');
@@ -1456,12 +1460,17 @@ function quickAssign(id, btn){
 }
 
 
+
 /* ========================
    快速支援（最終穩定版）
 ======================== */
 function quickReplace(gameId, role, btn){
 
   const group = btn.closest('.person-group');
+  if (!group){
+    toast('找不到區塊','error');
+    return;
+  }
 
   const select = group.querySelector('.select-user');
   const uid = select?.value;
