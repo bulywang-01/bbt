@@ -160,18 +160,62 @@ function loadWeeklyReminder(){
   });
 }
 
+/*********************************************************
+ * ✅ 統一計算數據
+ *********************************************************/
+function calcStatsFromAssignments(assignments, userId){
+
+  const now = new Date();
+  const year = now.getFullYear();
+
+  let done = 0;
+  let future = 0;
+
+  assignments.forEach(g=>{
+
+    const d = parseDate(g.date);
+    if (!d) return;
+
+    const isFuture = d >= now;
+    const isThisYear = d.getFullYear() === year;
+
+    (g.list || []).forEach(a=>{
+
+      if (String(a.user_id) !== String(userId)) return;
+
+      // ✅ ✅ ✅ 完成（只算 completed / late）
+      if (
+        (a.status === 'completed' || a.status === 'late') &&
+        isThisYear
+      ){
+        done++;
+      }
+
+      // ✅ ✅ ✅ 未來（只算 scheduled / assigned）
+      if (
+        (a.status === 'scheduled' || a.status === 'assigned') &&
+        isFuture && isThisYear
+      ){
+        future++;
+      }
+
+    });
+
+  });
+
+  return { done, future };
+}
+
 
 /*********************************************************
  * ✅ Dashboard（最終修正版）
  *********************************************************/
 function loadDashboard(){
 
-  // ✅ 1️⃣ 先抓 assignment（已排）
   callApi({ action:'getAssignments' }, resAssign => {
 
     if (!resAssign || resAssign.result !== 'ok') return;
 
-    // ✅ 2️⃣ 再抓 signup（未排）
     callApi({
       action:'getSignableGames',
       user_id: session.user_id
@@ -179,13 +223,14 @@ function loadDashboard(){
 
       const uid = String(session.user_id);
       const year = new Date().getFullYear();
+      const now = new Date();
 
       let judgeDone = 0;
       let judgeFuture = 0;
       let recordDone = 0;
       let recordFuture = 0;
 
-      const assignedGameSet = new Set();  // ✅ 防重複🔥
+      const assignedGameSet = new Set();  // ✅ 防所有 assignment 重覆🔥
 
       /************* ✅ 已完成 + 已排 *************/
       (resAssign.data || []).forEach(g => {
@@ -193,7 +238,7 @@ function loadDashboard(){
         const d = parseDate(g.date);
         if (!d) return;
 
-        const isFuture = d >= new Date();
+        const isFuture = d >= now;
         const isThisYear = d.getFullYear() === year;
 
         (g.list || []).forEach(item => {
@@ -202,50 +247,50 @@ function loadDashboard(){
 
           const isRecord = item.role.startsWith('REC');
 
-          // ✅ completed
-          if (item.status === 'completed' && isThisYear){
+          // ✅ ✅ ✅ 關鍵：只要有 assignment 就記錄（防 signup 重覆）
+          assignedGameSet.add(g.game_id);
+
+          // ✅ ✅ ✅ 修正：completed + late 都算「生」
+          if (
+            (item.status === 'completed' || item.status === 'late') &&
+            isThisYear
+          ){
             isRecord ? recordDone++ : judgeDone++;
           }
 
-          // ✅ 已排未來
+          // ✅ ✅ ✅ 已排未來
           if (
             (item.status === 'assigned' || item.status === 'scheduled') &&
             isFuture && isThisYear
           ){
             isRecord ? recordFuture++ : judgeFuture++;
-
-            // ✅ ✅ ✅ 記錄 game_id → 避免 signup 再加一次
-            assignedGameSet.add(g.game_id);
           }
 
         });
 
       });
 
-      /************* ✅ ✅ ✅ 補「報名但尚未指派」 *************/
+      /************* ✅ 報名（未指派） *************/
       const games = (resSignup.games || []).map(safeMerge);
 
       games.forEach(g => {
 
-        // ✅ 已在 assignment → 跳過
+        // ✅ ✅ ✅ 只要 assignment 有這場 → 一律跳過（修正重覆🔥)
         if (assignedGameSet.has(g.game_id)) return;
 
         const d = parseDate(g.date);
-        if (!d || d < new Date()) return;
+        if (!d || d < now) return;
 
-        // ✅ 我有報名（改成用 mapping）
         let hasSignup = false;
         let isRecord = false;
-        
-        // ✅ 裁判（merge後）
+
         Object.entries(g.judges || {}).forEach(([role, name]) => {
           if (name === session.name){
             hasSignup = true;
             isRecord = false;
           }
         });
-        
-        // ✅ 紀錄（merge後）
+
         Object.entries(g.records || {}).forEach(([role, name]) => {
           if (name === session.name){
             hasSignup = true;
@@ -253,12 +298,7 @@ function loadDashboard(){
           }
         });
 
-
         if (!hasSignup) return;
-
-        // ✅ ✅ ✅ 只算「第一順位」（這行你很重要🔥）
-        // 👉 如果不是第一順位 → 不算
-        // 👉 這部分要靠你後端排序（現在先假設 signup 已是 winner）
 
         isRecord ? recordFuture++ : judgeFuture++;
 
@@ -283,6 +323,7 @@ function loadDashboard(){
 
   });
 }
+
 
 
 function loadHomeGames(){
