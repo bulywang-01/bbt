@@ -2094,27 +2094,74 @@ function openUserDetail(userId){
   const late = p.late ?? 0;
   const no_show = p.no_show ?? 0;
 
-  const rate = total ? Math.round((completed/total)*100) : 0;
+  // ✅ 年度出勤品質（統一）
+  const yearValid = completed + late;
+  const yearQuality = yearValid
+    ? Math.round((completed / yearValid) * 100)
+    : 0;
 
   // =========================
-  // ✅ 生涯資料（從 assignment 算🔥）
+  // ✅ ✅ ✅ 生涯計算（唯一標準🔥）
   // =========================
   let career_completed = 0;
   let career_late = 0;
   let career_no_show = 0;
 
+  const roleCareer = {};
+
+  const allAssign = window._yearRaw.allAssignments || [];
+
+  allAssign.forEach(g => {
+
+    (g.list || []).forEach(a => {
+
+      if (String(a.user_id) !== String(userId)) return;
+
+      if (a.status === 'completed'){
+        career_completed++;
+      }
+
+      if (a.status === 'late'){
+        career_late++;
+      }
+
+      if (a.status === 'no_show'){
+        career_no_show++;
+      }
+
+      // ✅ ✅ ✅ 角色只算有效
+      if (a.status === 'completed' || a.status === 'late'){
+
+        if (!roleCareer[a.role]) roleCareer[a.role] = 0;
+        roleCareer[a.role]++;
+
+      }
+
+    });
+
+  });
+
+  const career_total = career_completed + career_late;
+
+  // ✅ ✅ ✅ 生涯品質（新增🔥）
+  const careerQuality = career_total
+    ? Math.round((career_completed / career_total) * 100)
+    : 0;
+
+  /* =========================
+     ✅ 角色表
+  ========================= */
   const roleTableHTML = (()=>{
-  
+
     const roleCount = p.role_count || {};
     const roleCompleted = p.role_completed || {};
-    const roleCareer = p.role_career_count || {};
-  
+
     const roles = Object.keys(roleCount);
-  
+
     if (!roles.length){
       return '<div class="empty">無角色資料</div>';
     }
-  
+
     let html = `
       <table class="mini-table">
         <thead>
@@ -2126,12 +2173,13 @@ function openUserDetail(userId){
         </thead>
         <tbody>
     `;
-  
+
     roles.forEach(r=>{
+
       const total = roleCount[r] || 0;
       const done  = roleCompleted[r] || 0;
       const career = roleCareer[r] || 0;
-  
+
       html += `
         <tr>
           <td>${mapRole(r)}</td>
@@ -2144,41 +2192,41 @@ function openUserDetail(userId){
         </tr>
       `;
     });
-  
+
     html += '</tbody></table>';
-  
+
     return html;
   })();
 
-  const career_total = career_completed + career_late + career_no_show;
-
+  // ✅ 穩定標記
   const stable =
     no_show === 0 && completed >= 10 ? '🔥 穩定' : '';
 
-    document.getElementById('userContent').innerHTML = `
+  /* =========================
+     ✅ UI
+  ========================= */
+  document.getElementById('userContent').innerHTML = `
     <div style="padding:12px;">
-  
+
       <h3 style="margin-bottom:6px;">
         ${p.name} ${stable}
       </h3>
-  
+
       <div style="color:#666;margin-bottom:14px;">
         聯盟等級：${renderLevel(p.league_level)}
       </div>
-  
-      <!-- ✅ ✅ ✅ 卡片（自適應） -->
+
       <div class="stat-grid">
-  
+
         ${card('經驗值', fmt(p.score_total))}
-        ${card('參與度', total)}
-        ${card('出勤品質', fmt(p.quality))}
-        ${card('排位分數', fmt(p.final_score))}
-  
+        ${card('年度出勤', total)}
+        ${card('年度品質', yearQuality + '%')}
+        ${card('生涯品質', careerQuality + '%')}
+
       </div>
-  
+
       <hr style="margin:14px 0;">
-  
-      <!-- ✅ ✅ ✅ 表格 -->
+
       <table class="mini-table">
         <thead>
           <tr>
@@ -2203,19 +2251,21 @@ function openUserDetail(userId){
           </tr>
         </tbody>
       </table>
-  
+
       <hr style="margin:14px 0;">
-  
+
       <h4>📊 各角色分布（生涯）</h4>
         ${roleTableHTML}
+
       <canvas id="roleChart" width="380" height="260"></canvas>
-  
+
     </div>
   `;
 
-
-  drawRoleChart(roleMap);
+  // ✅ ✅ ✅ 圖表統一
+  drawRoleChart(roleCareer);
 }
+
 
 
 // 畫圓餅圖
