@@ -238,115 +238,122 @@ function loadDashboard(){
 
       const assignedGameSet = new Set();  // ✅ 已排（防 signup 重覆）
 
-
-      /************* ✅ 已完成 + 已排（最終修正版） *************/
+      /************* ✅ 已完成 + 已排（精準最終版） *************/
       const countedAssignedGame = new Set();
       
-(resAssign.data || []).forEach(g => {
+      (resAssign.data || []).forEach(g => {
+      
+        const d = parseDate(g.date);
+        if (!d) return;
+      
+        const isFuture = d >= now;
+        const isThisYear = d.getFullYear() === year;
+      
+        let hasJudgeFuture = false;
+        let hasRecordFuture = false;
+      
+        let hasJudgeDone = false;
+        let hasRecordDone = false;
+      
+        let isMyGame = false;
+      
+        // ✅ ✅ ✅ 裁判 slot
+        Object.values(g.judges || {}).forEach(slot => {
+      
+          if (!slot) return;
+      
+          const uidMatch =
+            typeof slot === 'object'
+              ? String(slot.user_id) === uid
+              : slot === session.name;
+      
+          if (!uidMatch) return;
+      
+          isMyGame = true;
+      
+          // ✅ ✅ ✅ 精準完成判斷（核心🔥）
+          if (
+            (slot.status === 'completed' || slot.status === 'late') &&
+            isThisYear
+          ){
+            hasJudgeDone = true;
+          }
+      
+          // ✅ 未來
+          if (isFuture && isThisYear){
+            hasJudgeFuture = true;
+          }
+      
+        });
+      
+        // ✅ ✅ ✅ 紀錄 slot
+        Object.values(g.records || {}).forEach(slot => {
+      
+          if (!slot) return;
+      
+          const uidMatch =
+            typeof slot === 'object'
+              ? String(slot.user_id) === uid
+              : slot === session.name;
+      
+          if (!uidMatch) return;
+      
+          isMyGame = true;
+      
+          // ✅ ✅ ✅ 精準完成判斷（核心🔥）
+          if (
+            (slot.status === 'completed' || slot.status === 'late') &&
+            isThisYear
+          ){
+            hasRecordDone = true;
+          }
+      
+          // ✅ 未來
+          if (isFuture && isThisYear){
+            hasRecordFuture = true;
+          }
+      
+        });
+      
+        // ✅ 沒參與 → 不算
+        if (!isMyGame) return;
+      
+        assignedGameSet.add(g.game_id);
+      
+        /******** ✅ ✅ ✅ 最終只加一次 ********/
+      
+        // ✅ 生涯（完成）
+        if (hasJudgeDone || hasRecordDone){
+      
+          // ✅ 如果同場同時有裁判 + 紀錄 → 優先裁判（你原本規則）
+          if (hasJudgeDone){
+            judgeDone++;
+          }
+          else if (hasRecordDone){
+            recordDone++;
+          }
+      
+        }
+      
+        // ✅ 未來（預）
+        if (
+          (hasJudgeFuture || hasRecordFuture) &&
+          !countedAssignedGame.has(g.game_id)
+        ){
+      
+          countedAssignedGame.add(g.game_id);
+      
+          if (hasJudgeFuture){
+            judgeFuture++;
+          }
+          else if (hasRecordFuture){
+            recordFuture++;
+          }
+      
+        }
+      
+      });
 
-  const d = parseDate(g.date);
-  if (!d) return;
-
-  const isFuture = d >= now;
-  const isThisYear = d.getFullYear() === year;
-
-  // ✅ ✅ ✅ 關鍵：改成「從 g.judges / g.records 判斷」
-  let hasJudgeFuture = false;
-  let hasRecordFuture = false;
-
-  let hasJudgeDone = false;
-  let hasRecordDone = false;
-
-  // ✅ ✅ ✅ 取代 g.list（這就是修正點🔥）
-  const judgeSlots = Object.values(g.judges || {});
-  const recordSlots = Object.values(g.records || {});
-
-  // ✅ ✅ ✅ 判斷這場有沒有你（帶 uid）
-  let isMyGame = false;
-
-  // ✅ 判斷裁判
-  judgeSlots.forEach(slot => {
-    if (!slot) return;
-
-    const uidMatch =
-      typeof slot === 'object'
-        ? String(slot.user_id) === uid
-        : slot === session.name;
-
-    if (!uidMatch) return;
-
-    isMyGame = true;
-
-    if (
-      (g.game_completed === true || g.status_done === true) &&
-      isThisYear
-    ){
-      hasJudgeDone = true;
-    }
-
-    if (isFuture && isThisYear){
-      hasJudgeFuture = true;
-    }
-  });
-
-  // ✅ 判斷紀錄
-  recordSlots.forEach(slot => {
-    if (!slot) return;
-
-    const uidMatch =
-      typeof slot === 'object'
-        ? String(slot.user_id) === uid
-        : slot === session.name;
-
-    if (!uidMatch) return;
-
-    isMyGame = true;
-
-    if (
-      (g.game_completed === true || g.status_done === true) &&
-      isThisYear
-    ){
-      hasRecordDone = true;
-    }
-
-    if (isFuture && isThisYear){
-      hasRecordFuture = true;
-    }
-  });
-
-  // ✅ ✅ ✅ 沒你 → 不算
-  if (!isMyGame) return;
-
-  assignedGameSet.add(g.game_id);
-
-  /******** ✅ ✅ ✅ 最終只加一次 ********/
-
-  // ✅ 生涯（完成）
-  if (hasJudgeDone || hasRecordDone){
-    if (hasJudgeDone){
-      judgeDone++;
-    } else if (hasRecordDone){
-      recordDone++;
-    }
-  }
-
-  // ✅ 未來（預）
-  if (
-    (hasJudgeFuture || hasRecordFuture) &&
-    !countedAssignedGame.has(g.game_id)
-  ){
-
-    countedAssignedGame.add(g.game_id);
-
-    if (hasJudgeFuture){
-      judgeFuture++;
-    } else if (hasRecordFuture){
-      recordFuture++;
-    }
-
-  }
-
-});
 
 
       /************* ✅ 報名（未指派） *************/
