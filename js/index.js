@@ -1461,3 +1461,8 @@ function fmt(n){
   const num = Number(n ?? 0);
   return Number.isInteger(num) ? num : num.toFixed(2);
 }
+
+// close 
+function hideOverlay(id) {
+  document.getElementById(id).style.display = 'none';
+}
