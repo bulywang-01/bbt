@@ -725,11 +725,14 @@
       fetch('header.html')
         .then(res => res.text())
         .then(html => {
+    
           // 1️⃣ 插入 header
           document.getElementById('header-container').innerHTML = html;
     
-          // 2️⃣ 設定身分 → 只影響 body class
+          // ✅ 先取 session（只在這裡用）
           const session = (typeof getSession === 'function') ? getSession() : null;
+    
+          // 2️⃣ 設定身分 → body class
           document.body.classList.remove(
             'role-admin','role-judge','role-record'
           );
@@ -747,14 +750,16 @@
               document.body.classList.add('role-record');
             }
           }
+    
+          // ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
+          // 🔥 顯示登入者姓名（要放這裡）
+          if (session && session.name) {
+            const nameEl = document.getElementById('header-username');
+            if (nameEl) nameEl.textContent = session.name;
+          }
+    
         })
         .catch(err => console.error('Header 載入失敗', err));
- 
-        // ✅ 顯示登入者姓名
-        if (session && session.name) {
-          const nameEl = document.getElementById('header-username');
-          if (nameEl) nameEl.textContent = session.name;
-        }
     }
     
     document.addEventListener('DOMContentLoaded', loadHeader);
