@@ -832,12 +832,14 @@ function renderGroup(g){
   let html = '';
 
   Object.keys(roleMap).forEach(role=>{
-
+  
+    // ✅ ✅ ✅ 🔥 防止 undefined / 空角色
+    if (!role || role === 'undefined') return;
+  
     const rows = roleMap[role];
-
-    // ✅ ✅ ✅ 橫排（多人）
+  
     html += renderRoleRow(role, rows, g);
-
+  
   });
 
   return html;
@@ -852,6 +854,7 @@ function renderRoleRow(role, rows, g){
   });
 
   const multiple = rows.length > 1;
+  const hasNoShow = rows.some(p => p.status === 'no_show');
 
   // ✅ ✅ ✅ 預設第一位
   const selectedId = rows[0]?.assignment_id;
@@ -891,24 +894,56 @@ function renderRoleRow(role, rows, g){
 
       </div>
 
-      <div class="actions-box">
+        <div class="actions-box">
 
-        <button class="btn btn-ok"
-          onclick="handleMultiSelect('${g.game_id}','${role}','completed')">
-          完成
-        </button>
+          <button class="btn btn-ok"
+            onclick="handleMultiSelect('${g.game_id}','${role}','completed')">
+            完成
+          </button>
+        
+          <button class="btn btn-late"
+            onclick="handleMultiSelect('${g.game_id}','${role}','late')">
+            遲到
+          </button>
+        
+          <button class="btn btn-no"
+            onclick="handleMultiSelect('${g.game_id}','${role}','no_show')">
+            缺席
+          </button>
+        
+          ${
+            rows.length === 1 && rows[0].status !== 'no_show'
+            ? `
+              <button class="btn btn-assign"
+                onclick="quickAssign('${rows[0].assignment_id}', this)">
+                改派
+              </button>
+            `
+            : ''
+          }
+        
+          ${
+            rows.some(p => p.status === 'no_show')
+            ? `
+              <button class="btn btn-replace"
+                onclick="quickReplace('${g.game_id}','${role}', this)">
+                + 支援
+              </button>
+            `
+            : ''
+          }
+        
+          <select class="select-user">
+            <option value="">選擇人員</option>
+            ${
+              userList.map(u=>
+                `<option value="${u.user_id}">${u.name || u.username}</option>`
+              ).join('')
+            }
+          </select>
+        
+        </div>
 
-        <button class="btn btn-late"
-          onclick="handleMultiSelect('${g.game_id}','${role}','late')">
-          遲到
-        </button>
-
-        <button class="btn btn-no"
-          onclick="handleMultiSelect('${g.game_id}','${role}','no_show')">
-          缺席
-        </button>
-
-      </div>
 
     </div>
   `;
