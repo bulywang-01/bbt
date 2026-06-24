@@ -420,6 +420,21 @@ body{
   background:#eff6ff;
 }
 
+/* KPI 卡片加顏色 */
+.stat-card:nth-child(1){ border-left:4px solid #2563eb; }
+.stat-card:nth-child(2){ border-left:4px solid #16a34a; }
+.stat-card:nth-child(3){ border-left:4px solid #f59e0b; }
+.stat-card:nth-child(4){ border-left:4px solid #9333ea; }
+
+/* 表格強化 */
+.mini-table th{
+  color:#374151;
+  font-weight:700;
+}
+
+.mini-table td{
+  color:#111;
+}
 </style>
 </head>
 
@@ -2281,7 +2296,9 @@ function drawRoleChart(data){
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const values = Object.values(data);
-  const labels = Object.keys(data);
+  // const labels = Object.keys(data);
+  const labels = Object.keys(data).map(mapRole);
+  const rawKeys = Object.keys(data);
 
   const total = values.reduce((a,b)=>a+b, 0);
 
@@ -2313,7 +2330,8 @@ function drawRoleChart(data){
     ctx.arc(110,130,90, start, start+slice);
     ctx.closePath();
 
-    const color = colorMap[labels[i]] || '#999';
+    const roleName = mapRole(rawKeys[i]);
+    const color = colorMap[roleName] || '#999';
 
     ctx.fillStyle = color;
     ctx.fill();
