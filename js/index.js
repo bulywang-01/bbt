@@ -242,84 +242,111 @@ function loadDashboard(){
       /************* ✅ 已完成 + 已排（最終修正版） *************/
       const countedAssignedGame = new Set();
       
-      (resAssign.data || []).forEach(g => {
-      
-        const d = parseDate(g.date);
-        if (!d) return;
-      
-        const isFuture = d >= now;
-        const isThisYear = d.getFullYear() === year;
-      
-        // ✅ ✅ ✅ 關鍵：一場先統整
-        let hasJudgeFuture = false;
-        let hasRecordFuture = false;
-      
-        let hasJudgeDone = false;
-        let hasRecordDone = false;
-      
-        (g.list || []).forEach(item => {
-      
-          if (String(item.user_id) !== uid) return;
-      
-          const isRecord = item.role.startsWith('REC');
-      
-          // ✅ 有 assignment → 記錄
-          assignedGameSet.add(g.game_id);
-      
-          // ✅ 已完成（只標記，不加）
-          if (
-            (item.status === 'completed' || item.status === 'late') &&
-            isThisYear
-          ){
-            if (isRecord){
-              hasRecordDone = true;
-            } else {
-              hasJudgeDone = true;
-            }
-          }
-      
-          // ✅ 未來（只標記，不加）
-          if (
-            (item.status === 'assigned' || item.status === 'scheduled') &&
-            isFuture && isThisYear
-          ){
-            if (isRecord){
-              hasRecordFuture = true;
-            } else {
-              hasJudgeFuture = true;
-            }
-          }
-      
-        });
-      
-        /******** ✅ ✅ ✅ 最終只加一次 ********/
-      
-        // ✅ 生涯（完成）
-        if (hasJudgeDone || hasRecordDone){
-          if (hasJudgeDone){
-            judgeDone++;
-          } else if (hasRecordDone){
-            recordDone++;
-          }
-        }
-      
-        // ✅ 未來（預）
-        if (
-          (hasJudgeFuture || hasRecordFuture) &&
-          !countedAssignedGame.has(g.game_id)
-        ){
-      
-          countedAssignedGame.add(g.game_id);
-      
-          if (hasJudgeFuture){
-            judgeFuture++;
-          } else if (hasRecordFuture){
-            recordFuture++;
-          }
-      
-        }
-      
-      });
+(resAssign.data || []).forEach(g => {
+
+  const d = parseDate(g.date);
+  if (!d) return;
+
+  const isFuture = d >= now;
+  const isThisYear = d.getFullYear() === year;
+
+  // ✅ ✅ ✅ 關鍵：改成「從 g.judges / g.records 判斷」
+  let hasJudgeFuture = false;
+  let hasRecordFuture = false;
+
+  let hasJudgeDone = false;
+  let hasRecordDone = false;
+
+  // ✅ ✅ ✅ 取代 g.list（這就是修正點🔥）
+  const judgeSlots = Object.values(g.judges || {});
+  const recordSlots = Object.values(g.records || {});
+
+  // ✅ ✅ ✅ 判斷這場有沒有你（帶 uid）
+  let isMyGame = false;
+
+  // ✅ 判斷裁判
+  judgeSlots.forEach(slot => {
+    if (!slot) return;
+
+    const uidMatch =
+      typeof slot === 'object'
+        ? String(slot.user_id) === uid
+        : slot === session.name;
+
+    if (!uidMatch) return;
+
+    isMyGame = true;
+
+    if (
+      (g.game_completed === true || g.status_done === true) &&
+      isThisYear
+    ){
+      hasJudgeDone = true;
+    }
+
+    if (isFuture && isThisYear){
+      hasJudgeFuture = true;
+    }
+  });
+
+  // ✅ 判斷紀錄
+  recordSlots.forEach(slot => {
+    if (!slot) return;
+
+    const uidMatch =
+      typeof slot === 'object'
+        ? String(slot.user_id) === uid
+        : slot === session.name;
+
+    if (!uidMatch) return;
+
+    isMyGame = true;
+
+    if (
+      (g.game_completed === true || g.status_done === true) &&
+      isThisYear
+    ){
+      hasRecordDone = true;
+    }
+
+    if (isFuture && isThisYear){
+      hasRecordFuture = true;
+    }
+  });
+
+  // ✅ ✅ ✅ 沒你 → 不算
+  if (!isMyGame) return;
+
+  assignedGameSet.add(g.game_id);
+
+  /******** ✅ ✅ ✅ 最終只加一次 ********/
+
+  // ✅ 生涯（完成）
+  if (hasJudgeDone || hasRecordDone){
+    if (hasJudgeDone){
+      judgeDone++;
+    } else if (hasRecordDone){
+      recordDone++;
+    }
+  }
+
+  // ✅ 未來（預）
+  if (
+    (hasJudgeFuture || hasRecordFuture) &&
+    !countedAssignedGame.has(g.game_id)
+  ){
+
+    countedAssignedGame.add(g.game_id);
+
+    if (hasJudgeFuture){
+      judgeFuture++;
+    } else if (hasRecordFuture){
+      recordFuture++;
+    }
+
+  }
+
+});
 
 
       /************* ✅ 報名（未指派） *************/
