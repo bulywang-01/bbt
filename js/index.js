@@ -313,8 +313,12 @@ function loadDashboard(){
       
         // ✅ ✅ ✅ 分類（但仍只算一次）
 
-        if (hasJudge) judgeFuture++;
-        if (hasRecord) recordFuture++;
+        if (hasJudge){
+          judgeFuture++;
+        }
+        else if (hasRecord){
+          recordFuture++;
+        }
 
       });
 
