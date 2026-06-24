@@ -316,8 +316,6 @@ function loadDashboard(){
         if (hasJudge) judgeFuture++;
         if (hasRecord) recordFuture++;
 
-        }
-      
       });
 
       /************* ✅ UI *************/
