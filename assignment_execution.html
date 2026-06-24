@@ -898,13 +898,13 @@ function renderRoleRow(role, rows, g){
               ` : ''}
 
               <span class="name">
-                ${p.name || '（待）'}
+                ${p.name || '（未確認）'}
               
                 ${
                   p.status === 'completed' ? '<span class="tag tag-ok">完</span>' :
                   p.status === 'late' ? '<span class="tag tag-late">遲</span>' :
                   p.status === 'no_show' ? '<span class="tag tag-no">缺</span>' :
-                  (p.status === 'scheduled' && p.name) ? '<span class="status-mini">待</span>' :
+                  (p.status === 'scheduled' && p.name) ? '<span class="status-mini" style="color:#888;>未確認</span>' :
                   ''
                 }
               
