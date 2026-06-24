@@ -401,6 +401,25 @@ body{
   font-size:13px;
 }
 
+/* ✅ 原人刪除線 */
+.name.line-through{
+  text-decoration: line-through;
+  color:#999;
+}
+
+/* ✅ 支援高亮 */
+.name.replace-highlight{
+  background:#eef2ff;
+  border-radius:6px;
+  padding:2px 6px;
+}
+
+/* ✅ 主審第一位高亮 */
+.person-group.highlight{
+  border:2px solid #3b82f6;
+  background:#eff6ff;
+}
+
 </style>
 </head>
 
@@ -848,14 +867,10 @@ function renderGroup(g){
 // 配合上面的程式新增
 function renderRoleRow(role, rows, g){
 
-  // ✅ 排序
   rows.sort((a,b)=>{
     return new Date(a.create_at || 0) - new Date(b.create_at || 0);
   });
 
-  const multiple = rows.length > 1;
-
-  // ✅ 是否缺席
   const hasNoShow =
     window._lastData
       ?.find(x => x.game_id == g.game_id)
@@ -864,14 +879,11 @@ function renderRoleRow(role, rows, g){
 
   const firstAssign = rows.find(x => x.assignment_id);
 
-  /* ========================
-     ✅ ✅ ✅ 核心：組合顯示
-  ======================== */
-
   const original = rows.find(x => Number(x.is_replacement) !== 1);
   const replacement = rows.find(x => Number(x.is_replacement) === 1);
 
   function renderTag(p){
+
     if (!p) return '';
 
     const statusTag =
@@ -890,59 +902,40 @@ function renderRoleRow(role, rows, g){
         ? '<span class="tag tag-replace">支</span>'
         : '';
 
-    return `${p.name || '（未確認）'} ${statusTag}${replaceTag}`;
-  }
+    const extraClass = `
+      ${p.status === 'no_show' ? 'line-through' : ''}
+      ${Number(p.is_replacement) === 1 ? 'replace-highlight' : ''}
+    `;
 
-  /* ========================
-     ✅ ✅ ✅ 顯示邏輯
-  ======================== */
+    return `
+      <span class="name ${extraClass}">
+        ${p.name || '（未確認）'} ${statusTag}${replaceTag}
+      </span>
+    `;
+  }
 
   let candidateHTML = '';
 
-  // ✅ 🔥 有支援 → 合併顯示
   if (replacement){
-
     candidateHTML = `
       <div class="candidate">
-        <span class="name">
-          ${renderTag(original)} ／ ${renderTag(replacement)}
-        </span>
+        ${renderTag(original)}
+        <span style="margin:0 6px;">／</span>
+        ${renderTag(replacement)}
       </div>
     `;
-
   }else{
-
-    // ✅ 普通模式（多選）
-    candidateHTML = rows.map((p,i)=>{
-
-      const checked = (!multiple && i===0) || (multiple && i===0)
-        ? 'checked' : '';
-
-      return `
-        <label class="candidate">
-
-          ${multiple ? `
-            <input type="radio"
-              name="select_${g.game_id}_${role}"
-              value="${p.assignment_id || p.signup_id}"
-              ${checked}
-            >
-          ` : ''}
-
-          <span class="name">
-            ${renderTag(p)}
-          </span>
-
-        </label>
-      `;
-
-    }).join('');
+    candidateHTML = rows.map((p,i)=>`
+      <div class="candidate">
+        ${renderTag(p)}
+      </div>
+    `).join('');
   }
 
-  /* ======================== */
+  const highlightClass = role === 'PU' ? 'highlight' : '';
 
   return `
-    <div class="person-group">
+    <div class="person-group ${highlightClass}">
 
       <div class="role-title">
         ${getRoleText(role)}
@@ -955,17 +948,17 @@ function renderRoleRow(role, rows, g){
       <div class="actions-box">
 
         <button class="btn btn-ok"
-          onclick="handleMultiSelect('${g.game_id}','${role}','completed')">
+          onclick="handleAutoDecision('${g.game_id}','${role}','completed')">
           完成
         </button>
 
         <button class="btn btn-late"
-          onclick="handleMultiSelect('${g.game_id}','${role}','late')">
+          onclick="handleAutoDecision('${g.game_id}','${role}','late')">
           遲到
         </button>
 
         <button class="btn btn-no"
-          onclick="handleMultiSelect('${g.game_id}','${role}','no_show')">
+          onclick="handleAutoDecision('${g.game_id}','${role}','no_show')">
           缺席
         </button>
 
@@ -1025,6 +1018,41 @@ function renderRoleRow(role, rows, g){
     </div>
   `;
 }
+
+// 核心決策引擎
+function handleAutoDecision(gameId, role, status){
+
+  const g = window._lastData?.find(x => x.game_id == gameId);
+  if (!g){
+    toast('找不到賽事','error');
+    return;
+  }
+
+  const list = g.list.filter(x => x.role === role);
+
+  // ✅ 找 replacement
+  const replacement = list.find(x => Number(x.is_replacement) === 1);
+
+  let targetId = null;
+
+  // ✅ ✅ ✅ 有支援 → 直接用支援
+  if (replacement){
+    targetId = replacement.assignment_id;
+  }
+  else{
+    const original = list.find(x => x.assignment_id);
+    targetId = original?.assignment_id;
+  }
+
+  if (!targetId){
+    toast('找不到人員','error');
+    return;
+  }
+
+  updateStatus(targetId, status);
+}
+
+
 
 
 // 「選人＋送出」核心
