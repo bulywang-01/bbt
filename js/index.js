@@ -110,6 +110,7 @@ function loadWeeklyReminder(){
     const games = (res.games || []).map(safeMerge);
 
     const now = new Date();
+    now.setHours(0,0,0,0);
     const day = now.getDay() === 0 ? 7 : now.getDay();
 
     const monday = new Date(now);
@@ -166,6 +167,7 @@ function loadWeeklyReminder(){
 function calcStatsFromAssignments(assignments, userId){
 
   const now = new Date();
+  now.setHours(0,0,0,0);
   const year = now.getFullYear();
 
   let done = 0;
@@ -224,6 +226,7 @@ function loadDashboard(){
       const uid = String(session.user_id);
       const year = new Date().getFullYear();
       const now = new Date();
+      now.setHours(0,0,0,0);
 
       let judgeDone = 0;
       let judgeFuture = 0;
@@ -272,36 +275,49 @@ function loadDashboard(){
 
       /************* ✅ 報名（未指派） *************/
       const games = (resSignup.games || []).map(safeMerge);
-
+      const countedGame = new Set();  // ✅ 防「同場重覆」
+      
       games.forEach(g => {
-
-        // ✅ ✅ ✅ 只要 assignment 有這場 → 一律跳過（修正重覆🔥)
+      
         if (assignedGameSet.has(g.game_id)) return;
-
+      
         const d = parseDate(g.date);
         if (!d || d < now) return;
-
-        let hasSignup = false;
-        let isRecord = false;
+      
+        // ✅ ✅ ✅ 同一場只算一次（總鎖🔥）
+        if (countedGame.has(g.game_id)) return;
+      
+        let hasJudge = false;
+        let hasRecord = false;
+      
+        // ✅ 裁判
 
         Object.entries(g.judges || {}).forEach(([role, name]) => {
           if (name === session.name){
-            hasSignup = true;
-            isRecord = false;
+            hasJudge = true;
           }
         });
+      
+        // ✅ 紀錄
 
         Object.entries(g.records || {}).forEach(([role, name]) => {
           if (name === session.name){
-            hasSignup = true;
-            isRecord = true;
+            hasRecord = true;
           }
         });
+      
+        if (!hasJudge && !hasRecord) return;
+      
+        // ✅ ✅ ✅ ✅ ✅ ✅ ✅ 關鍵一刀
+        countedGame.add(g.game_id);
+      
+        // ✅ ✅ ✅ 分類（但仍只算一次）
 
-        if (!hasSignup) return;
+        if (hasJudge) judgeFuture++;
+        if (hasRecord) recordFuture++;
 
-        isRecord ? recordFuture++ : judgeFuture++;
-
+        }
+      
       });
 
       /************* ✅ UI *************/
@@ -572,6 +588,7 @@ function openWeeklySchedule(){
     
     /************* ✅ 本週範圍 *************/
     const now = new Date();
+    now.setHours(0,0,0,0);
     const day = now.getDay() === 0 ? 7 : now.getDay();
     
     const monday = new Date(now);
