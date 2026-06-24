@@ -225,6 +225,7 @@ function loadDashboard(){
 
       const uid = String(session.user_id);
       const year = new Date().getFullYear();
+
       const now = new Date();
       now.setHours(0,0,0,0);
 
@@ -233,7 +234,8 @@ function loadDashboard(){
       let recordDone = 0;
       let recordFuture = 0;
 
-      const assignedGameSet = new Set();  // ✅ 防所有 assignment 重覆🔥
+      const assignedGameSet = new Set();  // ✅ 已排（防 signup 重覆）
+
 
       /************* ✅ 已完成 + 已排 *************/
       (resAssign.data || []).forEach(g => {
@@ -250,10 +252,10 @@ function loadDashboard(){
 
           const isRecord = item.role.startsWith('REC');
 
-          // ✅ ✅ ✅ 關鍵：只要有 assignment 就記錄（防 signup 重覆）
+          // ✅ 有 assignment → 記錄
           assignedGameSet.add(g.game_id);
 
-          // ✅ ✅ ✅ 修正：completed + late 都算「生」
+          // ✅ 已完成
           if (
             (item.status === 'completed' || item.status === 'late') &&
             isThisYear
@@ -261,7 +263,7 @@ function loadDashboard(){
             isRecord ? recordDone++ : judgeDone++;
           }
 
-          // ✅ ✅ ✅ 已排未來
+          // ✅ 已排未來
           if (
             (item.status === 'assigned' || item.status === 'scheduled') &&
             isFuture && isThisYear
@@ -273,46 +275,58 @@ function loadDashboard(){
 
       });
 
+
       /************* ✅ 報名（未指派） *************/
       const games = (resSignup.games || []).map(safeMerge);
-      const countedGame = new Set();  // ✅ 防「同場重覆」
-      
+
+
+      // ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
+      // 🔥🔥🔥 核心修正：先做 game_id 去重 🔥🔥🔥
+      const uniqueGamesMap = new Map();
+
       games.forEach(g => {
-      
+        if (!uniqueGamesMap.has(g.game_id)) {
+          uniqueGamesMap.set(g.game_id, g);
+        }
+      });
+
+      const uniqueGames = Array.from(uniqueGamesMap.values());
+      // ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
+
+
+      const countedGame = new Set();  // ✅ 防同場重複
+
+      uniqueGames.forEach(g => {
+
         if (assignedGameSet.has(g.game_id)) return;
-      
+
         const d = parseDate(g.date);
         if (!d || d < now) return;
-      
-        // ✅ ✅ ✅ 同一場只算一次（總鎖🔥）
+
         if (countedGame.has(g.game_id)) return;
-      
+
         let hasJudge = false;
         let hasRecord = false;
-      
-        // ✅ 裁判
 
+        // ✅ 裁判
         Object.entries(g.judges || {}).forEach(([role, name]) => {
           if (name === session.name){
             hasJudge = true;
           }
         });
-      
-        // ✅ 紀錄
 
+        // ✅ 紀錄
         Object.entries(g.records || {}).forEach(([role, name]) => {
           if (name === session.name){
             hasRecord = true;
           }
         });
-      
-        if (!hasJudge && !hasRecord) return;
-      
-        // ✅ ✅ ✅ ✅ ✅ ✅ ✅ 關鍵一刀
-        countedGame.add(g.game_id);
-      
-        // ✅ ✅ ✅ 分類（但仍只算一次）
 
+        if (!hasJudge && !hasRecord) return;
+
+        countedGame.add(g.game_id);
+
+        // ✅ ✅ ✅ 同一場只算一次
         if (hasJudge){
           judgeFuture++;
         }
@@ -321,6 +335,7 @@ function loadDashboard(){
         }
 
       });
+
 
       /************* ✅ UI *************/
       document.getElementById('stat-judge').textContent = judgeDone;
@@ -340,10 +355,10 @@ function loadDashboard(){
     });
 
   });
+
 }
 
-
-
+// 
 function loadHomeGames(){
 
   callApi({
