@@ -915,9 +915,8 @@ function renderRoleRow(role, rows, g){
 // 「選人＋送出」核心
 function handleMultiSelect(gameId, role, status){
 
-  // ✅ 找所有 radio
   const radios = document.querySelectorAll(
-    `input[name="select_${gameId}_${role}"]`
+    `[data-game-id="${gameId}"] input[name="select_${gameId}_${role}"]`
   );
 
   let selected = null;
@@ -926,28 +925,15 @@ function handleMultiSelect(gameId, role, status){
     if (r.checked) selected = r.value;
   });
 
-  // ✅ ✅ ✅ 多人但沒選 → 擋住
+  // ✅ 多人但沒選
   if (radios.length > 0 && !selected){
     toast('請先選擇實際出席人','warn');
     return;
   }
 
-  // ✅ ✅ ✅ 單人（沒有 radio） → 自動取第一筆
-  if (!selected){
-    const first = document.querySelector(
-      `.person-group input[name="select_${gameId}_${role}"]`
-    );
-
-    if (first){
-      selected = first.value;
-    }else{
-      // fallback：單人
-      const el = document.querySelector(
-        `[data-role="${role}"][data-game-id="${gameId}"]`
-      );
-
-      selected = el?.dataset?.id;
-    }
+  // ✅ fallback（第一位）
+  if (!selected && radios.length > 0){
+    selected = radios[0].value;
   }
 
   if (!selected){
@@ -955,7 +941,6 @@ function handleMultiSelect(gameId, role, status){
     return;
   }
 
-  // ✅ ✅ ✅ 送 API
   updateStatus(selected, status);
 }
  
