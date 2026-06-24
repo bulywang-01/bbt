@@ -238,23 +238,25 @@ function loadDashboard(){
 
 
       /************* ✅ 已完成 + 已排 *************/
+      const countedAssignedGame = new Set();  // ✅ ✅ ✅ 加這行（關鍵）
+      
       (resAssign.data || []).forEach(g => {
-
+      
         const d = parseDate(g.date);
         if (!d) return;
-
+      
         const isFuture = d >= now;
         const isThisYear = d.getFullYear() === year;
-
+      
         (g.list || []).forEach(item => {
-
+      
           if (String(item.user_id) !== uid) return;
-
+      
           const isRecord = item.role.startsWith('REC');
-
+      
           // ✅ 有 assignment → 記錄
           assignedGameSet.add(g.game_id);
-
+      
           // ✅ 已完成
           if (
             (item.status === 'completed' || item.status === 'late') &&
@@ -262,17 +264,25 @@ function loadDashboard(){
           ){
             isRecord ? recordDone++ : judgeDone++;
           }
-
-          // ✅ 已排未來
+      
+          // ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
+          // 🔥 修正重點：同一場只算一次（未來）
           if (
             (item.status === 'assigned' || item.status === 'scheduled') &&
             isFuture && isThisYear
           ){
+      
+            if (countedAssignedGame.has(g.game_id)) return;
+      
+            countedAssignedGame.add(g.game_id);
+      
             isRecord ? recordFuture++ : judgeFuture++;
+      
           }
-
+          // ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
+      
         });
-
+      
       });
 
 
