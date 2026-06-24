@@ -213,7 +213,9 @@ function calcStatsFromAssignments(assignments, userId){
  * ✅ Dashboard（最終修正版）
  *********************************************************/
 function loadDashboard(){
-
+  
+  console.log('✅ loadDashboard 有進來');
+  
   callApi({ action:'getAssignments' }, resAssign => {
 
     if (!resAssign || resAssign.result !== 'ok') return;
@@ -237,8 +239,8 @@ function loadDashboard(){
       const assignedGameSet = new Set();  // ✅ 已排（防 signup 重覆）
 
 
-      /************* ✅ 已完成 + 已排 *************/
-      const countedAssignedGame = new Set();  // ✅ ✅ ✅ 加這行（關鍵）
+      /************* ✅ 已完成 + 已排（最終修正版） *************/
+      const countedAssignedGame = new Set();
       
       (resAssign.data || []).forEach(g => {
       
@@ -247,6 +249,13 @@ function loadDashboard(){
       
         const isFuture = d >= now;
         const isThisYear = d.getFullYear() === year;
+      
+        // ✅ ✅ ✅ 關鍵：一場先統整
+        let hasJudgeFuture = false;
+        let hasRecordFuture = false;
+      
+        let hasJudgeDone = false;
+        let hasRecordDone = false;
       
         (g.list || []).forEach(item => {
       
@@ -257,31 +266,58 @@ function loadDashboard(){
           // ✅ 有 assignment → 記錄
           assignedGameSet.add(g.game_id);
       
-          // ✅ 已完成
+          // ✅ 已完成（只標記，不加）
           if (
             (item.status === 'completed' || item.status === 'late') &&
             isThisYear
           ){
-            isRecord ? recordDone++ : judgeDone++;
+            if (isRecord){
+              hasRecordDone = true;
+            } else {
+              hasJudgeDone = true;
+            }
           }
       
-          // ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
-          // 🔥 修正重點：同一場只算一次（未來）
+          // ✅ 未來（只標記，不加）
           if (
             (item.status === 'assigned' || item.status === 'scheduled') &&
             isFuture && isThisYear
           ){
-      
-            if (countedAssignedGame.has(g.game_id)) return;
-      
-            countedAssignedGame.add(g.game_id);
-      
-            isRecord ? recordFuture++ : judgeFuture++;
-      
+            if (isRecord){
+              hasRecordFuture = true;
+            } else {
+              hasJudgeFuture = true;
+            }
           }
-          // ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
       
         });
+      
+        /******** ✅ ✅ ✅ 最終只加一次 ********/
+      
+        // ✅ 生涯（完成）
+        if (hasJudgeDone || hasRecordDone){
+          if (hasJudgeDone){
+            judgeDone++;
+          } else if (hasRecordDone){
+            recordDone++;
+          }
+        }
+      
+        // ✅ 未來（預）
+        if (
+          (hasJudgeFuture || hasRecordFuture) &&
+          !countedAssignedGame.has(g.game_id)
+        ){
+      
+          countedAssignedGame.add(g.game_id);
+      
+          if (hasJudgeFuture){
+            judgeFuture++;
+          } else if (hasRecordFuture){
+            recordFuture++;
+          }
+      
+        }
       
       });
 
