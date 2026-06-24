@@ -383,20 +383,33 @@ function loadDashboard(){
       });
 
 
-      /************* ✅ UI *************/
-      document.getElementById('stat-judge').textContent = judgeDone;
-      document.getElementById('stat-record').textContent = recordDone;
-      document.getElementById('stat-total').textContent =
-        judgeDone + recordDone;
-
-      document.getElementById('stat-judge-sub').textContent =
-        `生 ${judgeDone}　預 ${judgeFuture}`;
-
-      document.getElementById('stat-record-sub').textContent =
-        `生 ${recordDone}　預 ${recordFuture}`;
-
-      document.getElementById('stat-total-sub').textContent =
-        `生 ${judgeDone + recordDone}　預 ${judgeFuture + recordFuture}`;
+        /************* ✅ UI *************/
+        setTimeout(() => {
+        
+          console.log('🔥 強制覆蓋（最終）', {
+            judgeDone,
+            judgeFuture,
+            recordDone,
+            recordFuture
+          });
+        
+          const el1 = document.getElementById('stat-judge');
+          const el2 = document.getElementById('stat-record');
+          const el3 = document.getElementById('stat-total');
+        
+          const sub1 = document.getElementById('stat-judge-sub');
+          const sub2 = document.getElementById('stat-record-sub');
+          const sub3 = document.getElementById('stat-total-sub');
+        
+          if (el1) el1.textContent = judgeDone;
+          if (el2) el2.textContent = recordDone;
+          if (el3) el3.textContent = judgeDone + recordDone;
+        
+          if (sub1) sub1.textContent = `生 ${judgeDone}　預 ${judgeFuture}`;
+          if (sub2) sub2.textContent = `生 ${recordDone}　預 ${recordFuture}`;
+          if (sub3) sub3.textContent = `生 ${judgeDone + recordDone}　預 ${judgeFuture + recordFuture}`;
+        
+        }, 500);
 
     });
 
