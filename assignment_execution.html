@@ -848,29 +848,98 @@ function renderGroup(g){
 // 配合上面的程式新增
 function renderRoleRow(role, rows, g){
 
-   // ✅ ✅ ✅ 如果有支援 → 只顯示支援
-  const hasReplacement = rows.some(x => Number(x.is_replacement) === 1);
-  
-  if (hasReplacement){
-    rows = rows.filter(x => Number(x.is_replacement) === 1);
-  }
- 
-  // ✅ 排序（用 create_at）
+  // ✅ 排序
   rows.sort((a,b)=>{
     return new Date(a.create_at || 0) - new Date(b.create_at || 0);
   });
 
   const multiple = rows.length > 1;
 
-  // ✅ ✅ ✅ 正確判斷（用最新資料）
+  // ✅ 是否缺席
   const hasNoShow =
     window._lastData
       ?.find(x => x.game_id == g.game_id)
       ?.list
       ?.some(x => x.role === role && x.status === 'no_show');
 
-  // ✅ ✅ ✅ 找「真正 assignment」（很重要）
   const firstAssign = rows.find(x => x.assignment_id);
+
+  /* ========================
+     ✅ ✅ ✅ 核心：組合顯示
+  ======================== */
+
+  const original = rows.find(x => Number(x.is_replacement) !== 1);
+  const replacement = rows.find(x => Number(x.is_replacement) === 1);
+
+  function renderTag(p){
+    if (!p) return '';
+
+    const statusTag =
+      p.status === 'completed'
+        ? '<span class="tag tag-ok">完</span>'
+      : p.status === 'late'
+        ? '<span class="tag tag-late">遲</span>'
+      : p.status === 'no_show'
+        ? '<span class="tag tag-no">缺</span>'
+      : (p.status === 'scheduled' && p.name)
+        ? '<span class="status-mini" style="color:#888;">待</span>'
+      : '';
+
+    const replaceTag =
+      Number(p.is_replacement) === 1
+        ? '<span class="tag tag-replace">支</span>'
+        : '';
+
+    return `${p.name || '（未確認）'} ${statusTag}${replaceTag}`;
+  }
+
+  /* ========================
+     ✅ ✅ ✅ 顯示邏輯
+  ======================== */
+
+  let candidateHTML = '';
+
+  // ✅ 🔥 有支援 → 合併顯示
+  if (replacement){
+
+    candidateHTML = `
+      <div class="candidate">
+        <span class="name">
+          ${renderTag(original)} ／ ${renderTag(replacement)}
+        </span>
+      </div>
+    `;
+
+  }else{
+
+    // ✅ 普通模式（多選）
+    candidateHTML = rows.map((p,i)=>{
+
+      const checked = (!multiple && i===0) || (multiple && i===0)
+        ? 'checked' : '';
+
+      return `
+        <label class="candidate">
+
+          ${multiple ? `
+            <input type="radio"
+              name="select_${g.game_id}_${role}"
+              value="${p.assignment_id || p.signup_id}"
+              ${checked}
+            >
+          ` : ''}
+
+          <span class="name">
+            ${renderTag(p)}
+          </span>
+
+        </label>
+      `;
+
+    }).join('');
+  }
+
+  /* ======================== */
 
   return `
     <div class="person-group">
@@ -880,47 +949,7 @@ function renderRoleRow(role, rows, g){
       </div>
 
       <div class="candidate-row">
-
-        ${rows.map((p,i)=>{
-
-          const checked = (!multiple && i===0) || (multiple && i===0)
-            ? 'checked' : '';
-
-          return `
-            <label class="candidate">
-
-              ${multiple ? `
-                <input type="radio"
-                  name="select_${g.game_id}_${role}"
-                  value="${p.assignment_id || p.signup_id}"
-                  ${checked}
-                >
-              ` : ''}
-
-              <span class="name">
-                ${p.name || '（未確認）'}
-              
-                ${
-                  p.status === 'completed' ? '<span class="tag tag-ok">完</span>' :
-                  p.status === 'late' ? '<span class="tag tag-late">遲</span>' :
-                  p.status === 'no_show' ? '<span class="tag tag-no">缺</span>' :
-                  (p.status === 'scheduled' && p.name) ? '<span class="status-mini" style="color:#888;>未確認</span>' :
-                  ''
-                }
-              
-                ${
-                  Number(p.is_replacement) === 1
-                    ? '<span class="tag tag-replace">支</span>'
-                    : ''
-                }
-              
-              </span>
-
-
-            </label>
-          `;
-        }).join('')}
-
+        ${candidateHTML}
       </div>
 
       <div class="actions-box">
@@ -941,7 +970,6 @@ function renderRoleRow(role, rows, g){
         </button>
 
         ${
-          // ✅ ✅ ✅ 改派只能用 assignment
           (!hasNoShow && firstAssign)
           ? `
             <button class="btn btn-assign"
@@ -953,7 +981,6 @@ function renderRoleRow(role, rows, g){
         }
 
         ${
-          // ✅ ✅ ✅ 支援用 hasNoShow（不能用 rows）
           hasNoShow
           ? `
             <button class="btn btn-replace"
@@ -970,10 +997,8 @@ function renderRoleRow(role, rows, g){
             userList
               .filter(u => {
 
-                // ❌ 排除 admin
                 if (u.role.includes('admin')) return false;
 
-                // ✅ 紀錄
                 if (role.startsWith('REC')){
                   return (
                     u.role.includes('record') ||
@@ -981,7 +1006,6 @@ function renderRoleRow(role, rows, g){
                   );
                 }
 
-                // ✅ 裁判
                 return (
                   u.role.includes('judge') ||
                   u.role.includes('chief_judge')
