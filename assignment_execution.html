@@ -848,6 +848,13 @@ function renderGroup(g){
 // 配合上面的程式新增
 function renderRoleRow(role, rows, g){
 
+   // ✅ ✅ ✅ 如果有支援 → 只顯示支援
+  const hasReplacement = rows.some(x => Number(x.is_replacement) === 1);
+  
+  if (hasReplacement){
+    rows = rows.filter(x => Number(x.is_replacement) === 1);
+  }
+ 
   // ✅ 排序（用 create_at）
   rows.sort((a,b)=>{
     return new Date(a.create_at || 0) - new Date(b.create_at || 0);
