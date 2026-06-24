@@ -2109,11 +2109,19 @@ function openUserDetail(userId){
   const late = p.late ?? 0;
   const no_show = p.no_show ?? 0;
 
-  // ✅ 年度出勤品質（統一）
+  // ✅ 年度出勤品質
+  // ✅ 表現品質（不含缺席）
   const yearValid = completed + late;
   const yearQuality = yearValid
     ? Math.round((completed / yearValid) * 100)
     : 0;
+  
+  // ✅ ✅ ✅ 出勤品質（含缺席）🔥
+  const yearAttendanceQuality =
+    (completed + late + no_show)
+      ? Math.round((completed / (completed + late + no_show)) * 100)
+      : 0;
+
 
   // =========================
   // ✅ ✅ ✅ 生涯計算（唯一標準🔥）
@@ -2237,6 +2245,8 @@ function openUserDetail(userId){
         ${card('年度出勤', total)}
         ${card('年度品質', yearQuality + '%')}
         ${card('生涯品質', careerQuality + '%')}
+        ${card('出勤穩定', yearAttendanceQuality + '%')}
+
 
       </div>
 
