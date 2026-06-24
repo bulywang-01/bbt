@@ -1396,18 +1396,18 @@ function getStatusBadge(s){
 // 快速改派
 function quickAssign(id, btn){
 
-  const row = btn.closest('.person');
-  const select = row.querySelector('.select-user');
+  const group = btn.closest('.person-group');
+  const select = group.querySelector('.select-user');
 
-  const uid = select.value;
+  const uid = select?.value;
 
   if (!uid){
     toast('請先選人','warn');
     return;
   }
 
-  const role = row.getAttribute('data-role');
-  const gameId = btn.closest('.game-card').getAttribute('data-game-id');
+  const role = group.querySelector('.role-title')?.innerText;
+  const gameId = btn.closest('.game-card')?.dataset.gameId;
 
   let params = {};
   let action = '';
@@ -1461,8 +1461,9 @@ function quickAssign(id, btn){
 ======================== */
 function quickReplace(gameId, role, btn){
 
-  const row = btn.closest('.person');
-  const select = row.querySelector('.select-user');
+  const group = btn.closest('.person-group');
+
+  const select = group.querySelector('.select-user');
   const uid = select?.value;
 
   if (!uid){
