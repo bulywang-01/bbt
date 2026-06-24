@@ -685,10 +685,12 @@ function load(){
 
     const games = res.data;
 
+    // ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
+    window._lastData = games;
+
     // ✅ ✅ ✅ 重點：
     const data = games.filter(g => isGameReady(g));
 
-    // ✅ ✅ ✅ 用分頁 render（不要再組 html）
     render(data);
 
   });
@@ -874,7 +876,7 @@ function renderRoleRow(role, rows, g){
               ${multiple ? `
                 <input type="radio"
                   name="select_${g.game_id}_${role}"
-                  value="${p.assignment_id}"
+                  value="${p.assignment_id || p.signup_id}"
                   ${checked}
                 >
               ` : ''}
@@ -925,15 +927,36 @@ function handleMultiSelect(gameId, role, status){
     if (r.checked) selected = r.value;
   });
 
-  // ✅ 多人但沒選
+  // ✅ ✅ ✅ 多人但沒選
   if (radios.length > 0 && !selected){
     toast('請先選擇實際出席人','warn');
     return;
   }
 
-  // ✅ fallback（第一位）
-  if (!selected && radios.length > 0){
-    selected = radios[0].value;
+  // ✅ ✅ ✅ 單人（沒有 radio）
+  if (radios.length === 0){
+
+    // ✅ 找該 role 第一人
+    const first = document.querySelector(
+      `[data-game-id="${gameId}"] .person-group`
+    );
+
+    // 👉 直接抓 list（最穩）
+    const g = window._lastData?.find(x => x.game_id == gameId);
+
+    if (!g){
+      toast('找不到資料','error');
+      return;
+    }
+
+    const p = (g.list || []).find(x => x.role === role);
+
+    if (!p){
+      toast('找不到人員','error');
+      return;
+    }
+
+    selected = p.assignment_id;
   }
 
   if (!selected){
