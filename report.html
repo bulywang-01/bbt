@@ -6,268 +6,288 @@
   <title>出勤報表</title>
 
   <style>
-/* ✅ 基本 */
-body {
-  font-family: Arial;
-  margin: 0;
-  padding: 12px;
-  background: #f5f5f5;
-  font-size: 16px;
-}
-
-/* ✅ 一人一列 */
-.user-row {
-  display: flex;
-  flex-direction: column;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-/* ✅ 左側 */
-.user-name {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-/* ✅ 右側 */
-.right-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-/* ✅ 月份 */
-.month-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-/* ✅ 日期 */
-.days {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-/* ✅ 顏色 */
-.day.ok { background:#4caf50; color:#fff; }
-.day.late { background:#ff9800; color:#fff; }
-.day.no { background:#f44336; color:#fff; }
-.day.sub { background:#2196f3; color:#fff; }
-.day.empty { background:#eee; color:#999; }
-
-/* ✅ 桌機再優化 */
-@media (min-width: 900px){
-
-  body {
-    font-size: 14px;
-  }
-
-  .user-row {
-    flex-direction: column;   /* ✅ 固定垂直 */
-  }
-
-  .user-summary {
-    justify-content: center;
-  }
-
-  .day {
-    width: 22px;
-    height: 22px;
-    line-height: 22px;
-    font-size: 11px;
-  }
-}
-
-.btn {
-  border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  background: #1976d2;
-  color: #fff;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background: #1565c0;
-}
-
-.btn.back {
-  background: #757575;
-}
-
-.btn.back:hover {
-  background: #616161;
-}
-
-.user-role{
-  font-size: 11px;
-  color: #777;
-  margin-left: 4px;
-}
-
-.user-row {
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-/* ✅ 名字區 */
-.user-header {
-  margin-bottom: 4px;
-}
-
-.user-name {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.user-role {
-  font-size: 12px;
-  color: #777;
-  margin-left: 6px;
-}
-
-/* ✅ KPI */
-.user-kpi {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-.user-kpi .label {
-  font-size: 12px;
-  color: #666;
-}
-
-/* ✅ 月份排版 */
-.month-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.month-label {
-  width: 32px;
-  font-size: 12px;
-  color: #666;
-}
-
-/* ✅ 日期 */
-.day {
-  width: 24px;
-  height: 24px;
-  line-height: 24px;
-  font-size: 12px;
-  margin: 2px;
-  text-align: center;
-  border-radius: 4px;
-}
-
-/* ✅ 手機 */
-@media (max-width:600px){
-
-  body {
-    font-size: 16px;
-  }
-
-  .user-name {
-    font-size: 20px;
-  }
-
-  .day {
-    width: 28px;
-    height: 28px;
-    line-height: 28px;
-    font-size: 14px;
-  }
-}
-
-.toolbar {
-  margin-bottom: 12px;
-}
-
-.toolbar-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
-}
-
-.btn {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: none;
-  background: #1976d2;
-  color: #fff;
-  font-size: 13px;
-}
-
-.btn.primary {
-  background: #2e7d32;
-}
-
-.btn.back {
-  background: #757575;
-}
-
-.overlay{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.overlay-box{
-  background:#fff;
-  width:90%;
-  max-width:360px;
-  border-radius:12px;
-  padding:16px;
-}
-
-
-/* ✅ 第一排 */
-.header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.title {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.legend {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  font-size: 13px;
-}
-
-/* ✅ 第二排主控制 */
-.toolbar-row.main-bar {
-  display: flex;
-  justify-content: space-between;  /* ✅ 左右分開 */
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* ✅ 右側按鈕群 */
-.btn-group {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
+      /* ✅ 基本 */
+      body {
+        font-family: Arial;
+        margin: 0;
+        padding: 12px;
+        background: #f5f5f5;
+        font-size: 16px;
+      }
+      
+      /* ✅ 一人一列 */
+      .user-row {
+        display: flex;
+        flex-direction: column;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+      }
+      
+      /* ✅ 左側 */
+      .user-name {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      
+      /* ✅ 右側 */
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      
+      /* ✅ 月份 */
+      .month-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      
+      /* ✅ 日期 */
+      .days {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      
+      /* ✅ 顏色 */
+      .day.ok { background:#4caf50; color:#fff; }
+      .day.late { background:#ff9800; color:#fff; }
+      .day.no { background:#f44336; color:#fff; }
+      .day.sub { background:#2196f3; color:#fff; }
+      .day.empty { background:#eee; color:#999; }
+      
+      /* ✅ 桌機再優化 */
+      @media (min-width: 900px){
+      
+        body {
+          font-size: 14px;
+        }
+      
+        .user-row {
+          flex-direction: column;   /* ✅ 固定垂直 */
+        }
+      
+        .user-summary {
+          justify-content: center;
+        }
+      
+        .day {
+          width: 22px;
+          height: 22px;
+          line-height: 22px;
+          font-size: 11px;
+        }
+      }
+      
+      .btn {
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background: #1976d2;
+        color: #fff;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      
+      .btn:hover {
+        background: #1565c0;
+      }
+      
+      .btn.back {
+        background: #757575;
+      }
+      
+      .btn.back:hover {
+        background: #616161;
+      }
+      
+      .user-role{
+        font-size: 11px;
+        color: #777;
+        margin-left: 4px;
+      }
+      
+      .user-row {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+      }
+      
+      /* ✅ 名字區 */
+      .user-header {
+        margin-bottom: 4px;
+      }
+      
+      .user-name {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      
+      .user-role {
+        font-size: 12px;
+        color: #777;
+        margin-left: 6px;
+      }
+      
+      /* ✅ KPI */
+      .user-kpi {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+      
+      .user-kpi .label {
+        font-size: 12px;
+        color: #666;
+      }
+      
+      /* ✅ 月份排版 */
+      .month-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+      
+      .month-label {
+        width: 32px;
+        font-size: 12px;
+        color: #666;
+      }
+      
+      /* ✅ 日期 */
+      .day {
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        font-size: 12px;
+        margin: 2px;
+        text-align: center;
+        border-radius: 4px;
+      }
+      
+      /* ✅ 手機 */
+      @media (max-width:600px){
+      
+        body {
+          font-size: 16px;
+        }
+      
+        .user-name {
+          font-size: 20px;
+        }
+      
+        .day {
+          width: 28px;
+          height: 28px;
+          line-height: 28px;
+          font-size: 14px;
+        }
+      }
+      
+      .toolbar {
+        margin-bottom: 12px;
+      }
+      
+      .toolbar-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+      }
+      
+      .btn {
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: none;
+        background: #1976d2;
+        color: #fff;
+        font-size: 13px;
+      }
+      
+      .btn.primary {
+        background: #2e7d32;
+      }
+      
+      .btn.back {
+        background: #757575;
+      }
+      
+      .overlay{
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      
+      .overlay-box{
+        background:#fff;
+        width:90%;
+        max-width:360px;
+        border-radius:12px;
+        padding:16px;
+      }
+      
+      
+      /* ✅ 第一排 */
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+      }
+      
+      .title {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      
+      .legend {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        font-size: 13px;
+      }
+      
+      /* ✅ 第二排主控制 */
+      .toolbar-row.main-bar {
+        display: flex;
+        justify-content: space-between;  /* ✅ 左右分開 */
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      /* ✅ 右側按鈕群 */
+      .btn-group {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      
+      /* ✅ 未來（已報名） */
+      .day.future {
+        background: #c8e6c9;
+        color:#2e7d32;
+        opacity:0.65;
+      }
+      
+      /* ✅ 未來（替補） */
+      .day.future-sub {
+        background:#bbdefb;
+        color:#0d47a1;
+        opacity:0.6;
+      }
+      
+      /* ✅ 未來（未報名） */
+      .day.empty {
+        background:#eee;
+        color:#999;
+      }
   </style>
 </head>
 
@@ -506,6 +526,11 @@ function render(data, gameDays){
     return;
   }
 
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const currentYear = today.getFullYear();
+
   const monthMap = {};
 
   gameDays.forEach(fullDate=>{
@@ -527,20 +552,17 @@ function render(data, gameDays){
     if(u.name === '系統管理員') return;
 
     const finished = u.summary.total - u.summary.late - u.summary.no_show;
-    const roles = (u.roles || '').split(',').map(r=>r.trim()).filter(Boolean);
 
     html += `
     <div class="user-row">
-    
-      <!-- ✅ 名字 -->
+
       <div class="user-header">
         <div class="user-name">
           ${u.name}
           <span class="user-role">${u.roles ? formatRole(u.roles) : '—'}</span>
         </div>
       </div>
-    
-      <!-- ✅ KPI（固定在名字下方） -->
+
       <div class="user-kpi">
         <span class="label">生涯：</span>
         <span class="day ok">${finished}</span>
@@ -548,8 +570,7 @@ function render(data, gameDays){
         <span class="day no">${u.summary.no_show}</span>
         <span class="day sub">${u.summary.playoff}</span>
       </div>
-    
-      <!-- ✅ 日期（獨立區） -->
+
       <div class="right-panel">
     `;
 
@@ -572,16 +593,38 @@ function render(data, gameDays){
             let cls = 'empty';
             let tooltip = '';
 
+            /* ✅ ✅ ✅ 日期判斷（核心🔥） */
+            const fullDateStr = `${currentYear}-${m}-${d}`;
+            const dateObj = new Date(fullDateStr);
+            dateObj.setHours(0,0,0,0);
+
+            const isFuture = dateObj > today;
+
             if(rec){
-            
+
               const hasNo = rec.some(x=>x.status==='no_show');
               const hasLate = rec.some(x=>x.status==='late');
               const hasSub = rec.some(x=>x.is_replacement);
-              
-              if(hasNo) cls='no';
-              else if(hasLate) cls='late';
-              else if(hasSub) cls='sub';   // ✅ 正確來源
-              else cls='ok';
+              const hasDone = rec.some(x=>x.status==='completed');
+
+              /* ✅ 已發生 */
+              if(!isFuture){
+
+                if(hasNo) cls='no';
+                else if(hasLate) cls='late';
+                else if(hasSub) cls='sub';
+                else if(hasDone) cls='ok';
+                else cls='empty';
+
+              }else{
+
+                /* ✅ 未來 */
+                if(hasSub){
+                  cls = 'future-sub';
+                }else{
+                  cls = 'future';
+                }
+              }
 
               const roleMap = {
                 PU:'主審',
@@ -592,19 +635,20 @@ function render(data, gameDays){
                 REC_VIDEO:'影像紀錄員',
                 REC_TRAINEE:'見習紀錄員'
               };
-              
+
               const statusMap = {
                 completed:'完成',
                 late:'遲到',
                 no_show:'缺席',
-                sub:'替補',
-                substitute:'替補'
+                sub:'替補'
               };
-              
+
               tooltip = rec.map(x=>{
                 return `${roleMap[x.role] || x.role}：${statusMap[x.status] || x.status}`;
               }).join('\n');
 
+            }else{
+              cls = 'empty';
             }
 
             html += `
