@@ -56,9 +56,14 @@ function renderGameCard(g, opt={}){
     return '';
   }
 
-  // ✅ ✅ ✅ 2️⃣ 鎖定
+  // ✅ ✅ ✅ 鎖定
  
-  const session = opt.session || null;
+  const session =
+    opt.session
+    || (typeof getSession === 'function'
+        ? getSession()
+        : JSON.parse(localStorage.getItem('session_user')||'{}'));
+ 
   const isViewMode = opt.mode === 'view';
 
   // ✅ ✅ ✅ 自動判斷頁面（核心封裝）
@@ -92,6 +97,14 @@ function renderGameCard(g, opt={}){
   const conflict = conflictInfo.conflict;
   const myRole = g.my_position;
   const teamConflict = isMyTeamConflict(g, session);  // 母隊衝突判斷定義
+
+  console.log(
+  'TEAM CHECK →',
+  'userTeam=', session?.team,
+  'home=', g.home_team,
+  'away=', g.away_team,
+  'result=', teamConflict
+);
 
   function getReason(targetRole, isRecordSlot){
   
@@ -346,86 +359,99 @@ function renderGameCard(g, opt={}){
         ) : ''
       }
 
-
       <!-- ✅ 紀錄 -->
       ${
         isRecordPage
         ? recordRoles.map(([role,label])=>{
-
-
+      
           const slot = g.records?.[role];
           const reason = getReason(role,true);
           const locked = isSameTimeOtherFieldLocked(g);
-
-
+      
+          // ✅ ✅ ✅ 🔥 1. 母隊鎖（最高優先）
+          if (teamConflict){
+            return `
+              <div class="slot locked">
+                <div class="label">${label}</div>
+                <div class="name">不可報名</div>
+              </div>
+            `;
+          }
+      
+          // ✅ 有人
           if (slot){
-
-
-           const isMe = isMySlot(slot, session);
-
-
+      
+            const isMe = isMySlot(slot, session);
+      
             return `
             <div class="slot" data-gid="${g.game_id}" data-role="${role}">
               <div class="label">${label}</div>
-              <div class="name ${isMe?'me':''} ${String(slot.name || slot).length > 10 ? 'long' : ''}">${slot.name}</div>
+              <div class="name ${isMe?'me':''}">
+                ${slot.name}
+              </div>
               ${
-                // isMe && !isPast
-               isMe && !isPast && !isViewMode && ![1,2,4].includes(s)
+                isMe && !isPast && !isViewMode && ![1,2,4].includes(s)
                 ? `
                 <div class="cancel" onclick="event.stopPropagation(); handleSlotClick('${g.game_id}','${role}')">取消</div>
-                     `
+                `
                 : ''
               }
             </div>`;
           }
-
-
+      
+          // ✅ 過期
           if (isPast){
-            return `<div class="slot" data-gid="${g.game_id}" data-role="${role}"><div class="label">${label}</div><div class="name">—</div></div>`;
+            return `
+              <div class="slot">
+                <div class="label">${label}</div>
+                <div class="name">—</div>
+              </div>`;
           }
-
-
-          if (teamConflict || reason || locked){
-            return `<div class="slot waiting">
-             <div class="label">${label}</div>
-              <div class="name">${teamConflict ? '不可報名' : (locked ? '待位' : reason)}</div>
-             </div>`;
-          }
-
-
-         if (isViewMode){
-           return `
-             <div class="slot waiting">
-               <div class="label">${roleMap(role)}</div>
-               <div class="name">待位中</div>
-             </div>
-           `;
-         }
-         
-           // ✅ ✅ ✅ status 控制
-            // const s = Number(g.status || 0);
-                
-            if ([1,2,4].includes(s)){
-              return `
-                <div class="slot locked">
-                  <div class="label">${label}</div>
-                  <div class="name">
-                    ${s === 1 ? '延賽' : s === 2 ? '停賽' : '🔒 鎖定'}
-                  </div>
+      
+          // ✅ 待位 / 衝突
+          if (reason || locked){
+            return `
+              <div class="slot waiting">
+                <div class="label">${label}</div>
+                <div class="name">
+                  ${locked ? '待位' : reason}
                 </div>
-              `;
-            }
-         
+              </div>`;
+          }
+      
+          // ✅ view 模式
+          if (isViewMode){
+            return `
+              <div class="slot waiting">
+                <div class="label">${label}</div>
+                <div class="name">待位中</div>
+              </div>`;
+          }
+      
+          // ✅ status 控制
+          if ([1,2,4].includes(s)){
+            return `
+              <div class="slot locked">
+                <div class="label">${label}</div>
+                <div class="name">
+                  ${s === 1 ? '延賽' : s === 2 ? '停賽' : '🔒 鎖定'}
+                </div>
+              </div>
+            `;
+          }
+      
+          // ✅ ✅ ✅ 正常報名
           return `
-            <div class="slot action" onclick="handleSlotClick('${g.game_id}','${role}')">
+            <div class="slot action"
+              onclick="handleSlotClick('${g.game_id}','${role}')">
               <div class="label">${label}</div>
               <div class="btn">報名</div>
             </div>
           `;
+      
         }).join('')
         : ''
       }
-
 
     </div>
   </div>
@@ -628,6 +654,8 @@ function renderJudgeSlots(g, isPast, session){
 ========================= */
 function renderRecordSlots(g, isPast, session){
 
+  const teamConflict = isMyTeamConflict(g, session);
+ 
   const roles = [
     ['REC_MAIN','紀錄'],
     ['REC_TRAINEE','見習'],
@@ -667,12 +695,14 @@ function renderRecordSlots(g, isPast, session){
       const conflict = conflictInfo.conflict;
       
       if (
+        teamConflict ||
         (g.my_position && g.my_position !== role)
         || conflict
       ){
         return `
           <div class="record-role other waiting">
-            ${label}<br>待位
+            ${label}<br>
+            ${teamConflict ? '不可報名' : '待位'}
           </div>
         `;
       }
@@ -695,12 +725,21 @@ function renderRecordSlots(g, isPast, session){
       }
       
       // ✅ ✅ ✅ 正常可報名
+      if (teamConflict){
+        return `
+          <div class="record-role other">
+            ${label}<br>不可報名
+          </div>
+        `;
+      }
+      
       return `
         <div class="record-role action"
           onclick="handleSlotClick('${g.game_id}','${role}')">
           ＋${label}
         </div>
       `;
+      
       }).join('')}
     </div>
   `;
