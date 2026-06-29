@@ -4,7 +4,7 @@ const API_BASE =
 
 // ===== JSONP helper（封版唯一安全版）=====
 function callApi(params, callback) {
-
+  
   const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random()*1000);
 
   // ✅ 組 URL
