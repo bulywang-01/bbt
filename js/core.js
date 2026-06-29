@@ -91,6 +91,7 @@ function renderGameCard(g, opt={}){
   const conflictInfo = checkConflictFront(g, __GAME_CACHE, session);
   const conflict = conflictInfo.conflict;
   const myRole = g.my_position;
+  const teamConflict = isMyTeamConflict(g, session);  // 母隊衝突判斷定義
 
   function getReason(targetRole, isRecordSlot){
   
@@ -155,7 +156,7 @@ function renderGameCard(g, opt={}){
         ${isPast?'expired-card':''} 
         ${s === 1 ? 'postponed' : ''} 
         ${s === 2 ? 'stopped' : ''}
-        ${s === 4 ? 'locked' : ''} 
+        ${s === 4 || teamConflict ? 'locked' : ''} 
       "
        id="game-${g.game_id}"
        data-type="${type}">
@@ -167,6 +168,7 @@ function renderGameCard(g, opt={}){
       <div class="right">${g.field||''}</div>
     </div>    
     ${statusBanner}
+    ${teamConflict ? `<div class="row-warning">⚠️ 不可報名自己母隊的比賽</div>` : ''}
 
     <!-- 警告同場訊息　renderGameCard WARNING -->
         ${(() => {
@@ -298,12 +300,12 @@ function renderGameCard(g, opt={}){
               }
 
 
-              if (reason || locked){
+              if (teamConflict || reason || locked){
                 return `
                   <div class="slot waiting">
                     <div class="label">${roleMap(role)}</div>
                     <div class="name">
-                      ${locked ? '待位' : reason}
+                      ${teamConflict ? '不可報名' : (locked ? '待位' : reason)}
                     </div>
                   </div>`;
 
@@ -383,10 +385,10 @@ function renderGameCard(g, opt={}){
           }
 
 
-          if (reason || locked){
+          if (teamConflict || reason || locked){
             return `<div class="slot waiting">
              <div class="label">${label}</div>
-              <div class="name">${locked ? '待位' : reason}</div>
+              <div class="name">${teamConflict ? '不可報名' : (locked ? '待位' : reason)}</div>
              </div>`;
           }
 
@@ -1060,12 +1062,35 @@ function isTimeConflict(targetGame){
   });
 }
 
+/*********************************************************
+ ✅ 母隊衝突判斷
+*********************************************************/
+function isMyTeamConflict(game, session){
+
+  if (!game || !session) return false;
+
+  const userTeam =
+    (game.user_team || session.team || '').trim();
+
+  if (!userTeam) return false;
+
+  const home = (game.home_team || '').trim();
+  const away = (game.away_team || '').trim();
+
+  return (userTeam === home || userTeam === away);
+}
+
 
 /*********************************************************
  * ✅ 聯盟級報名規則引擎（唯一核心）
  *********************************************************/
 function validateSignup(targetGame, role){
-
+ 
+  // ✅ ✅ ✅ 母隊限制（最高優先）
+  if (isMyTeamConflict(targetGame, getSession())){
+    return '❌ 不可報名自己母隊的比賽';
+  }
+ 
   const isRecord = role.startsWith('REC');
 
   /************* ✅ 同場限制 *************/
