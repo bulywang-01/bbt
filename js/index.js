@@ -90,6 +90,10 @@ function bindButtons(){
   document.getElementById('open-rules')?.addEventListener('click', () => {
     document.getElementById('rules-overlay').style.display = 'flex';
   });
+  
+  document.getElementById('open-record-rules')?.addEventListener('click', () => {
+    document.getElementById('record-rules-overlay').style.display = 'flex';
+  });
 }
 
 /*********************************************************
