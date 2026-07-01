@@ -14,7 +14,7 @@ const CATEGORY_FALLBACK = [
   'card-extra-1',
   'card-extra-2'
 ];
-
+ 
 // ✅ 動態分配
 function getCategoryClass(category){
 
@@ -869,86 +869,210 @@ function handleSlotClick(gid, role){
 // ✅ 報名（裁判）
 function signupJudge(g, role){
 
-  const s = JSON.parse(localStorage.getItem('session_user') || '{}');
+  const s = JSON.parse(
+    localStorage.getItem('session_user') || '{}'
+  );
 
-  const el = document.getElementById(`game-${g.game_id}`);
-  if (el) el.classList.add('loading');   // ✅ ✅ ✅ 加在這
+  const el =
+    document.getElementById(`game-${g.game_id}`);
 
-  showToast('報名中...');
+  if (el){
+    el.classList.add('loading');
+  }
+
+  showToast('📨 報名送出中...');
 
   callApi({
+
     action:'judgeSignupByGames',
-    user_id: s.user_id,
+    user_id:s.user_id,
     games_with_position:`${g.game_id}:${role}`
+
   }, res => {
 
-    if (el) el.classList.remove('loading');
-
-    if (res.result === 'ok'){
-
-      // ✅ ✅ ✅ 直接改資料
-     
-      g.judges ||= {};
-
-      g.judges[role] = {
-        user_id: s.user_id,
-        name: s.name
-      };
-     
-      g.my_position = role;
-
-      // updateGameCard(g, 'judge');   // ✅ ✅ ✅ 重點（不用 render）
-      updateAffectedCards(g);
-
-      showToast('✅ 已報名','success');
-
-    } else {
-      showToast(res?.message || '失敗','error');
+    if (el){
+      el.classList.remove('loading');
     }
 
+    if (!res || res.result === 'timeout'){
+    
+      showToast(
+        '⏳ 系統忙碌中，正在確認報名結果...',
+        'error'
+      );
+    
+      setTimeout(() => {
+        loadGames();
+      }, 3000);
+    
+      return;
+    }
+    
+    if (res.result === 'busy'){
+    
+      showToast(
+        '⏳ 目前有其他人正在報名此位置',
+        'error'
+      );
+    
+      setTimeout(() => {
+        loadGames();
+      }, 1000);
+    
+      return;
+    }
+
+    if (res.result === 'occupied'){
+
+      showToast(
+        res.message,
+        'error'
+      );
+
+      setTimeout(() => {
+        loadGames();
+      }, 3000);
+
+      return;
+    }
+
+    if (res.result !== 'ok'){
+
+      showToast(
+        res.message || '報名失敗',
+        'error'
+      );
+
+      return;
+    }
+
+    g.judges ||= {};
+
+    g.judges[role] = {
+      user_id:s.user_id,
+      name:s.name
+    };
+
+    g.my_position = role;
+
+    updateAffectedCards(g);
+
+    showToast(
+      `✅ 已成功報名 ${roleMap(role)}`,
+      'success'
+    );
+
+    setTimeout(() => {
+      loadGames();
+    }, 2500);
+
   });
+
 }
 
 // ✅ 報名（紀錄）
 function signupRecord(g, role){
 
-  const s = JSON.parse(localStorage.getItem('session_user') || '{}');
+  const s = JSON.parse(
+    localStorage.getItem('session_user') || '{}'
+  );
 
-  const el = document.getElementById(`game-${g.game_id}`);
-  if (el) el.classList.add('loading');
+  const el =
+    document.getElementById(`game-${g.game_id}`);
 
-  showToast('報名中...');   // ✅ 加這行
+  if (el){
+    el.classList.add('loading');
+  }
+
+  showToast('📨 報名送出中...');
 
   callApi({
+
     action:'recordSignup',
-    game_id: g.game_id,
-    user_id: s.user_id,
-    record_role: role
+    game_id:g.game_id,
+    user_id:s.user_id,
+    record_role:role
+
   }, res => {
 
-    if (el) el.classList.remove('loading');
-
-    if (res.result === 'ok'){
-
-      g.records ||= {};
-
-      g.records[role] = {
-        user_id: s.user_id,
-        name: s.name
-      };
-
-      g.my_position = role;
-
-      // updateGameCard(g);
-      updateAffectedCards(g);
-
-      showToast('✅ 已報名','success');
-
-    } else {
-      showToast(res?.message || '失敗','error');
+    if (el){
+      el.classList.remove('loading');
     }
 
+    if (!res || res.result === 'timeout'){
+    
+      showToast(
+        '⏳ 系統忙碌中，正在確認報名結果...',
+        'error'
+      );
+    
+      setTimeout(() => {
+        loadGames();
+      }, 3000);
+    
+      return;
+    }
+    
+    if (res.result === 'busy'){
+    
+      showToast(
+        '⏳ 目前有其他人正在報名此位置',
+        'error'
+      );
+    
+      setTimeout(() => {
+        loadGames();
+      }, 1000);
+    
+      return;
+    }
+
+    if (res.result === 'occupied'){
+
+      showToast(
+        res.message,
+        'error'
+      );
+
+      setTimeout(() => {
+        loadGames();
+      }, 3000);
+
+      return;
+    }
+
+    if (res.result !== 'ok'){
+
+      showToast(
+        res.message || '報名失敗',
+        'error'
+      );
+
+      return;
+    }
+
+    g.records ||= {};
+
+    g.records[role] = {
+      user_id:s.user_id,
+      name:s.name
+    };
+
+    g.my_position = role;
+
+    updateAffectedCards(g);
+
+    showToast(
+      `✅ 已成功報名 ${roleTextMap(role)}`,
+      'success'
+    );
+
+    setTimeout(() => {
+      loadGames();
+    }, 2500);
+
   });
+
 }
 
 // ✅ 取消（裁判）完整最終版
@@ -1183,20 +1307,36 @@ function validateSignup(targetGame, role){
 /*********************************************************
  * ✅ Toast 系統（取代 alert）
  *********************************************************/
-function showToast(msg, type='normal'){
+let __toastTimer = null;
 
-  let el = document.getElementById('_toast');
+function showToast(msg,type='normal'){
 
-  if (!el){
-    el = document.createElement('div');
+  let el =
+    document.getElementById('_toast');
+
+  if(!el){
+
+    el =
+      document.createElement('div');
+
     el.id = '_toast';
+
     document.body.appendChild(el);
+  }
+
+  if(__toastTimer){
+    clearTimeout(__toastTimer);
   }
 
   let bg = '#374151';
 
-  if (type === 'error') bg = '#dc2626';
-  if (type === 'success') bg = '#16a34a';
+  if(type==='error'){
+    bg='#dc2626';
+  }
+
+  if(type==='success'){
+    bg='#16a34a';
+  }
 
   el.innerHTML = msg;
 
@@ -1207,16 +1347,23 @@ function showToast(msg, type='normal'){
     transform:translateX(-50%);
     background:${bg};
     color:#fff;
-    padding:10px 16px;
-    border-radius:8px;
-    font-size:14px;
-    z-index:9999;
-    opacity:0;
+    padding:14px 22px;
+    border-radius:10px;
+    font-size:15px;
+    font-weight:700;
+    z-index:99999;
+    opacity:1;
     transition:.25s;
+    max-width:90%;
+    box-shadow:0 4px 20px rgba(0,0,0,.25);
   `;
 
-  setTimeout(()=> el.style.opacity = 1, 10);
-  setTimeout(()=> el.style.opacity = 0, 4000);
+  __toastTimer = setTimeout(()=>{
+
+    el.style.opacity = 0;
+
+  }, type==='error' ? 8000 : 3000);
+
 }
 
 
