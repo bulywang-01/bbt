@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>BBT 出勤管理系統｜首頁</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <link rel="stylesheet" href="common.css" />
   <link rel="stylesheet" href="schedule.css" />
@@ -919,13 +919,8 @@
     <!-- 系統功能說明 -->
     <div class="panel">
       <h3>ℹ️ 系統資訊</h3>
-
-      <button
-        id="open-system-guide"
-        class="pill pill-blue"
-      >
-        ℹ️ 系統功能說明
-      </button>
+      <button id="open-system-history" class="pill pill-blue">📜 系統開發日誌</button>
+      <button id="open-system-guide" class="pill pill-blue">ℹ️ 系統功能說明</button>
     </div>
     
     <div style="
@@ -1199,94 +1194,217 @@
   
 
   <!-- ===============================
-ℹ️ 系統功能說明
-=============================== -->
-<div id="system-guide-overlay" class="overlay">
-
-  <div class="overlay-box system-guide-box">
-
-    <h2>ℹ️ BBT 出勤管理系統功能說明</h2>
-
-    <p>
-      本系統提供裁判員與紀錄員進行賽事報名、取消、查詢與出勤管理，
-      並透過各項防呆機制與貼心功能，協助維持報名公平與資料正確。
-    </p>
-
-    <h3>🛡️ 報名防呆機制</h3>
-
-    <ul>
-      <li><strong>同位置唯一報名</strong>：同一場、同一位置只保留一位報名者。</li>
-
-      <li><strong>雙人同時搶位保護</strong>：多人同時報名時，以先完成者為準。</li>
-
-      <li><strong>防重覆點擊</strong>：避免因網路延遲或重覆按鈕造成重覆報名。</li>
-
-      <li><strong>同場裁判單一位置限制</strong>：同一場僅能擔任一個裁判位置。</li>
-
-      <li><strong>裁判／紀錄職務互斥</strong>：同一場不可同時擔任裁判與紀錄職務。</li>
-
-      <li><strong>時間衝堂檢查</strong>：避免同時間或相近時間重覆接任場次。</li>
-
-      <li><strong>轉場緩衝保護</strong>：同場地約保留30分鐘、跨場地約保留60分鐘轉場時間。</li>
-
-      <li><strong>母隊迴避機制</strong>：不可報名自己母隊的賽事。</li>
-
-      <li><strong>過期／延賽／停賽／鎖定保護</strong>：禁止操作非開放狀態賽事。</li>
-    </ul>
-
-    <h3>✨ 貼心功能</h3>
-
-    <ul>
-      <li>我的報名位置高亮顯示。</li>
-
-      <li>支援一鍵取消報名。</li>
-
-      <li>即時顯示待位、衝突與不可報名狀態。</li>
-
-      <li>不同賽事類型使用不同顏色呈現。</li>
-
-      <li>手機、平板、電腦皆可操作。</li>
-
-      <li>報名與取消後自動更新卡片資訊。</li>
-
-      <li>明確顯示報名失敗原因。</li>
-    </ul>
-
-    <h3>📌 使用提醒</h3>
-
-    <ul>
-      <li>報名前請確認日期、時間、球場與職務。</li>
-
-      <li>報名成功後請再次確認自己的姓名已顯示於正確位置。</li>
-
-      <li>若看到「已有人報名」，請以系統最新畫面為準。</li>
-
-      <li>若出現時間衝突或母隊迴避提醒，請改選其他場次。</li>
-    </ul>
-
-    <div style="
-      margin-top:16px;
-      padding:12px;
-      border-radius:10px;
-      background:#f5f8ff;
-      border:1px solid #dbeafe;
-      color:#1e40af;
-      line-height:1.6;
-    ">
-      ✅ 系統會協助把關報名規則，避免重覆報名、衝堂、趕場與誤報名。<br>
-      ✅ 若發現異常或有功能建議，歡迎向聯盟反映。
+  ℹ️ 系統功能說明
+  =============================== -->
+  <div id="system-guide-overlay" class="overlay">
+  
+    <div class="overlay-box system-guide-box">
+  
+      <h2>ℹ️ BBT 出勤管理系統功能說明</h2>
+  
+      <p>
+        本系統提供裁判員與紀錄員進行賽事報名、取消、查詢與出勤管理，
+        並透過各項防呆機制與貼心功能，協助維持報名公平與資料正確。
+      </p>
+  
+      <h3>🛡️ 報名防呆機制</h3>
+  
+      <ul>
+        <li><strong>同位置唯一報名</strong>：同一場、同一位置只保留一位報名者。</li>
+  
+        <li><strong>雙人同時搶位保護</strong>：多人同時報名時，以先完成者為準。</li>
+  
+        <li><strong>防重覆點擊</strong>：避免因網路延遲或重覆按鈕造成重覆報名。</li>
+  
+        <li><strong>同場裁判單一位置限制</strong>：同一場僅能擔任一個裁判位置。</li>
+  
+        <li><strong>裁判／紀錄職務互斥</strong>：同一場不可同時擔任裁判與紀錄職務。</li>
+  
+        <li><strong>時間衝堂檢查</strong>：避免同時間或相近時間重覆接任場次。</li>
+  
+        <li><strong>轉場緩衝保護</strong>：同場地約保留30分鐘、跨場地約保留60分鐘轉場時間。</li>
+  
+        <li><strong>母隊迴避機制</strong>：不可報名自己母隊的賽事。</li>
+  
+        <li><strong>過期／延賽／停賽／鎖定保護</strong>：禁止操作非開放狀態賽事。</li>
+      </ul>
+  
+      <h3>✨ 貼心功能</h3>
+  
+      <ul>
+        <li>我的報名位置高亮顯示。</li>
+  
+        <li>支援一鍵取消報名。</li>
+  
+        <li>即時顯示待位、衝突與不可報名狀態。</li>
+  
+        <li>不同賽事類型使用不同顏色呈現。</li>
+  
+        <li>手機、平板、電腦皆可操作。</li>
+  
+        <li>報名與取消後自動更新卡片資訊。</li>
+  
+        <li>明確顯示報名失敗原因。</li>
+      </ul>
+  
+      <h3>📌 使用提醒</h3>
+  
+      <ul>
+        <li>報名前請確認日期、時間、球場與職務。</li>
+  
+        <li>報名成功後請再次確認自己的姓名已顯示於正確位置。</li>
+  
+        <li>若看到「已有人報名」，請以系統最新畫面為準。</li>
+  
+        <li>若出現時間衝突或母隊迴避提醒，請改選其他場次。</li>
+      </ul>
+  
+      <div style="
+        margin-top:16px;
+        padding:12px;
+        border-radius:10px;
+        background:#f5f8ff;
+        border:1px solid #dbeafe;
+        color:#1e40af;
+        line-height:1.6;
+      ">
+        ✅ 系統會協助把關報名規則，避免重覆報名、衝堂、趕場與誤報名。<br>
+        ✅ 若發現異常或有功能建議，歡迎向聯盟反映。
+      </div>
+  
+      <button
+        class="close-btn full"
+        onclick="hideOverlay('system-guide-overlay')"
+      >
+        關閉
+      </button>
+  
     </div>
-
-    <button
-      class="close-btn full"
-      onclick="hideOverlay('system-guide-overlay')"
-    >
-      關閉
-    </button>
-
+  
   </div>
 
-</div>
+  <div id="system-history-overlay" class="overlay">
+  
+    <div class="overlay-box system-guide-box">
+  
+      <h2>📜 BBT 出勤管理系統開發日誌</h2>
+  
+      <p>
+        本系統由聯盟實際營運需求出發，
+        逐步發展成整合裁判、紀錄員、
+        出勤管理與統計分析的平台。
+      </p>
+  
+      <h3>🚀 第一階段｜人工管理時期</h3>
+  
+      <ul>
+        <li>裁判與紀錄員透過群組以人工方式報名。</li>
+      </ul>
+  
+      <h3>💻 第二階段｜報名系統建立</h3>
+  
+      <ul>
+        <li>導入 Google Apps Script 與 Google Sheet。</li>
+        <li>建立裁判與紀錄報名功能。</li>
+        <li>可直接於手機完成報名。</li>
+        <li>初步建立身分登入機制。</li>
+      </ul>
+  
+      <h3>📅 第三階段｜班表管理</h3>
+  
+      <ul>
+        <li>新增我的班表功能。</li>
+        <li>新增本週聯盟班表。</li>
+        <li>支援即時檢視裁判與紀錄配置。</li>
+        <li>支援取消報名。</li>
+      </ul>
+  
+      <h3>🛡️ 第四階段｜防呆機制強化</h3>
+  
+      <ul>
+        <li>裁判單場僅能擔任一個位置。</li>
+        <li>裁判與紀錄職務互斥。</li>
+        <li>時間衝堂檢查。</li>
+        <li>轉場緩衝保護機制。</li>
+        <li>過期場次鎖定。</li>
+        <li>延賽／停賽／鎖定狀態控制。</li>
+      </ul>
+  
+      <h3>⚾ 第五階段｜聯盟規則整合</h3>
+  
+      <ul>
+        <li>加入裁判守則。</li>
+        <li>加入紀錄守則。</li>
+        <li>加入聯盟賽制說明。</li>
+        <li>文件下載中心整合。</li>
+      </ul>
+  
+      <h3>📊 第六階段｜數據分析</h3>
+  
+      <ul>
+        <li>個人出勤統計。</li>
+        <li>裁判場次統計。</li>
+        <li>紀錄場次統計。</li>
+        <li>年度累積分析。</li>
+        <li>個人數據儀表板。</li>
+      </ul>
+  
+      <h3>🏅 第七階段｜公平性優化</h3>
+  
+      <ul>
+        <li>母隊迴避機制上線。</li>
+        <li>不可執法自己母隊賽事。</li>
+        <li>報名頁面直接鎖定。</li>
+        <li>即時提示不可報名原因。</li>
+      </ul>
+  
+      <h3>⚡ 第八階段｜搶位保護機制</h3>
+  
+      <ul>
+        <li>導入 Script Lock 保護。</li>
+        <li>避免多人同時搶位造成重覆報名。</li>
+        <li>新增位置唯一檢查。</li>
+        <li>新增即時更新機制。</li>
+        <li>新增搶位失敗提示訊息。</li>
+      </ul>
+  
+      <h3>🎯 現行版本特色</h3>
+  
+      <ul>
+        <li>手機與電腦同步支援。</li>
+        <li>即時報名與取消。</li>
+        <li>自動衝堂檢查。</li>
+        <li>母隊迴避。</li>
+        <li>公平搶位保護。</li>
+        <li>個人數據分析。</li>
+        <li>聯盟文件整合。</li>
+        <li>本週班表整合。</li>
+      </ul>
+  
+      <div style="
+        margin-top:16px;
+        padding:12px;
+        border-radius:10px;
+        background:#f5f8ff;
+        border:1px solid #dbeafe;
+        color:#1e40af;
+        line-height:1.6;
+      ">
+        📅 2025 ~ 2026 持續開發中<br>
+        感謝所有裁判員、紀錄員、聯盟幹部與管理團隊，
+        提供寶貴建議與實際使用回饋，
+        讓系統持續進化與成長。
+      </div>
+  
+      <button
+        class="close-btn full"
+        onclick="hideOverlay('system-history-overlay')">
+        關閉
+      </button>
+  
+    </div>
+  
+  </div>
 
 </body>
 </html>
