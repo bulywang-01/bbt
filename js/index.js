@@ -100,6 +100,10 @@ function bindButtons(){
     document.getElementById('system-guide-overlay').style.display = 'flex';
   });
 
+  document.getElementById('open-system-history')?.addEventListener('click', () => {
+    document.getElementById('system-history-overlay').style.display = 'flex';
+  });
+
 /*********************************************************
  * ✅ 首頁歡迎及出勤提示
  *********************************************************/
