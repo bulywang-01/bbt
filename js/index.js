@@ -96,6 +96,10 @@ function bindButtons(){
   });
 }
 
+  document.getElementById('open-system-guide')?.addEventListener('click', () => {
+    document.getElementById('system-guide-overlay').style.display = 'flex';
+  });
+
 /*********************************************************
  * ✅ 首頁歡迎及出勤提示
  *********************************************************/
