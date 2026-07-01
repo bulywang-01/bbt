@@ -100,8 +100,8 @@
     
     /* ===== 文字層級 ===== */
     .game-code {
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 18px;
+      font-weight: 800;
       color: #1a237e;
       letter-spacing: 0.5px;
     }
@@ -125,8 +125,8 @@
     }
     
     .game-time {
-      font-size: 20px;
-      font-weight: 800;
+      font-size: 14px;
+      font-weight: 600;
       color: #333;
     }
     
@@ -691,6 +691,53 @@
     color:#6b7280;
     font-size:12px;
   }
+
+  /* ==========================
+     系統功能說明專用
+  ========================== */
+  
+  .system-guide-box{
+  
+    width:95vw !important;
+    max-width:700px !important;
+  
+  }
+  
+  .system-guide-box h2{
+    margin-top:0;
+  }
+  
+  .system-guide-box h3{
+  
+    margin-top:24px;
+    margin-bottom:10px;
+  
+    color:#1a237e;
+  
+    border-left:4px solid #4a7ef5;
+    padding-left:10px;
+  
+  }
+  
+  .system-guide-box ul{
+  
+    margin-top:8px;
+    padding-left:22px;
+    line-height:1.7;
+  
+  }
+  
+  .system-guide-box li{
+  
+    margin-bottom:8px;
+  
+  }
+  
+  .system-guide-box p{
+  
+    line-height:1.8;
+  
+  }
   </style>
 
 </head>
@@ -808,7 +855,7 @@
       <div class="welcome-actions">
         <button id="open-schedule" class="pill pill-orange">📅 我的班表</button>
         <button id="open-weekly" class="pill pill-orange">📊 本週聯盟班表</button>
-        <button id="open-league" class="pill pill-blue">📘 賽制</button>
+        <button id="open-league" class="pill pill-blue">📘 聯盟賽制</button>
         <button id="open-rules" class="pill pill-green">🧑‍⚖️ 裁判守則</button>
         <button id="open-record-rules" class="pill pill-green">📝 紀錄守則</button>
       </div>
@@ -817,7 +864,7 @@
     <!-- ✅ 本週賽事詳細班表 -->
     <div id="weekly-overlay" class="overlay">
       <div class="overlay-box">
-        <h2>📊 本週賽事班表</h2>
+        <h2>📊 本週聯盟賽事班表</h2>
         <div id="weeklyContent"></div>
         <button class="close-btn full" onclick="hideOverlay('weekly-overlay')">關閉</button>
       </div>
@@ -868,91 +915,108 @@
         </li>
       </ul>
     </div>
-  </div>
-
-  <!-- 裁判守則 Overlay -->
-  <div id="rules-overlay" class="overlay">
-    <div class="overlay-box">
-      <h2>🧑‍⚖️ BBT 聯盟例行賽｜裁判守則</h2>
-      
-      <h3>— 賽前 —</h3>
-      <ul>
-        <li>請穿著 BBT 裁判制服，並配戴裁判帽。</li>
-        <li>主審須向雙方球隊各領取一張 <strong>已填寫完成的先發單</strong>。</li>
-        <li>第二場、第三場賽事，請協助 <strong>補畫打擊區線</strong> 並 <strong>簡單整理場地</strong>。</li>
-      </ul>
-      
-      <h3>— 比賽中 —</h3>
-      <ul>
-        <li>
-          <strong>換人規定：</strong>
-          總教練須先向主審說明換人內容，
-          主審請記錄於先發單（請自備筆），
-          並同步告知記錄員。
-        </li>
-      
-        <li>
-          換局時，請先於 <strong>計分板</strong> 上填寫該局分數。
-        </li>
-      
-        <li>
-          比賽採 <strong>七局制 或 2.5 小時制</strong>（依裁判認定）。
-        </li>
-      
-        <li>
-          若比賽時間已達 <strong>賽前 15 分鐘</strong> 且平手，
-          下局即進入 <strong>突破僵局制</strong>。
-        </li>
-      
-        <li>
-          【突破僵局制】<br>
-          0 出局，進攻方 <strong>二、三壘有人</strong>
-          （前一局最後出局者開始）。
-        </li>
-      
-        <li>
-          若再度平手，視時間可再開新局或以和局判定。
-        </li>
-      
-        <li>
-          <strong>※ 季後賽不適用和局制</strong>
-        </li>
-      
-        <li style="color:#c62828;font-weight:700;">
-          第五局起，雙方分數差達 <strong>10 分（含）以上</strong>，
-          判定提前結束比賽。
-        </li>
-      
-        <li>
-          單一投手累計：
-          <ul>
-            <li>超過 <strong>3 次觸身球</strong>，或</li>
-            <li><strong>2 次頭部觸身球</strong></li>
-          </ul>
-          必須強制更換投手。
-        </li>
-      
-        <li>
-          球員須戴 <strong>著膠質釘（塑膠釘）</strong> 方可上場，<br>
-          違規者請立即請其下場修正。
-        </li>
-      
-        <li>
-          <strong>服裝規定：</strong>
-          球隊須穿著 <strong>相同棒球衣與棒球褲</strong>，
-          不得穿著其他運動褲，
-          並請提醒球員 <strong>褲管需紮入</strong>。
-        </li>
-      </ul>
-      
-      <h3>— 比賽結束 —</h3>
-      <ul>
-        <li>比賽用球請 <strong>全數收回</strong>。</li>
-        <li>請安排雙方球隊列隊，<strong>清楚告知比賽結果並致謝</strong>。</li>
-      </ul>
-      
-      <button class="close-btn full" onclick="hideOverlay('rules-overlay')">關閉</button>
-
+  
+    <!-- 系統功能說明 -->
+    <div class="panel">
+      <h3>ℹ️ 系統功能說明</h3>
+    
+      <p style="margin-bottom:12px;color:#666;">
+        說明目前裁判與紀錄員報名系統已提供之防呆機制、報名規則與貼心功能。
+      </p>
+    
+      <button
+        id="open-system-guide"
+        class="pill pill-blue"
+      >
+        ℹ️ 系統功能說明
+      </button>
+    
+    </div>
+    
+    <!-- 裁判守則 Overlay -->
+    <div id="rules-overlay" class="overlay">
+      <div class="overlay-box">
+        <h2>🧑‍⚖️ BBT 聯盟例行賽｜裁判守則</h2>
+        
+        <h3>— 賽前 —</h3>
+        <ul>
+          <li>請穿著 BBT 裁判制服，並配戴裁判帽。</li>
+          <li>主審須向雙方球隊各領取一張 <strong>已填寫完成的先發單</strong>。</li>
+          <li>第二場、第三場賽事，請協助 <strong>補畫打擊區線</strong> 並 <strong>簡單整理場地</strong>。</li>
+        </ul>
+        
+        <h3>— 比賽中 —</h3>
+        <ul>
+          <li>
+            <strong>換人規定：</strong>
+            總教練須先向主審說明換人內容，
+            主審請記錄於先發單（請自備筆），
+            並同步告知記錄員。
+          </li>
+        
+          <li>
+            換局時，請先於 <strong>計分板</strong> 上填寫該局分數。
+          </li>
+        
+          <li>
+            比賽採 <strong>七局制 或 2.5 小時制</strong>（依裁判認定）。
+          </li>
+        
+          <li>
+            若比賽時間已達 <strong>賽前 15 分鐘</strong> 且平手，
+            下局即進入 <strong>突破僵局制</strong>。
+          </li>
+        
+          <li>
+            【突破僵局制】<br>
+            0 出局，進攻方 <strong>二、三壘有人</strong>
+            （前一局最後出局者開始）。
+          </li>
+        
+          <li>
+            若再度平手，視時間可再開新局或以和局判定。
+          </li>
+        
+          <li>
+            <strong>※ 季後賽不適用和局制</strong>
+          </li>
+        
+          <li style="color:#c62828;font-weight:700;">
+            第五局起，雙方分數差達 <strong>10 分（含）以上</strong>，
+            判定提前結束比賽。
+          </li>
+        
+          <li>
+            單一投手累計：
+            <ul>
+              <li>超過 <strong>3 次觸身球</strong>，或</li>
+              <li><strong>2 次頭部觸身球</strong></li>
+            </ul>
+            必須強制更換投手。
+          </li>
+        
+          <li>
+            球員須戴 <strong>著膠質釘（塑膠釘）</strong> 方可上場，<br>
+            違規者請立即請其下場修正。
+          </li>
+        
+          <li>
+            <strong>服裝規定：</strong>
+            球隊須穿著 <strong>相同棒球衣與棒球褲</strong>，
+            不得穿著其他運動褲，
+            並請提醒球員 <strong>褲管需紮入</strong>。
+          </li>
+        </ul>
+        
+        <h3>— 比賽結束 —</h3>
+        <ul>
+          <li>比賽用球請 <strong>全數收回</strong>。</li>
+          <li>請安排雙方球隊列隊，<strong>清楚告知比賽結果並致謝</strong>。</li>
+        </ul>
+        
+        <button class="close-btn full" onclick="hideOverlay('rules-overlay')">關閉</button>
+  
+      </div>
     </div>
   </div>
 
@@ -1127,68 +1191,96 @@
     </div>
   </div>
   
- 
-<!-- ✅ ✅ ✅ ✅ ✅ 核心修正區（不要再亂動）
-<script>
-document.addEventListener('DOMContentLoaded', () => {
 
-  // ✅ ✅ ✅ 統一登入檢查（唯一入口）
-  if (typeof initAuth === 'function') {
-    const session = initAuth();
-    if (!session) return;
+  <!-- ===============================
+ℹ️ 系統功能說明
+=============================== -->
+<div id="system-guide-overlay" class="overlay">
 
-    // ✅ ✅ ✅ Welcome 顯示（保留你原邏輯但修安全）
-    const roleMap = {
-      admin: '系統管理員',
-      chief_judge: '裁判長',
-      record_chief: '紀錄長',
-      judge: '裁判員',
-      record: '紀錄員'
-    };
+  <div class="overlay-box system-guide-box">
 
-    const nameEl = document.getElementById('welcome-name');
-    const roleEl = document.getElementById('welcome-role');
+    <h2>ℹ️ BBT 出勤管理系統功能說明</h2>
 
-    if (nameEl) {
-      nameEl.textContent = session.name + ' 您好，歡迎使用出勤管理系統';
-    }
+    <p>
+      本系統提供裁判員與紀錄員進行賽事報名、取消、查詢與出勤管理，
+      並透過各項防呆機制與貼心功能，協助維持報名公平與資料正確。
+    </p>
 
-    if (roleEl) {
-      roleEl.textContent =
-        (session.role || '')
-          .split(',')
-          .map(r => roleMap[r])
-          .filter(Boolean)
-          .join('／');
-    }
-  }
+    <h3>🛡️ 報名防呆機制</h3>
 
-  // ✅ Button 綁定（避免 null 爆）
-  document.getElementById('open-rules')?.addEventListener('click', () => {
-    document.getElementById('rules-overlay').style.display = 'flex';
-  });
+    <ul>
+      <li><strong>同位置唯一報名</strong>：同一場、同一位置只保留一位報名者。</li>
 
-  document.getElementById('open-league')?.addEventListener('click', () => {
-    document.getElementById('league-overlay').style.display = 'flex';
-  });
+      <li><strong>雙人同時搶位保護</strong>：多人同時報名時，以先完成者為準。</li>
 
-  document.getElementById('open-schedule')?.addEventListener('click', () => {
-    document.getElementById('schedule-overlay').style.display = 'flex';
-  });
+      <li><strong>防重覆點擊</strong>：避免因網路延遲或重覆按鈕造成重覆報名。</li>
 
-  document.getElementById('open-weekly')?.addEventListener('click', () => {
-    if (typeof openWeeklySchedule === 'function'){
-      openWeeklySchedule();
-    }
-  });
-});
+      <li><strong>同場裁判單一位置限制</strong>：同一場僅能擔任一個裁判位置。</li>
 
-function hideOverlay(id) {
-  document.getElementById(id).style.display = 'none';
-}
+      <li><strong>裁判／紀錄職務互斥</strong>：同一場不可同時擔任裁判與紀錄職務。</li>
 
-</script>
- -->
+      <li><strong>時間衝堂檢查</strong>：避免同時間或相近時間重覆接任場次。</li>
+
+      <li><strong>轉場緩衝保護</strong>：同場地約保留30分鐘、跨場地約保留60分鐘轉場時間。</li>
+
+      <li><strong>母隊迴避機制</strong>：不可報名自己母隊的賽事。</li>
+
+      <li><strong>過期／延賽／停賽／鎖定保護</strong>：禁止操作非開放狀態賽事。</li>
+    </ul>
+
+    <h3>✨ 貼心功能</h3>
+
+    <ul>
+      <li>我的報名位置高亮顯示。</li>
+
+      <li>支援一鍵取消報名。</li>
+
+      <li>即時顯示待位、衝突與不可報名狀態。</li>
+
+      <li>不同賽事類型使用不同顏色呈現。</li>
+
+      <li>手機、平板、電腦皆可操作。</li>
+
+      <li>報名與取消後自動更新卡片資訊。</li>
+
+      <li>明確顯示報名失敗原因。</li>
+    </ul>
+
+    <h3>📌 使用提醒</h3>
+
+    <ul>
+      <li>報名前請確認日期、時間、球場與職務。</li>
+
+      <li>報名成功後請再次確認自己的姓名已顯示於正確位置。</li>
+
+      <li>若看到「已有人報名」，請以系統最新畫面為準。</li>
+
+      <li>若出現時間衝突或母隊迴避提醒，請改選其他場次。</li>
+    </ul>
+
+    <div style="
+      margin-top:16px;
+      padding:12px;
+      border-radius:10px;
+      background:#f5f8ff;
+      border:1px solid #dbeafe;
+      color:#1e40af;
+      line-height:1.6;
+    ">
+      ✅ 系統會協助把關報名規則，避免重覆報名、衝堂、趕場與誤報名。<br>
+      ✅ 若發現異常或有功能建議，歡迎向聯盟反映。
+    </div>
+
+    <button
+      class="close-btn full"
+      onclick="hideOverlay('system-guide-overlay')"
+    >
+      關閉
+    </button>
+
+  </div>
+
+</div>
 
 </body>
 </html>
