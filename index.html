@@ -296,12 +296,6 @@
       font-size: 12px;
       margin-top: 4px;
     }
-
-    .welcome-role {
-      font-size: 20px;
-      font-weight: 700;   /* 原本太粗 */
-      color: #1a237e;
-    }
     
     .welcome-name {
       font-size: 18px;
@@ -780,9 +774,10 @@
   /* ===== 身分 ===== */
   
   .welcome-role{
-    font-size:18px;
+    font-size:20px;
     color:#2563eb;
     font-weight:800;
+    margin-top:8px;3
   }
   
   .welcome-name{
@@ -810,6 +805,7 @@
       #eff6ff,
       #ffffff
     );
+    background:#f8fbff;
   }
   
   .stat-card:nth-child(2){
@@ -819,6 +815,7 @@
       #ecfdf5,
       #ffffff
     );
+    background:#f7fcf8;
   }
   
   .stat-card:nth-child(3){
@@ -828,6 +825,7 @@
       #fff7ed,
       #ffffff
     );
+    background:#fffaf5;
   }
   
   .stat-title{
@@ -910,7 +908,7 @@
   }
   
   .footer .title{
-    font-size:15px;
+    font-size:16px;
     font-weight:700;
     color:#334155;
   }
@@ -946,8 +944,7 @@
   
   .download-grid{
     display:grid;
-    grid-template-columns:
-    repeat(auto-fit,minmax(220px,1fr));
+    grid-template-columns:repeat(3,minmax(0,1fr));
     gap:12px;
     margin-top:12px;
   }
@@ -961,6 +958,7 @@
     padding:14px;
     transition:.2s;
     color:#111827;
+    cursor:pointer;
   }
   
   .download-card:hover{
@@ -978,6 +976,40 @@
   .download-desc{
     font-size:12px;
     color:#64748b;
+  }
+
+  .stat-card{
+    transition:.25s;
+  }
+  
+  .stat-card:hover{
+    transform:translateY(-4px);
+    box-shadow:
+      0 14px 24px rgba(0,0,0,.08);
+  }
+
+  .system-guide-box{
+      width:95vw !important;
+      max-width:900px !important;
+      max-height:85vh !important;
+  }
+  
+  .guide-img{
+    display:block;
+    width:50%;
+    max-width:600px;
+    margin:12px auto;
+    border-radius:12px;
+    border:1px solid #dbeafe;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+  }
+
+  .guide-caption{
+    text-align:center;
+    font-size:12px;
+    color:#64748b;
+    margin-top:-4px;
+    margin-bottom:12px;
   }
   </style>
 
@@ -1059,7 +1091,7 @@
     <!-- ✅ Welcome -->
     
     <div class="panel welcome-box">
-      
+      <div style="font-size:28px;font-weight:800;margin-bottom:10px;color:#1e3a8a;">⚾ BBT 出勤管理系統</div>
       <div class="welcome-role" id="welcome-role"></div>
       <div class="welcome-name" id="welcome-name"></div>
 
@@ -1168,6 +1200,7 @@
         <button id="open-system-history" class="pill pill-blue">📜 系統開發日誌</button>
         <button id="open-system-guide" class="pill pill-blue">ℹ️ 系統功能說明</button>
         <button id="open-analysis-guide" class="pill pill-blue">📊 數據分析說明</button>
+        <button id="open-user-guide" class="pill pill-blue">📖 使用教學</button>
       </div>
     
     </div>
@@ -1821,8 +1854,152 @@
       </button>
   
     </div>
+  </div>
+
+  <!-- ===============================
+  📖 使用教學
+  =============================== -->
+  <div id="user-guide-overlay" class="overlay">
+  
+    <div class="overlay-box system-guide-box">
+  
+      <h2>📖 BBT 出勤系統使用教學</h2>
+  
+      <div class="guide-tip">
+        歡迎使用 BBT 軟式棒球大聯盟出勤系統，本教學將帶您完成登入、報名、取消報名及查詢班表等操作。
+      </div>
+  
+      <div class="guide-step">
+        <h3>🔐 Step 1｜登入系統</h3>
+  
+        <img src="img/guide-01.jpg" class="guide-img">
+  
+        <div class="guide-tip">
+          ✅ 登入網址：
+          <br>
+          <a href="https://bulywang-01.github.io/bbt/login.html" target="_blank">
+            https://bulywang-01.github.io/bbt/login.html
+          </a>
+          <br><br>
+  
+          ✅ 帳號為 Email @ 前帳號或系統預設帳號
+          <br>
+          ✅ 預設密碼：12345678
+          <br>
+          ✅ 第一次登入請立即修改密碼
+          <br>
+          ✅ 支援手機與電腦操作
+        </div>
+      </div>
+  
+      <div class="guide-step">
+        <h3>📅 Step 2｜進入出勤報名</h3>
+  
+        <img src="img/guide-02.jpg" class="guide-img">
+  
+        <div class="guide-tip">
+          點選「出勤報名」即可查看當月份賽程，並可切換瀏覽其他月份班表。
+        </div>
+      </div>
+  
+      <div class="guide-step">
+        <h3>🧑‍⚖️ Step 3｜裁判員報名（桌機版）</h3>
+  
+        <img src="img/guide-03.jpg" class="guide-img">
+  
+        <div class="guide-tip">
+          ✅ 點選主審、一壘審、二壘審或三壘審即可完成報名
+          <br>
+          ✅ 顯示自己姓名代表報名成功
+          <br>
+          ✅ 若多人同時報名，以先完成者為準
+          <br>
+          ✅ 點擊姓名下方【取消】可取消報名
+        </div>
+      </div>
+  
+      <div class="guide-step">
+        <h3>📱 Step 4｜裁判員報名（手機版）</h3>
+  
+        <img src="img/guide-04.jpg" class="guide-img">
+  
+        <div class="guide-tip">
+          手機版操作方式與桌機版相同，找到欲執勤場次後直接點選職務即可完成報名。
+        </div>
+      </div>
+  
+      <div class="guide-step">
+        <h3>📝 Step 5｜紀錄員報名（桌機版）</h3>
+  
+        <img src="img/guide-05.jpg" class="guide-img">
+  
+        <div class="guide-tip">
+          ✅ 點擊「+報名」即可完成報名
+          <br>
+          ✅ 顯示自己姓名代表報名成功
+          <br>
+          ✅ 如需取消，可點選姓名下方【取消】
+        </div>
+      </div>
+  
+      <div class="guide-step">
+        <h3>📱 Step 6｜紀錄員報名（手機版）</h3>
+  
+        <img src="img/guide-06.jpg" class="guide-img">
+  
+        <div class="guide-tip">
+          ✅ 灰底姓名：已有其他紀錄員報名
+          <br>
+          ✅ 綠底姓名：您已完成報名
+        </div>
+      </div>
+  
+      <div class="guide-step">
+        <h3>⚠️ Step 7｜注意事項</h3>
+  
+        <!-- <img src="img/guide-07.jpg" class="guide-img"> -->
+  
+        <div class="guide-tip">
+          ✅ 請確認可出勤再進行報名
+          <br>
+          ✅ 臨時無法出勤請盡早取消並通知相關人員
+          <br>
+          ✅ 已過期賽事無法再報名
+          <br>
+          ✅ 同場賽事不可同時擔任裁判與紀錄員
+        </div>
+      </div>
+  
+      <div class="guide-step">
+        <h3>❓ Step 8｜常見問題 FAQ</h3>
+  
+        <!-- <img src="img/guide-08.jpg" class="guide-img"> -->
+  
+        <div class="guide-tip">
+          <strong>Q：什麼是「待位中」？</strong>
+          <br>
+          A：表示您已報名該場比賽，目前正在等待其他職務補齊。
+          <br><br>
+  
+          <strong>Q：為什麼有些位置沒有顯示？</strong>
+          <br>
+          A：該場比賽依規定不需要該職務。
+          <br><br>
+  
+          <strong>Q：可以改站位嗎？</strong>
+          <br>
+          A：請先取消原位置，再重新報名新位置即可。
+        </div>
+      </div>
+  
+      <button class="close-btn full"
+              onclick="hideOverlay('user-guide-overlay')">
+        關閉
+      </button>
+  
+    </div>
   
   </div>
-  
+
 </body>
 </html>
