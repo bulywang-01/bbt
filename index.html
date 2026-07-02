@@ -836,7 +836,7 @@
   }
   
   .stat-value{
-    font-size:34px;
+    font-size:30px;
     font-weight:800;
   }
   
@@ -915,6 +915,70 @@
     color:#334155;
   }
 
+  /* ==================================
+     公告卡片
+  ================================== */
+  
+  .notice-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  
+  .notice-item{
+    background:
+    linear-gradient(
+      135deg,
+      #f8fbff,
+      #ffffff
+    );
+  
+    border-left:4px solid #2563eb;
+    border-radius:12px;
+    padding:12px 16px;
+    color:#334155;
+    font-size:14px;
+  }
+  
+  /* ==================================
+     文件中心
+  ================================== */
+  
+  .download-grid{
+    display:grid;
+    grid-template-columns:
+    repeat(auto-fit,minmax(220px,1fr));
+    gap:12px;
+    margin-top:12px;
+  }
+  
+  .download-card{
+    display:block;
+    text-decoration:none;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    padding:14px;
+    transition:.2s;
+    color:#111827;
+  }
+  
+  .download-card:hover{
+    transform:translateY(-3px);
+    box-shadow:
+      0 10px 16px rgba(0,0,0,.08);
+  }
+  
+  .download-title{
+    font-size:15px;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  
+  .download-desc{
+    font-size:12px;
+    color:#64748b;
+  }
   </style>
 
 </head>
@@ -1049,48 +1113,47 @@
     
     <!-- ✅ 聯盟公告 -->
     <div class="panel">
-      <h3>📢 聯盟公告</h3>
-      <ul>
-        <li>七月份賽程已上傳，請裁判員及紀錄員至班表頁面報名。</li>
-        <li>六月份賽程已上傳，請裁判員及紀錄員至班表頁面報名。</li>
-      </ul>
+      <h3>📢 最新公告</h3>
+      <div class="notice-list">
+        <div class="notice-item">⚾ 七月份賽程已上傳，請裁判員及紀錄員至班表頁面報名。</div>
+        <div class="notice-item">⚾ 六月份賽程已上傳，請裁判員及紀錄員至班表頁面報名。</div>
+      </div>
     </div>
 
     <!-- ✅ 文件下載 -->
-    <div class="panel">
-      <h3>📄 文件下載</h3>
-      <ul>
-        <li>
-          <a href="https://bbtls.com/a03.php" target="_blank">
-            BBT 軟式棒球大聯盟賽事規章
-          </a>
-        </li>
-        <li>
-          <a href="https://bbtls.com/" target="_blank">
-            BBT 軟式棒球大聯盟官網
-          </a>
-        </li>
-        <li>
-          <a href="ctba_rules_2024.pdf" target="_blank">
-            📘 中華民國棒球規則（2024）
-          </a>
-        </li>
-        <li>
-          <a href="umpire_2man_rotation.pdf" target="_blank">
-            🧑‍⚖️ 兩人制裁判移補位（WBSC 英文版）
-          </a>
-        </li>
-        <li>
-          <a href="umpire_3man_rotation.pdf" target="_blank">
-            🧑‍⚖️ 三人制裁判移補位（CTBA 中文版）
-          </a>
-        </li>
-        <li>
-          <a href="umpire_4man_rotation.pdf" target="_blank">
-            🧑‍⚖️ 四人制裁判移補位（WBSC 英文版）
-          </a>
-        </li>
-      </ul>
+    <h3>📚 文件中心</h3>
+    
+    <div class="download-grid">
+      <a href="https://bbtls.com/a03.php" target="_blank" class="download-card">
+        <div class="download-title">📘 聯盟賽事規章</div>
+        <div class="download-desc">聯盟正式競賽規章</div>
+      </a>
+    
+      <a href="https://bbtls.com/" target="_blank" class="download-card">
+        <div class="download-title">🌐 聯盟官方網站</div>
+        <div class="download-desc">聯盟最新資訊</div>
+      </a>
+    
+      <a href="ctba_rules_2024.pdf" target="_blank" class="download-card">
+        <div class="download-title">📖 棒球規則</div>
+        <div class="download-desc">中華民國棒球規則 2024</div>
+      </a>
+    
+      <a href="umpire_2man_rotation.pdf" target="_blank" class="download-card">
+        <div class="download-title">⚾ 二人制移補位</div>
+        <div class="download-desc">WBSC 英文版</div>
+      </a>
+    
+      <a href="umpire_3man_rotation.pdf" target="_blank" class="download-card">
+        <div class="download-title">⚾ 三人制移補位</div>
+        <div class="download-desc">CTBA 中文版</div>
+      </a>
+    
+      <a href="umpire_4man_rotation.pdf" target="_blank" class="download-card">
+        <div class="download-title">⚾ 四人制移補位</div>
+        <div class="download-desc">WBSC 英文版</div>
+      </a>
+    
     </div>
   
     <!-- 系統功能說明 -->
