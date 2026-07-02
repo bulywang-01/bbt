@@ -106,6 +106,10 @@ function bindButtons(){
   document.getElementById('open-analysis-guide')?.addEventListener('click', () => {
     document.getElementById('analysis-guide-overlay').style.display = 'flex';
   });
+
+  document.getElementById('open-user-guide')?.addEventListener('click', () => {
+    document.getElementById('user-guide-overlay').style.display = 'flex';
+  });
   
 }
 
