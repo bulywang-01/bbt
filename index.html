@@ -25,6 +25,7 @@
       letter-spacing: 0.2px;
     }
 
+    
     .main {
       max-width: 1100px;
       margin: auto;
@@ -696,10 +697,8 @@
   ========================== */
   
   .system-guide-box{
-  
     width:95vw !important;
     max-width:700px !important;
-  
   }
   
   .system-guide-box h2{
@@ -707,36 +706,215 @@
   }
   
   .system-guide-box h3{
-  
     margin-top:24px;
     margin-bottom:10px;
-  
     color:#1a237e;
-  
     border-left:4px solid #4a7ef5;
     padding-left:10px;
-  
   }
   
   .system-guide-box ul{
-  
     margin-top:8px;
     padding-left:22px;
     line-height:1.7;
-  
   }
   
   .system-guide-box li{
-  
     margin-bottom:8px;
-  
   }
   
   .system-guide-box p{
-  
-    line-height:1.8;
-  
+      line-height:1.8;
   }
+
+  /* =====================================
+     BBT Portal V3
+  ===================================== */
+  
+  body{
+    background:
+      linear-gradient(
+        180deg,
+        #f8fafc 0%,
+        #eef3f8 100%
+      );
+  }
+  
+  /* ===== 容器 ===== */
+  
+  .main{
+    max-width:1200px;
+    padding:28px;
+  }
+  
+  /* ===== 卡片 ===== */
+  
+  .panel{
+    background:#ffffff;
+    border:1px solid #e8eef6;
+    border-radius:22px;
+    padding:22px;
+    box-shadow:
+      0 10px 28px rgba(15,23,42,.05);
+    transition:.2s;
+  }
+  
+  .panel:hover{
+    transform:translateY(-2px);
+    box-shadow:
+      0 14px 36px rgba(15,23,42,.08);
+  }
+  
+  /* ===== Welcome ===== */
+  
+  .welcome-box{
+    background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #f8fbff 100%
+    );
+    border:1px solid #dbeafe;
+  }
+    
+  /* ===== 身分 ===== */
+  
+  .welcome-role{
+    font-size:18px;
+    color:#2563eb;
+    font-weight:800;
+  }
+  
+  .welcome-name{
+    font-size:24px;
+    color:#111827;
+    margin:10px 0 16px 0;
+  }
+  
+  /* ===== 統計卡 ===== */
+  
+  .user-stats{
+    gap:16px;
+  }
+  
+  .stat-card{
+    border:none;
+    border-radius:18px;
+    overflow:hidden;
+  }
+  
+  .stat-card:nth-child(1){
+    background:
+    linear-gradient(
+      135deg,
+      #eff6ff,
+      #ffffff
+    );
+  }
+  
+  .stat-card:nth-child(2){
+    background:
+    linear-gradient(
+      135deg,
+      #ecfdf5,
+      #ffffff
+    );
+  }
+  
+  .stat-card:nth-child(3){
+    background:
+    linear-gradient(
+      135deg,
+      #fff7ed,
+      #ffffff
+    );
+  }
+  
+  .stat-title{
+    font-size:13px;
+    color:#64748b;
+  }
+  
+  .stat-value{
+    font-size:34px;
+    font-weight:800;
+  }
+  
+  /* ===== 功能按鈕 ===== */
+  
+  .welcome-actions{
+    margin-top:18px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  
+  .pill{
+    padding:12px 18px;
+    border-radius:14px;
+    font-weight:700;
+    box-shadow:
+      0 4px 10px rgba(0,0,0,.05);
+  }
+  
+  .pill:hover{
+    transform:
+      translateY(-2px);
+  }
+  
+  /* ===== 標題 ===== */
+  
+  .panel h3{
+    margin-top:0;
+    margin-bottom:16px;
+    font-size:20px;
+    color:#0f172a;
+  }
+  
+  /* ===== 公告 ===== */
+  
+  .panel ul{
+    line-height:1.9;
+  }
+  
+  /* ===== 文件下載 ===== */
+  
+  .panel a{
+    color:#2563eb;
+    text-decoration:none;
+    font-weight:600;
+  }
+  
+  .panel a:hover{
+    text-decoration:underline;
+  }
+  
+  /* ===== 系統資訊中心 ===== */
+  
+  .system-center{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:12px;
+  }
+  
+  /* ===== 頁尾 ===== */
+  
+  .footer{
+    text-align:center;
+    margin-top:30px;
+    padding:24px 12px;
+    color:#64748b;
+    font-size:13px;
+    line-height:1.8;
+  }
+  
+  .footer .title{
+    font-size:15px;
+    font-weight:700;
+    color:#334155;
+  }
+
   </style>
 
 </head>
@@ -764,7 +942,7 @@
   <div id="header-container"></div>
 
   <script>
-    // Header 
+    // Header
 
     function loadHeader() {
       fetch('header.html')
@@ -917,21 +1095,25 @@
   
     <!-- 系統功能說明 -->
     <div class="panel">
-      <h3>ℹ️ 系統資訊</h3>
-      <button id="open-system-history" class="pill pill-blue">📜 系統開發日誌</button>
-      <button id="open-system-guide" class="pill pill-blue">ℹ️ 系統功能說明</button>
-      <button id="open-analysis-guide" class="pill pill-blue">📊 數據分析說明</button>
+      <h3>📚 系統資訊中心</h3>
+
+      <div style="color:#64748b;font-size:14px;margin-bottom:12px;">
+        提供系統功能介紹、開發歷程及數據分析說明。
+      </div>
+    
+      <div class="system-center">
+        <button id="open-system-history" class="pill pill-blue">📜 系統開發日誌</button>
+        <button id="open-system-guide" class="pill pill-blue">ℹ️ 系統功能說明</button>
+        <button id="open-analysis-guide" class="pill pill-blue">📊 數據分析說明</button>
+      </div>
+    
     </div>
     
-    <div style="
-      text-align:center;
-      margin:30px 0 10px 0;
-      color:#9ca3af;
-      font-size:12px;
-      line-height:1.6;
-    ">
-      © 2026 BBT 軟式棒球聯盟出勤系統 ｜ Design & Development by bulywang Version 2.0 ｜ Updated 115/07/01
-    </div>
+    <footer class="footer">
+      <div class="title">⚾ BBT 軟式棒球聯盟出勤管理系統</div>
+      <div>Version 2.0 ｜ Updated 115/07/01</div>
+      <div>Design & Development by bulywang</div>
+    </footer>
           
     
     <!-- 裁判守則 Overlay -->
