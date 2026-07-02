@@ -769,6 +769,8 @@
       #f8fbff 100%
     );
     border:1px solid #dbeafe;
+margin-top:8px;
+
   }
     
   /* ===== 身分 ===== */
@@ -834,8 +836,8 @@
   }
   
   .stat-value{
-    font-size:30px;
-    font-weight:800;
+    font-size:40px;
+    font-weight:900;
   }
   
   /* ===== 功能按鈕 ===== */
@@ -844,20 +846,23 @@
     margin-top:18px;
     display:flex;
     flex-wrap:wrap;
-    gap:10px;
-  }
+    justify-content:center;
+    gap:12px;
+    }
   
   .pill{
     padding:12px 18px;
-    border-radius:14px;
     font-weight:700;
     box-shadow:
       0 4px 10px rgba(0,0,0,.05);
+    border-radius:16px;
+    transition:.2s;
   }
   
   .pill:hover{
-    transform:
-      translateY(-2px);
+      transform:translateY(-3px);
+    box-shadow:
+      0 8px 16px rgba(0,0,0,.08);
   }
   
   /* ===== 標題 ===== */
@@ -962,9 +967,9 @@
   }
   
   .download-card:hover{
-    transform:translateY(-3px);
+    transform:translateY(-4px);
     box-shadow:
-      0 10px 16px rgba(0,0,0,.08);
+      0 12px 22px rgba(0,0,0,.08);
   }
   
   .download-title{
@@ -979,6 +984,8 @@
   }
 
   .stat-card{
+    position:relative;
+    overflow:hidden;
     transition:.25s;
   }
   
@@ -988,6 +995,18 @@
       0 14px 24px rgba(0,0,0,.08);
   }
 
+  .stat-card::after{
+    content:'';
+    position:absolute;
+    right:-25px;
+    top:-25px;
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    background:
+      rgba(255,255,255,.25);
+   }
+    
   .system-guide-box{
       width:95vw !important;
       max-width:900px !important;
@@ -1011,6 +1030,97 @@
     margin-top:-4px;
     margin-bottom:12px;
   }
+
+  .welcome-sub{
+    margin-top:8px;
+    font-size:13px;
+    color:#64748b;
+  }
+
+/* =====================================
+   📱 Mobile UI Optimize
+===================================== */
+@media (max-width:768px){
+
+  /* 主卡 */
+  .welcome-box{
+    margin-top:8px;
+  }
+
+  /* 統計卡 */
+  .stat-card{
+    min-height:72px;
+    padding:10px;
+  }
+
+  .stat-value{
+    font-size:28px !important;
+    line-height:1.1;
+    white-space:nowrap;
+  }
+
+  .stat-title{
+    font-size:11px;
+  }
+
+  /* 功能按鈕 */
+  .welcome-actions{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+    width:100%;
+  }
+
+  .pill{
+    width:100%;
+    box-sizing:border-box;
+    text-align:center;
+    font-size:12px;
+  }
+
+  /* 文件中心 */
+  .download-grid{
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+  }
+
+  .download-card{
+    min-height:72px;
+    padding:10px;
+  }
+
+  .download-title{
+    font-size:13px;
+  }
+
+  .download-desc{
+    font-size:11px;
+  }
+
+  /* 系統資訊中心 */
+  .system-center{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+  }
+
+  /* Footer */
+  .footer{
+    font-size:12px;
+    line-height:1.8;
+  }
+
+  .footer .title{
+    font-size:14px;
+  }
+
+  /* 使用教學圖片 */
+  .guide-img{
+    width:90%;
+    max-width:420px;
+  }
+
+}
   </style>
 
 </head>
@@ -1094,6 +1204,7 @@
       <div style="font-size:28px;font-weight:800;margin-bottom:10px;color:#1e3a8a;">⚾ BBT 出勤管理系統</div>
       <div class="welcome-role" id="welcome-role"></div>
       <div class="welcome-name" id="welcome-name"></div>
+      <div class="welcome-sub">⚾ 感謝您協助維護聯盟賽事品質與公平競賽環境</div>
 
       <!-- ✅ 本週提醒 -->
       <div id="welcome-alert"></div>
