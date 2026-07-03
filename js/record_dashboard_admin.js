@@ -27,7 +27,7 @@ function loadAdminGames() {
 }
 
 //✅ 前端 grouping（admin.js 新增 / 取代原本 render）
-//✅ 1️⃣ 先把 games 分組（日期 → 組別 → 排時間）
+//✅ 先把 games 分組（日期 → 組別 → 排時間）
 function groupAdminGames(games) {
   const map = {};
 
