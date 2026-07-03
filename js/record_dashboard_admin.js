@@ -105,8 +105,8 @@ function renderPos(g, role, label) {
       <div class="pos-cell assigned">
         <div class="role">${label}</div>
         <div class="signup-name assigned">${assign.name}</div>
-        <button class="btn-change" onclick="openRecordModal('${g.game_id}','${role}')">變更</button>
-        <button class="btn-cancel" onclick="cancelRecordAssignment('${g.game_id}','${role}')">取消</button>
+        <button class="btn-change" onclick="openRecordModal('${g.game_id}','${role}')">換</button>
+        <button class="btn-cancel" onclick="cancelRecordAssignment('${g.game_id}','${role}')">刪</button>
       </div>
     `;
   }
