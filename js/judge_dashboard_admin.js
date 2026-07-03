@@ -175,8 +175,8 @@ function renderPosCell(game, role) {
       <div class="pos-cell assigned">
         <div class="role">${ROLE_LABEL[role]}</div>
         <div class="judge">${pos.assigned.name || '（未知裁判）'}</div>
-        <button class="btn-change" onclick="openAssignJudge('${game.game_id}', '${role}')">更換</button>
-        <button class="btn-cancel" onclick="cancelJudgeAssignment('${game.game_id}','${role}')">取消</button>
+        <button class="btn-change" onclick="openAssignJudge('${game.game_id}', '${role}')">換</button>
+        <button class="btn-cancel" onclick="cancelJudgeAssignment('${game.game_id}','${role}')">刪</button>
       </div>`;
   }
 
