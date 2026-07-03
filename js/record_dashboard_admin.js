@@ -111,7 +111,7 @@ function renderPos(g, role, label) {
     `;
   }
 
-  // ✅ ✅ ✅ 裁判同款顯示（核心🔥）
+  // ✅ ✅ ✅ 裁判同款顯示（核心）
   let signupHtml = '';
 
   if (signups.length){
