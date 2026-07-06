@@ -184,7 +184,6 @@ function renderPos(g, role, label) {
 }
 
 
-
 /* ===== Modal ===== */
 function openRecordModal(gameId, role) {
 
