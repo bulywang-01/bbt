@@ -159,7 +159,7 @@ function renderPos(g, role, label) {
                   )
                 "
               >
-                取消報名
+                取消
               </button>
   
             </div>
