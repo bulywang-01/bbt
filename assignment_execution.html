@@ -502,7 +502,6 @@ function isGameLocked(g){
   return g.list.every(p => 
     p.status === 'completed' || p.status === 'late'
   );
-
 }
 
   /* ========================
@@ -1037,35 +1036,40 @@ function renderRoleRow(role, rows, g){
 // 核心決策引擎
 function handleAutoDecision(gameId, role, status){
 
-  const g = window._lastData?.find(x => x.game_id == gameId);
+  const g = window._lastData?.find(
+    x => x.game_id == gameId
+  );
 
   if (!g){
     toast('找不到賽事','error');
     return;
   }
 
-  const list = g.list.filter(x => x.role === role);
+  const list = g.list.filter(
+    x => x.role === role
+  );
 
-  // ✅ 找支援（一定優先）
-  const replacement = list.find(x => Number(x.is_replacement) === 1);
+  // ✅ 先找支援
+  const replacement = list.find(
+    x => Number(x.is_replacement) === 1
+  );
 
-  let targetId = null;
+  let targetId = '';
 
+  // ✅ 有支援優先更新支援
   if (replacement){
 
-    // ✅ ✅ ✅ ✅ ✅ 核心修正
     targetId = replacement.assignment_id;
 
   }else{
 
-    // ✅ 只抓「原人且不是缺席」
     const original = list.find(x =>
       Number(x.is_replacement) !== 1 &&
       x.assignment_id &&
       x.status !== 'no_show'
     );
 
-    targetId = original?.assignment_id;
+    targetId = original?.assignment_id || '';
 
   }
 
@@ -1075,6 +1079,7 @@ function handleAutoDecision(gameId, role, status){
   }
 
   updateStatus(targetId, status);
+
 }
 
 
@@ -1355,7 +1360,8 @@ function renderRow(p, g, isReplacement=false){
      
        toast(`✅ 已標記：${textMap[status]}`);
      
-       updateRowUI(id, status);
+       // updateRowUI(id, status);
+       load();   // ✅ 直接重整
      
        // ✅ ✅ ✅ 🔥 如果是 no_show，要刷新（讓 "支" 出現）
        if (status === 'no_show'){
@@ -1690,15 +1696,32 @@ function completeGame(gameId){
 
   if(!confirm('確定整場完成？')) return;
 
-  callApi({
-    action:'completeGame',
-    game_id:gameId
-  }, res=>{
-    if (res.result === 'ok'){
-      toast('✅ 完成');
-      load();
-    }
-  });
+   callApi({
+     action:'completeGame',
+     game_id:gameId
+   }, res=>{
+   
+     console.log('completeGame=',res);
+   
+     if (
+       res &&
+       (
+         res.result === 'ok' ||
+         res.success === true
+       )
+     ){
+   
+       toast('✅ 完成');
+   
+       setTimeout(load,100);
+   
+     }else{
+   
+       toast('❌ 完成失敗','error');
+   
+     }
+   
+   });
 }
 
 
