@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!adminSession.user_id) {
     alert('尚未登入，請重新登入');
     location.replace('login.html');
-    return; // ✅ 關鍵：不要再往下跑
+    return; // 關鍵：不要再往下跑
   }
 
   loadAdminGames(); // ✅ 只在 session OK 時才打 API
@@ -26,7 +26,7 @@ function loadAdminGames() {
   });
 }
 
-//✅ 前端 grouping（admin.js 新增 / 取代原本 render）
+// 前端 grouping（admin.js 新增 / 取代原本 render）
 //✅ 先把 games 分組（日期 → 組別 → 排時間）
 function groupAdminGames(games) {
   const map = {};
@@ -111,34 +111,62 @@ function renderPos(g, role, label) {
     `;
   }
 
-  // ✅ ✅ ✅ 裁判同款顯示（核心）
+  // ✅ ✅ ✅ 裁判同款顯示（核心🔥）
   let signupHtml = '';
 
   if (signups.length){
-
+  
     signupHtml = `
       <div class="signup-list">
+  
         ${signups.map((s, i) => {
-
-          // ✅ 第一位 → 主人（有底色）
-          if (i === 0){
-            return `
-              <div class="signup-name primary">
-                ${s.name}
-              </div>
-            `;
-          }
-
-          // ✅ 其他 → 圓圈數字
-          const num = ['①','②','③','④','⑤'][i] || `(${i+1})`;
-
+  
+          const prefix =
+            i === 0
+              ? ''
+              : (['①','②','③','④','⑤'][i] || `(${i+1})`) + ' ';
+  
           return `
-            <div class="signup-name sub">
-              ${num} ${s.name}
+            <div
+              style="
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                gap:6px;
+                margin:4px 0;
+              "
+            >
+  
+              <span>
+                ${prefix}${s.name}
+              </span>
+  
+              <button
+                style="
+                  background:#ef4444;
+                  color:#fff;
+                  border:none;
+                  border-radius:6px;
+                  padding:2px 8px;
+                  cursor:pointer;
+                  font-size:12px;
+                "
+                onclick="
+                  cancelRecordSignup(
+                    '${g.game_id}',
+                    '${role}',
+                    '${s.user_id}'
+                  )
+                "
+              >
+                取消報名
+              </button>
+  
             </div>
           `;
-
+  
         }).join('')}
+  
       </div>
     `;
   }
@@ -338,4 +366,46 @@ function cancelRecordAssignment(gameId, role){
     showAssignMessage('✅ 已取消指派');
     loadAdminGames();
   });
+}
+
+// 取消報名
+function cancelRecordSignup(
+  gameId,
+  role,
+  userId
+){
+
+  if(
+    !confirm('確定取消此人報名？')
+  ){
+    return;
+  }
+
+  callApi({
+    action:'cancelRecordSignup_admin',
+    game_id:gameId,
+    record_role:role,
+    user_id:userId
+  }, res => {
+
+    if(
+      !res ||
+      res.result !== 'ok'
+    ){
+
+      showAssignMessage(
+        `❌ ${res?.message || '取消報名失敗'}`
+      );
+
+      return;
+    }
+
+    showAssignMessage(
+      '✅ 已取消報名'
+    );
+
+    loadAdminGames();
+
+  });
+
 }
