@@ -13,7 +13,6 @@ function callApi(params, callback) {
     .join('&');
 
   const url = `${API_BASE}?${query}&callback=${cbName}`;
-
   const script = document.createElement('script');
 
   let timeout = setTimeout(() => {
