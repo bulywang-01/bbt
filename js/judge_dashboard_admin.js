@@ -226,7 +226,7 @@ function renderPosCell(game, role) {
                   )
                 "
               >
-                取消報名
+                取消
               </button>
         
             </div>
