@@ -186,36 +186,54 @@ function renderPosCell(game, role) {
       
         const list = pos.preferred;
       
-        if (list.length === 1){
-      
-          preferredText = `<span class="rank-1">${list[0].name}</span>`;
-      
-        } else {
-      
-          const circled = ['①','②','③','④','⑤'];  // ✅ 支援到5
-      
-          preferredText = list.map((j, i) => {
-      
-            const rank = i;
-      
-            const num = circled[rank] || (rank+1);
-      
-            if (rank === 0){
-              return `<span class="rank-1">${num} ${j.name}</span>`;
-            }
-      
-            if (rank === 1){
-              return `<span class="rank-2">${num} ${j.name}</span>`;
-            }
-      
-            return `<span class="rank-3">${num} ${j.name}</span>`;
-      
-          }).join('');
-        }
+        preferredText = list.map((j, i) => {
+        
+          const prefix =
+            i === 0
+              ? ''
+              : (['①','②','③','④','⑤'][i] || `(${i+1})`) + ' ';
+        
+          return `
+            <div
+              style="
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                gap:6px;
+                margin:4px 0;
+              "
+            >
+        
+              <span>
+                ${prefix}${j.name}
+              </span>
+        
+              <button
+                style="
+                  background:#ef4444;
+                  color:#fff;
+                  border:none;
+                  border-radius:6px;
+                  padding:2px 8px;
+                  cursor:pointer;
+                  font-size:12px;
+                "
+                onclick="
+                  cancelJudgeSignup(
+                    '${game.game_id}',
+                    '${role}',
+                    '${j.id}'
+                  )
+                "
+              >
+                取消報名
+              </button>
+        
+            </div>
+          `;
+        
+        }).join('');
       }
-
-
-
 
   return `
     <div class="pos-cell">
@@ -466,4 +484,44 @@ function cancelJudgeAssignment(gameId, role){
     showAssignMessage('✅ 已取消指派');
     loadGames();
   });
+}
+
+// 取消裁判報名人員
+function cancelJudgeSignup(
+  gameId,
+  role,
+  userId
+){
+
+  if(!confirm('確定取消此人報名？')){
+    return;
+  }
+
+  callApi({
+    action:'cancelJudgeSignup_admin',
+    game_id:gameId,
+    role:role,
+    user_id:userId
+  }, res => {
+
+    if(
+      !res ||
+      res.result !== 'ok'
+    ){
+
+      showAssignMessage(
+        `❌ ${res?.message || '取消報名失敗'}`
+      );
+
+      return;
+    }
+
+    showAssignMessage(
+      '✅ 已取消報名'
+    );
+
+    loadGames();
+
+  });
+
 }
