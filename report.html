@@ -324,6 +324,66 @@
       color:#1976d2;
       font-weight:700;
     }
+
+  /* =========================
+       View Tabs
+    ========================= */
+    
+    .view-tabs{
+      display:flex;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    
+    .view-tab{
+      border:none;
+      padding:8px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      background:#e5e7eb;
+    }
+    
+    .view-tab.active{
+      background:#2563eb;
+      color:#fff;
+    }
+    
+    /* =========================
+       Summary Table
+    ========================= */
+    
+    .summary-table{
+      width:100%;
+      border-collapse:collapse;
+      background:#fff;
+    }
+    
+    .summary-table th{
+      background:#f3f4f6;
+      padding:10px;
+      text-align:center;
+    }
+    
+    .summary-table td{
+      padding:10px;
+      text-align:center;
+      border-bottom:1px solid #eee;
+    }
+    
+    .summary-name{
+      font-weight:700;
+      text-align:left !important;
+    }
+    
+    .role-badge{
+      display:inline-block;
+      margin:2px;
+      padding:2px 8px;
+      border-radius:12px;
+      background:#eef2ff;
+      color:#2563eb;
+      font-size:12px;
+    }
   </style>
 </head>
 
@@ -354,15 +414,31 @@
     <div class="toolbar-row main-bar">
     
       <!-- 左 -->
+      <!--
       <div>
         <button class="btn primary" onclick="selectMonth('ALL')">今年度</button>
+      </div>
+      -->
+      <div class="view-tabs">
+        <button
+          class="view-tab active"
+          id="btnSummary"
+          onclick="switchView('summary')">
+          📊 年度總表
+        </button>
+        <button
+          class="view-tab"
+          id="btnCalendar"
+          onclick="switchView('calendar')">
+          📅 日曆模式
+        </button>
       </div>
     
       <!-- 右 -->
       <div class="btn-group">
-        <button class="btn" onclick="setSort('score')">出勤排序</button>
+        <!-- <button class="btn" onclick="setSort('score')">出勤排序</button> -->
         <!-- <button class="btn" onclick="setSort('quality')">品質排序</button> -->
-        <button class="btn" onclick="setSort('name')">姓名排序</button>
+        <!-- <button class="btn" onclick="setSort('name')">姓名排序</button> -->
         <button class="btn back" onclick="goBack()">返回</button>
       </div>
     
@@ -518,7 +594,10 @@ function loadReport(){
 
     // ✅ render 按鈕（第一次）
     renderMonthButtons(res.gameDays);
-
+    
+    lastData = res.data;
+    lastGameDays = res.gameDays;
+    
     render(res.data, res.gameDays);
   });
 }
@@ -559,6 +638,11 @@ function setSort(mode){
 
 /* ✅ render（用真實日期） */
 function render(data, gameDays){
+
+  if(currentView === 'summary'){
+    renderSummary(data);
+    return;
+  }
 
   if(!gameDays || gameDays.length === 0){
 
@@ -906,7 +990,140 @@ function formatRole(roleStr){
     .map(r => map[r.trim()] || r)
     .join(' / ');
 }
-    
+
+// 新增總表格式程式
+  let currentView = 'summary';
+  let lastData = null;
+  let lastGameDays = null;
+  
+  // 切換tab
+  function switchView(view){
+  
+    currentView = view;
+  
+    document
+      .getElementById('btnSummary')
+      .classList.remove('active');
+  
+    document
+      .getElementById('btnCalendar')
+      .classList.remove('active');
+  
+    if(view === 'summary'){
+      document
+        .getElementById('btnSummary')
+        .classList.add('active');
+    }else{
+      document
+        .getElementById('btnCalendar')
+        .classList.add('active');
+    }
+  
+    render(lastData, lastGameDays);
+  
+  }
+
+  // 年度總表表格
+  function renderSummary(data){
+  
+    const users =
+      sortUsers(Object.values(data));
+  
+    let html = `
+      <table class="summary-table">
+  
+        <thead>
+          <tr>
+            <th>姓名</th>
+            <th>年度</th>
+            <th>生涯</th>
+            <th>遲到</th>
+            <th>缺席</th>
+            <th>支援</th>
+            <th>出席率</th>
+            <th>主要位置</th>
+          </tr>
+        </thead>
+  
+        <tbody>
+    `;
+  
+    users.forEach(u=>{
+  
+      const s = u.summary || {};
+  
+      const total =
+        (s.yearAttendance || 0);
+  
+      const quality =
+        total
+        ? Math.round(
+            (
+              (total - (s.no_show || 0))
+              / total
+            ) * 100
+          )
+        : 0;
+  
+      const roleHtml =
+        Object.keys(u.roleStats || {})
+          .sort((a,b)=>
+            (u.roleStats[b] || 0)
+            -
+            (u.roleStats[a] || 0)
+          )
+          .slice(0,3)
+          .map(r=>
+            `<span class="role-badge">
+               ${mapRole(r)}
+               (${u.roleStats[r]})
+             </span>`
+          )
+          .join('');
+  
+      html += `
+        <tr>
+  
+          <td class="summary-name">
+            ${u.name}
+          </td>
+  
+          <td>${s.yearAttendance || 0}</td>
+  
+          <td>${s.careerAttendance || 0}</td>
+  
+          <td style="color:#f57c00;">
+            ${s.late || 0}
+          </td>
+  
+          <td style="color:#d32f2f;">
+            ${s.no_show || 0}
+          </td>
+  
+          <td style="color:#1976d2;">
+            ${s.support || 0}
+          </td>
+  
+          <td>
+            ${quality}%
+          </td>
+  
+          <td style="text-align:left">
+            ${roleHtml}
+          </td>
+  
+        </tr>
+      `;
+    });
+  
+    html += `
+        </tbody>
+      </table>
+    `;
+  
+    document.getElementById('reportArea')
+      .innerHTML = html;
+  }
   </script>
 
 </body>
