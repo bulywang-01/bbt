@@ -239,6 +239,7 @@
         align-items: center;
         margin-bottom: 8px;
         flex-wrap: wrap;
+        font-size: 20px;
       }
       
       .title {
@@ -447,6 +448,46 @@
     .role-tabs{
       margin-left:auto;
     }
+
+  /* =========================
+       報表工具列
+    ========================= */
+    
+    .report-toolbar{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    
+    /* 第一排 */
+    
+    .toolbar-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    
+    /* 第二排 */
+    
+    .toolbar-bottom{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    
+    /* 手機 */
+    
+    @media (max-width:900px){
+    
+      .toolbar-top,
+      .toolbar-bottom{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
+      }
+    
+    }
   </style>
 </head>
 
@@ -464,13 +505,6 @@
     <!-- ✅ 第一排 -->
     <div class="header-row">
       <div class="title">📊 出勤報表</div>
-    
-      <div class="legend">
-        <span class="day ok">完成</span>
-        <span class="day late">遲</span>
-        <span class="day no">缺</span>
-        <span class="day sub">援</span>
-      </div>
     </div>
     
     <!-- ✅ 第二排（左右） -->
@@ -482,61 +516,64 @@
         <button class="btn primary" onclick="selectMonth('ALL')">今年度</button>
       </div>
       -->
-      <div class="tab-bar">
+      <div class="report-toolbar">
       
-        <div class="view-tabs">
+        <!-- 第一排 -->
       
-          <button
-            class="view-tab active"
-            id="btnSummary"
-            onclick="switchView('summary')">
-            📊 年度總表
-          </button>
+        <div class="top-bar">
       
-          <button
-            class="view-tab"
-            id="btnCalendar"
-            onclick="switchView('calendar')">
-            📅 日曆模式
-          </button>
+          <div class="view-tabs">
       
+            <button class="view-tab active" id="btnSummary" onclick="switchView('summary')">📊 年度總表</button>
+            <button class="view-tab" id="btnCalendar" onclick="switchView('calendar')">📅 日曆模式</button>
+      
+            <div class="legend">
+              <span class="day ok">完成</span>
+              <span class="day late">遲</span>
+              <span class="day no">缺</span>
+              <span class="day sub">援</span>
+            </div>
+            
+            <div class="btn-group">
+              <button class="btn back" onclick="goBack()">返回前頁</button>
+            </div>
+            
+          </div>
+     
         </div>
       
-        <div class="role-tabs">
+        <!-- 第二排 -->
       
-          <button
-            id="roleAll"
-            class="role-tab all active"
-            onclick="switchRoleTab('all')">
-            全部
-          </button>
-          
-          <button
-            id="roleJudge"
-            class="role-tab judge"
-            onclick="switchRoleTab('judge')">
-            ⚾ 裁判
-          </button>
-          
-          <button
-            id="roleRecord"
-            class="role-tab record"
-            onclick="switchRoleTab('record')">
-            📝 紀錄
-          </button>
+        <div class="bottom-bar">
+      
+          <div class="role-tabs">
+      
+            <button
+              id="roleAll"
+              class="role-tab all active"
+              onclick="switchRoleTab('all')">
+              全部
+            </button>
+      
+            <button
+              id="roleJudge"
+              class="role-tab judge"
+              onclick="switchRoleTab('judge')">
+              ⚾ 裁判
+            </button>
+      
+            <button
+              id="roleRecord"
+              class="role-tab record"
+              onclick="switchRoleTab('record')">
+              📝 紀錄
+            </button>
+      
+          </div>
       
         </div>
       
       </div>
-      
-      <!-- 右 -->
-      <div class="btn-group">
-        <!-- <button class="btn" onclick="setSort('score')">出勤排序</button> -->
-        <!-- <button class="btn" onclick="setSort('quality')">品質排序</button> -->
-        <!-- <button class="btn" onclick="setSort('name')">姓名排序</button> -->
-        <button class="btn back" onclick="goBack()">返回</button>
-      </div>
-    
     </div>
   
   <div id="reportArea"></div>
