@@ -163,8 +163,10 @@
         font-size: 12px;
         margin: 2px;
         text-align: center;
-        border-radius: 4px;
+        border-radius: 8px;  // 4-->8
+        padding:8px 14px;    // new
       }
+
       
       /* ✅ 手機 */
       @media (max-width:600px){
@@ -182,6 +184,8 @@
           height: 28px;
           line-height: 28px;
           font-size: 14px;
+          gap:8px;
+          margin-bottom:12px;
         }
       }
       
@@ -243,8 +247,8 @@
       }
       
       .title {
-        font-size: 18px;
-        font-weight: 700;
+        font-size: 22px;
+        font-weight: 800;
       }
       
       .legend {
@@ -334,6 +338,8 @@
       display:flex;
       gap:8px;
       margin-bottom:12px;
+      padding: 6px 10px;
+      border-radius: 6px;
     }
     
     .view-tab{
@@ -504,7 +510,7 @@
 
     <!-- ✅ 第一排 -->
     <div class="header-row">
-      <div class="title">📊 出勤報表</div>
+      <div class="title">📊 裁判員及紀錄員出勤報表</div>
     </div>
     
     <!-- ✅ 第二排（左右） -->
@@ -516,22 +522,23 @@
         <button class="btn primary" onclick="selectMonth('ALL')">今年度</button>
       </div>
       -->
+     
       <div class="report-toolbar">
       
         <!-- 第一排 -->
       
         <div class="top-bar">
-      
+             
           <div class="view-tabs">
       
-            <button class="view-tab active" id="btnSummary" onclick="switchView('summary')">📊 年度總表</button>
-            <button class="view-tab" id="btnCalendar" onclick="switchView('calendar')">📅 日曆模式</button>
+            <button class="view-tab active" id="btnSummary" onclick="switchView('summary')">年度總表</button>
+            <button class="view-tab" id="btnCalendar" onclick="switchView('calendar')">日曆模式</button>
       
             <div class="legend">
               <span class="day ok">完成</span>
-              <span class="day late">遲</span>
-              <span class="day no">缺</span>
-              <span class="day sub">援</span>
+              <span class="day late">遲到</span>
+              <span class="day no">缺席</span>
+              <span class="day sub">支援</span>
             </div>
             
             <div class="btn-group">
@@ -559,14 +566,14 @@
               id="roleJudge"
               class="role-tab judge"
               onclick="switchRoleTab('judge')">
-              ⚾ 裁判
+              裁判
             </button>
       
             <button
               id="roleRecord"
               class="role-tab record"
               onclick="switchRoleTab('record')">
-              📝 紀錄
+              紀錄
             </button>
       
           </div>
@@ -638,33 +645,6 @@
     // 生成按鈕
     function renderMonthButtons(gameDays){
       return;
-      /*
-      // ✅ 從 gameDays 推月份（靠 Games）
-      const monthsSet = new Set();
-    
-      gameDays.forEach(d=>{
-        // 先假設用當前選擇月（因為現在後端是 dd）
-        // 👉 所以這裡直接用目前 monthPicker 的值
-        const current = document.getElementById('currentMonth')?.value;
-        if(current){
-          monthsSet.add(current);
-        }
-      });
-    
-      // 👉 因為你現在後端是用 month filter
-      // 👉 所以這裡簡化：直接列固定月份（從資料來會再升級）
-    
-      const months = Array.from(monthsSet);
-    
-      let html = ``;
-    
-      months.forEach(m=>{
-        const mm = m.split('-')[1];
-        html += `<button onclick="selectMonth('${m}')">${Number(mm)}月</button>`;
-      });
-    
-      document.getElementById('monthButtons').innerHTML = html;
-      */
     }
 
 
@@ -868,31 +848,31 @@ function render(data, gameDays){
         <div class="user-kpi-text">
         
           <span class="year">
-            生涯出席：${summary.careerAttendance || 0}
+            生涯：${summary.careerAttendance || 0}
           </span>
         
           ｜
         
           <span class="career">
-            年度出席：${summary.yearAttendance || 0}
+            年度：${summary.yearAttendance || 0}
           </span>
         
           ｜
         
           <span class="late">
-            遲：${summary.late || 0}
+            遲到：${summary.late || 0}
           </span>
         
           ｜
         
           <span class="no-show">
-            缺：${summary.no_show || 0}
+            缺席：${summary.no_show || 0}
           </span>
         
           ｜
         
           <span class="support">
-            援：${summary.support || 0}
+            支援：${summary.support || 0}
           </span>
         
         </div>
@@ -1137,6 +1117,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 
+// 身份(role)中文化
 function formatRole(roleStr){
 
   if(!roleStr) return '';
@@ -1271,8 +1252,7 @@ function formatRole(roleStr){
     let html = `
     
       <div class="report-note">
-        📌 本表僅顯示曾有出勤紀錄之裁判員、裁判長、紀錄員及紀錄長
-        （共 ${users.length} 人）
+        📌 僅顯示有出勤紀錄之裁判員(長)和紀錄員(長)共 ${users.length} 人
       </div>
     
       <table class="summary-table">
@@ -1451,10 +1431,10 @@ function formatRole(roleStr){
     `全部 (${allUsers.length})`;
 
   document.getElementById('roleJudge').innerHTML =
-    `⚾ 裁判 (${judgeUsers.length})`;
+    `裁判 (${judgeUsers.length})`;
 
   document.getElementById('roleRecord').innerHTML =
-    `📝 紀錄 (${recordUsers.length})`;
+    `紀錄 (${recordUsers.length})`;
 
 }
   </script>
