@@ -4,270 +4,495 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>出勤報表</title>
-
+  
   <style>
-/* ✅ 基本 */
-body {
-  font-family: Arial;
-  margin: 0;
-  padding: 12px;
-  background: #f5f5f5;
-  font-size: 16px;
-}
+      /* ✅ 基本 */
+      body {
+        font-family: Arial;
+        margin: 0;
+        padding: 12px;
+        background: #f5f5f5;
+        font-size: 16px;
+      }
+      
+      /* ✅ 一人一列 */
+      .user-row {
+        display: flex;
+        flex-direction: column;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+      }
+      
+      /* ✅ 左側 */
+      .user-name {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      
+      /* ✅ 右側 */
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      
+      /* ✅ 月份 */
+      .month-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      
+      /* ✅ 日期 */
+      .days {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      
+      /* ✅ 顏色 */
+      .day.ok { background:#4caf50; color:#fff; }
+      .day.late { background:#ff9800; color:#fff; }
+      .day.no { background:#f44336; color:#fff; }
+      .day.sub { background:#2196f3; color:#fff; }
+      .day.empty { background:#eee; color:#999; }
+      
+      /* ✅ 桌機再優化 */
+      @media (min-width: 900px){
+      
+        body {
+          font-size: 14px;
+        }
+      
+        .user-row {
+          flex-direction: column;   /* ✅ 固定垂直 */
+        }
+      
+        .user-summary {
+          justify-content: center;
+        }
+      
+        .day {
+          width: 22px;
+          height: 22px;
+          line-height: 22px;
+          font-size: 11px;
+        }
+      }
+      
+      .btn {
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background: #1976d2;
+        color: #fff;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      
+      .btn:hover {
+        background: #1565c0;
+      }
+      
+      .btn.back {
+        background: #757575;
+      }
+      
+      .btn.back:hover {
+        background: #616161;
+      }
+      
+      .user-role{
+        font-size: 11px;
+        color: #777;
+        margin-left: 4px;
+      }
+      
+      .user-row {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+      }
+      
+      /* ✅ 名字區 */
+      .user-header {
+        margin-bottom: 4px;
+      }
+      
+      .user-name {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      
+      .user-role {
+        font-size: 12px;
+        color: #777;
+        margin-left: 6px;
+      }
+      
+      /* ✅ KPI */
+      .user-kpi {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+      
+      .user-kpi .label {
+        font-size: 12px;
+        color: #666;
+      }
+      
+      /* ✅ 月份排版 */
+      .month-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+      
+      .month-label {
+        width: 32px;
+        font-size: 12px;
+        color: #666;
+      }
+      
+      /* ✅ 日期 */
+      .day {
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        font-size: 12px;
+        margin: 2px;
+        text-align: center;
+        border-radius: 8px;  // 4-->8
+        padding:8px 14px;    // new
+      }
 
-/* ✅ 一人一列 */
-.user-row {
-  display: flex;
-  flex-direction: column;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
+      
+      /* ✅ 手機 */
+      @media (max-width:600px){
+      
+        body {
+          font-size: 16px;
+        }
+      
+        .user-name {
+          font-size: 20px;
+        }
+      
+        .day {
+          width: 28px;
+          height: 28px;
+          line-height: 28px;
+          font-size: 14px;
+          gap:8px;
+          margin-bottom:12px;
+        }
+      }
+      
+      .toolbar {
+        margin-bottom: 12px;
+      }
+      
+      .toolbar-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+      }
+      
+      .btn {
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: none;
+        background: #1976d2;
+        color: #fff;
+        font-size: 13px;
+      }
+      
+      .btn.primary {
+        background: #2e7d32;
+      }
+      
+      .btn.back {
+        background: #757575;
+      }
+      
+      .overlay{
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      
+      .overlay-box{
+        background:#fff;
+        width:90%;
+        max-width:360px;
+        border-radius:12px;
+        padding:16px;
+      }
+      
+      
+      /* ✅ 第一排 */
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+        font-size: 20px;
+      }
+      
+      .title {
+        font-size: 22px;
+        font-weight: 800;
+      }
+      
+      .legend {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        font-size: 13px;
+      }
+      
+      /* ✅ 第二排主控制 */
+      .toolbar-row.main-bar {
+        display: flex;
+        justify-content: space-between;  /* ✅ 左右分開 */
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      /* ✅ 右側按鈕群 */
+      .btn-group {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      
+      /* ✅ 未來（已報名） */
+      .day.future {
+        background: #c8e6c9;
+        color:#2e7d32;
+        opacity:0.65;
+      }
+      
+      /* ✅ 未來（替補） */
+      .day.future-sub {
+        background:#bbdefb;
+        color:#0d47a1;
+        opacity:0.6;
+      }
+      
+      /* ✅ 未來（未報名） */
+      .day.empty {
+        background:#eee;
+        color:#999;
+      }
 
-/* ✅ 左側 */
-.user-name {
-  font-size: 18px;
-  font-weight: 700;
-}
+  /* =========================
+       KPI文字版（方案2）
+    ========================= */
+    
+    .user-kpi-text{
+      font-size:13px;
+      color:#555;
+      margin-bottom:6px;
+      line-height:1.5;
+    }
+    
+    .user-kpi-text .year{
+      color:#2e7d32;
+      font-weight:700;
+    }
+    
+    .user-kpi-text .career{
+      color:#1565c0;
+      font-weight:700;
+    }
+    
+    .user-kpi-text .late{
+      color:#f57c00;
+      font-weight:700;
+    }
+    
+    .user-kpi-text .no-show{
+      color:#d32f2f;
+      font-weight:700;
+    }
+    
+    .user-kpi-text .support{
+      color:#1976d2;
+      font-weight:700;
+    }
 
-/* ✅ 右側 */
-.right-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+  /* =========================
+       View Tabs
+    ========================= */
+    
+    .view-tabs{
+      display:flex;
+      gap:8px;
+      margin-bottom:12px;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    
+    .view-tab{
+      border:none;
+      padding:8px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      background:#e5e7eb;
+    }
+    
+    .view-tab.active{
+      background:#2563eb;
+      color:#fff;
+    }
+    
+    /* =========================
+       Summary Table
+    ========================= */
+    
+    .summary-table{
+      width:100%;
+      border-collapse:collapse;
+      background:#fff;
+    }
+    
+    .summary-table th{
+      background:#f3f4f6;
+      padding:10px;
+      text-align:center;
+    }
+    
+    .summary-table td{
+      padding:10px;
+      text-align:center;
+      border-bottom:1px solid #eee;
+    }
+    
+    .summary-name{
+      font-weight:700;
+      text-align:left !important;
+    }
+    
+    .role-badge{
+      display:inline-block;
+      margin:2px;
+      padding:2px 8px;
+      border-radius:12px;
+      background:#eef2ff;
+      color:#2563eb;
+      font-size:12px;
+    }
 
-/* ✅ 月份 */
-.month-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
+    .report-note{
+      margin-bottom:10px;
+      padding:8px 12px;
+      background:#eff6ff;
+      border-left:4px solid #2563eb;
+      color:#1e40af;
+      border-radius:6px;
+      font-size:16px;
+    }
+    
+    /* =========================
+       Role Tabs
+    ========================= */
+    
+    .role-tabs{
+      display:flex;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    
+    .role-tab{
+      border:none;
+      padding:8px 16px;
+      border-radius:999px;
+      cursor:pointer;
+      background:#f3f4f6;
+      color:#374151;
+      font-size:13px;
+      font-weight:600;
+      transition:.2s;
+    }
+    
+    .role-tab.active{
+      color:#fff;
+    }
+    
+    .role-tab.all.active{
+      background:#6b7280;
+    }
+    
+    .role-tab.judge.active{
+      background:#16a34a;
+    }
+    
+    .role-tab.record.active{
+      background:#f59e0b;
+    }
+    
+    .role-tab:hover{
+      background:#e5e7eb;
+    }
 
-/* ✅ 日期 */
-.days {
-  display: flex;
-  flex-wrap: wrap;
-}
+    .tab-bar{
+      display:flex;
+      align-items:center;
+      gap:24px;
+      margin-bottom:12px;
+    }
+    
+    .role-tabs{
+      margin-left:auto;
+    }
 
-/* ✅ 顏色 */
-.day.ok { background:#4caf50; color:#fff; }
-.day.late { background:#ff9800; color:#fff; }
-.day.no { background:#f44336; color:#fff; }
-.day.sub { background:#2196f3; color:#fff; }
-.day.empty { background:#eee; color:#999; }
-
-/* ✅ 桌機再優化 */
-@media (min-width: 900px){
-
-  body {
-    font-size: 14px;
-  }
-
-  .user-row {
-    flex-direction: column;   /* ✅ 固定垂直 */
-  }
-
-  .user-summary {
-    justify-content: center;
-  }
-
-  .day {
-    width: 22px;
-    height: 22px;
-    line-height: 22px;
-    font-size: 11px;
-  }
-}
-
-.btn {
-  border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  background: #1976d2;
-  color: #fff;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background: #1565c0;
-}
-
-.btn.back {
-  background: #757575;
-}
-
-.btn.back:hover {
-  background: #616161;
-}
-
-.user-role{
-  font-size: 11px;
-  color: #777;
-  margin-left: 4px;
-}
-
-.user-row {
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-/* ✅ 名字區 */
-.user-header {
-  margin-bottom: 4px;
-}
-
-.user-name {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.user-role {
-  font-size: 12px;
-  color: #777;
-  margin-left: 6px;
-}
-
-/* ✅ KPI */
-.user-kpi {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-.user-kpi .label {
-  font-size: 12px;
-  color: #666;
-}
-
-/* ✅ 月份排版 */
-.month-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.month-label {
-  width: 32px;
-  font-size: 12px;
-  color: #666;
-}
-
-/* ✅ 日期 */
-.day {
-  width: 24px;
-  height: 24px;
-  line-height: 24px;
-  font-size: 12px;
-  margin: 2px;
-  text-align: center;
-  border-radius: 4px;
-}
-
-/* ✅ 手機 */
-@media (max-width:600px){
-
-  body {
-    font-size: 16px;
-  }
-
-  .user-name {
-    font-size: 20px;
-  }
-
-  .day {
-    width: 28px;
-    height: 28px;
-    line-height: 28px;
-    font-size: 14px;
-  }
-}
-
-.toolbar {
-  margin-bottom: 12px;
-}
-
-.toolbar-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
-}
-
-.btn {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: none;
-  background: #1976d2;
-  color: #fff;
-  font-size: 13px;
-}
-
-.btn.primary {
-  background: #2e7d32;
-}
-
-.btn.back {
-  background: #757575;
-}
-
-.overlay{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.overlay-box{
-  background:#fff;
-  width:90%;
-  max-width:360px;
-  border-radius:12px;
-  padding:16px;
-}
-
-
-/* ✅ 第一排 */
-.header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.title {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.legend {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  font-size: 13px;
-}
-
-/* ✅ 第二排主控制 */
-.toolbar-row.main-bar {
-  display: flex;
-  justify-content: space-between;  /* ✅ 左右分開 */
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* ✅ 右側按鈕群 */
-.btn-group {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
+  /* =========================
+       報表工具列
+    ========================= */
+    
+    .report-toolbar{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    
+    /* 第一排 */
+    
+    .toolbar-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    
+    /* 第二排 */
+    
+    .toolbar-bottom{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    
+    /* 手機 */
+    
+    @media (max-width:900px){
+    
+      .toolbar-top,
+      .toolbar-bottom{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
+      }
+    }
   </style>
 </head>
 
@@ -284,32 +509,77 @@ body {
 
     <!-- ✅ 第一排 -->
     <div class="header-row">
-      <div class="title">📊 出勤報表</div>
-    
-      <div class="legend">
-        <span class="day ok">出</span>
-        <span class="day late">遲</span>
-        <span class="day no">缺</span>
-        <span class="day sub">補</span>
-      </div>
+      <div class="title">📊 裁判員及紀錄員出勤報表</div>
     </div>
     
     <!-- ✅ 第二排（左右） -->
     <div class="toolbar-row main-bar">
     
       <!-- 左 -->
+      <!--
       <div>
         <button class="btn primary" onclick="selectMonth('ALL')">今年度</button>
       </div>
-    
-      <!-- 右 -->
-      <div class="btn-group">
-        <button class="btn" onclick="setSort('score')">出勤排序</button>
-        <!-- <button class="btn" onclick="setSort('quality')">品質排序</button> -->
-        <button class="btn" onclick="setSort('name')">姓名排序</button>
-        <button class="btn back" onclick="goBack()">返回</button>
+      -->
+     
+      <div class="report-toolbar">
+      
+        <!-- 第一排 -->
+      
+        <div class="top-bar">
+             
+          <div class="view-tabs">
+      
+            <button class="view-tab active" id="btnSummary" onclick="switchView('summary')">年度總表</button>
+            <button class="view-tab" id="btnCalendar" onclick="switchView('calendar')">日曆模式</button>
+      
+            <div class="legend">
+              <span class="day ok">完成</span>
+              <span class="day late">遲到</span>
+              <span class="day no">缺席</span>
+              <span class="day sub">支援</span>
+            </div>
+            
+            <div class="btn-group">
+              <button class="btn back" onclick="goBack()">返回前頁</button>
+            </div>
+            
+          </div>
+     
+        </div>
+      
+        <!-- 第二排 -->
+      
+        <div class="bottom-bar">
+      
+          <div class="role-tabs">
+      
+            <button
+              id="roleAll"
+              class="role-tab all active"
+              onclick="switchRoleTab('all')">
+              全部
+            </button>
+      
+            <button
+              id="roleJudge"
+              class="role-tab judge"
+              onclick="switchRoleTab('judge')">
+              裁判
+            </button>
+      
+            <button
+              id="roleRecord"
+              class="role-tab record"
+              onclick="switchRoleTab('record')">
+              紀錄
+            </button>
+      
+          </div>
+      
+        </div>
+      
       </div>
-    
     </div>
   
   <div id="reportArea"></div>
@@ -374,33 +644,6 @@ body {
     // 生成按鈕
     function renderMonthButtons(gameDays){
       return;
-      /*
-      // ✅ 從 gameDays 推月份（靠 Games）
-      const monthsSet = new Set();
-    
-      gameDays.forEach(d=>{
-        // 先假設用當前選擇月（因為現在後端是 dd）
-        // 👉 所以這裡直接用目前 monthPicker 的值
-        const current = document.getElementById('currentMonth')?.value;
-        if(current){
-          monthsSet.add(current);
-        }
-      });
-    
-      // 👉 因為你現在後端是用 month filter
-      // 👉 所以這裡簡化：直接列固定月份（從資料來會再升級）
-    
-      const months = Array.from(monthsSet);
-    
-      let html = ``;
-    
-      months.forEach(m=>{
-        const mm = m.split('-')[1];
-        html += `<button onclick="selectMonth('${m}')">${Number(mm)}月</button>`;
-      });
-    
-      document.getElementById('monthButtons').innerHTML = html;
-      */
     }
 
 
@@ -449,7 +692,7 @@ function loadReport(){
   console.log('month=', m);
 
   callApi({
-    action:'getMonthlyReport',
+    action:'getAttendanceReportV2',
     month:m
   }, res => {
 
@@ -462,7 +705,12 @@ function loadReport(){
 
     // ✅ render 按鈕（第一次）
     renderMonthButtons(res.gameDays);
-
+    
+    lastData = res.data;
+    lastGameDays = res.gameDays;
+    
+    updateRoleTabCount(res.data);
+    
     render(res.data, res.gameDays);
   });
 }
@@ -474,11 +722,15 @@ function sortUsers(list){
 
   const arr = [...list];
 
-  if(currentSort === 'score'){
-    return arr.sort((a,b)=>
-      (b.summary.total || 0) - (a.summary.total || 0)
-    );
-  }
+if(currentSort === 'score'){
+
+  return arr.sort((a,b)=>
+    (b.summary?.yearAttendance || 0)
+    -
+    (a.summary?.yearAttendance || 0)
+  );
+
+}
 
   if(currentSort === 'quality'){
     return arr.sort((a,b)=>
@@ -500,131 +752,237 @@ function setSort(mode){
 /* ✅ render（用真實日期） */
 function render(data, gameDays){
 
-  if(!gameDays || gameDays.length === 0){
-    document.getElementById('reportArea').innerHTML =
-      '⚠️ 沒有比賽資料';
+  if(currentView === 'summary'){
+    renderSummary(data);
     return;
   }
+
+  if(!gameDays || gameDays.length === 0){
+
+    document.getElementById('reportArea').innerHTML =
+      '⚠️ 沒有比賽資料';
+
+    return;
+  }
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
 
   const monthMap = {};
 
   gameDays.forEach(fullDate=>{
-    const [y, m, d] = fullDate.split('-');
+
+    const [y,m,d] = fullDate.split('-');
 
     if(!monthMap[m]){
       monthMap[m] = [];
     }
 
-    monthMap[m].push(d);
+    monthMap[m].push(fullDate);
+
   });
 
   let html = '';
 
-  const users = sortUsers(Object.values(data));
+  let users = Object.values(data);
+  
+  if(currentRoleTab === 'judge'){
+  
+    users = users.filter(u => {
+  
+      const roles = String(u.roles || '');
+  
+      return (
+        roles.includes('judge') ||
+        roles.includes('chief_judge')
+      );
+  
+    });
+  
+  }
+  
+  if(currentRoleTab === 'record'){
+  
+    users = users.filter(u => {
+  
+      const roles = String(u.roles || '');
+  
+      return (
+        roles.includes('record') ||
+        roles.includes('record_chief')
+      );
+  
+    });
+  
+  }
+  
+  users = sortUsers(users);
 
   users.forEach(u=>{
 
-    if(u.name === '系統管理員') return;
+    const roleStats = u.roleStats || {};
+    const summary = u.summary || {};
 
-    const finished = u.summary.total - u.summary.late - u.summary.no_show;
-    const roles = (u.roles || '').split(',').map(r=>r.trim()).filter(Boolean);
+    const roleText = Object.keys(roleStats)
+      .sort()
+      .map(r=>
+        `${mapRole(r)}(${roleStats[r]})`
+      )
+      .join('、');
 
     html += `
-    <div class="user-row">
-    
-      <!-- ✅ 名字 -->
-      <div class="user-header">
-        <div class="user-name">
-          ${u.name}
-          <span class="user-role">${u.roles ? formatRole(u.roles) : '—'}</span>
+      <div class="user-row">
+
+        <div class="user-header">
+
+          <div class="user-name">
+            ${u.name}
+            <span class="user-role">
+              ${formatRole(u.roles)}
+            </span>
+          </div>
+
         </div>
-      </div>
-    
-      <!-- ✅ KPI（固定在名字下方） -->
-      <div class="user-kpi">
-        <span class="label">生涯：</span>
-        <span class="day ok">${finished}</span>
-        <span class="day late">${u.summary.late}</span>
-        <span class="day no">${u.summary.no_show}</span>
-        <span class="day sub">${u.summary.playoff}</span>
-      </div>
-    
-      <!-- ✅ 日期（獨立區） -->
-      <div class="right-panel">
+
+        <div class="user-kpi-text">
+        
+          <span class="year">
+            生涯：${summary.careerAttendance || 0}
+          </span>
+        
+          ｜
+        
+          <span class="career">
+            年度：${summary.yearAttendance || 0}
+          </span>
+        
+          ｜
+        
+          <span class="late">
+            遲到：${summary.late || 0}
+          </span>
+        
+          ｜
+        
+          <span class="no-show">
+            缺席：${summary.no_show || 0}
+          </span>
+        
+          ｜
+        
+          <span class="support">
+            支援：${summary.support || 0}
+          </span>
+        
+        </div>
+
+        <div style="
+          font-size:12px;
+          color:#666;
+          margin-bottom:6px;
+        ">
+          ${roleText}
+        </div>
+
+        <div class="right-panel">
     `;
 
     Object.keys(monthMap)
       .sort()
-      .forEach(m => {
+      .forEach(m=>{
 
         html += `
           <div class="month-row">
-            <div class="month-label">${Number(m)}月</div>
+
+            <div class="month-label">
+              ${Number(m)}月
+            </div>
+
             <div class="days">
         `;
 
         monthMap[m]
-          .sort((a,b)=>Number(a)-Number(b))
-          .forEach(d => {
+          .sort()
+          .forEach(fullDate=>{
 
-            const rec = u.days[d];
+            const d = fullDate.split('-')[2];
 
-            let cls = 'empty';
-            let tooltip = '';
+            const rec =
+              (u.days || {})[fullDate] || [];
 
-            if(rec){
-            
-              const hasNo = rec.some(x=>x.status==='no_show');
-              const hasLate = rec.some(x=>x.status==='late');
-              const hasSub = rec.some(x=>x.is_replacement);
-              
-              if(hasNo) cls='no';
-              else if(hasLate) cls='late';
-              else if(hasSub) cls='sub';   // ✅ 正確來源
-              else cls='ok';
+            let cls='empty';
 
-              const roleMap = {
-                PU:'主審',
-                U1:'一壘審',
-                U2:'二壘審',
-                U3:'三壘審',
-                REC_MAIN:'紀錄員',
-                REC_VIDEO:'影像紀錄員',
-                REC_TRAINEE:'見習紀錄員'
-              };
-              
-              const statusMap = {
-                completed:'完成',
-                late:'遲到',
-                no_show:'缺席',
-                sub:'替補',
-                substitute:'替補'
-              };
-              
-              tooltip = rec.map(x=>{
-                return `${roleMap[x.role] || x.role}：${statusMap[x.status] || x.status}`;
-              }).join('\n');
+            if(rec.length){
+
+              const hasSupport =
+                rec.some(x=>x.is_replacement);
+
+              const hasNoShow =
+                rec.some(x=>x.status==='no_show');
+
+              const hasLate =
+                rec.some(x=>x.status==='late');
+
+              const hasCompleted =
+                rec.some(x=>x.status==='completed');
+
+              const hasFuture =
+                rec.some(x=>
+                  x.status==='future_assign' ||
+                  x.status==='future_signup'
+                );
+
+              if(hasSupport){
+                cls='sub';
+              }
+              else if(hasNoShow){
+                cls='no';
+              }
+              else if(hasLate){
+                cls='late';
+              }
+              else if(hasCompleted){
+                cls='ok';
+              }
+              else if(hasFuture){
+                cls='future';
+              }
 
             }
 
             html += `
-              <span class="day ${cls}" 
-                onclick='showDayDetail(${JSON.stringify(rec || [])}, "${m}/${d}")'
-                title="${tooltip}">
+              <span
+                class="day ${cls}"
+                onclick='showDayDetail(
+                  ${JSON.stringify(rec)},
+                  "${fullDate}"
+                )'
+              >
                 ${Number(d)}
               </span>
             `;
 
           });
 
-        html += `</div></div>`;
+        html += `
+            </div>
+          </div>
+        `;
+
       });
 
-    html += `</div></div>`;
+    html += `
+        </div>
+      </div>
+    `;
+
   });
 
-  document.getElementById('reportArea').innerHTML = html;
+  document.getElementById('reportArea').innerHTML =
+    html;
+
 }
+
 
 /*
 ✅ 手機點 → 展開
@@ -632,105 +990,115 @@ function render(data, gameDays){
 ✅ 不影響桌機
 ✅ 不改資料結構
 */
-function showDayDetail(list, date){
+function showDayDetail(list, fullDate){
 
-  const modal = document.getElementById('dayDetailModal');
-  const content = document.getElementById('dayDetailContent');
+  const modal =
+    document.getElementById(
+      'dayDetailModal'
+    );
+
+  const content =
+    document.getElementById(
+      'dayDetailContent'
+    );
 
   if(!list || !list.length){
-    content.innerHTML = `<div>📌 ${date}<br>無出勤紀錄</div>`;
-  }else{
 
-    const roleMap = {
-      PU:'主審',
-      U1:'一壘審',
-      U2:'二壘審',
-      U3:'三壘審',
-      REC_MAIN:'紀錄員',
-      REC_VIDEO:'影像紀錄員',
-      REC_TRAINEE:'見習紀錄員'
-    };
+    content.innerHTML =
+      `<div>${fullDate}<br>無資料</div>`;
 
-    const statusMap = {
-      completed:'✅ 完成',
-      late:'⏰ 遲到',
-      no_show:'❌ 缺席',
-      sub:'🔵 替補',
-      substitute:'🔵 替補'
-    };
+    modal.style.display='flex';
 
-    // ✅ ✅ ✅ 先做去重（防止 PU / PU 重複）
-    const uniqueList = [];
-    const seen = new Set();
+    return;
+  }
 
-    list.forEach(x=>{
-      const key = (x.game_id || '') + '_' + x.role;
-      if(!seen.has(key)){
-        seen.add(key);
-        uniqueList.push(x);
-      }
-    });
+  let html =
+    `<h3>${fullDate}</h3>`;
 
-    // ✅ ✅ ✅ 再依場次分組
-    const gameMap = {};
+  list.forEach(x=>{
 
-    uniqueList.forEach(x=>{
-      const gid = x.game_code || x.game_id || '未指定場次';
+    let statusText='';
 
-      if(!gameMap[gid]) gameMap[gid] = [];
-      gameMap[gid].push(x);
-    });
+    if(x.is_replacement){
 
-    let html = `
-      <div style="font-weight:800;font-size:16px;margin-bottom:10px;">
-        📌 ${date}
+      statusText='🔵 支援';
+
+    }
+    else if(x.status==='completed'){
+
+      statusText='✅ 完成';
+
+    }
+    else if(x.status==='late'){
+
+      statusText='🟡 遲到';
+
+    }
+    else if(x.status==='no_show'){
+
+      statusText='🔴 缺席';
+
+    }
+    else if(x.status==='future_assign'){
+
+      statusText='🟢 已指派';
+
+    }
+    else if(x.status==='future_signup'){
+
+      statusText='🟢 已報名';
+
+    }
+
+    html += `
+      <div style="
+        margin-bottom:8px;
+        padding:8px;
+        border:1px solid #eee;
+        border-radius:6px;
+      ">
+
+        <div>
+          ⚾ ${x.game_code || x.game_id}
+        </div>
+
+        <div>
+          ${mapRole(x.role)}
+        </div>
+
+        <div>
+          ${statusText}
+        </div>
+
       </div>
     `;
 
-    Object.keys(gameMap).forEach(gid => {
+  });
 
-      html += `
-        <div style="
-          margin-bottom:10px;
-          padding:8px;
-          border:1px solid #eee;
-          border-radius:8px;
-          background:#fafafa;
-        ">
+  content.innerHTML = html;
 
-          <div style="
-            font-weight:700;
-            margin-bottom:6px;
-            color:#1a237e;
-          ">
-            ⚾ ${gid}
-          </div>
-      `;
+  modal.style.display='flex';
 
-
-        gameMap[gid].forEach(x=>{
-          const statusText = x.is_replacement
-            ? '🔵 替補'
-            : (statusMap[x.status] || x.status);
-        
-          html += `
-            <div style="margin-bottom:4px;">
-              ${roleMap[x.role] || x.role}：
-              ${statusText}
-            </div>
-          `;
-        });
-
-
-      html += `</div>`;
-    });
-
-    content.innerHTML = html;
-  }
-
-  modal.style.display = 'flex';
 }
 
+// 角色中文化
+function mapRole(role){
+
+  const map = {
+    PU:'主審',
+    U1:'一壘審',
+    U2:'二壘審',
+    U3:'三壘審',
+    REC_MAIN:'紀錄員',
+    REC_VIDEO:'影像紀錄員',
+    REC_TRAINEE:'見習紀錄員'
+  };
+
+  return map[role] || role;
+
+}
+
+// 關閉Detail視窗
 function closeDayDetail(){
   document.getElementById('dayDetailModal').style.display = 'none';
 }
@@ -748,22 +1116,326 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 
+// 身份(role)中文化
 function formatRole(roleStr){
 
+  if(!roleStr) return '';
+
   const map = {
-    admin: '系統管理員',
-    chief_judge: '裁判長',
-    judge: '裁判員',
-    record_chief: '紀錄長',
-    record: '紀錄員'
+    admin:'系統管理員',
+    chief_judge:'裁判長',
+    judge:'裁判員',
+    record_chief:'紀錄長',
+    record:'紀錄員'
   };
 
-  return roleStr
+  return String(roleStr)
     .split(',')
     .map(r => map[r.trim()] || r)
     .join(' / ');
 }
+
+// 新增總表格式程式
+  let currentView = 'summary';
+  let lastData = null;
+  let lastGameDays = null;
+  let currentRoleTab = 'all';
+  
+  // 切換tab
+  function switchView(view){
+  
+    currentView = view;
+  
+    document
+      .getElementById('btnSummary')
+      .classList.remove('active');
+  
+    document
+      .getElementById('btnCalendar')
+      .classList.remove('active');
+  
+    if(view === 'summary'){
+      document
+        .getElementById('btnSummary')
+        .classList.add('active');
+    }else{
+      document
+        .getElementById('btnCalendar')
+        .classList.add('active');
+    }
+  
+    render(lastData, lastGameDays);
+  
+  }
+
+  // 切換子tab
+  function switchRoleTab(tab){
+  
+    currentRoleTab = tab;
+  
+    document
+      .querySelectorAll('.role-tab')
+      .forEach(btn=>{
+        btn.classList.remove('active');
+      });
+  
+    if(tab === 'all'){
+      document
+        .getElementById('roleAll')
+        .classList.add('active');
+    }
+  
+    if(tab === 'judge'){
+      document
+        .getElementById('roleJudge')
+        .classList.add('active');
+    }
+  
+    if(tab === 'record'){
+      document
+        .getElementById('roleRecord')
+        .classList.add('active');
+    }
+  
+    render(
+      lastData,
+      lastGameDays
+    );
+  
+  }
     
+  // 年度總表表格
+  function renderSummary(data){
+  
+    let users =
+      Object.values(data)
+        .filter(u =>
+          (u.summary?.careerAttendance || 0) > 0
+        );
+    
+    if(currentRoleTab === 'judge'){
+    
+      users = users.filter(u => {
+    
+        const roles =
+          String(u.roles || '');
+    
+        return (
+          roles.includes('judge') ||
+          roles.includes('chief_judge')
+        );
+    
+      });
+    
+    }
+    
+    if(currentRoleTab === 'record'){
+    
+      users = users.filter(u => {
+    
+        const roles =
+          String(u.roles || '');
+    
+        return (
+          roles.includes('record') ||
+          roles.includes('record_chief')
+        );
+    
+      });
+    
+    }
+    
+    users = sortUsers(users);
+
+  
+    let html = `
+    
+      <div class="report-note">
+        📌 有出勤紀錄才會顯示
+      </div>
+    
+      <table class="summary-table">
+    
+        <thead>
+          <tr>
+            <th>姓名</th>
+            <th>年度</th>
+            <th>生涯</th>
+            <th>遲到</th>
+            <th>缺席</th>
+            <th>支援</th>
+            <th>出席率</th>
+            <th>主要位置</th>
+          </tr>
+        </thead>
+    
+        <tbody>
+    `;
+  
+    users.forEach(u=>{
+  
+      const s = u.summary || {};
+  
+      const total =
+        (s.yearAttendance || 0);
+  
+      const quality =
+        total
+        ? Math.round(
+            (
+              (total - (s.no_show || 0))
+              / total
+            ) * 100
+          )
+        : 0;
+  
+      const judgeRoles =
+        Object.keys(u.roleStats || {})
+          .filter(r =>
+            ['PU','U1','U2','U3'].includes(r) &&
+            Number(u.roleStats[r] || 0) > 0
+          )
+          .sort((a,b)=>
+            (u.roleStats[b] || 0)
+            -
+            (u.roleStats[a] || 0)
+          );
+      
+      const recordRoles =
+        Object.keys(u.roleStats || {})
+          .filter(r =>
+            ['REC_MAIN','REC_VIDEO','REC_TRAINEE'].includes(r) &&
+            Number(u.roleStats[r] || 0) > 0
+          )
+          .sort((a,b)=>
+            (u.roleStats[b] || 0)
+            -
+            (u.roleStats[a] || 0)
+          );
+      
+      let roleHtml = '';
+      
+      if(judgeRoles.length){
+      
+        roleHtml += `
+          <div style="margin-bottom:4px;">
+            ${
+              judgeRoles.map(r=>
+                `<span class="role-badge">
+                   ${mapRole(r)}
+                   (${u.roleStats[r]})
+                 </span>`
+              ).join('')
+            }
+          </div>
+        `;
+      }
+      
+      if(recordRoles.length){
+      
+        roleHtml += `
+          <div>
+            ${
+              recordRoles.map(r=>
+                `<span class="role-badge">
+                   ${mapRole(r)}
+                   (${u.roleStats[r]})
+                 </span>`
+              ).join('')
+            }
+          </div>
+        `;
+      }
+  
+      html += `
+        <tr>
+  
+          <td class="summary-name">
+            ${u.name}
+          </td>
+  
+          <td>${s.yearAttendance || 0}</td>
+  
+          <td>${s.careerAttendance || 0}</td>
+  
+          <td style="color:#f57c00;">
+            ${s.late || 0}
+          </td>
+  
+          <td style="color:#d32f2f;">
+            ${s.no_show || 0}
+          </td>
+  
+          <td style="color:#1976d2;">
+            ${s.support || 0}
+          </td>
+  
+          <td>
+            ${quality}%
+          </td>
+  
+          <td style="text-align:left">
+            ${roleHtml || '—'}
+          </td>
+  
+        </tr>
+      `;
+    });
+  
+    html += `
+        </tbody>
+      </table>
+    `;
+  
+    document.getElementById('reportArea')
+      .innerHTML = html;
+  }
+
+  // 計算人數用
+  function updateRoleTabCount(data){
+
+  const allUsers =
+    Object.values(data)
+      .filter(u =>
+        (u.summary?.careerAttendance || 0) > 0
+      );
+
+  const judgeUsers =
+    allUsers.filter(u => {
+
+      const roles =
+        String(u.roles || '');
+
+      return (
+        roles.includes('judge') ||
+        roles.includes('chief_judge')
+      );
+
+    });
+
+  const recordUsers =
+    allUsers.filter(u => {
+
+      const roles =
+        String(u.roles || '');
+
+      return (
+        roles.includes('record') ||
+        roles.includes('record_chief')
+      );
+
+    });
+
+  document.getElementById('roleAll').innerHTML =
+    `全部 (${allUsers.length})`;
+
+  document.getElementById('roleJudge').innerHTML =
+    `裁判 (${judgeUsers.length})`;
+
+  document.getElementById('roleRecord').innerHTML =
+    `紀錄 (${recordUsers.length})`;
+
+}
   </script>
 
 </body>
