@@ -241,7 +241,7 @@ function renderGameCard(g, opt={}){
                 ⚠️ 時間衝突（本日已有其他場次）
                 <div class="sub">
                   ${ref.game_code} ${getTime(ref)}｜${ref.field}
-                  ${conflictInfo.isSameField ? '（同場地 +30mins）' : '（跨場地 +60mins）'}
+                  ${conflictInfo.isSameField ? '（同場地 +10mins）' : '（跨場地 +60mins）'}
                 </div>
               </div>
             `;
