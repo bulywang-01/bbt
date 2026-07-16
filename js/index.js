@@ -866,16 +866,37 @@ function renderLoading(target){
  *********************************************************/
 function safeMerge(g){
 
-  // ✅ 如果後端已經有 judges → 直接用
-  if (g.judges && Object.keys(g.judges).some(v => g.judges[v])){
+  const hasJudgeData =
+    g.judges &&
+    Object.values(g.judges)
+      .some(v => !!v);
+
+  const hasRecordData =
+    g.records &&
+    Object.values(g.records)
+      .some(v => {
+
+        if (!v) return false;
+
+        if (typeof v === 'string'){
+          return v.trim() !== '';
+        }
+
+        return !!(
+          v.name ||
+          v.user_id
+        );
+
+      });
+
+  // ✅ 只要任何一邊有資料
+  if (hasJudgeData || hasRecordData){
     return g;
   }
 
-  // ✅ 防呆初始化
   g.judges = {};
   g.records = {};
 
-  // ✅ 裁判
   ['PU','U1','U2','U3'].forEach(r=>{
     g.judges[r] =
       g.assignment_judges?.[r] ||
@@ -883,7 +904,6 @@ function safeMerge(g){
       '';
   });
 
-  // ✅ 紀錄
   ['REC_MAIN','REC_TRAINEE','REC_VIDEO'].forEach(r=>{
     g.records[r] =
       g.assignment_records?.[r] ||
