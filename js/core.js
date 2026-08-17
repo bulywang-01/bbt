@@ -1656,39 +1656,31 @@ function isBeforeThisWeek(dateStr){
  ✅ 班表報名共用衝突檢查（前端版）
 ============================ */
 function checkConflictFront(game, allGames, session){
+ 
+  const t1 = toMinutes(getTime(game));
 
-  const BASE_BUFFER = 10;
-  const FIELD_BUFFER = 60;
-
-  // const tStart = new Date(game.date + ' ' + game.time).getTime();
-  const tStart = new Date(game.date + ' ' + getTime(game)).getTime();
-  const tDuration = Number(game.duration || 120);
-
-  for (let g of allGames){
+  for(let g of allGames){
 
     if (!g.my_position) continue;
     if (g.game_id === game.game_id) continue;
     if (g.date !== game.date) continue;
 
-    const gStart = new Date(g.date + ' ' + g.time).getTime();
-    const gDuration = Number(g.duration || 120);
+    const t2 = toMinutes(getTime(g));
 
-    const isSameField = (g.field === game.field);
+    const diff = Math.abs(t1 - t2);
 
-    const buffer = isSameField ? BASE_BUFFER : FIELD_BUFFER;
-
-    const tEnd = tStart + (tDuration + buffer) * 60000;
-    const gEnd = gStart + (gDuration + buffer) * 60000;
-
-    if (tStart < gEnd && tEnd > gStart){
-
+    // 同時間(5分鐘誤差內)
+    if (diff < 5){
+    
       return {
         conflict:true,
         ref:g,
-        isSameField
+        isSameField:(g.field === game.field)
       };
     }
   }
 
-  return { conflict:false };
+  return {
+    conflict:false
+  };
 }
