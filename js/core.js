@@ -98,14 +98,6 @@ function renderGameCard(g, opt={}){
   const myRole = g.my_position;
   const teamConflict = isMyTeamConflict(g, session);  // 母隊衝突判斷定義
 
-  console.log(
-  'TEAM CHECK →',
-  'userTeam=', session?.team,
-  'home=', g.home_team,
-  'away=', g.away_team,
-  'result=', teamConflict
-);
-
   function getReason(targetRole, isRecordSlot){
   
     // ✅ ✅ ✅ 改用新的衝突判斷（含 buffer + 場地）
@@ -807,20 +799,15 @@ function highlight(name, session){
 *********************************************************/
 function handleSlotClick(gid, role){
 
-  console.log('CLICK OK', gid, role);
  
   const gidNum = Number(gid);
   const g = __GAME_CACHE.find(x => Number(x.game_id) === gidNum);
-
-  console.log('my_position=', g.my_position);
 
   if (!g) return;
 
   const s = getSession ? getSession() : JSON.parse(localStorage.getItem('session_user')||'{}');
   if (!s || !s.user_id) return;
  
-  console.log('session=', s);
-
   const isRecord = role.startsWith('REC');
 
   // ✅ 取得 slot
@@ -829,10 +816,6 @@ function handleSlotClick(gid, role){
     : g.judges?.[role];
 
   const isMe = isMySlot(slot, s);
- 
-  console.log('isMe=', isMe);
-  console.log('slot=', slot);
-
 
   // ✅ ✅ ✅ 如果是自己 → 取消
   if (isMe){
@@ -1079,8 +1062,6 @@ function signupRecord(g, role){
 function cancelJudge(g, role){
 
   const s = JSON.parse(localStorage.getItem('session_user') || '{}');
-
-  console.log('CANCEL by game:', g.game_id, role);
 
   const el = document.getElementById(`game-${g.game_id}`);
   if (el) el.classList.add('loading');
@@ -1464,8 +1445,6 @@ function roleMap(r){
 function reloadCurrentView(){
 
   const now = new Date();
-
-  console.log('🔄 reloadCurrentView', window.currentMonth);
 
   // 👉 記得用 window（避免 scope 問題）
   if (window.currentMonth !== null){
