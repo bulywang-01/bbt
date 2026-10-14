@@ -1,0 +1,542 @@
+/* =====================================================
+   BBT 報名系統共用樣式
+   適用：
+   1. judge_dashboard.html
+   2. record_dashboard.html
+===================================================== */
+
+
+/* =====================================================
+   一、頁面基本設定
+===================================================== */
+
+body{
+  margin:0;
+  padding:0;
+  background:#f5f6f8;
+  font-family:system-ui,-apple-system;
+  font-size:15px;
+}
+
+.main{
+  padding:16px;
+}
+
+
+/* =====================================================
+   二、Header 區域
+===================================================== */
+
+#header .nav,
+#header .header,
+#header .header-right{
+  display:flex;
+  align-items:center;
+}
+
+#header #u_name{
+  margin-left:8px;
+  font-weight:600;
+}
+
+
+/* =====================================================
+   三、月份切換列
+===================================================== */
+
+.month-tabs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+
+  margin:10px 0 14px;
+}
+
+.month-tab{
+  padding:5px 10px;
+
+  border-radius:999px;
+
+  background:#f1f5f9;
+
+  color:#444;
+
+  cursor:pointer;
+
+  font-size:13px;
+  font-weight:700;
+}
+
+.month-tab.active{
+  background:#1976d2;
+  color:#fff;
+}
+
+
+/* =====================================================
+   四、日期區塊標題
+===================================================== */
+
+.date-header{
+  margin:16px 10px 10px;
+  padding-left:6px;
+
+  border-left:4px solid #1d4ed8;
+
+  color:#1d4ed8;
+
+  font-size:16px;
+  font-weight:800;
+}
+
+
+/* =====================================================
+   五、組別標題
+===================================================== */
+
+.category-title{
+  margin:8px 10px 6px;
+
+  color:#1d4ed8;
+
+  font-size:14px;
+  font-weight:700;
+}
+
+
+/* =====================================================
+   六、賽事卡片區域
+===================================================== */
+
+.card-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fill,minmax(420px,1fr));
+  gap:14px;
+  margin-bottom:18px;
+}
+
+/* =====================================================
+   七、賽事卡片
+===================================================== */
+
+.game-card{
+  background:#fff;
+  border-radius:12px;
+  padding:14px;
+  box-sizing:border-box;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  transition:.15s;
+  font-size:14px;
+}
+
+.game-card:hover{
+  transform:translateY(-2px);
+
+  box-shadow:
+    0 6px 18px rgba(0,0,0,.12);
+}
+
+.game-card.loading{
+  opacity:.5;
+  pointer-events:none;
+}
+
+
+/* =====================================================
+   八、聯盟類別色彩
+===================================================== */
+
+.card-mlb{
+  border:2px solid #2563eb;
+  box-shadow:0 0 0 2px rgba(37,99,235,.08);
+}
+
+.card-minor{
+  border:2px solid #16a34a;
+  box-shadow:0 0 0 2px rgba(22,163,74,.08);
+}
+
+.card-training{
+  border:2px solid #9333ea;
+  box-shadow:0 0 0 2px rgba(147,51,234,.08);
+}
+
+.card-extra-1{
+  border:2px solid #d97706;
+}
+
+.card-extra-2{
+  border:2px solid #dc2626;
+}
+
+
+/* =====================================================
+   九、特殊狀態
+===================================================== */
+
+/* 延賽 */
+
+.game-card.postponed{
+  border-left:6px solid #f59e0b;
+  background:#fffbeb;
+}
+
+/* 停賽 */
+
+.game-card.stopped{
+  border-left:6px solid #dc2626;
+  background:#fef2f2;
+}
+
+/* 鎖定 */
+
+.game-card.locked{
+  border-left:6px solid #6b7280;
+  background:#f3f4f6;
+  opacity:.7;
+}
+
+
+/* =====================================================
+   十、卡片第一列
+   日期 / 組別 / 場地
+===================================================== */
+
+.row-top{
+  display:grid;
+
+  grid-template-columns:
+    1fr auto 1fr;
+
+  align-items:center;
+
+  font-size:13px;
+  font-weight:700;
+}
+
+.row-top .left{
+  color:#2563eb;
+}
+
+.row-top .center{
+  text-align:center;
+  font-weight:600;
+}
+
+.row-top .right{
+  justify-self:end;
+
+  background:#6b7280;
+
+  color:#fff;
+
+  padding:3px 8px;
+
+  border-radius:999px;
+
+  font-size:12px;
+  font-weight:500;
+}
+
+
+/* =====================================================
+   十一、卡片第二列
+   隊伍 / 時間 / 場號
+===================================================== */
+
+.row-mid{
+  display:flex;
+
+  justify-content:space-between;
+  align-items:center;
+
+  margin:6px 0 4px;
+}
+
+/* 隊伍名稱 */
+
+.team{
+  flex:1;
+
+  text-align:center;
+
+  font-size:20px;
+  font-weight:1000;
+}
+
+/* 中央區塊 */
+
+.center-box{
+  flex:1;
+  text-align:center;
+}
+
+/* 場號 */
+
+.game-code{
+  color:#2563eb;
+
+  font-size:13px;
+  font-weight:700;
+}
+
+/* 時間 */
+
+.time{
+  color:#dc2626;
+
+  font-size:16px;
+  font-weight:900;
+}
+
+
+/* =====================================================
+   十二、第三列
+   裁判 / 紀錄名單區
+===================================================== */
+
+.row-bottom{
+  display:grid;
+
+  grid-template-columns:
+    repeat(7,1fr);
+
+  gap:4px;
+
+  margin-top:6px;
+  padding-top:6px;
+
+  border-top:1px dashed #ddd;
+}
+
+
+/* =====================================================
+   十三、位置區塊
+===================================================== */
+
+.slot{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+  text-align:center;
+}
+
+/* 尚未有人 */
+
+.slot.waiting{
+  background:#f3f4f6;
+
+  border-radius:6px;
+
+  color:#9ca3af;
+  font-weight:600;
+}
+
+.slot.waiting .name{
+  color:#9ca3af;
+}
+
+/* 鎖定 */
+
+.slot.locked{
+  background:#e5e7eb;
+
+  color:#666;
+
+  cursor:not-allowed;
+}
+
+
+/* =====================================================
+   十四、職位名稱
+===================================================== */
+
+.label{
+  font-size:11px;
+  color:#888;
+}
+
+
+/* =====================================================
+   十五、人名
+===================================================== */
+
+.name{
+  font-size:16px;
+  font-weight:700;
+
+  white-space:nowrap;
+}
+
+/* 自己 */
+
+.name.me{
+  background:#dbeafe;
+
+  color:#1d4ed8;
+
+  padding:3px 6px;
+
+  border-radius:6px;
+
+  font-size:16px;
+  font-weight:800;
+}
+
+
+/* =====================================================
+   十六、報名按鈕
+===================================================== */
+
+.btn{
+  background:#2563eb;
+
+  color:#fff;
+
+  border:none;
+
+  border-radius:4px;
+
+  font-size:13px;
+
+  padding:1px 0;
+  margin-top:2px;
+}
+
+
+/* =====================================================
+   十七、取消報名
+===================================================== */
+
+.cancel{
+  background:#fef2f2;
+
+  color:#dc2626;
+
+  padding:2px 6px;
+
+  border-radius:6px;
+
+  margin-top:4px;
+
+  cursor:pointer;
+
+  font-size:12px;
+}
+
+
+/* =====================================================
+   十八、不需配置裁判
+===================================================== */
+
+.no-judge{
+  grid-column:1/-1;
+
+  color:#999;
+
+  text-align:center;
+
+  font-size:16px;
+}
+
+
+/* =====================================================
+   十九、提醒訊息
+===================================================== */
+
+.row-warning{
+  background:#fff7ed;
+
+  border:1px solid #fb923c;
+
+  border-radius:8px;
+
+  padding:6px 8px;
+
+  margin:6px 0;
+
+  text-align:center;
+
+  color:#c2410c;
+
+  font-size:13px;
+  font-weight:600;
+}
+
+.row-warning .sub{
+  color:#666;
+
+  margin-top:2px;
+
+  font-size:11px;
+}
+
+
+/* =====================================================
+   二十、Overlay
+===================================================== */
+
+#overlay{
+  position:fixed;
+  inset:0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:rgba(0,0,0,.35);
+
+  z-index:9999;
+}
+
+#overlay-box{
+  background:#fff;
+
+  min-width:220px;
+
+  padding:18px 22px;
+
+  border-radius:10px;
+
+  text-align:center;
+
+  font-size:15px;
+
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.25);
+}
+
+
+/* =====================================================
+   二十一、手機版
+===================================================== */
+@media (max-width:768px){
+
+  .card-grid{
+    grid-template-columns:1fr;
+  }
+
+  .game-card{
+    width:100%;
+    min-width:100%;
+    max-width:100%;
+  }
+
+  .row-bottom{
+    grid-template-columns:repeat(4,1fr);
+  }
+
+  .team{
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:0.5px;
+  }
+
+  .time{
+    color:#dc2626;
+    font-size:17px;
+    font-weight:900;
+  }
+}
