@@ -10,11 +10,11 @@
 
 // ===== 裁判 =====
 const JUDGE_SIGNUP_CONFIG = {
-  mode: 'ALL',
+  mode: 'LIMIT',
 
   tournaments: [
     //'新北市議長盃',
-    //'2026-BBT聯盟'
+    '2026-BBT聯盟'
   ]
 };
 
