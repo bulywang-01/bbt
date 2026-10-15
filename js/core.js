@@ -1,12 +1,31 @@
 /*********************************************************
- ✅ 報名開放設定
+ ✅ 賽事選項顯示設定
 *********************************************************/
-
 /*
   MODE:
   ALL => 全部賽事開放
   LIMIT => 僅指定賽事開放
 */
+
+// ===== 裁判 =====
+const JUDGE_TOURNAMENT_CONFIG = {
+  mode:'ALL',
+  tournaments:[
+    '2026-BBT聯盟'
+  ]
+};
+
+// ===== 紀錄 =====
+const RECORD_TOURNAMENT_CONFIG = {
+  mode:'LIMIT',
+  tournaments:[
+    '2026-BBT聯盟'
+  ]
+};
+
+/*********************************************************
+ ✅ 報名開放設定
+*********************************************************/
 
 // ===== 裁判 =====
 const JUDGE_SIGNUP_CONFIG = {
@@ -27,6 +46,17 @@ const RECORD_SIGNUP_CONFIG = {
     '2026-BBT聯盟'
   ]
 };
+
+
+function getTournamentConfig(){
+
+  const isRecordPage =
+    document.body.classList.contains('page-record');
+
+  return isRecordPage
+    ? RECORD_TOURNAMENT_CONFIG
+    : JUDGE_TOURNAMENT_CONFIG;
+}
 
 
 
@@ -366,7 +396,7 @@ function renderGameCard(g, opt={}){
                    return `
                      <div class="slot locked">
                        <div class="label">${roleMap(role)}</div>
-                       <div class="name">未開放</div>
+                       <div class="name">指派</div>
                      </div>
                    `;
                  }
@@ -469,7 +499,7 @@ function renderGameCard(g, opt={}){
            return `
              <div class="slot locked">
                <div class="label">${label}</div>
-               <div class="name">未開放</div>
+               <div class="name">指派</div>
              </div>
            `;
          }
@@ -1783,4 +1813,181 @@ function checkConflictFront(game, allGames, session){
     conflict:false
   };
 
+}
+
+/* 裁判及紀錄共用 function */
+function buildTournamentSelector(){
+
+  const area =
+    document.getElementById('tournamentFilterArea');
+
+  if (!area) return;
+
+  const pageTitle =
+    document.body.classList.contains('page-record')
+      ? '📝 紀錄員班表'
+      : '⚾ 裁判班表';
+
+  const cfg = getTournamentConfig();
+
+  let tournaments = [
+    ...new Set(
+      allGames
+        .map(g =>
+          String(g.tournament || '').trim()
+        )
+        .filter(Boolean)
+    )
+  ].sort();
+
+  // ✅ 顯示賽事控制
+  if (
+    cfg.mode === 'LIMIT' &&
+    cfg.tournaments &&
+    cfg.tournaments.length
+  ){
+    tournaments = tournaments.filter(t =>
+      cfg.tournaments.includes(t)
+    );
+  }
+
+  const savedTournament =
+    localStorage.getItem('currentTournament') || '';
+
+  // ✅ 沒有可顯示賽事
+  if (tournaments.length === 0){
+
+    currentTournament = '';
+
+    area.innerHTML = `
+      <div style="
+        color:#dc2626;
+        font-weight:700;
+        padding:8px 0;
+      ">
+        目前無開放賽事
+      </div>
+    `;
+
+    return;
+  }
+
+  // ✅ 只有一個賽事
+  if (tournaments.length === 1){
+
+    currentTournament = tournaments[0];
+
+    localStorage.setItem(
+      'currentTournament',
+      currentTournament
+    );
+
+    area.innerHTML = `
+      <div style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+        margin:6px 0;
+        flex-wrap:wrap;
+      ">
+
+        <span style="
+          font-weight:700;
+          font-size:16px;
+          color:#1e3a8a;
+        ">
+          ${pageTitle}
+        </span>
+
+        <span style="font-weight:700;">
+          ／請選擇報名賽事：
+        </span>
+
+        <span style="
+          background:#dbeafe;
+          color:#1d4ed8;
+          padding:4px 10px;
+          border-radius:999px;
+          font-size:16px;
+          font-weight:700;
+        ">
+          ${currentTournament}
+        </span>
+
+      </div>
+    `;
+
+    return;
+  }
+
+  // ✅ 多賽事
+  if (
+    savedTournament &&
+    tournaments.includes(savedTournament)
+  ){
+    currentTournament = savedTournament;
+  }
+  else{
+    currentTournament = '';
+  }
+
+  area.innerHTML = `
+    <div style="
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:6px 0;
+      flex-wrap:wrap;
+    ">
+
+      <span style="
+        font-weight:700;
+        font-size:16px;
+        color:#1e3a8a;
+      ">
+        ${pageTitle}
+      </span>
+
+      <span style="font-weight:700;">
+        ／請選擇報名賽事：
+      </span>
+
+      <select
+        id="tournamentFilter"
+        style="
+          min-width:260px;
+          padding:6px 10px;
+          border:1px solid #d1d5db;
+          border-radius:8px;
+          font-size:14px;
+        "
+        onchange="
+          currentTournament=this.value;
+
+          localStorage.setItem(
+            'currentTournament',
+            currentTournament
+          );
+
+          render();
+        "
+      >
+
+        <option value="">
+          請選擇要報名的賽事
+        </option>
+
+        ${tournaments.map(t => `
+          <option
+            value="${t}"
+            ${t === currentTournament ? 'selected' : ''}
+          >
+            ${t}
+          </option>
+        `).join('')}
+
+      </select>
+
+    </div>
+  `;
 }
