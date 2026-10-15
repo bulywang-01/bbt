@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>紀錄員報名</title>
+
+<link rel="stylesheet" href="css/signup_dashboard.css">
+  
+</head>
+
+
+<!-- 共用 Header -->
+<body data-page-title="紀錄報名" class="page-record">
+
+
+<script src="js/auth.js"></script>
+<script src="js/config.js"></script>
+<script src="js/core.js?v=2"></script>
+
+
+<!-- 畫面中間呈現訊息
+<div id="overlay">
+  <div id="overlay-box">
+    <div id="overlay-text">處理中...</div>
+    <button id="overlay-ok">確定</button>
+  </div>
+</div> -->
+
+<div id="header-container"></div>
+
+<script>
+const session = getSession
+  ? getSession() 
+  : JSON.parse(localStorage.getItem('session_user')||'{}');
+ 
+function loadHeader() {
+  fetch('header.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('header-container').innerHTML = html;
+
+      // ✅ 只用 body class 控制身份
+      const session = (typeof getSession === 'function') ? getSession() : null;
+      document.body.classList.remove(
+        'role-admin', 'role-judge', 'role-record'
+      );
+
+      if (session && session.role) {
+        const roles = session.role.split(',').map(r => r.trim());
+
+        if (roles.includes('admin')) {
+          document.body.classList.add('role-admin');
+        }
+        if (roles.includes('judge') || roles.includes('chief_judge')) {
+          document.body.classList.add('role-judge');
+        }
+        if (roles.includes('record') || roles.includes('record_chief')) {
+          document.body.classList.add('role-record');
+        }
+      }
+    })
+    .catch(err => console.error('Header 載入失敗', err));
+  }
+  
+  // 裁入報名頁面重要function
+  document.addEventListener('DOMContentLoaded', () => {
+    loadHeader();   // 只負責 header
+    loadGames();    // 或該頁真正的資料初始化
+    initMonthTabs();  // 初始化月班表選擇
+  });
+</script>
+
+  <div class="main">
+  
+    <!-- 篩選 -->
+    <!-- 先暫時關閉不顯示
+    <div class="filter-bar">
+      目前顯示的資料是：
+      <select id="filterRange" onchange="render()">
+        <option value="all">全部</option>
+        <option value="month">本月</option>
+        <option value="week">本週</option>
+      </select>
+  
+      <label style="margin-left:10px;">
+        <input type="checkbox" id="showPast" onchange="render()"> 顯示過期賽事　　　
+      </label>
+      關鍵字搜尋：<input type="text" id="keyword" placeholder="搜尋球隊/場地/組別" style="margin-left:8px;" oninput="render()">
+    </div>
+    -->
+
+    <!-- 月班表選擇 -->
+    <div id="month-tabs" class="month-tabs"></div>
+
+    <div id="tournamentFilterArea" style="margin:8px 0 14px;"></div>
+
+    <!-- 桌機表格 -->
+    <div id="content"></div>
+  
+    <!-- 手機卡片 -->
+    <div id="mobileView"></div>
+  
+    <!-- ✅ 全站唯一的送出按鈕 -->
+    <!--
+    <div class="submit-bar">
+      <button onclick="submitSignup()">送出報名</button>
+    </div>
+    -->
+  
+  </div>
+
+<script>
+
+const s = JSON.parse(localStorage.getItem('session_user')||'{}');
+  
+function getName(v){
+  if (!v) return '—';
+  if (typeof v === 'object') return v.name || '—';
+  return v;
+}
+
+// 組別對應顏色
+function applyCategoryBadgeColor() {
+  const colorMap = {
+    '大聯盟': '#2563eb',   // 藍
+    '小聯盟': '#16a34a',   // 綠
+    '六年級': '#d97706',   // 黃
+    '五年級': '#9333ea',   // 紫
+    'U12': '#ef4444'       // 紅
+  };
+
+  document.querySelectorAll('.game-code.badge').forEach(el => {
+    const cat = el.dataset.category;
+    const color = colorMap[cat] || '#6b7280'; // 預設灰
+    el.style.backgroundColor = color;
+  });
+}
+
+function hideLoading() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) overlay.remove();
+}
+
+/* ===== 狀態 ===== */
+let allGames = [];
+let selectedPositions = {}; // game_id -> role
+let games = [];
+let currentTournament = '';
+
+/* ===== API ===== */
+function loadGames() {
+
+  const s =
+    JSON.parse(
+      localStorage.getItem('session_user') || '{}'
+    );
+
+  showToast('載入賽事資料中...');
+
+  callApi(
+    {
+      action:'getRecordGames',
+      user_id:s.user_id || ''
+    },
+    res => {
+
+      if (!res || res.result !== 'ok') {
+
+        showToast(
+          res?.message || '無法取得賽事資料'
+        );
+
+        return;
+      }
+
+      /* ========================
+         資料
+      ======================== */
+
+      allGames =
+        (res.games || []).map(safeMerge);
+
+      games = allGames;
+
+      /* ========================
+         Tournament 下拉
+      ======================== */
+
+      buildTournamentSelector();
+
+      /* ========================
+         建立 my_position
+         紀錄頁專用
+      ======================== */
+
+      const loginUserId =
+        String(
+          session?.user_id || ''
+        ).trim();
+
+      allGames.forEach(g => {
+
+        g.my_position = '';
+
+        ['REC_MAIN','REC_TRAINEE','REC_VIDEO']
+        .forEach(role => {
+
+          const slot =
+            g.records?.[role];
+
+          if (!slot) return;
+
+          const slotUserId =
+            String(
+              slot.user_id || ''
+            ).trim();
+
+          if (slotUserId === loginUserId){
+
+            g.my_position = role;
+
+          }
+
+        });
+
+      });
+
+      /* ========================
+         Cache
+      ======================== */
+
+      if (
+        typeof setGameCache === 'function'
+      ){
+        setGameCache(allGames);
+      }
+
+      /* ========================
+         Debug（先保留）
+      ======================== */
+
+      console.log(
+        'Record Games =',
+        allGames
+      );
+
+      console.log(
+        allGames.map(g => ({
+          game_code : g.game_code,
+          game_id   : g.game_id,
+          records   : g.records,
+          my_position : g.my_position
+        }))
+      );
+
+      console.log(
+        'Tournament List =',
+        [
+          ...new Set(
+            allGames.map(
+              g => g.tournament
+            )
+          )
+        ]
+      );
+
+      /* ========================
+         Render
+      ======================== */
+
+      render();
+
+    }
+  );
+
+}
+
+/* ===== 工具 ===== */
+function cancelSelected(gameId) {
+  delete selectedPositions[gameId];
+  render();
+}
+  
+function cancelSelectedByDate() {
+  if (!Object.keys(selectedPositions).length) {
+    alert('目前沒有已選擇的站位');
+    return;
+  }
+
+  const date = prompt('請輸入要取消的日期（yyyy/MM/dd）');
+  if (!date) return;
+
+  let removed = 0;
+
+  allGames.forEach(g => {
+    if (g.date === date && selectedPositions[g.game_id]) {
+      delete selectedPositions[g.game_id];
+      removed++;
+    }
+  });
+
+  if (!removed) {
+    alert('該日期沒有已選擇的站位');
+  } else {
+    alert(`已取消 ${date} 的 ${removed} 筆選擇`);
+    render();
+  }
+}
+
+function formatTime(t){
+  const d = new Date(t);
+  return d.getHours().toString().padStart(2,'0') + ':' +
+         d.getMinutes().toString().padStart(2,'0');
+}
+
+function rememberSelection(gameId, role, btn) {
+  // 清掉舊選擇
+  // delete selectedPositions[gameId];
+  selectedPositions[gameId] = role;
+
+  // 清除同場所有已選外觀
+  document
+    .querySelectorAll(`.signup-btn[data-game="${gameId}"]`)
+    .forEach(b => b.classList.remove('selected'));
+
+  // 標記目前按下的按鈕
+  if (btn) {
+    btn.classList.add('selected');
+  }
+
+  // ✅ 一定要在 if 外
+  render();
+}
+
+/* ✅ ✅ ✅ 核心：統一時間 */
+function timeToMinutes(t){
+  if (!t) return 0;
+  const [h,m] = t.split(':').map(Number);
+  return h*60+m;
+}
+
+function timeToMinutesSafe(t){
+  return timeToMinutes(t);
+}
+
+
+/* ✅ ========= 主 render ========= */
+function render(){
+
+  const root = document.getElementById('content');
+  
+  if(
+    document.getElementById('tournamentFilter') &&
+    !currentTournament
+  ){
+  
+    root.innerHTML = `
+      <div class="row-warning">
+        請先選擇要報名的賽事
+      </div>
+    `;
+  
+    return;
+  }
+  
+  root.innerHTML = '';
+
+
+  if (!games || !games.length){
+    root.innerHTML = '<div>沒有資料</div>';
+    return;
+  }
+
+  const dateMap = {};
+
+  // ✅ 分日期
+  games.forEach(g => {
+  
+    if(
+      currentTournament &&
+      String(g.tournament || '').trim()
+        !== currentTournament
+    ){
+      return;
+    }
+  
+    const s = Number(g.status || 0);
+  
+    // ✅ 1️⃣ 暫存 → 不顯示
+    if (s === 3) return;
+  
+    const d = new Date(g.date.replace(/\//g,'-'));
+    d.setHours(0,0,0,0);
+  
+    const today = new Date();
+    today.setHours(0,0,0,0);
+  
+    // ✅ ✅ ✅ 月份模式（最高優先）
+    if (window.currentMonth !== null){
+      const m = d.getMonth() + 1;
+      if (m !== window.currentMonth) return;
+    }
+  
+    // ✅ ✅ ✅ 全年模式
+    else if (window.isFullYear){
+      // 不過濾
+    }
+  
+    // ✅ ✅ ✅ 預設（本週之後）
+    else {
+      const day = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+      monday.setHours(0,0,0,0);
+  
+      if (d < monday) return;
+    }
+  
+    if (!dateMap[g.date]) dateMap[g.date] = [];
+    dateMap[g.date].push(g);
+  
+  });
+
+
+  // ✅ 日期排序
+  Object.keys(dateMap)
+    .sort((a,b)=>new Date(a) - new Date(b))
+    .forEach(date=>{
+
+      root.innerHTML += `
+        <div class="date-header">
+          📅 ${formatDateTW(date)}
+        </div>
+      `;
+
+      const list = dateMap[date];
+
+      // ✅ ✅ ✅ 場地分組（核心）
+      const fieldMap = {};
+
+      list.forEach(g=>{
+        const field = g.field || '未分類場地';
+        if (!fieldMap[field]) fieldMap[field] = [];
+        fieldMap[field].push(g);
+      });
+
+      // ✅ ✅ ✅ 每個場地處理
+      Object.keys(fieldMap).forEach(field=>{
+
+        const gamesInField = fieldMap[field];
+
+        // ✅ 是否多組別
+        const hasMultiCategory =
+          new Set(gamesInField.map(x=>x.category)).size > 1;
+
+        let finalList = [];
+
+        if (hasMultiCategory){
+
+          // ✅ ✅ ✅ 同場地不同組 → 全部依時間排序（關鍵）
+          finalList = gamesInField.sort((a,b)=>
+            timeToMinutes(getTime(a)) - timeToMinutes(getTime(b))
+          );
+
+          root.innerHTML += `
+            <div class="category-title">${field}</div>
+            <div class="card-grid">
+              ${
+                finalList
+                  .filter(g => Number(g.status || 0) !== 3)   // ✅ 先過濾
+                  .map(g => renderGameCard(g,{ session, type:'record' }))
+                  .join('')
+              }
+            </div>
+          `;
+
+        } else {
+
+          // ✅ ✅ ✅ 單一組別 → 保留 category 分組
+          const categoryMap = {};
+
+          gamesInField.forEach(g=>{
+            const cat = g.category || '未分類';
+            if (!categoryMap[cat]) categoryMap[cat] = [];
+            categoryMap[cat].push(g);
+          });
+
+          Object.keys(categoryMap).forEach(cat=>{
+
+            const sorted = categoryMap[cat]
+              .sort((a,b)=>
+                timeToMinutes(getTime(a)) - timeToMinutes(getTime(b))
+              );
+
+            root.innerHTML += `
+              <div class="category-title">${cat}</div>
+              <div class="card-grid">
+                ${
+                  sorted
+                    .filter(g => Number(g.status || 0) !== 3)
+                    .map(g => renderGameCard(g,{ session, type:'record' }))
+                    .join('')
+                }
+              </div>
+            `;
+          });
+        }
+
+      });
+
+    });
+}
+
+
+// ✅ 裁判頁手機版：依 日期 → 組別 → 場次 分組
+function groupGamesForMobile(games) {
+  const map = {};
+
+  games.forEach(g => {
+    const date = g.date; // yyyy/MM/dd
+    const category = g.category || '未分類';
+
+    if (!map[date]) map[date] = {};
+    if (!map[date][category]) map[date][category] = [];
+
+    map[date][category].push(g);
+  });
+
+  // ✅ 每個組別內依「裁判頁時間欄位」排序
+  Object.values(map).forEach(catMap => {
+    Object.values(catMap).forEach(list => {
+      list.sort((a, b) =>
+        timeToMinutesSafe(a.time_range) -
+        timeToMinutesSafe(b.time_range)
+      );
+    });
+  });
+
+  return map;
+}
+
+function renderMobilePosGrid(g) {
+
+  const isPast = isPastGame(g.date);
+
+  const roles = [
+    ['REC_MAIN','紀錄'],
+    ['REC_TRAINEE','見習'],
+    ['REC_VIDEO','影像']
+  ];
+
+  return `
+  <div class="mobile-pos-grid">
+    ${
+      roles.map(([role,label])=>{
+
+        const slot = g.records?.[role];
+        const isMe = g.my_position === role;
+
+        // ✅ 已有人
+        if (slot){
+          return `
+            <div class="mobile-pos">
+              <span class="${isMe?'mobile-judge-me':''}">
+                ${getName(slot)}
+              </span>
+              ${
+                isMe && !isPast
+                ? `<div class="mobile-cancel"
+                      onclick="handleSlotClick('${g.game_id}','${role}')">
+                      取消
+                   </div>`
+                : ''
+              }
+            </div>
+          `;
+        }
+
+        // ✅ 過期
+        if (isPast){
+          return `<div class="mobile-pos">—</div>`;
+        }
+
+        // ✅ 已有其它位置
+        if (g.my_position){
+          return `<div class="mobile-pos">待位</div>`;
+        }
+
+        // ✅ 可報名
+        return `
+          <div class="mobile-pos">
+            <div class="mobile-pos-btn"
+              onclick="handleSlotClick('${g.game_id}','${role}')">
+              ${label}
+            </div>
+          </div>
+        `;
+
+      }).join('')
+    }
+  </div>
+  `;
+}
+ 
+function renderTimeHHmm(t) {
+  if (!t) return '';
+
+  // ✅ 已經是字串（08:30）
+  if (typeof t === 'string') {
+    // 保險：如果已經是 HH:mm，直接回傳
+    if (/^\d{1,2}:\d{2}$/.test(t)) {
+      return t;
+    }
+    // 其他字串就原樣回
+    return t;
+  }
+
+  // ✅ 是 Date 物件（1899-12-30）
+  if (t instanceof Date) {
+    return (
+      t.getHours().toString().padStart(2, '0') +
+      ':' +
+      t.getMinutes().toString().padStart(2, '0')
+    );
+  }
+
+  // 其他型別（保險）
+  return String(t);
+}
+ 
+// 訊息function
+
+function logout(){
+  localStorage.clear();
+  location.replace('login.html');
+}
+
+
+// 初始化月份
+window.currentMonth = null;
+window.isFullYear = false;
+  
+function initMonthTabs() {
+
+  const now = new Date();
+  const year = now.getFullYear();
+
+  const container = document.getElementById('month-tabs');
+  container.innerHTML = '';
+
+  // ✅ ✅ ✅ 全年按鈕
+  const allBtn = document.createElement('div');
+  allBtn.className = 'month-tab active';
+  allBtn.textContent = '📊 全年班表';
+
+  allBtn.onclick = () => {
+    window.currentMonth = null;
+    window.isFullYear = true;
+    setActiveTab(allBtn);
+    loadGames();
+    showToast(`載入全年班表`, 'success');
+  };
+
+  container.appendChild(allBtn);
+
+
+  // ✅ 月份
+  for (let m = 1; m <= 12; m++) {
+
+    const div = document.createElement('div');
+    div.className = 'month-tab';
+    div.textContent = `${m}月`;
+
+    if (m === now.getMonth() + 1) {
+      // 預設不要 active（讓全年是預設）
+    }
+
+   div.onclick = () => {
+     window.currentMonth = m;
+     window.isFullYear = false;
+     setActiveTab(div);
+     loadRecordGamesByMonth(year, m);
+     showToast(`載入 ${m}月 班表`, 'success');
+   };
+
+    container.appendChild(div);
+  }
+}
+
+function setActiveTab(el) {
+  document.querySelectorAll('.month-tab')
+    .forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// 呼叫API
+function loadRecordGamesByMonth(year, month){
+
+  const s = JSON.parse(localStorage.getItem('session_user')||'{}');
+
+  callApi({
+    action:'getRecordGamesByMonth',   // ✅ ✅ ✅
+    year: year,
+    month: month,
+    user_id: s.user_id
+  }, res => {
+
+    if (!res || res.result !== 'ok') {
+      showToast('載入失敗');
+      return;
+    }
+
+    allGames = res.games || [];
+
+    if (typeof setGameCache === 'function'){
+      setGameCache(allGames);
+    }
+
+    render();
+  });
+}
+
+function safeMerge(g){
+
+  // ✅ 後端已整理好的裁判或紀錄資料直接使用
+  const hasJudges =
+    g.judges &&
+    Object.keys(g.judges).some(k => g.judges[k]);
+
+  const hasRecords =
+    g.records &&
+    Object.keys(g.records).some(k => g.records[k]);
+
+  if (hasJudges || hasRecords){
+    return g;
+  }
+
+  g.judges = g.judges || {};
+  g.records = g.records || {};
+
+  ['PU','U1','U2','U3'].forEach(r=>{
+    g.judges[r] =
+      g.assignment_judges?.[r] ||
+      g.signup_judges?.[r] ||
+      '';
+  });
+
+  ['REC_MAIN','REC_TRAINEE','REC_VIDEO'].forEach(r=>{
+    g.records[r] =
+      g.assignment_records?.[r] ||
+      g.signup_records?.[r] ||
+      '';
+  });
+
+  g.status = Number(g.status || 0);
+
+  return g;
+}
+
+function buildTournamentSelector(){
+
+  const area =
+    document.getElementById('tournamentFilterArea');
+
+  if (!area) return;
+
+  const pageTitle =
+    document.body.classList.contains('page-record')
+      ? '📝 紀錄員班表'
+      : '⚾ 裁判班表';
+
+  const tournaments = [
+    ...new Set(
+      allGames
+        .map(g =>
+          String(g.tournament || '').trim()
+        )
+        .filter(Boolean)
+    )
+  ].sort();
+
+  const savedTournament =
+    localStorage.getItem('currentTournament') || '';
+
+  // ✅ 只有一個賽事
+  if (tournaments.length === 1){
+
+    currentTournament = tournaments[0];
+
+    localStorage.setItem(
+      'currentTournament',
+      currentTournament
+    );
+
+    area.innerHTML = `
+      <div style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+        margin:6px 0;
+        flex-wrap:wrap;
+      ">
+        <span style="
+          font-weight:700;
+          font-size:16px;
+          color:#1e3a8a;
+        ">
+          ${pageTitle}
+        </span>
+
+        <span style="font-weight:700;">
+          ／請選擇報名賽事：
+        </span>
+
+        <span style="
+          background:#dbeafe;
+          color:#1d4ed8;
+          padding:4px 10px;
+          border-radius:999px;
+          font-size:13px;
+          font-weight:700;
+        ">
+          ${currentTournament}
+        </span>
+      </div>
+    `;
+
+    return;
+  }
+
+  // ✅ 多賽事
+  if (
+    savedTournament &&
+    tournaments.includes(savedTournament)
+  ){
+    currentTournament = savedTournament;
+  }
+  else{
+    currentTournament = '';
+  }
+
+  area.innerHTML = `
+    <div style="
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:6px 0;
+      flex-wrap:wrap;
+    ">
+
+      <span style="
+        font-weight:700;
+        font-size:16px;
+        color:#1e3a8a;
+      ">
+        ${pageTitle}
+      </span>
+
+      <span style="font-weight:700;">
+        ／請選擇報名賽事：
+      </span>
+
+      <select
+        id="tournamentFilter"
+        style="
+          min-width:260px;
+          padding:6px 10px;
+          border:1px solid #d1d5db;
+          border-radius:8px;
+          font-size:14px;
+        "
+        onchange="
+          currentTournament=this.value;
+          localStorage.setItem(
+            'currentTournament',
+            currentTournament
+          );
+          render();
+        "
+      >
+
+        <option value="">
+          請選擇要報名的賽事
+        </option>
+
+        ${tournaments.map(t=>`
+          <option
+            value="${t}"
+            ${t === currentTournament ? 'selected' : ''}
+          >
+            ${t}
+          </option>
+        `).join('')}
+
+      </select>
+
+    </div>
+  `;
+}
+
+</script>
+</body>
+</html>
