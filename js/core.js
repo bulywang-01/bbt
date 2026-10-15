@@ -1,4 +1,36 @@
 /*********************************************************
+ ✅ 報名開放設定
+*********************************************************/
+
+/*
+  MODE:
+  ALL => 全部賽事開放
+  LIMIT => 僅指定賽事開放
+*/
+
+// ===== 裁判 =====
+const JUDGE_SIGNUP_CONFIG = {
+  mode: 'ALL',
+
+  tournaments: [
+    //'新北市議長盃',
+    //'2026-BBT聯盟'
+  ]
+};
+
+// ===== 紀錄 =====
+const RECORD_SIGNUP_CONFIG = {
+  mode: 'LIMIT',
+
+  tournaments: [
+    //'新北市議長盃',
+    '2026-BBT聯盟'
+  ]
+};
+
+
+
+/*********************************************************
  ✅ category 顏色系統（5色制）
 *********************************************************/
 
@@ -80,6 +112,22 @@ function renderGameCard(g, opt={}){
 
   const isRecordPage = (type === 'record');
 
+  const tournament =
+   String(g.tournament || '').trim();
+ 
+  const allowJudgeSignup =
+    JUDGE_SIGNUP_CONFIG.mode === 'ALL'
+      ? true
+      : JUDGE_SIGNUP_CONFIG.tournaments.includes(
+          tournament
+        );
+  
+  const allowRecordSignup =
+    RECORD_SIGNUP_CONFIG.mode === 'ALL'
+      ? true
+      : RECORD_SIGNUP_CONFIG.tournaments.includes(
+          tournament
+        );
 
   const isPast = isPastGame(g.date);
   const judgeRoles = getJudgeRoles(g);
@@ -313,12 +361,23 @@ function renderGameCard(g, opt={}){
                     `;
                   }
             
-            return `
-              <div class="slot action" onclick="handleSlotClick('${g.game_id}','${role}')">
-                <div class="label">${roleMap(role)}</div>
-                <div class="btn">報名</div>
-              </div>
-            `;
+                 if (!allowJudgeSignup){
+                 
+                   return `
+                     <div class="slot locked">
+                       <div class="label">${roleMap(role)}</div>
+                       <div class="name">未開放</div>
+                     </div>
+                   `;
+                 }
+                 
+                 return `
+                   <div class="slot action"
+                        onclick="handleSlotClick('${g.game_id}','${role}')">
+                     <div class="label">${roleMap(role)}</div>
+                     <div class="btn">報名</div>
+                   </div>
+                 `;
 
           }).join('')
         ) : ''
@@ -405,14 +464,24 @@ function renderGameCard(g, opt={}){
             `;
           }
       
-          // ✅ ✅ ✅ 正常報名
-          return `
-            <div class="slot action"
-              onclick="handleSlotClick('${g.game_id}','${role}')">
-              <div class="label">${label}</div>
-              <div class="btn">報名</div>
-            </div>
-          `;
+         if (!allowRecordSignup){
+         
+           return `
+             <div class="slot locked">
+               <div class="label">${label}</div>
+               <div class="name">未開放</div>
+             </div>
+           `;
+         }
+         
+         // ✅ ✅ ✅ 正常報名
+         return `
+           <div class="slot action"
+             onclick="handleSlotClick('${g.game_id}','${role}')">
+             <div class="label">${label}</div>
+             <div class="btn">報名</div>
+           </div>
+         `;
       
         }).join('')
         : ''
