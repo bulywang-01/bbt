@@ -9,7 +9,7 @@
 
 // ===== 裁判 =====
 const JUDGE_TOURNAMENT_CONFIG = {
-  mode:'ALL',
+  mode:'LIMIT',
   tournaments:[
     '2026-BBT聯盟'
   ]
