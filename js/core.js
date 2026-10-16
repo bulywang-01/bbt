@@ -11,7 +11,8 @@
 const JUDGE_TOURNAMENT_CONFIG = {
   mode:'LIMIT',
   tournaments:[
-    '2026-BBT聯盟'
+    '2026-BBT聯盟',
+    '2026-BBT聯盟-育成組'
   ]
 };
 
@@ -33,7 +34,8 @@ const JUDGE_SIGNUP_CONFIG = {
 
   tournaments: [
     //'新北市議長盃',
-    '2026-BBT聯盟'
+    '2026-BBT聯盟',
+    '2026-BBT聯盟-育成組'
   ]
 };
 
