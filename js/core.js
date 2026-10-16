@@ -1899,8 +1899,8 @@ function buildTournamentSelector(){
           ${pageTitle}
         </span>
 
-        <span style="font-weight:700;">
-          ／請選擇報名賽事：
+        <span font-size:16px;style="font-weight:700;">
+          ／賽事：
         </span>
 
         <span style="
@@ -1949,7 +1949,7 @@ function buildTournamentSelector(){
       </span>
 
       <span style="font-weight:700;">
-        ／請選擇報名賽事：
+        ／請選擇賽事：
       </span>
 
       <select
