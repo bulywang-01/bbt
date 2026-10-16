@@ -1896,11 +1896,7 @@ function buildTournamentSelector(){
           font-size:16px;
           color:#1e3a8a;
         ">
-          ${pageTitle}
-        </span>
-
-        <span font-size:16px;style="font-weight:700;">
-          ／賽事：
+          ${pageTitle}／賽事：
         </span>
 
         <span style="
