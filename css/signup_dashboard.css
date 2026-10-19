@@ -512,8 +512,8 @@ body{
 /* Hover */
 .duty-badge.signup:hover{
     background:#1d4ed8;
-    border-color:#1d4ed8;
     transform:translateY(-1px);
+    box-shadow:0 2px 8px rgba(37,99,235,.25);
 }
 
 .duty-badge.waiting{
