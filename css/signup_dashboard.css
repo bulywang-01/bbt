@@ -492,16 +492,28 @@ body{
   font-weight:700;
 }
 
+/* 可報名 */
 .duty-badge.signup{
-    background:#eff6ff;
-    color:#2563eb;
-    border:1px dashed #2563eb;
+    background:#2563eb;
+    color:#fff;
+    border:1px solid #2563eb;
     font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+    box-shadow:0 2px 6px rgba(37,99,235,.25);
 }
 
+/* +號同色 */
+.duty-badge.signup .duty-signup{
+    color:#fff;
+    font-weight:800;
+}
+
+/* Hover */
 .duty-badge.signup:hover{
-    background:#dbeafe;
+    background:#1d4ed8;
     border-color:#1d4ed8;
+    transform:translateY(-1px);
 }
 
 .duty-badge.waiting{
@@ -697,4 +709,10 @@ body{
     content:" 本月";
     font-size:11px;
     opacity:.9;
+}
+
+.date-group-header{
+    position:sticky;
+    top:60px;
+    z-index:10;
 }
