@@ -9,6 +9,7 @@
   
 </head>
 
+
 <!-- 共用 Header -->
 <body data-page-title="紀錄報名" class="page-record">
 
@@ -66,7 +67,6 @@ function loadHeader() {
   document.addEventListener('DOMContentLoaded', () => {
     loadHeader();   // 只負責 header
     loadGames();    // 或該頁真正的資料初始化
-    initMonthTabs();  // 初始化月班表選擇
   });
 </script>
 
@@ -148,130 +148,12 @@ let games = [];
 let currentTournament = '';
 
 /* ===== API ===== */
-function loadGames() {
+function loadGames(){
 
-  const s =
-    JSON.parse(
-      localStorage.getItem('session_user') || '{}'
-    );
-
-  showToast('載入賽事資料中...');
-
-  callApi(
-    {
-      action:'getRecordGames',
-      user_id:s.user_id || ''
-    },
-    res => {
-
-      if (!res || res.result !== 'ok') {
-
-        showToast(
-          res?.message || '無法取得賽事資料'
-        );
-
-        return;
-      }
-
-      /* ========================
-         資料
-      ======================== */
-
-      allGames =
-        (res.games || []).map(safeMerge);
-
-      games = allGames;
-
-      /* ========================
-         Tournament 下拉
-      ======================== */
-
-      buildTournamentSelector();
-
-      /* ========================
-         建立 my_position
-         紀錄頁專用
-      ======================== */
-
-      const loginUserId =
-        String(
-          session?.user_id || ''
-        ).trim();
-
-      allGames.forEach(g => {
-
-        g.my_position = '';
-
-        ['REC_MAIN','REC_TRAINEE','REC_VIDEO']
-        .forEach(role => {
-
-          const slot =
-            g.records?.[role];
-
-          if (!slot) return;
-
-          const slotUserId =
-            String(
-              slot.user_id || ''
-            ).trim();
-
-          if (slotUserId === loginUserId){
-
-            g.my_position = role;
-
-          }
-
-        });
-
-      });
-
-      /* ========================
-         Cache
-      ======================== */
-
-      if (
-        typeof setGameCache === 'function'
-      ){
-        setGameCache(allGames);
-      }
-
-      /* ========================
-         Debug（先保留）
-      ======================== */
-
-      console.log(
-        'Record Games =',
-        allGames
-      );
-
-      console.log(
-        allGames.map(g => ({
-          game_code : g.game_code,
-          game_id   : g.game_id,
-          records   : g.records,
-          my_position : g.my_position
-        }))
-      );
-
-      console.log(
-        'Tournament List =',
-        [
-          ...new Set(
-            allGames.map(
-              g => g.tournament
-            )
-          )
-        ]
-      );
-
-      /* ========================
-         Render
-      ======================== */
-
-      render();
-
-    }
-  );
+  loadGamesCommon({
+    action:'getRecordGames',
+    isRecordPage:true
+  });
 
 }
 
@@ -421,7 +303,23 @@ function render(){
   
   });
 
-
+  const dates = Object.keys(dateMap);
+  
+  if (!dates.length){
+  
+    root.innerHTML = `
+      <div class="row-warning">
+        📅 ${
+          window.currentMonth
+            ? `${window.currentMonth}月無賽事`
+            : '目前沒有符合條件的賽事'
+        }
+      </div>
+    `;
+  
+    return;
+  }
+  
   // ✅ 日期排序
   Object.keys(dateMap)
     .sort((a,b)=>new Date(a) - new Date(b))
@@ -429,7 +327,13 @@ function render(){
 
       root.innerHTML += `
         <div class="date-header">
-          📅 ${formatDateTW(date)}
+          <div class="date-title">
+            📅 ${formatDateTW(date)}
+          </div>
+      
+          <div class="date-sub">
+            共 ${dateMap[date].length} 場賽事
+          </div>
         </div>
       `;
 
@@ -640,52 +544,9 @@ function logout(){
 window.currentMonth = null;
 window.isFullYear = false;
   
-function initMonthTabs() {
-
-  const now = new Date();
-  const year = now.getFullYear();
-
-  const container = document.getElementById('month-tabs');
-  container.innerHTML = '';
-
-  // ✅ ✅ ✅ 全年按鈕
-  const allBtn = document.createElement('div');
-  allBtn.className = 'month-tab active';
-  allBtn.textContent = '📊 全年班表';
-
-  allBtn.onclick = () => {
-    window.currentMonth = null;
-    window.isFullYear = true;
-    setActiveTab(allBtn);
-    loadGames();
-    showToast(`載入全年班表`, 'success');
-  };
-
-  container.appendChild(allBtn);
-
-
-  // ✅ 月份
-  for (let m = 1; m <= 12; m++) {
-
-    const div = document.createElement('div');
-    div.className = 'month-tab';
-    div.textContent = `${m}月`;
-
-    if (m === now.getMonth() + 1) {
-      // 預設不要 active（讓全年是預設）
-    }
-
-   div.onclick = () => {
-     window.currentMonth = m;
-     window.isFullYear = false;
-     setActiveTab(div);
-     loadRecordGamesByMonth(year, m);
-     showToast(`載入 ${m}月 班表`, 'success');
-   };
-
-    container.appendChild(div);
-  }
-}
+initMonthTabsCommon({
+    games: allGames
+});
 
 function setActiveTab(el) {
   document.querySelectorAll('.month-tab')
