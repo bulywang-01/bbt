@@ -5,7 +5,6 @@
    2. record_dashboard.html
 ===================================================== */
 
-
 /* =====================================================
    一、頁面基本設定
 ===================================================== */
@@ -22,9 +21,8 @@ body{
   padding:16px;
 }
 
-
 /* =====================================================
-   二、Header 區域
+   二、Header
 ===================================================== */
 
 #header .nav,
@@ -39,102 +37,162 @@ body{
   font-weight:600;
 }
 
-
 /* =====================================================
-   三、月份切換列
+   三、月份切換
 ===================================================== */
-
 .month-tabs{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    flex-wrap:nowrap;
+    padding-bottom:4px;
+    scrollbar-width:none;
+}
 
-  margin:10px 0 14px;
+.month-tabs::-webkit-scrollbar{
+    display:none;
 }
 
 .month-tab{
-  padding:5px 10px;
+    width:56px;
+    height:56px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+    padding:0;
+    border-radius:12px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+}
 
-  border-radius:999px;
-
-  background:#f1f5f9;
-
-  color:#444;
-
-  cursor:pointer;
-
-  font-size:13px;
-  font-weight:700;
+.month-tab:hover{
+    background:#eef4ff;
 }
 
 .month-tab.active{
-  background:#1976d2;
-  color:#fff;
+    background:#2563eb;
+    color:#fff;
+    border-color:#2563eb;
+    box-shadow:
+      0 4px 12px rgba(37,99,235,.25);
 }
 
+.toolbar-card{
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    margin:10px 0 16px;
+}
+
+.toolbar-title{
+    color:#1e3a8a;
+    font-size:16px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.toolbar-select{
+    min-width:260px;
+    height:42px;
+    padding:0 12px;
+    border:1px solid #dbe3ef;
+    border-radius:12px;
+    background:#fff;
+    font-size:14px;
+    font-weight:600;
+}
+
+.toolbar-single-tournament{
+    background:#dbeafe;
+    color:#1d4ed8;
+    padding:8px 14px;
+    border-radius:999px;
+    font-weight:700;
+}
+
+.toolbar-empty{
+    color:#dc2626;
+    font-weight:700;
+}
+
+#tournamentSelect{
+    min-width:280px;
+    height:40px;
+    border-radius:10px;
+    border:1px solid #cbd5e1;
+    padding:0 12px;
+    font-size:14px;
+    font-weight:600;
+}
 
 /* =====================================================
-   四、日期區塊標題
+   四、日期區塊
 ===================================================== */
 
 .date-header{
-  margin:16px 10px 10px;
-  padding-left:6px;
-
-  border-left:4px solid #1d4ed8;
-
-  color:#1d4ed8;
-
-  font-size:16px;
-  font-weight:800;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#fff;
+  border-left:5px solid #2563eb;
+  border-radius:10px;
+  margin:12px 0 8px;
+  padding:10px 14px;
+  min-height:unset;
 }
 
+.date-title{
+  font-size:20px;
+  font-weight:700;
+}
 
-/* =====================================================
-   五、組別標題
-===================================================== */
+.date-sub{
+    font-size:13px;
+    color:#64748b;
+}
 
 .category-title{
   margin:8px 10px 6px;
-
   color:#1d4ed8;
-
   font-size:14px;
   font-weight:700;
 }
 
-
 /* =====================================================
-   六、賽事卡片區域
+   五、卡片容器
 ===================================================== */
 
 .card-grid{
   display:grid;
-  grid-template-columns:
-    repeat(auto-fill,minmax(420px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(420px,1fr));
   gap:14px;
   margin-bottom:18px;
 }
 
 /* =====================================================
-   七、賽事卡片
+   六、賽事卡片
 ===================================================== */
 
 .game-card{
   background:#fff;
   border-radius:12px;
-  padding:14px;
+  padding:10px;
+
   box-sizing:border-box;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
   transition:.15s;
+
   font-size:14px;
 }
 
 .game-card:hover{
   transform:translateY(-2px);
-
-  box-shadow:
-    0 6px 18px rgba(0,0,0,.12);
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
 }
 
 .game-card.loading{
@@ -142,9 +200,8 @@ body{
   pointer-events:none;
 }
 
-
 /* =====================================================
-   八、聯盟類別色彩
+   七、聯盟類別樣式
 ===================================================== */
 
 .card-mlb{
@@ -170,26 +227,19 @@ body{
   border:2px solid #dc2626;
 }
 
-
 /* =====================================================
-   九、特殊狀態
+   八、特殊狀態
 ===================================================== */
-
-/* 延賽 */
 
 .game-card.postponed{
   border-left:6px solid #f59e0b;
   background:#fffbeb;
 }
 
-/* 停賽 */
-
 .game-card.stopped{
   border-left:6px solid #dc2626;
   background:#fef2f2;
 }
-
-/* 鎖定 */
 
 .game-card.locked{
   border-left:6px solid #6b7280;
@@ -197,285 +247,282 @@ body{
   opacity:.7;
 }
 
-
 /* =====================================================
-   十、卡片第一列
-   日期 / 組別 / 場地
+   九、賽事資訊 Header
 ===================================================== */
 
-.row-top{
-  display:grid;
-
-  grid-template-columns:
-    1fr auto 1fr;
-
-  align-items:center;
-
-  font-size:13px;
-  font-weight:700;
+.game-header{
+  margin-bottom:10px;
 }
 
-.row-top .left{
-  color:#2563eb;
+.game-header-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
 }
 
-.row-top .center{
-  text-align:center;
-  font-weight:600;
-}
-
-.row-top .right{
-  justify-self:end;
-
-  background:#6b7280;
-
-  color:#fff;
-
-  padding:3px 8px;
-
-  border-radius:999px;
-
-  font-size:12px;
-  font-weight:500;
-}
-
-
-/* =====================================================
-   十一、卡片第二列
-   隊伍 / 時間 / 場號
-===================================================== */
-
-.row-mid{
-  display:flex;
-
-  justify-content:space-between;
-  align-items:center;
-
-  margin:6px 0 4px;
-}
-
-/* 隊伍名稱 */
-
-.team{
-  flex:1;
-
-  text-align:center;
-
-  font-size:20px;
-  font-weight:1000;
-}
-
-/* 中央區塊 */
-
-.center-box{
-  flex:1;
-  text-align:center;
-}
-
-/* 場號 */
-
-.game-code{
-  color:#2563eb;
-
-  font-size:13px;
-  font-weight:700;
-}
-
-/* 時間 */
-
-.time{
-  color:#dc2626;
-
-  font-size:16px;
-  font-weight:900;
-}
-
-
-/* =====================================================
-   十二、第三列
-   裁判 / 紀錄名單區
-===================================================== */
-
-.row-bottom{
-  display:grid;
-
-  grid-template-columns:
-    repeat(7,1fr);
-
-  gap:4px;
-
+.game-location{
   margin-top:6px;
-  padding-top:6px;
-
-  border-top:1px dashed #ddd;
+  font-size:12px;
+  color:#64748b;
+  margin-left:0;
+  margin-top:0;
 }
 
-
-/* =====================================================
-   十三、位置區塊
-===================================================== */
-
-.slot{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-
-  text-align:center;
+.game-tags{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-wrap:nowrap;
 }
 
-/* 尚未有人 */
+.tag-tournament{
+    background:#2563eb;
+    color:#fff;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+}
 
-.slot.waiting{
-  background:#f3f4f6;
+.tag-category{
+    background:#f1f5f9;
+    color:#334155;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+}
 
-  border-radius:6px;
+.game-code-badge{
+    margin-left:auto;
+    color:#2563eb;
+    font-size:13px;
+    font-weight:800;
+    white-space:nowrap;
+}
 
-  color:#9ca3af;
+.tag-location{
+    background:#fdf2f8;
+    color:#be185d;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.status-badge{
+  display:inline-block;
+  margin:6px 0;
+  padding:4px 12px;
+  border-radius:20px;
+  font-size:13px;
   font-weight:600;
 }
 
-.slot.waiting .name{
-  color:#9ca3af;
+.status-badge.completed{
+  background:#fff3e8;
+  color:#e67e22;
+  border:1px solid #f5b97a;
 }
-
-/* 鎖定 */
-
-.slot.locked{
-  background:#e5e7eb;
-
-  color:#666;
-
-  cursor:not-allowed;
-}
-
 
 /* =====================================================
-   十四、職位名稱
+   十、隊伍資訊
 ===================================================== */
 
-.label{
-  font-size:11px;
-  color:#888;
+.card-match{
+  display:grid;
+  grid-template-columns:1fr 110px 1fr;
+  align-items:center;
+  gap:8px;
 }
 
-
-/* =====================================================
-   十五、人名
-===================================================== */
-
-.name{
-  font-size:16px;
-  font-weight:700;
-
-  white-space:nowrap;
-}
-
-/* 自己 */
-
-.name.me{
-  background:#dbeafe;
-
-  color:#1d4ed8;
-
-  padding:3px 6px;
-
-  border-radius:6px;
-
-  font-size:16px;
+.match-team{
+  font-size:18px;
   font-weight:800;
+  line-height:1.2;
 }
 
-
-/* =====================================================
-   十六、報名按鈕
-===================================================== */
-
-.btn{
-  background:#2563eb;
-
-  color:#fff;
-
-  border:none;
-
-  border-radius:4px;
-
-  font-size:13px;
-
-  padding:1px 0;
-  margin-top:2px;
+.match-time{
+  font-size:26px;
+  font-weight:800;
+  color:#e53935;
 }
 
-
-/* =====================================================
-   十七、取消報名
-===================================================== */
-
-.cancel{
-  background:#fef2f2;
-
-  color:#dc2626;
-
-  padding:2px 6px;
-
-  border-radius:6px;
-
-  margin-top:4px;
-
-  cursor:pointer;
-
-  font-size:12px;
+.match-team.away{
+  text-align:left;
 }
 
+.match-team.home{
+  text-align:right;
+}
 
-/* =====================================================
-   十八、不需配置裁判
-===================================================== */
-
-.no-judge{
-  grid-column:1/-1;
-
-  color:#999;
-
+.match-center{
   text-align:center;
-
-  font-size:16px;
 }
 
+.match-code{
+  font-size:16px;
+  color:#64748b;
+}
+
+.match-vs{
+  margin:4px 0;
+  font-size:12px;
+  color:#94a3b8;
+}
 
 /* =====================================================
-   十九、提醒訊息
+   十一、警告訊息
 ===================================================== */
 
 .row-warning{
   background:#fff7ed;
-
   border:1px solid #fb923c;
-
   border-radius:8px;
-
   padding:6px 8px;
-
-  margin:6px 0;
+  margin:8px 0;
 
   text-align:center;
 
   color:#c2410c;
-
   font-size:13px;
   font-weight:600;
 }
 
 .row-warning .sub{
-  color:#666;
-
   margin-top:2px;
-
   font-size:11px;
+  color:#666;
 }
 
+/* =====================================================
+   十二、已排班名單
+===================================================== */
+
+.card-duty-section{
+  margin-top:12px;
+  padding-top:6px;
+  border-top:1px solid #e5e7eb;
+}
+
+.card-duty-title{
+  margin-bottom:4px;
+  font-size:12px;
+  color:#94a3b8;
+  font-weight:600;
+}
+
+.card-duty-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.duty-badge{
+    display:inline-flex;
+    align-items:center;
+    padding:4px 8px;
+    border-radius:8px;
+    background:#f8fafc;
+    border:1px solid #cbd5e1;
+    color:#334155;
+    font-size:14px;
+    font-weight:600;
+}
+
+.duty-empty{
+  color:#999;
+  font-size:12px;
+}
 
 /* =====================================================
-   二十、Overlay
+   十三、報名席次
+===================================================== */
+
+.row-bottom{
+    display:grid;
+    grid-template-columns:
+        repeat(auto-fit,minmax(160px,160px));
+    gap:8px;
+    margin-top:10px;
+}
+
+.signup-slot{
+    width:160px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 12px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:700;
+}
+
+.signup-slot.action{
+  background:#f0fdf4;
+  border:1px dashed #16a34a;
+  color:#16a34a;
+  cursor:pointer;
+}
+
+.signup-slot.action:hover{
+  background:#dcfce7;
+}
+
+.signup-slot.disabled{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  color:#64748b;
+}
+
+.slot-full{
+  background:none;
+  border:none;
+  text-align:right;
+  color:#10b981;
+  padding:0;
+  width:100%;
+  margin-top:12px;
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:700;
+}
+
+.duty-badge.signup{
+    background:#f0fdf4;
+    border:1px dashed #22c55e;
+    color:#15803d;
+    cursor:pointer;
+    font-weight:700;
+}
+
+/* =====================================================
+   十四、取消報名
+===================================================== */
+
+.cancel{
+  margin-top:4px;
+  padding:2px 6px;
+  border-radius:6px;
+  background:#fef2f2;
+  color:#dc2626;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.duty-cancel{
+    margin-left:6px;
+    color:#dc2626;
+    cursor:pointer;
+    font-weight:700;
+}
+
+/* =====================================================
+   十五、Overlay
 ===================================================== */
 
 #overlay{
@@ -483,8 +530,8 @@ body{
   inset:0;
 
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
 
   background:rgba(0,0,0,.35);
 
@@ -501,17 +548,15 @@ body{
   border-radius:10px;
 
   text-align:center;
-
   font-size:15px;
 
-  box-shadow:
-    0 8px 24px rgba(0,0,0,.25);
+  box-shadow:0 8px 24px rgba(0,0,0,.25);
 }
 
-
 /* =====================================================
-   二十一、手機版
+   十六、手機版
 ===================================================== */
+
 @media (max-width:768px){
 
   .card-grid{
@@ -520,23 +565,148 @@ body{
 
   .game-card{
     width:100%;
-    min-width:100%;
     max-width:100%;
   }
 
-  .row-bottom{
-    grid-template-columns:repeat(4,1fr);
+  .card-match{
+    grid-template-columns:1fr 90px 1fr;
   }
 
-  .team{
+  .match-team{
     font-size:20px;
-    font-weight:800;
-    letter-spacing:0.5px;
   }
 
-  .time{
-    color:#dc2626;
-    font-size:17px;
-    font-weight:900;
+  .match-time{
+    font-size:24px;
   }
+
+  .match-code{
+    font-size:12px;
+  }
+}
+
+
+/* =====================================================
+   報名結果區（仿 Sample）
+===================================================== */
+
+.card-result{
+
+  margin-top:14px;
+  padding-top:12px;
+
+  border-top:1px solid #e5e7eb;
+
+  font-size:14px;
+  font-weight:700;
+}
+
+.card-result.success{
+  color:#10b981;
+}
+
+.card-result.danger{
+  color:#ef4444;
+}
+
+.card-result.open{
+  color:#2563eb;
+}
+
+.slot-status{
+    width:100%;
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid #e5e7eb;
+    font-size:14px;
+    font-weight:700;
+}
+
+.duty-badge.waiting{
+    background:#f8fafc;
+    border:1px dashed #cbd5e1;
+    color:#64748b;
+}
+
+.duty-badge.signup{
+    background:#f0fdf4;
+    border:1px dashed #22c55e;
+    color:#15803d;
+    cursor:pointer;
+}
+
+.duty-badge.signup:hover{
+    background:#dcfce7;
+}
+
+.duty-badge.waiting{
+    background:#f8fafc;
+    border:1px dashed #cbd5e1;
+    color:#94a3b8;
+}
+
+.duty-badge.me{
+    background:#dbeafe;
+    border:1px solid #93c5fd;
+    color:#1d4ed8;
+    font-weight:700;
+}
+
+.duty-cancel{
+    margin-left:6px;
+    color:#dc2626;
+    cursor:pointer;
+    font-weight:700;
+}
+
+.duty-signup{
+    font-weight:700;
+}
+
+.game-location{
+    display:none;
+}
+
+.game-location-inline{
+    font-size:12px;
+    color:#64748b;
+    font-weight:500;
+}
+
+.monthTabs{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+}
+
+.month-btn{
+    border:none;
+    background:#16233e;
+    color:#cbd5e1;
+    padding:10px 18px;
+    border-radius:12px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.month-btn:hover{
+    background:#223556;
+    color:#fff;
+}
+
+.month-btn.active{
+    background:#2563eb;
+    color:#fff;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.15) inset,
+      0 6px 18px rgba(37,99,235,.35);
+}
+
+.month-btn.active::after{
+    content:" 本月";
+    font-size:11px;
+    opacity:.9;
 }
