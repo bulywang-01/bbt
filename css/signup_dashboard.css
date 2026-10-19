@@ -493,10 +493,39 @@ body{
 }
 
 .duty-badge.signup{
-    background:#f0fdf4;
-    border:1px dashed #22c55e;
-    color:#15803d;
+    background:#eff6ff;
+    color:#2563eb;
+    border:1px dashed #2563eb;
+    font-weight:700;
+}
+
+.duty-badge.signup:hover{
+    background:#dbeafe;
+    border-color:#1d4ed8;
+}
+
+.duty-badge.waiting{
+    background:#f8fafc;
+    border:1px dashed #cbd5e1;
+    color:#94a3b8;
     cursor:pointer;
+}
+
+.duty-badge.me{
+    background:#dbeafe;
+    border:1px solid #93c5fd;
+    color:#1d4ed8;
+    font-weight:700;
+}
+
+.duty-cancel{
+    margin-left:6px;
+    color:#dc2626;
+    cursor:pointer;
+    font-weight:700;
+}
+
+.duty-signup{
     font-weight:700;
 }
 
@@ -619,47 +648,6 @@ body{
     padding-top:10px;
     border-top:1px solid #e5e7eb;
     font-size:14px;
-    font-weight:700;
-}
-
-.duty-badge.waiting{
-    background:#f8fafc;
-    border:1px dashed #cbd5e1;
-    color:#64748b;
-}
-
-.duty-badge.signup{
-    background:#f0fdf4;
-    border:1px dashed #22c55e;
-    color:#15803d;
-    cursor:pointer;
-}
-
-.duty-badge.signup:hover{
-    background:#dcfce7;
-}
-
-.duty-badge.waiting{
-    background:#f8fafc;
-    border:1px dashed #cbd5e1;
-    color:#94a3b8;
-}
-
-.duty-badge.me{
-    background:#dbeafe;
-    border:1px solid #93c5fd;
-    color:#1d4ed8;
-    font-weight:700;
-}
-
-.duty-cancel{
-    margin-left:6px;
-    color:#dc2626;
-    cursor:pointer;
-    font-weight:700;
-}
-
-.duty-signup{
     font-weight:700;
 }
 
