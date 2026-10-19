@@ -109,6 +109,247 @@ function getCategoryClass(category){
 }
 
 /*********************************************************
+ ✅ 共用資訊
+*********************************************************/
+function buildCardMeta(g){
+
+  const judgeRoles = getJudgeRoles(g);
+
+  const assigned =
+    judgeRoles.filter(r => g.judges?.[r]).length;
+
+  const required =
+    judgeRoles.length;
+
+  const missing =
+    judgeRoles.filter(r => !g.judges?.[r]);
+
+  return {
+    assigned,
+    required,
+    missingCount: missing.length,
+    missingRoles: missing
+  };
+
+}
+
+/*********************************************************
+ ✅ 狀態引擎
+*********************************************************/
+function buildCardStatus(g){
+
+  const session =
+    getSession
+      ? getSession()
+      : JSON.parse(
+          localStorage.getItem('session_user')||'{}'
+        );
+
+  const conflictInfo =
+    checkConflictFront(
+      g,
+      __GAME_CACHE,
+      session
+    );
+
+  const otherGame =
+    getOtherGameSameDay(g);
+
+  if (otherGame){
+    return {
+      type:'warning',
+      icon:'⚠️',
+      text:'本日已有其他勤務'
+    };
+  }
+
+  if (conflictInfo?.conflict){
+    return {
+      type:'danger',
+      icon:'⛔',
+      text:'時間衝突'
+    };
+  }
+
+  if (g.status === 1){
+    return {
+      type:'warning',
+      icon:'📆',
+      text:'延賽'
+    };
+  }
+
+  if (g.status === 2){
+    return {
+      type:'danger',
+      icon:'🛑',
+      text:'停賽'
+    };
+  }
+
+  if (g.status === 4){
+    return {
+      type:'lock',
+      icon:'🔒',
+      text:'已完賽'
+    };
+  }
+
+  return {
+    type:'success',
+    icon:'✅',
+    text:'可報名'
+  };
+}
+
+/*********************************************************
+ ✅ 人員清單
+*********************************************************/
+function buildDutyList(g, type){
+
+  let html = '';
+
+  const session =
+    (typeof getSession === 'function')
+      ? getSession()
+      : JSON.parse(localStorage.getItem('session_user') || '{}');
+
+  const isPast = isPastGame(g.date);
+  const s = Number(g.status || 0);
+
+  // =========================
+  // 紀錄組
+  // =========================
+  if (type === 'record'){
+
+    const roles = [
+      ['REC_MAIN','紀錄'],
+      ['REC_TRAINEE','見習'],
+      ['REC_VIDEO','影像']
+    ];
+
+    roles.forEach(([role,label]) => {
+
+      const slot = g.records?.[role];
+      const name = safeName(slot);
+
+      // 已有人
+      if (name){
+
+        const isMe = isMySlot(slot, session);
+
+        html += `
+          <span class="duty-badge ${isMe ? 'me' : ''}">
+            ${label}：${name}
+
+            ${
+              isMe && !isPast && ![1,2,4].includes(s)
+                ? `
+                  <span class="duty-cancel"
+                        onclick="event.stopPropagation();handleSlotClick('${g.game_id}','${role}')">
+                    ✕
+                  </span>
+                `
+                : ''
+            }
+
+          </span>
+        `;
+
+        return;
+      }
+
+      // 已有其它職務
+      if (g.my_position){
+
+        html += `
+          <span class="duty-badge waiting">
+            ${label}：待位
+          </span>
+        `;
+
+        return;
+      }
+
+      // 可報名
+      html += `
+        <span class="duty-badge signup"
+              onclick="handleSlotClick('${g.game_id}','${role}')">
+          ${label}：
+          <span class="duty-signup">
+            ＋
+          </span>
+        </span>
+      `;
+    });
+
+    return html;
+  }
+
+  // =========================
+  // 裁判
+  // =========================
+  const roles = getJudgeRoles(g);
+
+  roles.forEach(role => {
+
+    const slot = g.judges?.[role];
+    const name = safeName(slot);
+
+    // 已有人
+    if (name){
+
+      const isMe = isMySlot(slot, session);
+
+      html += `
+        <span class="duty-badge ${isMe ? 'me' : ''}">
+          ${roleMap(role)}：${name}
+
+          ${
+            isMe && !isPast && ![1,2,4].includes(s)
+              ? `
+                <span class="duty-cancel"
+                      onclick="event.stopPropagation();handleSlotClick('${g.game_id}','${role}')">
+                  ✕
+                </span>
+              `
+              : ''
+          }
+
+        </span>
+      `;
+
+      return;
+    }
+
+    // 已有其它職務
+    if (g.my_position){
+
+      html += `
+        <span class="duty-badge waiting">
+          ${roleMap(role)}：待位
+        </span>
+      `;
+
+      return;
+    }
+
+    // 可報名
+    html += `
+      <span class="duty-badge signup"
+            onclick="handleSlotClick('${g.game_id}','${role}')">
+        ${roleMap(role)}：
+        <span class="duty-signup">
+          ＋
+        </span>
+      </span>
+    `;
+  });
+
+  return html;
+}
+
+/*********************************************************
  ✅ 班表主卡片（唯一UI）
 *********************************************************/
 function renderGameCard(g, opt={}){
@@ -120,7 +361,7 @@ function renderGameCard(g, opt={}){
     return '';
   }
 
-  // ✅ ✅ ✅ 鎖定
+  // ✅ ✅ ✅ 已完賽
  
   const session =
     opt.session
@@ -219,17 +460,47 @@ function renderGameCard(g, opt={}){
   }
 
     const catClass = getCategoryClass(g.category);
+    const meta = buildCardMeta(g);
+    const dutyList = buildDutyList(g,type);
+
+    /* =====================================================
+      統一賽程資訊，取代裁判／紀錄頁的 render 內程式
+    ===================================================== */
+    
+    const headerHtml = `
+      <div class="game-header">
+      
+        <div class="game-header-top">
+      
+          <div class="game-tags">
+      
+            <span class="tag-category">
+              ${g.category || ''}
+            </span>
+      
+            <span class="tag-location">
+              📍 ${g.field || ''} ｜ ${g.game_code}
+            </span>
+      
+          </div>
+
+      
+        </div>
+      
+      </div>
+
+    `;
  
     let statusBanner = '';
     
     if (s === 1){
-      statusBanner = '<div class="row-warning">⚠️延賽</div>';
+      statusBanner = '<div class="row-warning">延賽</div>';
     }
     if (s === 2){
-      statusBanner = '<div class="row-warning">⛔停賽</div>';
+      statusBanner = '<div class="row-warning">停賽</div>';
     }
     if (s === 4){
-      statusBanner = '<div class="row-warning">🔒鎖定</div>';
+      statusBanner = '<div class="status-badge completed">已完賽</div>';
     }
  
   return `
@@ -244,14 +515,29 @@ function renderGameCard(g, opt={}){
        id="game-${g.game_id}"
        data-type="${type}">
 
-     
-    <div class="row-top">
-      <div class="left">${formatDateTW(g.date)}</div>
-      <div class="center">${g.category||''}</div>
-      <div class="right">${g.field||''}</div>
-    </div>    
-    ${statusBanner}
     ${teamConflict ? `<div class="row-warning">⚠️ 不可報名自己母隊的比賽</div>` : ''}
+
+  ${headerHtml}
+  
+  <div class="card-match">
+    
+      <div class="match-team away">
+        ${g.away_team}
+      </div>
+    
+      <div class="match-center">
+        
+        <div class="match-time">
+          ${getTime(g)}
+        </div>
+    
+      </div>
+    
+      <div class="match-team home">
+        ${g.home_team}
+      </div>
+    
+    </div>
 
     <!-- 警告同場訊息　renderGameCard WARNING -->
     ${(() => {
@@ -296,230 +582,42 @@ function renderGameCard(g, opt={}){
       return '';
     
     })()}
+    
+    ${statusBanner}
 
-
-    <div class="row-mid">
-      <div class="team">${g.away_team||''}</div>
-
-
-      <div class="center-box">
-        <div class="game-code">${g.game_code||''}</div>
-        <div class="time">${getTime(g)}</div>
+    <div class="card-duty-section">
+    
+      <div class="card-duty-list">
+        ${dutyList}
       </div>
-
-
-      <div class="team">${g.home_team||''}</div>
+    
     </div>
-
-
-    <div class="row-bottom">
-
-
-      <!-- ✅ 裁判 -->
-      ${
-        !isRecordPage
-        ? (
-          judgeRoles.length === 0
-          ? `<div class="no-judge">無需裁判</div>`
-          : judgeRoles.map(role=>{
-
-
-              //const name = g.judges?.[role];
-           
-              const slot = g.judges?.[role];
-              const name = safeName(slot);
-
-              const reason = getReason(role,false);
-              const locked = isSameTimeOtherFieldLocked(g);
-
-              if (name){
-                // const session = JSON.parse(localStorage.getItem('session_user')||'{}');
-                const isMe = isMySlot(slot, session);
-
-
-                return `
-                <div class="slot" data-gid="${g.game_id}" data-role="${role}">
-                  <div class="label">${roleMap(role)}</div>
-                  <div class="name ${isMe?'me':''} ${String(slot.name || slot).length > 10 ? 'long' : ''}">${typeof slot === 'object' ? slot.name : slot}</div>
-                  ${
-                    // isMe && !isPast
-                   isMe && !isPast && !isViewMode && ![1,2,4].includes(s)
-                    ? `
-                    <div class="cancel" onclick="event.stopPropagation(); handleSlotClick('${g.game_id}','${role}')">取消</div>
-                       `
-                    : ''
-                  }
-                </div>`;
-              }
-
-
-              if (isPast){
-                return `<div class="slot" data-gid="${g.game_id}" data-role="${role}"><div class="label">${roleMap(role)}</div><div class="name">—</div></div>`;
-              }
-
-
-              if (teamConflict || reason || locked){
-                return `
-                  <div class="slot waiting">
-                    <div class="label">${roleMap(role)}</div>
-                    <div class="name">
-                      ${teamConflict ? '不可報名' : (locked ? '待位' : reason)}
-                    </div>
-                  </div>`;
-
-
-              }
-
-             if (isViewMode){
-               return `
-                 <div class="slot waiting">
-                   <div class="label">${roleMap(role)}</div>
-                   <div class="name">待位中</div>
-                 </div>
-               `;
-             }
-             
-                  // const s = Number(g.status || 0);
-                  // const isDisabled = [1,2,4].includes(s);
-                  
-                  if ([1,2,4].includes(s)){
-                    return `
-                      <div class="slot locked">
-                        <div class="label">${roleMap(role)}</div>
-                        <div class="name">
-                          ${s === 1 ? '延賽' : s === 2 ? '停賽' : '🔒 鎖定'}
-                        </div>
-                      </div>
-                    `;
-                  }
-            
-                 if (!allowJudgeSignup){
-                 
-                   return `
-                     <div class="slot locked">
-                       <div class="label">${roleMap(role)}</div>
-                       <div class="name">指派</div>
-                     </div>
-                   `;
-                 }
-                 
-                 return `
-                   <div class="slot action"
-                        onclick="handleSlotClick('${g.game_id}','${role}')">
-                     <div class="label">${roleMap(role)}</div>
-                     <div class="btn">報名</div>
-                   </div>
-                 `;
-
-          }).join('')
-        ) : ''
-      }
-
-      <!-- ✅ 紀錄 -->
-      ${
+    
+    ${(() => {
+    
+      const remain =
         isRecordPage
-        ? recordRoles.map(([role,label])=>{
-      
-          const slot = g.records?.[role];
-          const reason = getReason(role,true);
-          const locked = isSameTimeOtherFieldLocked(g);
-      
-          // ✅ ✅ ✅ 🔥 1. 母隊鎖（最高優先）
-          if (teamConflict){
-            return `
-              <div class="slot locked">
-                <div class="label">${label}</div>
-                <div class="name">不可報名</div>
-              </div>
-            `;
+          ? recordRoles.filter(([role]) => !safeName(g.records?.[role])).length
+          : judgeRoles.filter(role => !safeName(g.judges?.[role])).length;
+    
+      return `
+        <div class="slot-status">
+          ${
+            conflict
+            ? '⚠️ 您已安排其它場次'
+            : teamConflict
+              ? '⚠️ 不可報名自己母隊'
+              : g.my_position
+                ? '✅ 已報名'
+                : remain === 0
+                  ? '✅ 已額滿'
+                  : `🟢 還缺 ${remain} 人`
           }
-      
-          // ✅ 有人
-          if (slot){
-      
-            const isMe = isMySlot(slot, session);
-      
-            return `
-            <div class="slot" data-gid="${g.game_id}" data-role="${role}">
-              <div class="label">${label}</div>
-              <div class="name ${isMe?'me':''}">
-                ${slot.name}
-              </div>
-              ${
-                isMe && !isPast && !isViewMode && ![1,2,4].includes(s)
-                ? `
-                <div class="cancel" onclick="event.stopPropagation(); handleSlotClick('${g.game_id}','${role}')">取消</div>
-                `
-                : ''
-              }
-            </div>`;
-          }
-      
-          // ✅ 過期
-          if (isPast){
-            return `
-              <div class="slot">
-                <div class="label">${label}</div>
-                <div class="name">—</div>
-              </div>`;
-          }
-      
-          // ✅ 待位 / 衝突
-          if (reason || locked){
-            return `
-              <div class="slot waiting">
-                <div class="label">${label}</div>
-                <div class="name">
-                  ${locked ? '待位' : reason}
-                </div>
-              </div>`;
-          }
-      
-          // ✅ view 模式
-          if (isViewMode){
-            return `
-              <div class="slot waiting">
-                <div class="label">${label}</div>
-                <div class="name">待位中</div>
-              </div>`;
-          }
-      
-          // ✅ status 控制
-          if ([1,2,4].includes(s)){
-            return `
-              <div class="slot locked">
-                <div class="label">${label}</div>
-                <div class="name">
-                  ${s === 1 ? '延賽' : s === 2 ? '停賽' : '🔒 鎖定'}
-                </div>
-              </div>
-            `;
-          }
-      
-         if (!allowRecordSignup){
-         
-           return `
-             <div class="slot locked">
-               <div class="label">${label}</div>
-               <div class="name">指派</div>
-             </div>
-           `;
-         }
-         
-         // ✅ ✅ ✅ 正常報名
-         return `
-           <div class="slot action"
-             onclick="handleSlotClick('${g.game_id}','${role}')">
-             <div class="label">${label}</div>
-             <div class="btn">報名</div>
-           </div>
-         `;
-      
-        }).join('')
-        : ''
-      }
-
-    </div>
+        </div>
+      `;
+    
+    })()}
+    
   </div>
   `;
 }
@@ -652,7 +750,7 @@ function renderJudgeSlots(g, isPast, session){
           if ([1,2,4].includes(s)){
             return `
               <div class="mobile-pos">
-                <span>${s === 1 ? '延賽' : s === 2 ? '停賽' : '🔒鎖定'}</span>
+                <span>${s === 1 ? '延賽' : s === 2 ? '停賽' : '已完賽'}</span>
               </div>
             `;
           }
@@ -696,7 +794,7 @@ function renderJudgeSlots(g, isPast, session){
            if ([1,2,4].includes(s)){
              return `
                <div class="mobile-pos">
-                 <span>${s === 1 ? '延賽' : s === 2 ? '停賽' : '🔒鎖定'}</span>
+                 <span>${s === 1 ? '延賽' : s === 2 ? '停賽' : '已完賽'}</span>
                </div>
              `;
            }
@@ -811,7 +909,7 @@ function renderRecordSlots(g, isPast, session){
         return `
           <div class="record-role other">
             ${label}<br>
-            ${s === 1 ? '延賽' : s === 2 ? '停賽' : '🔒鎖定'}
+            ${s === 1 ? '延賽' : s === 2 ? '停賽' : '已完賽'}
           </div>
         `;
       }
@@ -1842,7 +1940,7 @@ function buildTournamentSelector(){
     )
   ].sort();
 
-  // ✅ 顯示賽事控制
+  // 顯示賽事控制
   if (
     cfg.mode === 'LIMIT' &&
     cfg.tournaments &&
@@ -1856,25 +1954,27 @@ function buildTournamentSelector(){
   const savedTournament =
     localStorage.getItem('currentTournament') || '';
 
-  // ✅ 沒有可顯示賽事
+  // 無開放賽事
   if (tournaments.length === 0){
 
     currentTournament = '';
 
     area.innerHTML = `
-      <div style="
-        color:#dc2626;
-        font-weight:700;
-        padding:8px 0;
-      ">
-        目前無開放賽事
+      <div class="toolbar-card">
+        <div class="toolbar-title">
+          ${pageTitle}
+        </div>
+
+        <div class="toolbar-empty">
+          目前無開放賽事
+        </div>
       </div>
     `;
 
     return;
   }
 
-  // ✅ 只有一個賽事
+  // 只有一個賽事
   if (tournaments.length === 1){
 
     currentTournament = tournaments[0];
@@ -1885,32 +1985,15 @@ function buildTournamentSelector(){
     );
 
     area.innerHTML = `
-      <div style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-        margin:6px 0;
-        flex-wrap:wrap;
-      ">
+      <div class="toolbar-card">
 
-        <span style="
-          font-weight:700;
-          font-size:16px;
-          color:#1e3a8a;
-        ">
-          ${pageTitle}／賽事：
-        </span>
+        <div class="toolbar-title">
+          ${pageTitle}
+        </div>
 
-        <span style="
-          background:#dbeafe;
-          color:#1d4ed8;
-          padding:4px 10px;
-          border-radius:999px;
-          font-size:16px;
-          font-weight:700;
-        ">
-          ${currentTournament}
-        </span>
+        <div class="toolbar-single-tournament">
+          🏆 ${currentTournament}
+        </div>
 
       </div>
     `;
@@ -1918,47 +2001,26 @@ function buildTournamentSelector(){
     return;
   }
 
-  // ✅ 多賽事
+  // 多賽事
   if (
     savedTournament &&
     tournaments.includes(savedTournament)
   ){
     currentTournament = savedTournament;
-  }
-  else{
+  } else {
     currentTournament = '';
   }
 
   area.innerHTML = `
-    <div style="
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin:6px 0;
-      flex-wrap:wrap;
-    ">
+    <div class="toolbar-card">
 
-      <span style="
-        font-weight:700;
-        font-size:16px;
-        color:#1e3a8a;
-      ">
+      <div class="toolbar-title">
         ${pageTitle}
-      </span>
-
-      <span style="font-weight:700;">
-        ／請選擇賽事：
-      </span>
+      </div>
 
       <select
         id="tournamentFilter"
-        style="
-          min-width:260px;
-          padding:6px 10px;
-          border:1px solid #d1d5db;
-          border-radius:8px;
-          font-size:14px;
-        "
+        class="toolbar-select"
         onchange="
           currentTournament=this.value;
 
@@ -1972,7 +2034,7 @@ function buildTournamentSelector(){
       >
 
         <option value="">
-          請選擇要報名的賽事
+          請選擇賽事
         </option>
 
         ${tournaments.map(t => `
@@ -1988,4 +2050,199 @@ function buildTournamentSelector(){
 
     </div>
   `;
+}
+
+
+/*********************************************************
+ ✅ 共用月份列
+*********************************************************/
+window.currentMonth = null;
+window.isFullYear = true;
+
+function initMonthTabsCommon(options = {}) {
+
+  const {
+    containerId = 'month-tabs',
+    games = []
+  } = options;
+
+  const container =
+    document.getElementById(containerId);
+
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  // =========================
+  // 全年班表
+  // =========================
+  const allBtn = document.createElement('div');
+
+  allBtn.className = 'month-tab active';
+  allBtn.textContent = '📊 全年';
+
+  allBtn.onclick = () => {
+
+    window.currentMonth = null;
+    window.isFullYear = true;
+
+    setActiveTab(allBtn);
+
+    render();
+  };
+
+  container.appendChild(allBtn);
+
+  // =========================
+  // 有賽程月份
+  // =========================
+  const months = [
+
+    ...new Set(
+
+      games
+        .filter(g => g.date)
+        .map(g => {
+
+          const d =
+            new Date(
+              String(g.date).replace(/\//g,'-')
+            );
+
+          return d.getMonth() + 1;
+
+        })
+
+    )
+
+  ].sort((a,b) => a - b);
+
+  months.forEach(month => {
+
+    const btn =
+      document.createElement('div');
+
+    btn.className = 'month-tab';
+
+    btn.textContent = `${month}月`;
+
+    btn.onclick = () => {
+
+      window.currentMonth = month;
+      window.isFullYear = false;
+
+      setActiveTab(btn);
+
+      render();
+    };
+
+    container.appendChild(btn);
+
+  });
+
+}
+
+/*********************************************************
+ ✅ 共用載入賽事
+*********************************************************/
+function loadGamesCommon(options = {}) {
+
+  const {
+    action,
+    isRecordPage = false
+  } = options;
+
+  const s =
+    JSON.parse(
+      localStorage.getItem('session_user') || '{}'
+    );
+
+  showToast('載入賽事資料中...');
+
+  callApi(
+    {
+      action,
+      user_id: s.user_id || ''
+    },
+    res => {
+
+      if (!res || res.result !== 'ok') {
+
+        showToast(
+          res?.message || '無法取得賽事資料'
+        );
+
+        return;
+      }
+
+      allGames =
+        (res.games || []).map(safeMerge);
+
+      games = allGames;
+
+      buildTournamentSelector();
+
+      // -------------------------
+      // 建立 my_position
+      // -------------------------
+
+      allGames.forEach(g => {
+
+        g.my_position = '';
+
+        // 裁判
+        if (g.judges){
+
+          for (const [role, slot] of Object.entries(g.judges)){
+
+            if (isMySlot(slot, s)){
+
+              g.my_position = role;
+              return;
+            }
+          }
+        }
+
+        // 紀錄
+        if (g.records){
+
+          for (const [role, slot] of Object.entries(g.records)){
+
+            const slotUserId =
+              String(slot?.user_id || '').trim();
+
+            if (
+              slotUserId &&
+              slotUserId === String(s.user_id || '').trim()
+            ){
+
+              g.my_position = role;
+              return;
+            }
+
+            if (isMySlot(slot, s)){
+
+              g.my_position = role;
+              return;
+            }
+          }
+        }
+
+      });
+
+      if (typeof setGameCache === 'function'){
+        setGameCache(allGames);
+      }
+
+      // 月份
+      if (typeof initMonthTabsCommon === 'function'){
+        initMonthTabsCommon({
+          games: allGames
+        });
+      }
+
+      render();
+
+    }
+  );
 }
