@@ -2,7 +2,7 @@
  * ✅ Index Page（最終整合版）
  *********************************************************/
 
-let session = null;
+  let session = null;
 
 
 /*********************************************************
@@ -90,7 +90,7 @@ function bindButtons(){
   document.getElementById('open-rules')?.addEventListener('click', () => {
     document.getElementById('rules-overlay').style.display = 'flex';
   });
-  
+
   document.getElementById('open-record-rules')?.addEventListener('click', () => {
     document.getElementById('record-rules-overlay').style.display = 'flex';
   });
@@ -102,7 +102,7 @@ function bindButtons(){
   document.getElementById('open-system-history')?.addEventListener('click', () => {
     document.getElementById('system-history-overlay').style.display = 'flex';
   });
-  
+
   document.getElementById('open-analysis-guide')?.addEventListener('click', () => {
     document.getElementById('analysis-guide-overlay').style.display = 'flex';
   });
@@ -582,8 +582,23 @@ function loadYearStats(){
 
 
 /*********************************************************
- * ✅ ✅ ✅ 我的班表（純顯示）
+ * ✅ 我的班表（簡潔版）
  *********************************************************/
+function getMyRoleText(role){
+
+  const map = {
+    PU:'主審',
+    U1:'一壘審',
+    U2:'二壘審',
+    U3:'三壘審',
+    REC_MAIN:'紀錄',
+    REC_TRAINEE:'見習',
+    REC_VIDEO:'影像'
+  };
+
+  return map[role] || role || '-';
+}
+
 function openMySchedule(){
 
   const overlay = document.getElementById('schedule-overlay');
@@ -604,84 +619,163 @@ function openMySchedule(){
       return;
     }
 
-    // ✅ ✅ ✅ 一定要 merge
     const games = (res.games || []).map(safeMerge);
-    
-    // ✅ ✅ ✅ 👉 插這裡（關鍵）
-    const s = getSession ? getSession() : session;
-    
+
+    const s =
+      getSession
+        ? getSession()
+        : session;
+
     games.forEach(g => {
-    
-      // ✅ 裁判
+
+      g.my_position = '';
+
       if (g.judges){
-        for (let [role, val] of Object.entries(g.judges)){
-          if (isMySlot(val, s)){
+        for (const [role,val] of Object.entries(g.judges)){
+          if (isMySlot(val,s)){
             g.my_position = role;
           }
         }
       }
-    
-      // ✅ 紀錄（🔥 你現在缺的）
+
       if (g.records){
-        for (let [role, val] of Object.entries(g.records)){
-          if (isMySlot(val, s)){
+        for (const [role,val] of Object.entries(g.records)){
+          if (isMySlot(val,s)){
             g.my_position = role;
           }
         }
       }
-    
+
     });
-        
+
     const today = new Date();
     today.setHours(0,0,0,0);
 
-    // ✅ ✅ ✅ 正確 filter
-    const myGames = games.filter(g=>{
+    const myGames = games.filter(g => {
 
-      // ✅ 是否屬於我
-      const isMine =
-        g.my_position ||
-        Object.values(g.judges||{}).includes(session.name) ||
-        Object.values(g.records||{}).includes(session.name);
+      if (!g.my_position) return false;
 
-      if (!isMine) return false;
-
-      // ✅ 只看今天之後（含今天）
       const d = parseDate(g.date);
+
       return d && d >= today;
 
     });
 
     if (!myGames.length){
-      list.innerHTML = '目前沒有未來班表';
+
+      list.innerHTML = `
+        <div class="row-warning">
+          目前沒有未來班表
+        </div>
+      `;
+
       return;
     }
 
-    // ✅ ✅ ✅ 排序（安全）
     myGames.sort((a,b)=>{
-      return new Date(a.date + ' ' + (a.time||'00:00'))
-           - new Date(b.date + ' ' + (b.time||'00:00'));
+
+      const da =
+        new Date(
+          `${a.date} ${getTime(a)}`
+        );
+
+      const db =
+        new Date(
+          `${b.date} ${getTime(b)}`
+        );
+
+      return da - db;
+
     });
 
-    // list.innerHTML = myGames.map(renderGameCard).join('');
+    const now = new Date();
+    now.setHours(0,0,0,0);
+
+    const day =
+      now.getDay() === 0
+        ? 7
+        : now.getDay();
+
+    const monday = new Date(now);
+
+    monday.setDate(
+      now.getDate() - (day - 1)
+    );
+
+    monday.setHours(0,0,0,0);
+
+    const sunday = new Date(monday);
+
+    sunday.setDate(
+      monday.getDate() + 6
+    );
+
+    sunday.setHours(23,59,59,999);
 
     list.innerHTML = myGames.map(g => {
-    
-      const type = g.my_position?.startsWith('REC')
-        ? 'record'
-        : 'judge';
-    
-      return renderGameCard(g,{
-        session,
-        type,
-        mode:'view'
-      });
-    
+
+      const d = parseDate(g.date);
+
+      const isThisWeek =
+        d &&
+        d >= monday &&
+        d <= sunday;
+
+      return `
+
+        <div class="my-duty-row ${isThisWeek ? 'this-week' : ''}">
+
+          <div class="my-duty-line1">
+
+            ${
+              isThisWeek
+              ? `
+                <span class="week-badge">
+                  本週
+                </span>
+              `
+              : ''
+            }
+
+            ${formatDateTW(g.date)}
+            ｜${getTime(g)}
+            ｜${g.field || '-'}
+
+            <span class="my-duty-role">
+              ${getMyRoleText(g.my_position)}
+            </span>
+
+          </div>
+
+          <div class="my-duty-line2">
+
+            <span class="tournament">
+              ${g.tournament || '-'}
+              ${g.category ? `-${g.category}` : ''}
+            </span>
+
+            ｜
+
+            <span class="matchup">
+              ${g.away_team || ''}
+              <span class="vs">VS</span>
+              ${g.home_team || ''}
+            </span>
+
+          </div>
+
+        </div>
+
+      `;
+
     }).join('');
 
     setGameCache(myGames);
+
   });
+
 }
+
 
 /*********************************************************
  * ✅ ✅ ✅ 本週班表（純顯示）
@@ -724,9 +818,25 @@ function openWeeklySchedule(){
     sunday.setHours(23,59,59,999);
     
     // ✅ ✅ ✅ 關鍵修正
-    const weekGames = games.filter(g=>{
+    const weekGames = games.filter(g => {
+    
       const d = parseDate(g.date);
-      return d && d >= monday && d <= sunday;
+    
+      if (!(d && d >= monday && d <= sunday)){
+        return false;
+      }
+    
+      // 只顯示目前開放賽事
+      if (
+        typeof currentTournament !== 'undefined' &&
+        currentTournament &&
+        String(g.tournament || '').trim() !== currentTournament
+      ){
+        return false;
+      }
+    
+      return true;
+    
     });
 
     if (!weekGames.length){
@@ -784,18 +894,13 @@ function openWeeklySchedule(){
 
             /************* 場地 *************/
             html += `
-              <div style="
-                margin:8px 0 4px;
-                font-weight:800;
-                font-size:15px;
-                color:#374151;
-              ">
-                📍 ${field}
+              <div class="league-field-header">
+                📍 ${field}（${list.length}場）
               </div>
             `;
 
             /************* ✅ ✅ ✅ 只顯示卡片（組別不再外顯） *************/
-            html += list.map(g => renderWeeklyCard(g)).join('');
+            html += renderWeeklyTable(list);
 
           });
 
@@ -805,6 +910,95 @@ function openWeeklySchedule(){
 
     setGameCache(weekGames);
   });
+}
+
+/* 本週聯盟班表 */
+/* 本週聯盟班表 */
+function renderWeeklyTable(list){
+
+  return list.map(g => {
+
+    const judgeRoles = getJudgeRoles(g);
+
+    const judgeHtml = judgeRoles.length
+      ? judgeRoles.map(role => `
+          <div>
+            ${roleMap(role)}：
+            <span class="league-duty-name">
+              ${safeName(g.judges?.[role]) || '－'}
+            </span>
+          </div>
+        `).join('')
+      : `
+          <div>無需裁判</div>
+        `;
+
+    return `
+
+      <div class="league-row">
+
+        <div class="league-head">
+
+          <div class="league-time-row">
+
+            <span class="league-time">
+              ${getTime(g)}
+            </span>
+
+            <span class="league-code">
+              ${g.game_code || '-'}
+            </span>
+
+          </div>
+
+          <div class="league-match">
+            ${g.away_team || ''}
+            <span class="vs">VS</span>
+            ${g.home_team || ''}
+          </div>
+
+        </div>
+
+        <div class="league-duty">
+
+          <div class="league-duty-left">
+
+            ${judgeHtml}
+
+          </div>
+
+          <div class="league-duty-right">
+
+            <div>
+              紀錄：
+              <span class="league-duty-name">
+                ${safeName(g.records?.REC_MAIN) || '－'}
+              </span>
+            </div>
+
+            <div>
+              見習：
+              <span class="league-duty-name">
+                ${safeName(g.records?.REC_TRAINEE) || '－'}
+              </span>
+            </div>
+
+            <div>
+              影像：
+              <span class="league-duty-name">
+                ${safeName(g.records?.REC_VIDEO) || '－'}
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }).join('');
 }
 
 /*********************************************************
@@ -1024,90 +1218,45 @@ function renderHomeCard(g){
       </div>
 
       <!-- ✅ ✅ ✅ 6欄（裁判3 + 紀錄3） -->
-      <div class="row-all">
-        <div class="row-inner">
 
-          <!-- ✅ 職稱 -->
-          <div class="row-line header">
-            <div class="col">主審</div>
-            <div class="col">一壘</div>
-            <div class="col">三壘</div>
-            <div class="col">紀錄</div>
-            <div class="col">見習</div>
-            <div class="col">影像</div>
-          </div>
-
-          <!-- ✅ 名字 -->
-          <div class="row-line values">
-            <div class="col">${safeName(g.judges?.PU) || '—'}</div>
-            <div class="col">${safeName(g.judges?.U1) || '—'}</div>
-            <div class="col">${safeName(g.judges?.U3) || '—'}</div>
-            <div class="col">${safeName(g.records?.REC_MAIN) || '—'}</div>
-            <div class="col">${safeName(g.records?.REC_TRAINEE) || '—'}</div>
-            <div class="col">${safeName(g.records?.REC_VIDEO) || '—'}</div>
-          </div>
-
+      <div class="weekly-duty-grid">
+      
+        <div>
+          <strong>主審</strong>
+          ${safeName(g.judges?.PU) || '－'}
         </div>
+      
+        <div>
+          <strong>紀錄</strong>
+          ${safeName(g.records?.REC_MAIN) || '－'}
+        </div>
+      
+        <div>
+          <strong>一壘</strong>
+          ${safeName(g.judges?.U1) || '－'}
+        </div>
+      
+        <div>
+          <strong>見習</strong>
+          ${safeName(g.records?.REC_TRAINEE) || '－'}
+        </div>
+      
+        <div>
+          <strong>三壘</strong>
+          ${safeName(g.judges?.U3) || '－'}
+        </div>
+      
+        <div>
+          <strong>影像</strong>
+          ${safeName(g.records?.REC_VIDEO) || '－'}
+        </div>
+      
       </div>
 
     </div>
   `;
 }
 
-
-function renderWeeklyCard(g){
-
-  return `
-    <div class="weekly-card">
-
-      <!-- ✅ ✅ ✅ 上半部（改成我的班表風格） -->
-      <div class="row-top">
-        <div class="left">${formatDateTW(g.date)}</div>
-        <div class="center">${g.category||''}</div>
-        <div class="right">
-          <span class="field-tag">${g.field||''}</span>
-        </div>
-      </div>
-
-      <div class="row-mid">
-        <div class="team">${g.away_team||''}</div>
-
-        <div class="center-box">
-          <div class="game-code">${g.game_code||''}</div>
-          <div class="time">${getTime(g)}</div>
-        </div>
-
-        <div class="team">${g.home_team||''}</div>
-      </div>
-
-      <!-- ✅ ✅ ✅ 名單（維持你現在6欄） -->
-      <div class="row-all">
-        <div class="row-inner">
-        
-          <div class="row-line header">
-            <div class="col">主審</div>
-            <div class="col">一壘</div>
-            <div class="col">三壘</div>
-            <div class="col">紀錄</div>
-            <div class="col">見習</div>
-            <div class="col">影像</div>
-          </div>
-
-          <div class="row-line values">
-            <div class="col">${safeName(g.judges?.PU)}</div>
-            <div class="col">${safeName(g.judges?.U1)}</div>
-            <div class="col">${safeName(g.judges?.U3)}</div>
-            <div class="col">${safeName(g.records?.REC_MAIN)}</div>
-            <div class="col">${safeName(g.records?.REC_TRAINEE)}</div>
-            <div class="col">${safeName(g.records?.REC_VIDEO)}</div>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-  `;
-}
 
 // 個人數據分析
 function loadHomeUserAnalysis(){
