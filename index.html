@@ -24,23 +24,22 @@
       font-weight: 400;
       letter-spacing: 0.2px;
     }
-
     
     .main {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: auto;
-      padding: 24px;
+      padding: 28px;
     }
     
-    .panel {
-      background: #fdfefe;
-      border-radius: 18px;
-      padding: 20px 16px;
-      margin-bottom: 18px;
-    
-      box-shadow: 
-        0 8px 20px rgba(0,0,0,.06),
-        0 1px 0 rgba(255,255,255,0.7) inset;
+    .panel{
+        background:#ffffff;
+        border:1px solid #e8eef6;
+        border-radius:22px;
+        padding:22px;
+        margin-bottom:18px;
+        box-shadow:
+          0 10px 28px rgba(15,23,42,.05);
+        transition:.2s;
     }
     
     /* ===== Overlay ===== */
@@ -60,14 +59,10 @@
       max-width: 460px;
       max-height: 80vh;
       border-radius: 16px;
-      padding: 20px 16px;
+      padding: 20px 16px 10px 16px;
       overflow-y: auto;
       box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-      
-      /* ✅ 重點 */
       box-sizing: border-box;
-    
-      /* ✅ ✅ ✅ 關鍵補這個 */
       padding-right: 6px;
     }
     
@@ -83,17 +78,12 @@
       border-radius: 16px;
       padding: 16px;
       margin-bottom: 18px;
-    
       box-shadow: 
         0 6px 18px rgba(0,0,0,0.06),
         0 1px 0 rgba(255,255,255,0.8) inset;
-    
-      border: 1px solid #e7eaf0;
-    
       display: flex;
       flex-direction: column;
       gap: 8px;
-      
       border: 1px solid #e6eaf0;
       transition: all 0.15s ease;
     }
@@ -202,24 +192,6 @@
       color: #c0c6cf;
     }
     
-    /* ===== stats ===== */
-    .stat-card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 12px 8px;
-      text-align: center;
-      border: 1px solid #e5e7eb;
-
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      transition: all 0.2s ease;
-      min-height: 85px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 4px;
-
-    }
-    
     /* ✅ hover */
     .stat-card:hover {
       transform: translateY(-2px);
@@ -277,53 +249,23 @@
     }
 
     .user-stats {
-      display: grid !important;
-      grid-template-columns: repeat(3, 1fr) !important;
-      gap: 12px;
-      min-height: 90px;    /* ✅ 控制高度 */
-      margin: 16px 0;
+      display:grid !important;
+      grid-template-columns:repeat(3,1fr) !important;
+      gap:16px;
+      min-height:90px;
+      margin:16px 0;
     }
 
-    .stat-value {
-      font-size: 28px;
-      font-weight: 800;
-      color: #1a237e;
-    }
-    
-    .stat-sub {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      margin-top: 4px;
-    }
-    
-    .welcome-name {
-      font-size: 18px;
-      font-weight: 800;
-      margin: 6px 0;
-      margin-bottom: 6px;
+    .stat-value{
+        font-size:40px;
+        font-weight:900;
     }
 
-    .stat-title {
-      font-size: 12px;
-      font-weight: 500;
-      color: #666;
-    }
-    
-    /* ✅ 數字不要太炸 */
-    .stat-value {
-      font-size: 24px;
-      font-weight: 600;
-      color: #1a237e;
-      line-height: 1.2;
-    }
-    
     /* ✅ 底下文字要收緊 */
     .stat-sub {
       font-size: 12px;
       margin-top: 2px;
-    
-      display: flex;
+          display: flex;
       justify-content: center;
       gap: 10px;
     }
@@ -373,63 +315,24 @@
       font-weight:500;
       margin:0 4px;
     }
-    
-    .schedule-date-text{
-      line-height: 1.4;
-    }
-    
-    .schedule-info-row{
-      margin-top: 2px;
-      margin-bottom: 4px;
-    }
-    
-    .schedule-role-group{
-      margin-top: 4px;
-    }
 
     /* 本週班表關閉紐 */
     .close-btn.full{
-
       width: 100%;
       padding: 14px 0;
-    
       border-radius: 12px;
       border: none;
-    
       background: linear-gradient(135deg, #4a7ef5, #3b6eea);
       color: #fff;
-    
       font-size: 16px;
       font-weight: 800;
-    
       margin-top: 16px;
-    
       box-shadow: 0 6px 16px rgba(74,126,245,0.35);
-
     }
     
     /* 手機更貼底 */
     .overlay-box{
       padding-bottom: 10px;
-    }
-
-    .schedule-line-1{
-      font-size:14px;
-      font-weight:800;
-      color:#1a237e;
-      line-height:1.4;
-    }
-    
-    .schedule-line-2{
-      font-size:15px;
-      font-weight:700;
-      margin-top:2px;
-      margin-bottom:4px;
-    }
-    
-    /* 小細節 */
-    .schedule-line-2 span {
-      color:#9aa5b1;
     }
 
     .row-all{
@@ -447,8 +350,7 @@
     /* ✅ 控制兩排 */
     .row-line{
       display: grid;
-      font-size:14px;　/* ✅ 超重要：縮小讓6格能塞 */
-    
+      font-size:14px;
       /* ✅ 關鍵：不換行 */
       flex-wrap: nowrap;
       width: 100%;
@@ -690,11 +592,6 @@
      系統功能說明專用
   ========================== */
   
-  .system-guide-box{
-    width:95vw !important;
-    max-width:700px !important;
-  }
-  
   .system-guide-box h2{
     margin-top:0;
   }
@@ -779,7 +676,7 @@ margin-top:8px;
     font-size:20px;
     color:#2563eb;
     font-weight:800;
-    margin-top:8px;3
+    margin-top:8px;
   }
   
   .welcome-name{
@@ -792,12 +689,6 @@ margin-top:8px;
   
   .user-stats{
     gap:16px;
-  }
-  
-  .stat-card{
-    border:none;
-    border-radius:18px;
-    overflow:hidden;
   }
   
   .stat-card:nth-child(1){
@@ -984,9 +875,20 @@ margin-top:8px;
   }
 
   .stat-card{
-    position:relative;
-    overflow:hidden;
-    transition:.25s;
+      position:relative;
+      background:#fff;
+      border:none;
+      border-radius:18px;
+      overflow:hidden;
+      padding:12px 8px;
+      text-align:center;
+      min-height:85px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:4px;
+      box-shadow:0 4px 12px rgba(0,0,0,.08);
+      transition:.25s;
   }
   
   .stat-card:hover{
@@ -1121,6 +1023,265 @@ margin-top:8px;
   }
 
 }
+
+  /* 為了班表新增的 */
+  .weekly-duty-list{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:6px;
+      margin-top:10px;
+  }
+  
+  .duty-item{
+      display:flex;
+      justify-content:space-between;
+      padding:6px 8px;
+      border-radius:8px;
+      background:#f8fafc;
+  }
+
+  .duty-item .role{
+      color:#64748b;
+      font-size:12px;
+      font-weight:700;
+  }
+  
+  .duty-item .name{
+      font-size:13px;
+      font-weight:700;
+  }
+
+  .my-duty-row{
+      padding:10px 0;
+      border-bottom:1px solid #e5e7eb;
+  }
+
+  .my-duty-row.this-week{
+      border-left:4px solid #2563eb;
+      padding-left:10px;
+      background:#f8fbff;
+  }
+
+  .week-badge{
+      display:inline-block;
+      margin-right:8px;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#2563eb;
+      color:#fff;
+      font-size:11px;
+      font-weight:700;
+  }
+
+  .my-duty-role{
+      display:inline-block;
+      margin-left:8px;
+      padding:2px 10px;
+      border-radius:999px;
+      background:#dbeafe;
+      color:#1d4ed8;
+      font-size:14px;
+      font-weight:800;
+  }
+  
+  .my-duty-line1{
+      font-size:15px;
+      font-weight:700;
+      color:#111827;
+  }
+
+  .my-duty-role{
+      display:inline-block;
+      margin-left:8px;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#dbeafe;
+      color:#1d4ed8;
+      font-size:14px;
+      font-weight:800;
+  }
+    
+  .my-duty-line2{
+      margin-top:4px;
+      font-size:14px;
+      line-height:1.5;
+  }
+  
+  .my-duty-line2 .game-code{
+      color:#2563eb;
+      font-weight:700;
+  }
+  
+  .my-duty-line2 .tournament{
+      color:#64748b;
+  }
+  
+  .my-duty-line2 .matchup{
+      font-weight:700;
+      color:#111827;
+  }
+  
+  .my-duty-line2 .vs{
+      color:#94a3b8;
+      margin:0 4px;
+  }
+
+  .my-duty-line3{
+      margin-top:4px;
+      font-size:15px;
+      font-weight:800;
+      color:#111827;
+  }
+  
+  .my-duty-line3 .vs{
+      margin:0 6px;
+      color:#94a3b8;
+      font-weight:600;
+  }
+
+.weekly-table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    border-radius:12px;
+    overflow:hidden;
+}
+
+.weekly-table th{
+    background:#f8fafc;
+
+    padding:8px 6px;
+
+    font-size:12px;
+    font-weight:700;
+
+    color:#64748b;
+
+    border-bottom:1px solid #e5e7eb;
+}
+
+  .weekly-table td{
+      padding:4px 6px;
+      text-align:center;
+      border-bottom:1px solid #eef2f7;
+      font-size:13px;
+      vertical-align:top;
+  }
+  
+  .weekly-table tr:hover{
+      background:#f8fbff;
+  }
+  
+  .w-time{
+      font-weight:800;
+      color:#dc2626;
+  }
+  
+  .w-code{
+      font-weight:700;
+      color:#2563eb;
+  }
+  
+  .w-match{
+      text-align:left;
+      min-width:220px;
+      font-weight:700;
+  }
+  
+  .w-match .vs{
+      margin:0 4px;
+      color:#94a3b8;
+      font-weight:500;
+  }
+
+  .w-time{
+      line-height:1.2;
+  }
+
+.league-row{
+    padding:10px 0;
+    border-bottom:1px solid #e5e7eb;
+}
+
+.league-head{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:8px;
+}
+
+.league-time{
+    color:#dc2626;
+    font-size:18px;
+    font-weight:800;
+    flex:0 0 auto;
+}
+
+.league-time-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.league-code{
+    color:#2563eb;
+    font-size:15px;
+    font-weight:700;
+    flex:0 0 auto;
+}
+    
+.league-match{
+    flex:1;
+    min-width:0;
+    font-size:15px;
+    font-weight:700;
+    color:#111827;
+}
+  
+.league-match .vs{
+    color:#94a3b8;
+    margin:0 6px;
+    font-size:12px;
+}
+  
+.league-duty{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:4px 24px;
+    margin-top:8px;
+    font-size:16px;
+    line-height:1.8;
+    color:#475569;
+}
+
+.league-duty div{
+    font-weight:700;
+}
+
+.league-duty-name{
+    font-size:16px;
+    font-weight:500;
+    color:#111827;
+}
+
+.league-duty-left,
+.league-duty-right{
+    font-size:15px;
+    line-height:1.7;
+    color:#475569;
+}
+
+.league-field-header{
+    margin:10px 0 6px;
+    padding:8px 12px;
+    border-radius:10px;
+    background:#eff6ff;
+    border-left:4px solid #2563eb;
+    color:#1e3a8a;
+    font-size:14px;
+    font-weight:800;
+}
+
   </style>
 
 </head>
@@ -1259,7 +1420,7 @@ margin-top:8px;
       <h3>📢 最新公告</h3>
       <div class="notice-list">
         <div class="notice-item">⚾ 10/16 - 十一月份賽程將於 10/17 (六) 12:00 起開放報名，請點選上方班表，詳細資訊請看Line群組。</div>
-        <div class="notice-item">⚾ 10/16 - 本系統開於第二賽事報名功能，未來如有第二賽事報名請先行選擇要報名的盃賽後，再進去報名。</div>
+        <div class="notice-item">⚾ 10/16 - 本系統新增第二賽事報名功能，未來如有第二賽事報名請先行選擇要報名的盃賽後，再進去報名。</div>
         <div class="notice-item">⚾ 9/16 - 十月份賽程將於 9/17 (四) 12:00 起開放報名，請點選上方班表，詳細資訊請看Line群組。</div>
         <div class="notice-item">⚾ 8/13 - 九月份賽程將於 8/14 (五) 12:00 起開放報名，請點選上方班表，詳細資訊請看Line群組。</div>
         <div class="notice-item">⚾ 8/13 - 由於三峽北大的租金屬於高單價，該場地舉辦的 "例行賽" 賽事將調整為安排四場比賽，每場2小時15分鐘，大聯盟組裁判人數調整為兩人制。</div>
