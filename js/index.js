@@ -820,19 +820,33 @@ function openWeeklySchedule(){
     // ✅ ✅ ✅ 關鍵修正
     const weekGames = games.filter(g => {
     
+      // 暫存不顯示
+      if (Number(g.status || 0) === 3){
+        return false;
+      }
+    
       const d = parseDate(g.date);
     
       if (!(d && d >= monday && d <= sunday)){
         return false;
       }
     
-      // 只顯示目前開放賽事
+      // 本週班表專用設定
       if (
-        typeof currentTournament !== 'undefined' &&
-        currentTournament &&
-        String(g.tournament || '').trim() !== currentTournament
+        typeof WEEKLY_SCHEDULE_CONFIG !== 'undefined' &&
+        WEEKLY_SCHEDULE_CONFIG.mode === 'LIMIT'
       ){
-        return false;
+    
+        const tournament =
+          String(g.tournament || '').trim();
+    
+        if (
+          !WEEKLY_SCHEDULE_CONFIG.tournaments.includes(
+            tournament
+          )
+        ){
+          return false;
+        }
       }
     
       return true;
@@ -912,7 +926,6 @@ function openWeeklySchedule(){
   });
 }
 
-/* 本週聯盟班表 */
 /* 本週聯盟班表 */
 function renderWeeklyTable(list){
 
