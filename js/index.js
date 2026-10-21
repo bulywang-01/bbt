@@ -1405,6 +1405,7 @@ let career_no_show = 0;
 
 const roleMap = {};
 const historyRows = [];
+const yearlyMap = {};
 
 // ✅ ✅ ✅ 修正：只算 completed 才進圓餅圖
 window._yearRaw.allAssignments.forEach(g=>{
@@ -1413,20 +1414,28 @@ window._yearRaw.allAssignments.forEach(g=>{
 
     if (String(item.user_id) !== String(userId)) return;
 
-    // ✅ 個人歷史履歷
-    historyRows.push({
+    const year =
+      String(g.date).substring(0,4);
     
-      date : g.date,
+    if (!yearlyMap[year]){
+      yearlyMap[year] = {
+        completed:0,
+        late:0,
+        no_show:0
+      };
+    }
     
-      match :
-          g.away_team &&
-          g.home_team
-            ? `${g.away_team} VS ${g.home_team}`
-            : (g.game_code || '-'),
+    if (item.status === 'completed'){
+      yearlyMap[year].completed++;
+    }
     
-      role : mapRole(item.role)
+    if (item.status === 'late'){
+      yearlyMap[year].late++;
+    }
     
-    });
+    if (item.status === 'no_show'){
+      yearlyMap[year].no_show++;
+    }
     
     // ✅ 生涯出勤狀態（全部保留）
     if (item.status === 'completed') career_completed++;
@@ -1437,6 +1446,33 @@ window._yearRaw.allAssignments.forEach(g=>{
     // 🔥 圓餅圖只算 completed（關鍵🔥）
     if (item.status !== 'completed') return;
 
+    // ✅ 履歷全部保留
+    historyRows.push({
+    
+      date : g.date,
+    
+      time :
+        String(g.date).includes(' ')
+          ? String(g.date)
+              .split(' ')[1]
+              .substring(0,5)
+          : '',
+    
+      tournament :
+        `${g.tournament || ''}${
+          g.category ? ' - ' + g.category : ''
+        }`,
+    
+      match :
+        `${g.away_team || ''} VS ${g.home_team || ''}`,
+    
+      role : mapRole(item.role),
+    
+      status : item.status
+    
+    });
+    
+    // ✅ 圓餅圖也統計全部出勤紀錄
     const role = mapRole(item.role);
     roleMap[role] = (roleMap[role] || 0) + 1;
 
@@ -1475,34 +1511,60 @@ window._yearRaw.allAssignments.forEach(g=>{
   
     <hr style="margin:14px 0;">
   
-    <!-- 出勤表 -->
+    <!-- ✅ 出勤表 -->
     <div>
+    
       <div style="font-weight:700;margin-bottom:6px;">
         📊 出勤概況
       </div>
-  
+    
       <table class="table-compact">
+    
         <tr>
-          <th></th>
+          <th>年度</th>
           <th>完成</th>
           <th>遲到</th>
           <th>缺席</th>
         </tr>
-  
-        <tr>
-          <td>年度</td>
-          <td>${completed}</td>
-          <td>${late}</td>
-          <td>${no_show}</td>
-        </tr>
-  
-        <tr>
+    
+        ${Object.keys(yearlyMap)
+          .sort((a,b)=>b-a)
+          .map(year => `
+    
+            <tr>
+    
+              <td>${year}</td>
+    
+              <td>
+                ${yearlyMap[year].completed}
+              </td>
+    
+              <td>
+                ${yearlyMap[year].late}
+              </td>
+    
+              <td>
+                ${yearlyMap[year].no_show}
+              </td>
+    
+            </tr>
+    
+          `).join('')}
+    
+        <tr style="font-weight:700;">
+    
           <td>生涯</td>
+    
           <td>${career_completed}</td>
+    
           <td>${career_late}</td>
+    
           <td>${career_no_show}</td>
+    
         </tr>
+    
       </table>
+    
     </div>
   
     <hr style="margin:14px 0;">
@@ -1532,62 +1594,95 @@ window._yearRaw.allAssignments.forEach(g=>{
       </div>
     
       <div class="history-list">
-    
-        ${
-          (()=>{
-    
-            const groups = {};
-    
-            historyRows
-              .sort((a,b)=>
-                new Date(b.date) - new Date(a.date)
-              )
-              .forEach(x=>{
-    
-                const year =
-                  String(x.date).substring(0,4);
-    
-                if (!groups[year]){
-                  groups[year] = [];
-                }
-    
-                groups[year].push(x);
-    
-              });
-    
-            return Object.keys(groups)
-              .sort((a,b)=>b-a)
-              .map(year => `
-    
-                <div class="history-year">
-                  ${year}年
+      
+      ${(() => {
+      
+        const yearGroups = {};
+      
+        historyRows
+          .sort((a,b)=>new Date(b.date) - new Date(a.date))
+          .forEach(x => {
+      
+            const year =
+              String(x.date).substring(0,4);
+      
+            const tournament =
+              x.tournament || '未分類賽事';
+      
+            const day =
+              String(x.date).substring(5,10);
+      
+            if (!yearGroups[year]){
+              yearGroups[year] = {};
+            }
+      
+            if (!yearGroups[year][tournament]){
+              yearGroups[year][tournament] = {};
+            }
+      
+            if (!yearGroups[year][tournament][day]){
+              yearGroups[year][tournament][day] = [];
+            }
+      
+            yearGroups[year][tournament][day].push(x);
+      
+          });
+      
+        return Object.keys(yearGroups)
+          .sort((a,b)=>b-a)
+          .map(year => `
+      
+            <div class="history-year">
+              ${year}年
+            </div>
+      
+            ${Object.keys(yearGroups[year])
+              .sort()
+              .map(tournament => `
+      
+                <div class="history-tournament">
+                  🏆 ${tournament}
                 </div>
-    
-                ${groups[year].map(x => `
-    
-                  <div class="history-row">
-    
-                    <span class="history-date">
-                      ${x.date.substring(5)}
-                    </span>
-    
-                    <span class="history-match">
-                      ${x.match}
-                    </span>
-    
-                    <span class="history-role">
-                      ${x.role}
-                    </span>
-    
-                  </div>
-    
-                `).join('')}
-    
-              `).join('');
-    
-          })()
-        }
-    
+      
+                ${Object.keys(yearGroups[year][tournament])
+                  .sort((a,b)=>b.localeCompare(a))
+                  .map(day => {
+                
+                    const rows =
+                      yearGroups[year][tournament][day];
+                
+                    return rows.map((x,index) => `
+                
+                      <div class="history-row">
+                
+                        <span class="history-date">
+                          ${index === 0 ? day : ''}
+                        </span>
+                
+                        <span class="history-time">
+                          ${x.time || ''}
+                        </span>
+                
+                        <span class="history-match">
+                          ${x.match}
+                        </span>
+                
+                        <span class="history-role">
+                          ${x.role}
+                        </span>
+                
+                      </div>
+                
+                    `).join('');
+                
+                  }).join('')}
+      
+              `).join('')}
+      
+          `).join('');
+      
+      })()}
+      
       </div>
     
     </div>
