@@ -1,0 +1,191 @@
+/* =====================================
+   Dashboard KPI
+===================================== */
+
+.dashboard-kpi{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+    margin-bottom:24px;
+}
+
+.kpi-card{
+    background:#fff;
+    border-radius:14px;
+    padding:18px;
+    text-align:center;
+    border-top:4px solid #ddd;
+    box-shadow:0 4px 12px rgba(0,0,0,.06);
+    transition:.2s;
+}
+
+.kpi-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(0,0,0,.08);
+}
+
+.kpi-value{
+    font-size:36px;
+    font-weight:900;
+    line-height:1.2;
+}
+
+.kpi-label{
+    margin-top:4px;
+    color:#64748b;
+    font-size:14px;
+}
+
+.kpi-blue{ border-top-color:#2563eb; }
+.kpi-green{ border-top-color:#16a34a; }
+.kpi-orange{ border-top-color:#ea580c; }
+.kpi-red{ border-top-color:#dc2626; }
+
+
+/* =====================================
+   缺額中心
+===================================== */
+
+.vacancy-panel{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-bottom:24px;
+}
+
+.vacancy-column{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:14px;
+    box-shadow:0 4px 10px rgba(0,0,0,.05);
+}
+
+.vacancy-title{
+    font-size:16px;
+    font-weight:800;
+    margin-bottom:12px;
+}
+
+.vacancy-item{
+    padding:8px 0;
+    border-bottom:1px solid #eef2f7;
+}
+
+.vacancy-item:last-child{
+    border-bottom:none;
+}
+
+.vacancy-game{
+    margin-top:2px;
+    font-size:15px;
+    color:#111827;
+}
+
+.quick-actions{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:12px;
+    margin-bottom:24px;
+}
+
+.report-actions{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:12px;
+}
+
+.vacancy-row{
+    display:grid;
+    grid-template-columns:60px 60px 1fr auto;
+    gap:10px;
+    align-items:center;
+    padding:6px 0;
+    border-bottom:1px solid #eef2f7;
+    font-size:14px;
+}
+
+.vacancy-date{
+    color:#2563eb;
+    font-weight:700;
+}
+
+.vacancy-time{
+    color:#dc2626;
+    font-weight:700;
+}
+
+.vacancy-match{
+    color:#111827;
+}
+
+.vacancy-role{
+    color:#dc2626;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.vacancy-empty{
+    color:#16a34a;
+    font-weight:700;
+    padding:8px 0;
+}
+
+.vacancy-code{
+    color:#64748b;
+    font-size:12px;
+}
+
+.vacancy-line1{
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    margin-bottom:2px;
+}
+
+.vacancy-line2{
+    font-size:14px;
+    color:#111827;
+}
+
+.vacancy-line3{
+    margin-top:2px;
+    color:#dc2626;
+    font-size:14px;
+    font-weight:700;
+}
+
+.quick-panel{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:12px;
+    margin-bottom:24px;
+}
+
+.quick-panel .card{
+    height:72px;
+}
+
+.quick-panel a{
+    text-decoration:none;
+    color:inherit;
+}
+/* =====================================
+   Mobile
+===================================== */
+
+@media (max-width:768px){
+
+    .dashboard-kpi{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .vacancy-panel{
+        grid-template-columns:1fr;
+    }
+
+    .kpi-value{
+        font-size:28px;
+    }
+}
