@@ -1808,27 +1808,20 @@ function renderWeeklyDutyBoard(data){
                 sticky
                 top-0
                 z-10
-            
                 bg-slate-900
-            
                 text-amber-300
                 font-black
-            
                 text-sm
-            
                 py-2
                 px-2
-            
                 rounded-md
-            
                 border-l-4
                 border-amber-400
-            
                 mb-1
                 mt-2
               "
             >
-              【${field}】
+              【${field}｜${games[0].tournament || '-'}】
             </div>
 
             <table
