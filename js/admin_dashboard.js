@@ -2164,7 +2164,7 @@ function buildRosterHtml(isPreview = true){
           color:#dc2626;
           font-weight:800;
         ">
-          缺
+          
         </span>
       `;
 
