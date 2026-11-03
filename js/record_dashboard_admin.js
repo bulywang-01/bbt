@@ -42,9 +42,28 @@ function formatDate(d) {
   return `${x.getFullYear()}/${x.getMonth() + 1}/${x.getDate()}`;
 }
 
-function formatTime(t) {
+// 時間格式
+function formatTime(t){
+
+  if(!t){
+    return '';
+  }
+
+  if(
+    typeof t === 'string' &&
+    t.includes(':') &&
+    !t.includes('T')
+  ){
+    return t.substring(0,5);
+  }
+
   const d = new Date(t);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+  if(isNaN(d)){
+    return String(t).substring(0,5);
+  }
+
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
 // 日期不呈現年份
