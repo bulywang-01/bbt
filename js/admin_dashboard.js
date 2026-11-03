@@ -1336,15 +1336,18 @@ function renderStaffStats(data){
     +
     (s.recordSummary?.required || 0);
   
-  const assigned =
-    (s.judgeSummary?.assigned || 0)
+  const vacancy =
+    (s.judgeSummary?.vacancy || 0)
     +
-    (s.recordSummary?.assigned || 0);
+    (s.recordSummary?.vacancy || 0);
+  
+  const completed =
+    required - vacancy;
   
   const fillRate =
     required
       ? Math.round(
-          assigned / required * 100
+          completed / required * 100
         )
       : 0;
   
