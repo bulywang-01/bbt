@@ -1586,14 +1586,12 @@ function renderWeeklyDutyBoard(data){
     );
 
   if(title){
-
     title.textContent =
       getBoardTitle()
         .replace(
           '待補派看板',
           '派遣班表'
         );
-
   }
 
   const board =
@@ -1617,7 +1615,6 @@ function renderWeeklyDutyBoard(data){
     `;
 
     return;
-
   }
 
   const isMobile =
@@ -1626,81 +1623,70 @@ function renderWeeklyDutyBoard(data){
   const sortedGames =
     [...games].sort((a,b)=>{
 
-      const aKey =
-        `${a.date || ''} ${a.time || ''}`;
+      const cat =
+        (a.category || '')
+        .localeCompare(
+          b.category || ''
+        );
 
-      const bKey =
-        `${b.date || ''} ${b.time || ''}`;
+      if(cat !== 0){
+        return cat;
+      }
 
-      return aKey.localeCompare(bKey);
+      const field =
+        (a.field || '')
+        .localeCompare(
+          b.field || ''
+        );
+
+      if(field !== 0){
+        return field;
+      }
+
+      return (
+        (a.time || '')
+      ).localeCompare(
+        b.time || ''
+      );
 
     });
 
-  // 顯示姓名
-  function shortName(obj){
-  
-    if(!obj){
-      return '-';
-    }
-  
-    if(typeof obj === 'string'){
-      return obj;
-    }
-  
-    if(obj.name){
-      return obj.name;
-    }
-  
-    return '-';
-  
-  }
-
-  // ==========================
   // 手機版
-  // ==========================
-
   if(isMobile){
 
     board.innerHTML =
-      sortedGames.map(g => {
+      sortedGames.map(g => `
 
-        return `
+        <div
+          class="
+            py-2
+            border-b
+            border-white/10
+          "
+        >
 
           <div
             class="
-              py-2
-              border-b
-              border-white/10
+              text-white
+              font-bold
+              text-xs
             "
           >
-
-            <div
-              class="
-                text-white
-                font-bold
-                text-xs
-              "
-            >
-              ${g.time || ''}　
-              ${g.field || ''}
-            </div>
-
-            ${renderMobileDuty(g)}
-
+            ${g.time || ''}
+           　
+            ${g.field || ''}
           </div>
 
-        `;
+          ${renderMobileDuty(g)}
 
-      }).join('');
+        </div>
+
+      `).join('');
 
     return;
-
   }
 
-  // ==========================
   // 桌機版
-  // ==========================
-
   const fieldGroups = {};
 
   sortedGames.forEach(g => {
@@ -1718,86 +1704,100 @@ function renderWeeklyDutyBoard(data){
 
   board.innerHTML =
     Object.entries(fieldGroups)
-      .map(([field,fieldGames]) => {
+      .map(([field, fieldGames]) => {
+
+        const tournaments =
+          [
+            ...new Set(
+              fieldGames
+                .map(g => g.tournament)
+                .filter(Boolean)
+            )
+          ];
+
+        const categories =
+          [
+            ...new Set(
+              fieldGames
+                .map(g => g.category)
+                .filter(Boolean)
+            )
+          ];
+
+        const tournamentText =
+          tournaments.length === 1
+            ? tournaments[0]
+            : '混合賽事';
+
+        const categoryText =
+          categories.length === 1
+            ? categories[0]
+            : '混合組';
 
         const rows =
-          fieldGames.map(g => {
+          fieldGames.map(g => `
 
-            return `
+            <tr
+              class="
+                border-b
+                border-white/10
+                hover:bg-white/5
+              "
+            >
 
-              <tr
-                class="
-                  border-b
-                  border-white/10
-                  hover:bg-white/5
-                "
-              >
+              <td class="py-1.5 px-1 whitespace-nowrap">
+                ${g.time || ''}
+              </td>
 
-                <td
-                  class="
-                    py-1.5
-                    px-1
-                    whitespace-nowrap
-                  "
-                >
-                  ${g.time || ''}
-                </td>
+              <td class="
+                py-1.5
+                px-1
+                text-amber-300
+                font-bold
+                whitespace-nowrap
+              ">
+                ${g.game_code || ''}
+              </td>
 
-                <td
-                  class="
-                    py-1.5
-                    px-1
-                    text-amber-300
-                    font-bold
-                    whitespace-nowrap
-                  "
-                >
-                  ${g.game_code || ''}
-                </td>
+              <td class="text-center px-2">
+                ${renderDutyCell(g.judges?.PU)}
+              </td>
 
-                <td class="text-center px-2">
-                  ${renderDutyCell(g.judges?.PU)}
-                </td>
-                
-                <td class="text-center px-2">
-                  ${renderDutyCell(g.judges?.U1)}
-                </td>
-                
-                <td class="text-center px-2">
-                  ${
-                    Number(g.umpire_count) >= 4
-                      ? renderDutyCell(g.judges?.U2)
-                      : ''
-                  }
-                </td>
-                
-                <td class="text-center px-2">
-                  ${
-                    Number(g.umpire_count) >= 3
-                      ? renderDutyCell(g.judges?.U3)
-                      : ''
-                  }
-                </td>
-                
-                <td class="text-center px-2">
-                  ${renderDutyCell(g.records?.REC_MAIN)}
-                </td>
-                
-                <td class="text-center px-2">
-                  ${renderDutyCell(g.records?.REC_TRAINEE)}
-                </td>
-                
-                <td class="text-center px-2">
-                  ${renderDutyCell(g.records?.REC_VIDEO)}
-                </td>
+              <td class="text-center px-2">
+                ${renderDutyCell(g.judges?.U1)}
+              </td>
 
+              <td class="text-center px-2">
+                ${
+                  Number(g.umpire_count) >= 4
+                    ? renderDutyCell(g.judges?.U2)
+                    : '-'
+                }
+              </td>
 
-              </tr>
+              <td class="text-center px-2">
+                ${
+                  Number(g.umpire_count) >= 3
+                    ? renderDutyCell(g.judges?.U3)
+                    : '-'
+                }
+              </td>
 
-            `;
+              <td class="text-center px-2">
+                ${renderDutyCell(g.records?.REC_MAIN)}
+              </td>
 
-          })
-          .join('');
+              <td class="text-center px-2">
+                ${renderDutyCell(g.records?.REC_TRAINEE)}
+              </td>
+
+              <td class="text-center px-2">
+                ${renderDutyCell(g.records?.REC_VIDEO)}
+              </td>
+
+            </tr>
+
+          `).join('');
 
         return `
 
@@ -1821,7 +1821,21 @@ function renderWeeklyDutyBoard(data){
                 mt-2
               "
             >
-              【${field}】
+
+              <div>
+                【${field}】
+              </div>
+
+              <div
+                style="
+                  font-size:11px;
+                  color:#fbbf24;
+                  margin-top:4px;
+                "
+              >
+                🏆 ${tournamentText}｜${categoryText}
+              </div>
+
             </div>
 
             <table
@@ -1842,41 +1856,15 @@ function renderWeeklyDutyBoard(data){
                   "
                 >
 
-                  <th class="w-[70px]">
-                  時間
-                  </th>
-                  
-                  <th class="w-[90px]">
-                  場次
-                  </th>
-                  
-                  <th class="w-[130px]">
-                  主審
-                  </th>
-                  
-                  <th class="w-[130px]">
-                  一壘
-                  </th>
-                  
-                  <th class="w-[130px]">
-                  二壘
-                  </th>
-                  
-                  <th class="w-[130px]">
-                  三壘
-                  </th>
-                  
-                  <th class="w-[150px]">
-                  紀錄
-                  </th>
-                  
-                  <th class="w-[120px]">
-                  實習
-                  </th>
-                  
-                  <th class="w-[120px]">
-                  影像
-                  </th>
+                  <th class="w-[70px]">時間</th>
+                  <th class="w-[90px]">場次</th>
+                  <th class="w-[130px]">主審</th>
+                  <th class="w-[130px]">一壘</th>
+                  <th class="w-[130px]">二壘</th>
+                  <th class="w-[130px]">三壘</th>
+                  <th class="w-[150px]">紀錄</th>
+                  <th class="w-[120px]">實習</th>
+                  <th class="w-[120px]">影像</th>
 
                 </tr>
 
@@ -2660,36 +2648,24 @@ function renderDutyCell(value){
 
   if(typeof value === 'string'){
     name = value;
-  }else if(value?.name){
+  }
+  else if(value?.name){
     name = value.name;
   }
 
   if(name){
 
     return `
-      <span class="text-amber-300 font-semibold">
+      <span class="
+        text-amber-300
+        font-semibold
+      ">
         ${name}
       </span>
     `;
-
   }
 
-  return `
-    <span class="
-      inline-flex
-      items-center
-      justify-center
-      px-2
-      py-0.5
-      rounded
-      bg-red-600
-      text-yellow-200
-      text-[10px]
-      font-black
-    ">
-      缺
-    </span>
-  `;
+  return '';
 }
 
 // Badge Renderer - 手機版
