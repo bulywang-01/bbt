@@ -1,0 +1,4106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帳號管理</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  
+  <!-- 共用 CSS（一定要是單獨一行，必須有關閉 >） -->
+  <link rel="stylesheet" href="common.css">
+
+  <!-- 頁面內 CSS（一定只能在 <style> 裡） -->
+  
+  <style>
+
+/*************************************************
+ * User Management V2 
+ *************************************************/
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  padding:0;
+  background:#f8fafc;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color:#0f172a;
+}
+
+.hidden{
+  display:none!important;
+}
+
+/*************************************************
+ * Container
+ *************************************************/
+
+.page-container{
+  max-width:1400px;
+  margin:auto;
+  padding:20px;
+}
+
+/*************************************************
+ * Title
+ *************************************************/
+
+.page-title-bar{
+  margin-bottom:24px;
+}
+
+.page-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  font-size:32px;
+  font-weight:800;
+
+  margin:0;
+}
+
+.page-desc{
+  margin-top:6px;
+  color:#64748b;
+  font-size:14px;
+}
+
+/*************************************************
+ * KPI
+ *************************************************/
+
+.kpi-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(6,1fr);
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.kpi-card{
+  background:#fff;
+  border-radius:12px;
+  padding:10px;
+  min-height:72px;
+  box-shadow:
+    0 4px 10px rgba(15,23,42,.05);
+}
+
+.kpi-card:hover{
+  transform:translateY(-2px);
+}
+
+.kpi-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:4px;
+}
+
+.kpi-title{
+  font-size:12px;
+  color:#64748b;
+  font-weight:600;
+}
+
+.kpi-icon{
+  width:32px;
+  height:32px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#eff6ff;
+  font-size:16px;
+}
+
+.kpi-value{
+  font-size:22px;
+  line-height:1.1;
+  font-weight:800;
+  color:#0f172a;
+}
+
+.kpi-unit{
+  margin-top:4px;
+  font-size:12px;
+  color:#94a3b8;
+}
+
+.kpi-flex{
+  display:grid;
+  grid-template-columns:
+    1fr 1fr;
+  align-items:center;
+  margin-top:10px;
+}
+
+.kpi-main-value{
+  font-size:34px;
+  font-weight:900;
+  line-height:1;
+}
+
+.kpi-side{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  align-items:flex-start;
+  min-width:70px;
+}
+
+.kpi-side div{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  line-height:1.2;
+  color:#64748b;
+}
+
+.kpi-side span{
+  font-size:18px;
+  min-width:18px;
+  font-weight:900;
+}
+
+/*************************************************
+ * KPI Dashboard V3
+ *************************************************/
+
+.kpi-summary{
+  display:grid;
+  grid-template-columns:
+    repeat(4,1fr);
+  gap:14px;
+  margin-bottom:14px;
+}
+
+.kpi-main-card{
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:18px;
+  box-shadow:
+    0 4px 10px rgba(15,23,42,.05);
+  min-height:110px;
+}
+
+.kpi-main-label{
+  font-size:13px;
+  color:#64748b;
+  font-weight:700;
+}
+
+.kpi-main-value{
+  margin-top:6px;
+  font-size:30px;
+  font-weight:900;
+  line-height:1;
+  color:#0f172a;
+}
+
+.kpi-subline{
+  margin-top:14px;
+  display:flex;
+  justify-content:flex-start;
+  gap:18px;
+}
+
+
+.kpi-subline span{
+  font-size:20px;
+  font-weight:900;
+  color:#0f172a;
+}
+
+    
+.kpi-license-bar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:16px;
+  padding:12px 16px;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+}
+
+.kpi-mini{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 14px;
+  border-radius:999px;
+  background:#f8fafc;
+}
+
+.kpi-mini span{
+  font-size:13px;
+  color:#64748b;
+}
+
+.kpi-mini strong{
+  font-size:18px;
+  font-weight:900;
+}
+
+.kpi-mini.danger strong{
+  color:#dc2626;
+}
+
+@media(max-width:768px){
+  .kpi-summary{
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+}
+
+#kpiJudgeA,
+#kpiJudgeB,
+#kpiJudgeC{
+  color:#2563eb;
+}
+
+#kpiRecordA,
+#kpiRecordB,
+#kpiRecordC{
+  color:#7c3aed;
+}
+
+#kpiDisabledUsers{
+  color:#dc2626;
+}
+    
+/*************************************************
+ * Search
+ *************************************************/
+
+.toolbar{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.search-input{
+  flex:1;
+  height:44px;
+  border:1px solid #cbd5e1;
+  border-radius:12px;
+  padding:0 14px;
+  background:#fff;
+}
+
+.search-input:focus{
+  outline:none;
+  border-color:#2563eb;
+  box-shadow:
+    0 0 0 3px rgba(37,99,235,.12);
+}
+
+.toolbar select{
+  width:160px;
+  height:44px;
+  border-radius:12px;
+  border:1px solid #cbd5e1;
+  background:#fff;
+  padding:0 12px;
+}
+
+/*************************************************
+ * Filter
+ *************************************************/
+.filter-card{
+  background:#fff;
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:14px;
+  box-shadow:
+    0 4px 12px rgba(15,23,42,.05);
+  overflow-x:auto;
+  white-space:nowrap;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.role-filters{
+  margin-top:10px;
+}
+
+.filter-card label{
+  display:inline-flex;
+  align-items:center;
+  margin-right:18px;
+  cursor:pointer;
+  font-size:14px;
+  color:#334155;
+}
+
+.filter-search-row{
+  margin-top:12px;
+  display:flex;
+  justify-content:flex-end;
+}
+
+.role-filter-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px;
+}
+
+.role-filter-row label{
+  margin:0;
+}
+
+/*************************************************
+ * Action Toolbar
+ *************************************************/
+
+.toolbar-action{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.toolbar-left,
+.toolbar-right{
+  display:flex;
+  gap:10px;
+}
+
+/*************************************************
+ * Buttons
+ *************************************************/
+
+.btn-primary{
+  border:none;
+  padding:10px 18px;
+  border-radius:12px;
+  background:#2563eb;
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:
+    0 4px 12px rgba(37,99,235,.25);
+}
+
+.btn-primary:hover{
+  background:#1d4ed8;
+}
+
+.btn-outline{
+  border:none;
+  background:
+    rgba(255,255,255,.15);
+  color:#fff;
+  border-radius:10px;
+  padding:8px 12px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.btn-outline:hover{
+  background:
+    rgba(255,255,255,.25);
+}
+/*************************************************
+ * Table Card
+ *************************************************/
+
+.table-panel{
+  background:#fff;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:
+    0 4px 14px rgba(15,23,42,.05);
+}
+
+.table-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 18px;
+  background:
+  linear-gradient(
+    90deg,
+    #0f172a,
+    #1e3a8a
+  );
+
+  color:#fff;
+}
+
+.table-title{
+  font-size:18px;
+  font-weight:800;
+}
+
+.table-count{
+  font-size:13px;
+  color:#cbd5e1;
+}
+
+.table-wrapper{
+  overflow-x:auto;
+}
+
+.last-login{
+  white-space:nowrap;
+  font-size:12px;
+  color:#64748b;
+}
+  
+/*************************************************
+ * Table
+ *************************************************/
+
+.user-table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.user-table th{
+  background:#f8fafc;
+  padding:12px;
+  text-align:left;
+  font-size:13px;
+  color:#475569;
+  font-weight:700;
+  border-bottom:
+    1px solid #e2e8f0;
+}
+
+.user-table td{
+  padding:14px 12px;
+  vertical-align:top;
+  border-bottom:
+    1px solid #e2e8f0;
+}
+
+.user-table tbody tr:hover{
+  background:#f8fafc;
+}
+
+/*************************************************
+ * User Name
+ *************************************************/
+
+.tb-name{
+  font-size:20px;
+  font-weight:800;
+  color:#0f172a;
+}
+
+.tb-account{
+  margin-top:4px;
+  font-size:14px;
+  color:#64748b;
+}
+
+/*************************************************
+ * Role Badge
+ *************************************************/
+
+.table-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.role-badge{
+  display:inline-flex;
+  align-items:center;
+  height:32px;
+  padding:0 16px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:700;
+}
+
+.role-judge{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+.role-chief-judge{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.role-record{
+  background:#ede9fe;
+  color:#6d28d9;
+}
+
+.role-record-chief{
+  background:#ddd6fe;
+  color:#5b21b6;
+}
+
+.role-admin{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+/*************************************************
+ * Status
+ *************************************************/
+
+.status-badge{
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  min-width:60px;
+  height:28px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.status-active{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.status-active::before{
+  content:"●";
+  margin-right:4px;
+}
+
+.status-disable{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+/*************************************************
+ * Attendance
+ *************************************************/
+
+.attendance-cell{
+  min-width:90px;
+}
+
+.attendance-count{
+  font-weight:700;
+}
+
+.attendance-rate{
+  font-size:12px;
+  color:#16a34a;
+}
+
+/*************************************************
+ * Action Buttons
+ *************************************************/
+
+.action-col{
+  white-space:nowrap;
+}
+
+.action-btn{
+  font-size:14px;
+  width:32px;
+  height:32px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.action-btn:hover{
+  transform:translateY(-1px);
+}
+
+.action-btn.stat{
+  background:#dbeafe;
+}
+
+.action-btn.edit{
+  background:#ffedd5;
+}
+
+.action-btn.password{
+  background:#fef9c3;
+}
+
+.action-btn.delete{
+  background:#fee2e2;
+}
+
+.action-btn.copy{
+  background:#e0f2fe;
+  color:#0369a1;
+}
+
+.action-btn.copy{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+.action-group{
+  display:flex;
+  justify-content:flex-start;
+  align-items:center;
+  gap:6px;
+}
+  
+/*************************************************
+ * RWD
+ *************************************************/
+
+@media(max-width:768px){
+
+  .page-container{
+    padding:14px;
+  }
+
+  .kpi-grid{
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+  .toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .toolbar-action{
+    flex-direction:column;
+    gap:10px;
+    align-items:stretch;
+  }
+
+  .toolbar-right{
+    flex-wrap:wrap;
+  }
+}
+
+/*************************************************
+ * User Modal
+ *************************************************/
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.45);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.modal.hidden{
+  display:none;
+}
+
+.modal-dialog{
+  width:90%;
+  max-width:720px;
+  background:#ffffff;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.2);
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 18px;
+  background:
+  linear-gradient(
+    90deg,
+    #0f172a,
+    #1e3a8a
+  );
+  color:#fff;
+}
+
+.modal-body{
+  padding:20px;
+}
+
+.modal-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(2,1fr);
+  gap:14px;
+  align-items:start;
+}
+
+.modal-grid input,
+.modal-grid select{
+  width:100%;
+  height:42px;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  padding:0 12px;
+}
+
+.modal-grid input:focus,
+.modal-grid select:focus{
+  outline:none;
+  border-color:#2563eb;
+  box-shadow:
+    0 0 0 3px rgba(37,99,235,.12);
+}
+
+.modal-footer{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  padding:16px 20px;
+  border-top:1px solid #e5e7eb;
+}
+
+.modal-role-box{
+  grid-column:1 / span 2;
+  padding-top:10px;
+}
+
+.modal-role-box label{
+  display:inline-flex;
+  align-items:center;
+  margin-right:16px;
+  margin-bottom:8px;
+}
+
+.modal-close{
+  border:none;
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:rgba(255,255,255,.15);
+  color:#fff;
+  cursor:pointer;
+}
+
+@media(max-width:768px){
+  
+  .modal-grid{
+    grid-template-columns:1fr;
+  }
+
+  .modal-role-box{
+    grid-column:auto;
+  }
+
+}
+
+.full-row{
+  grid-column:1 / span 2;
+}
+
+.modal-role-section{
+  grid-column:1 / span 2;
+  padding:16px;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  background:#f8fafc;
+}
+
+.section-title{
+  font-size:14px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+.role-checkbox-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px 24px;
+}
+
+.role-checkbox-grid label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  white-space:nowrap;
+  margin:0;
+  color:#334155;
+}
+
+.level-card{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.level-card label{
+  font-size:13px;
+  font-weight:700;
+  color:#475569;
+}
+
+
+/*************************************************
+ * Toast
+ *************************************************/
+
+.toast{
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:
+    translateX(-50%)
+    translateY(-10px);
+  min-width:280px;
+  max-width:500px;
+  padding:12px 18px;
+  border-radius:12px;
+  text-align:center;
+  color:#fff;
+  font-size:14px;
+  font-weight:700;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.15);
+  opacity:0;
+  transition:.25s;
+  z-index:10000;
+}
+
+.toast.show{
+  opacity:1;
+  transform:
+    translateX(-50%)
+    translateY(0);
+}
+
+.toast.success{
+  background:#16a34a;
+}
+
+.toast.error{
+  background:#dc2626;
+}
+
+.toast.warn{
+  background:#f59e0b;
+}
+
+/* 個人統計數據 */
+.stats-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(3,1fr);
+  gap:14px;
+}
+
+.stat-card{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:12px;
+  padding:14px;
+}
+
+.stat-card strong{
+  color:#64748b;
+}
+
+.stat-card div{
+  margin-top:8px;
+  font-size:22px;
+  font-weight:700;
+}
+
+/* 系統資訊 */
+.system-info-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(2,1fr);
+  gap:12px;
+}
+
+.system-info-item{
+  padding:12px;
+  background:#fff;
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+}
+
+.system-info-label{
+  font-size:12px;
+  color:#64748b;
+}
+
+.system-info-value{
+  margin-top:6px;
+  font-size:18px;
+  font-weight:700;
+}
+
+#loadingMask{
+  position:fixed;
+  inset:0;
+  background:
+    rgba(15,23,42,.25);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:20000;
+}
+
+#loadingMask.hidden{
+  display:none;
+}
+
+.loading-box{
+  background:#fff;
+  padding:20px 28px;
+  border-radius:16px;
+  font-weight:700;
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.15);
+}
+
+.power-on{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.power-off{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+/* 證照呈現 */
+.license-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+}
+
+.license-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  min-width:42px;
+  justify-content:center;
+}
+
+.license-judge{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+.license-record{
+  background:#ede9fe;
+  color:#6d28d9;
+}
+
+.filter-toolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+}
+
+.filter-search-row{
+  width:420px;
+  margin-top:0;
+}
+
+.filter-search-row .search-input{
+  width:100%;
+}
+
+@media(max-width:768px){
+
+  .filter-toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .filter-search-row{
+    width:100%;
+  }
+
+}
+
+</style>
+
+<body class="bg-slate-100 antialiased text-slate-800">
+
+<div class="flex min-h-screen">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay"
+     onclick="toggleSidebar()"
+     class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity">
+</div>
+  
+  <!-- Sidebar -->
+  <aside id="sidebar"
+    class="fixed lg:static inset-y-0 left-0 w-64
+           bg-slate-900 text-slate-300
+           z-50 flex flex-col justify-between
+           transform -translate-x-full
+           lg:translate-x-0
+           transition-transform duration-300 ease-in-out
+           shrink-0 border-r border-slate-800
+           shadow-2xl lg:shadow-none">
+  
+    <div>
+  
+      <!-- Logo -->
+      <div class="h-16 flex items-center justify-between px-5 bg-slate-950 border-b border-slate-800">
+  
+        <div class="flex items-center space-x-3">
+  
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-brand-500/20">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+  
+          <div>
+  
+            <h1 class="font-black text-white text-base tracking-wide">
+              BBT 管理中心
+            </h1>
+  
+            <p class="text-[14px] font-bold text-slate-400">
+              出勤與賽事後端控制台
+            </p>
+  
+          </div>
+  
+        </div>
+  
+        <button onclick="toggleSidebar()"
+                class="lg:hidden text-slate-400 hover:text-white p-1">
+  
+          <i data-lucide="x" class="w-5 h-5"></i>
+  
+        </button>
+  
+      </div>
+  
+      <!-- Navigation -->
+      <nav class="p-3.5 space-y-1 text-xs font-semibold overflow-y-auto max-h-[calc(100vh-140px)]">
+  
+        <!-- Dashboard -->
+        <div class="text-[10px] text-slate-500 font-bold px-3 pt-2 pb-1 uppercase tracking-wider">
+          主控數據中心
+        </div>
+  
+        <a href="admin_dashboard.html"
+           class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white font-bold shadow-lg shadow-brand-600/30">
+  
+          <div class="flex items-center space-x-3">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>管理總覽</span>
+          </div>
+  
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+  
+        </a>
+  
+        <!-- 排班管理 -->
+  
+        <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">
+          排班管理
+        </div>
+  
+        <a href="judge_dashboard_admin.html"
+           class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+  
+          <div class="flex items-center space-x-3">
+            <i data-lucide="flag" class="w-4 h-4"></i>
+            <span>裁判排班</span>
+          </div>
+  
+          <span id="sidebarJudgeShortage"
+                class="text-[10px] text-rose-400">
+          </span>
+  
+        </a>
+  
+        <a href="record_dashboard_admin.html"
+           class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+  
+          <div class="flex items-center space-x-3">
+            <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+            <span>紀錄排班</span>
+          </div>
+  
+          <span id="sidebarRecordShortage"
+                class="text-[10px] text-emerald-400">
+          </span>
+  
+        </a>
+  
+        <!-- 出勤管理 -->
+  
+        <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">
+          出勤管理
+        </div>
+  
+        <a href="assignment_execution.html"
+           class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+  
+          <div class="flex items-center space-x-3">
+            <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+            <span>出勤確認</span>
+          </div>
+  
+          <span id="sidebarnoSignupCount"
+                class="text-[10px] text-amber-400">
+          </span>
+  
+        </a>
+  
+        <!-- 系統管理 -->
+  
+        <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">
+          系統管理
+        </div>
+  
+        <a href="admin_games.html"
+           class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-brand-600 text-white font-bold shadow-lg shadow-brand-600/30">
+        
+          <div class="flex items-center space-x-3">
+            <i data-lucide="calendar-range" class="w-4 h-4"></i>
+            <span>賽事管理</span>
+          </div>
+        
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        
+        </a>
+  
+        <a href="admin_users.html" class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-brand-600 text-white font-bold shadow-lg shadow-brand-600/30">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>帳號管理</span>
+          </div>
+  
+          <span id="sidebarUserCount"
+                class="text-[10px] text-slate-500">
+          </span>
+        </a>
+  
+        <!-- 報表 -->
+  
+        <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">
+          統計報表
+        </div>
+  
+        <a href="#"
+           onclick="openAnnualModal('judge')"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+  
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+          <span>裁判年度總表</span>
+  
+        </a>
+  
+        <a href="#"
+           onclick="openAnnualModal('record')"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+  
+          <i data-lucide="pie-chart" class="w-4 h-4"></i>
+          <span>紀錄年度總表</span>
+  
+        </a>
+  
+        <a href="report.html"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+  
+          <i data-lucide="file-bar-chart" class="w-4 h-4"></i>
+          <span>出勤報表</span>
+  
+        </a>
+  
+      </nav>
+  
+    </div>
+  
+    <!-- Footer -->
+  
+    <div class="p-3.5 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
+  
+      <div class="flex items-center space-x-3">
+  
+        <div id="sidebarAvatar" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 font-black flex items-center justify-center text-sm">-</div>
+  
+        <div>
+          <div id="sidebarUserName" class="text-xs font-bold text-white">-</div>
+          <div id="sidebarUserRole" class="text-[10px] text-amber-400">-</div>
+        </div>
+  
+      </div>
+  
+      <button onclick="alert('登出')"
+              class="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg">
+  
+        <i data-lucide="log-out" class="w-4 h-4"></i>
+  
+      </button>
+  
+    </div>
+  
+</aside>
+
+<!-- Main Content -->
+<div class="flex-1 flex flex-col overflow-hidden">
+
+
+  <!-- Top Navigation Header -->
+  <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20 shrink-0 shadow-sm">
+  
+      <div class="flex items-center space-x-3">
+    
+        <button
+          onclick="toggleSidebar()"
+          class="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition">
+    
+          <i data-lucide="menu" class="w-5 h-5"></i>
+    
+        </button>
+    
+        <h2 class="font-black text-slate-900 text-base sm:text-lg tracking-tight">
+          BBT 出勤管理中心
+        </h2>
+    
+      </div>
+
+      <!-- Top Header Right Controls -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+
+        <button onclick="showToast('已更新最新出勤數據！')" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition relative" title="重新整理數據">
+          <i data-lucide="refresh-cw" class="w-4.5 h-4.5"></i>
+        </button>
+
+        <a href="index.html" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+          <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>回首頁</span>
+        </a>
+      </div>
+    
+  </header>
+
+  <div class="overflow-auto">
+
+    <div class="main">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">
+            👥 人員管理中心
+          </div>
+          <div class="page-subtitle">
+            建立、維護與管理系統使用者資料
+          </div>
+        </div>
+      </div>
+      
+  <!-- ===================================================== -->
+  <!-- KPI -->
+  <!-- ===================================================== -->
+
+  <section class="kpi-summary">
+  
+    <div class="kpi-main-card">
+      <div class="kpi-main-label">
+        帳號總數
+      </div>
+    
+      <div class="kpi-flex">
+        <div
+          class="kpi-main-value"
+          id="kpiTotalUsers">
+          0
+        </div>
+    
+        <div class="kpi-side">
+          <div>
+            停用
+            <span id="kpiDisabledUsers">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-main-card">
+      <div class="kpi-main-label">
+        平均評分
+      </div>
+      <div class="kpi-flex">
+        <div
+        class="kpi-main-value"
+        id="kpiAverageScore">
+        0
+        </div>
+      </div>
+        
+        <div class="kpi-side">
+          <div>
+            
+            <span id="kpiDisabledUsers"> </span>
+          </div>
+        </div>
+    </div>
+    
+    <div class="kpi-main-card">
+      <div class="kpi-main-label">
+        裁判總數
+      </div>
+    
+      <div class="kpi-flex">
+        <div
+          class="kpi-main-value"
+          id="kpiJudgeUsers">
+          0
+        </div>
+
+        <div class="kpi-side">
+          <div>
+            A級 <span id="kpiJudgeA">0</span>
+          </div>
+          <div>
+            B級 <span id="kpiJudgeB">0</span>
+          </div>
+          <div>
+            C級 <span id="kpiJudgeC">0</span>
+          </div>
+        </div>
+      </div>
+    
+    </div>
+  
+    <div class="kpi-main-card">
+      <div class="kpi-main-label">
+        紀錄總數
+      </div>
+      <div class="kpi-flex">
+        <div
+          class="kpi-main-value"
+          id="kpiRecordUsers">
+          0
+        </div>
+        <div class="kpi-side">
+          <div>
+            A級 <span id="kpiRecordA">0</span>
+          </div>
+          <div>
+            B級 <span id="kpiRecordB">0</span>
+          </div>
+          <div>
+            C級 <span id="kpiRecordC">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  
+  <!-- ===================================================== -->
+  <!-- 身份篩選 -->
+  <!-- ===================================================== -->
+
+  <section class="filter-card">
+  
+    <div class="filter-toolbar">
+    
+      <div class="role-filter-row">
+      
+          <label>
+            <input type="radio"
+                   name="roleFilter"
+                   value="all"
+                   checked>
+            全部
+          </label>
+      
+          <label>
+            <input type="radio"
+                   name="roleFilter"
+                   value="judge">
+            裁判
+          </label>
+      
+          <label>
+            <input type="radio"
+                   name="roleFilter"
+                   value="record">
+            紀錄
+          </label>
+      
+          <label>
+            <input type="radio"
+                   name="roleFilter"
+                   value="chief_judge">
+            裁判長
+          </label>
+      
+          <label>
+            <input type="radio"
+                   name="roleFilter"
+                   value="record_chief">
+            紀錄長
+          </label>
+      
+          <label>
+            <input type="radio"
+                   name="roleFilter"
+                   value="admin">
+            管理員
+          </label>
+      
+      </div>
+    
+      <div class="filter-search-row">
+    
+        <input
+          id="txtSearch"
+          class="search-input"
+          type="text"
+          placeholder="搜尋帳號、姓名、背號、Email..."
+        >
+    
+      </div>
+    
+    </div>
+    
+  </section>
+
+
+  <!-- ===================================================== -->
+  <!-- 使用者清單 -->
+  <!-- ===================================================== -->
+
+  <section class="table-panel">
+
+    <div class="table-header">
+    
+      <div class="table-title">
+        👥 使用者清單
+      </div>
+    
+      <div class="table-actions">
+        <button
+          class="btn-outline"
+          onclick="exportUsers()">
+          📥 匯出CSV
+        </button>
+        
+        <button
+          class="btn-primary"
+          onclick="openUserModal('create')">
+          ＋ 新增使用者
+        </button>
+      </div>
+    
+    </div>
+
+    <div class="table-wrapper">
+
+      <table class="user-table">
+
+        <thead>
+
+          <tr>
+
+            <th>#</th>
+            <th onclick="sortUsers('name')" style="cursor:pointer">使用者 ↕</th>
+            <th>資格</th>
+            <th onclick="sortUsers('exp_total')" style="cursor:pointer">出勤 ↕</th>
+            <th onclick="sortUsers('final_score')" style="cursor:pointer">評分 ↕</th>
+            <th>聯絡方式</th>
+            <th>操作</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="userTableBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+    <div
+      id="userModal"
+      class="modal hidden">
+    
+      <div class="modal-dialog">
+    
+        <div class="modal-header">
+    
+          <div
+            id="userModalTitle"
+            class="table-title">
+    
+            新增使用者
+    
+          </div>
+    
+          <button
+            class="modal-close"
+            onclick="closeUserModal()">
+    
+            ✕
+    
+          </button>
+    
+        </div>
+    
+        <div class="modal-body">
+    
+          <div class="modal-grid">
+    
+            <input
+              id="modalUsername"
+              type="text"
+              placeholder="帳號">
+    
+            <input
+              id="modalName"
+              type="text"
+              placeholder="姓名">
+    
+            <input
+              id="modalNote"
+              type="text"
+              placeholder="背號">
+    
+            <input
+              id="modalEmail"
+              type="text"
+              placeholder="Email">
+    
+            <div class="full-row">
+    
+              <input
+                id="modalPhone"
+                type="text"
+                placeholder="電話">
+    
+            </div>
+    
+            <div class="modal-role-section">
+    
+              <div class="section-title">
+    
+                身份
+    
+              </div>
+    
+              <div class="role-checkbox-grid">
+    
+                <label>
+                  <input
+                    type="checkbox"
+                    id="roleJudge">
+                  裁判
+                </label>
+    
+                <label>
+                  <input
+                    type="checkbox"
+                    id="roleChiefJudge">
+                  裁判長
+                </label>
+    
+                <label>
+                  <input
+                    type="checkbox"
+                    id="roleRecord">
+                  紀錄
+                </label>
+    
+                <label>
+                  <input
+                    type="checkbox"
+                    id="roleRecordChief">
+                  紀錄長
+                </label>
+    
+                <label>
+                  <input
+                    type="checkbox"
+                    id="roleAdmin">
+                  管理員
+                </label>
+    
+              </div>
+    
+            </div>
+    
+            <div class="level-card">
+    
+              <label>
+    
+                裁判等級
+    
+              </label>
+    
+              <select id="judgeLevel">
+    
+                <option value="N">無</option>
+                <option value="C">C級</option>
+                <option value="B">B級</option>
+                <option value="A">A級</option>
+    
+              </select>
+    
+            </div>
+    
+            <div class="level-card">
+    
+              <label>
+    
+                紀錄等級
+    
+              </label>
+    
+              <select id="recordLevel">
+    
+                <option value="N">無</option>
+                <option value="C">C級</option>
+                <option value="B">B級</option>
+                <option value="A">A級</option>
+    
+              </select>
+    
+            </div>
+
+            <div class="modal-role-section">
+              <div class="section-title">
+                系統資訊
+              </div>
+              <div id="userSystemInfo">
+                -
+              </div>
+            </div>
+            
+          </div>
+    
+        </div>
+    
+        <div class="modal-footer">
+    
+          <button
+            class="btn-outline"
+            onclick="closeUserModal()">
+    
+            取消
+    
+          </button>
+    
+          <button
+            class="btn-primary"
+            onclick="saveUserModal()">
+    
+            儲存
+    
+          </button>
+    
+        </div>
+    
+      </div>
+    
+    </div>
+
+</div>
+
+    <!-- =========================
+         個人統計 Model
+    ========================= -->
+  <div
+    id="statisticsModal"
+    class="modal hidden">
+  
+    <div
+      class="modal-dialog"
+      style="max-width:800px;">
+  
+      <div class="modal-header">
+  
+        <div class="table-title">
+  
+          📊 個人統計
+  
+        </div>
+  
+        <button
+          class="modal-close"
+          onclick="closeStatisticsModal()">
+          ✕
+        </button>
+  
+      </div>
+  
+      <div
+        id="statisticsContent"
+        class="modal-body">
+  
+      </div>
+  
+    </div>
+  
+  </div>
+
+
+  <div
+    id="loadingMask"
+    class="hidden">
+  
+    <div class="loading-box">
+  
+      處理中...
+  
+    </div>
+  
+  </div>
+
+    </div>
+  </div>
+</div>
+  
+</body>
+
+
+<script src="js/auth.js"></script>
+<script src="js/config.js"></script>
+
+<script>
+
+// 全域變數
+
+/*********************************************************
+ * User V3 全域篩選條件
+ *********************************************************/
+let currentKeyword = '';
+let currentRoleFilter = 'all';
+let allUsers = [];
+let pendingUserUpdates = {};
+let currentModalMode = '';
+let currentModalUserId = '';
+// 排序功能初始
+let sortField = '';
+let sortAsc = false;
+
+/*********************************************************
+ * 欄位排序
+ *********************************************************/
+function sortUsers(field){
+
+  if(sortField === field){
+
+    sortAsc = !sortAsc;
+
+  }
+  else{
+
+    sortField = field;
+
+    // 預設由大到小
+    sortAsc = false;
+
+  }
+
+  renderUserTable();
+
+}
+  
+/*********************************************************
+ * 證照等級顯示
+ *********************************************************/
+function displayLevel(v){
+
+  if(!v || v === 'N'){
+    return '無';
+  }
+
+  return v;
+}
+
+/*********************************************************
+ * 顯示完整證照文字
+ *********************************************************/
+function displayLicense(level){
+
+  if(!level){
+    return '無';
+  }
+
+  const [
+    judgeLevel = 'N',
+    recordLevel = 'N'
+  ] = splitLevel(level);
+
+  const result = [];
+
+  if(judgeLevel !== 'N'){
+    result.push(
+      `${judgeLevel}級裁判`
+    );
+  }
+
+  if(recordLevel !== 'N'){
+    result.push(
+      `${recordLevel}級紀錄`
+    );
+  }
+
+  if(result.length === 0){
+    return '無';
+  }
+
+  return result.join(' / ');
+
+}
+
+/*********************************************************
+ * 顯示中文身份
+ *********************************************************/
+function displayRole(role){
+
+  if(!role){
+    return '無';
+  }
+
+  const roles =
+    String(role)
+      .split(',');
+
+  const result = [];
+
+  roles.forEach(r=>{
+
+    switch(r.trim()){
+
+      case 'judge':
+        result.push('裁判');
+        break;
+
+      case 'chief_judge':
+        result.push('裁判長');
+        break;
+
+      case 'record':
+        result.push('紀錄');
+        break;
+
+      case 'record_chief':
+        result.push('紀錄長');
+        break;
+
+      case 'admin':
+        result.push('管理員');
+        break;
+    }
+
+  });
+
+  return result.join(' / ');
+
+}
+
+/*********************************************************
+ * 拆解裁判 / 紀錄等級
+ *********************************************************/
+function splitLevel(level){
+
+  if(
+    !level ||
+    level === 'NONE'
+  ){
+    return ['N','N'];
+  }
+
+  if(
+    !String(level).includes(',')
+  ){
+    return [
+      String(level),
+      'N'
+    ];
+  }
+
+  return String(level).split(',');
+
+}
+
+/*********************************************************
+ * User V3 Render
+ *********************************************************/
+function renderAll(){
+  updateKpi();
+  renderUserTable();
+}
+
+/*********************************************************
+ * Search / Filter Event
+ *********************************************************/
+document.addEventListener(
+  'DOMContentLoaded',
+  ()=>{
+
+    loadHeader();
+    loadUsers();
+
+    const txtSearch =
+      document.getElementById(
+        'txtSearch'
+      );
+
+    if(txtSearch){
+
+      txtSearch.addEventListener(
+        'input',
+        applyFilter
+      );
+
+    }
+
+    document
+      .querySelectorAll(
+        'input[name="roleFilter"]'
+      )
+      .forEach(r=>{
+
+        r.addEventListener(
+          'change',
+          applyFilter
+        );
+
+      });
+
+  }
+);
+
+// 載入共同 Header
+// 處理角色切換
+// 顯示登入者名稱
+  
+  function loadHeader() {
+    fetch('header.html')
+      .then(r => r.text())
+      .then(html => {
+        const hc = document.getElementById('header-container');
+        if (!hc) return;
+  
+        hc.innerHTML = html;
+  
+        // ✅ 一律從 session 重新設定 role（唯一正解）
+        const session = (typeof getSession === 'function')
+          ? getSession()
+          : JSON.parse(localStorage.getItem('session_user') || '{}');
+  
+        document.body.classList.remove(
+          'role-admin',
+          'role-judge',
+          'role-record'
+        );
+  
+        if (session && session.role) {
+          const roles = session.role.split(',').map(r => r.trim());
+  
+          if (roles.includes('admin')) {
+            document.body.classList.add('role-admin');
+          }
+          if (roles.includes('judge') || roles.includes('chief_judge')) {
+            document.body.classList.add('role-judge');
+          }
+          if (roles.includes('record') || roles.includes('record_chief')) {
+            document.body.classList.add('role-record');
+          }
+        }
+  
+        // ✅ 顯示登入者姓名
+        if (session && session.name) {
+          const nameEl = document.getElementById('header-username');
+          if (nameEl) nameEl.textContent = session.name;
+        }
+      })
+      .catch(err => console.error('Header 載入失敗', err));
+  }
+
+// 日期時間格式正規化
+function formatDateTime(v){
+
+  if(!v){
+    return '-';
+  }
+
+  const d = new Date(v);
+
+  if(isNaN(d)){
+    return '-';
+  }
+
+  return d.toLocaleString(
+    'zh-TW'
+  );
+
+}
+
+// 訊息
+function showLoading(msg='處理中...'){
+
+  const m =
+    document.getElementById(
+      'loadingMask'
+    );
+
+  if(!m) return;
+
+  m.querySelector(
+    '.loading-box'
+  ).textContent = msg;
+
+  m.classList.remove(
+    'hidden'
+  );
+
+}
+
+function hideLoading(){
+
+  const m =
+    document.getElementById(
+      'loadingMask'
+    );
+
+  if(!m) return;
+
+  m.classList.add(
+    'hidden'
+  );
+
+}
+
+// 讀取 Users
+function loadUsers(){
+
+  callApi(
+    { action:'getUsers' },
+    res => {
+
+      console.log(
+        '[getUsers response]',
+        res
+      );
+
+      if (
+        !res ||
+        res.result === 'error'
+      ) {
+
+        showToast(
+          res?.message || '載入使用者失敗',
+          'error'
+        );
+
+        return;
+      }
+
+      allUsers =
+        res.users || [];
+
+      console.log(
+        '[first user]',
+        allUsers[0]
+      );
+
+      renderAll();
+
+    }
+  );
+
+}
+
+/*********************************************************
+ * 統一判斷帳號是否啟用
+ *
+ * 支援：
+ * 1
+ * 0
+ * Y
+ * N
+ * true
+ * false
+ *********************************************************/
+function isUserActive(v){
+
+  if(
+    v === 1 ||
+    v === '1' ||
+    v === 'Y' ||
+    v === 'y' ||
+    v === true
+  ){
+    return true;
+  }
+
+  return false;
+
+}
+
+// 啟用 / 停用帳號
+// ===== 帳號狀態 =====
+function toggleActive(userId, checked) {
+
+  showLoading('更新帳號狀態中...');
+
+  callApi(
+    {
+      action:'toggleUserActive',
+      user_id:userId,
+      active:checked ? 1 : 0
+    },
+    function(res){
+
+      hideLoading();
+
+      if(
+        res &&
+        res.result === 'error'
+      ){
+
+        showToast(
+          res.message || '狀態更新失敗',
+          'error'
+        );
+
+        return;
+      }
+
+      showToast(
+        '狀態已更新',
+        'success'
+      );
+
+      loadUsers();
+
+    }
+  );
+
+}
+
+/*********************************************************
+ * 暫存修改內容
+ * V2 舊版 Inline Edit
+ * 保留供未來 Modal 編輯使用
+ *********************************************************/
+function markField(uid,key,val){
+  
+  console.log('[markField]', uid, key, val);
+
+  if(!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
+  pendingUserUpdates[uid][key]=val;
+}
+
+/*********************************************************
+ * 變更身份
+ * V2 舊版 Inline Edit
+ * 保留供未來 Modal 編輯使用
+ *********************************************************/
+function toggleRole(uid,role,on){
+  
+  console.log('[toggleRole]', uid, role, on);
+
+  const u=allUsers.find(x=>x.user_id==uid);
+  let roles=(u.role||'').split(',').filter(Boolean);
+  roles=roles.filter(r=>r!==role);
+  if(on) roles.push(role);
+  const rStr=roles.join(',');
+  u.role=rStr;
+  if(!pendingUserUpdates[uid]) pendingUserUpdates[uid]={};
+  pendingUserUpdates[uid].role=rStr;
+}
+
+/*********************************************************
+ * 裁判及紀錄等級
+ * V2 舊版 Inline Edit
+ * 保留供未來 Modal 編輯使用
+ *********************************************************/
+function setLevel(uid, type, val) {
+  const u = allUsers.find(x => x.user_id == uid);
+  if (!u) return;
+
+  // 現有 level 拆開
+  const [judgeLv = 'N', recordLv = 'N'] = (u.level || 'N,N').split(',');
+
+  // 改其中一個
+  const newJudgeLv = (type === 'judge') ? val : judgeLv;
+  const newRecordLv = (type === 'record') ? val : recordLv;
+
+  const newLevel = `${newJudgeLv},${newRecordLv}`;
+
+  // ✅ 更新前端狀態
+  u.level = newLevel;
+
+  if (!pendingUserUpdates[uid]) pendingUserUpdates[uid] = {};
+  pendingUserUpdates[uid].level = newLevel;
+
+  console.log('[setLevel merged]', uid, newLevel);
+}
+  
+/*********************************************************
+ * 實際寫入 Users
+ * V2 舊版 Inline Edit
+ * 保留供未來 Modal 編輯使用
+ *********************************************************/
+function saveUser(uid) {
+  console.log('✅ saveUser triggered:', uid);
+
+  const data = pendingUserUpdates[uid];
+
+  if (!data || Object.keys(data).length === 0) {
+    showToast('尚未修改','warn');
+    return;
+  }
+
+  const entries = Object.entries(data);
+  let finished = 0;
+  let hasError = false;
+
+  entries.forEach(([field, value]) => {
+    callApi(
+      {
+        action: 'updateUserField',
+        user_id: uid,
+        field,
+        value
+      },
+      function(res) {
+        console.log('[updateUserField]', uid, field, value, res);
+
+        if (res && res.result === 'error') {
+          hasError = true;
+          showToast(res.message || `更新 ${field} 失敗`,'error');
+        }
+
+        finished++;
+
+        if (finished === entries.length && !hasError) {
+          showToast('儲存成功','success');
+          pendingUserUpdates[uid] = {};
+          loadUsers();
+        }
+      }
+    );
+  });
+}
+
+// 刪除帳號
+function deleteUser(uid, username) {
+
+  if (!confirm(`確定要刪除使用者「${username}」？`))
+    return;
+
+  showLoading('刪除帳號中...');
+
+  const currentUserId =
+    localStorage.getItem('user_id') || '';
+
+  callApi(
+    {
+      action:'deleteUsers',
+      user_ids:uid,
+      current_user_id:currentUserId
+    },
+    function(res){
+
+      hideLoading();
+
+      if(
+        res &&
+        res.result === 'error'
+      ){
+        showToast(
+          res.message || '刪除失敗',
+          'error'
+        );
+        return;
+      }
+
+      showToast(
+        res.message || '刪除成功',
+        'success'
+      );
+
+      loadUsers();
+
+    }
+  );
+
+}
+
+// 提示訊息
+function showToast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+
+  setTimeout(()=>t.classList.add('show'),10);
+
+  setTimeout(()=>{
+    t.classList.remove('show');
+    setTimeout(()=>t.remove(),300);
+  },2000);
+}
+
+/*********************************************************
+ * Dashboard KPI
+ *
+ * 更新：
+ * 1. 帳號總數
+ * 2. 裁判總數
+ * 3. 紀錄總數
+ * 4. 停用帳號
+ *********************************************************/
+function updateKpi(){
+
+  let judgeA = 0;
+  let judgeB = 0;
+  let judgeC = 0;
+
+  let recordA = 0;
+  let recordB = 0;
+  let recordC = 0;
+
+  let totalScore = 0;
+
+  allUsers.forEach(u=>{
+
+    const [
+      judgeLv,
+      recordLv
+    ] = splitLevel(
+      u.level || 'N,N'
+    );
+
+    switch(judgeLv){
+
+      case 'A':
+        judgeA++;
+        break;
+
+      case 'B':
+        judgeB++;
+        break;
+
+      case 'C':
+        judgeC++;
+        break;
+
+    }
+
+    switch(recordLv){
+
+      case 'A':
+        recordA++;
+        break;
+
+      case 'B':
+        recordB++;
+        break;
+
+      case 'C':
+        recordC++;
+        break;
+
+    }
+
+    totalScore += Number(
+      u.final_score || 0
+    );
+
+  });
+
+  const totalUsers =
+    allUsers.length;
+
+  const judges =
+    allUsers.filter(u=>{
+
+      const role =
+        String(u.role || '');
+
+      return (
+        role.includes('judge')
+        ||
+        role.includes('chief_judge')
+      );
+
+    }).length;
+
+  const records =
+    allUsers.filter(u=>{
+
+      const role =
+        String(u.role || '');
+
+      return (
+        role.includes('record')
+        ||
+        role.includes('record_chief')
+      );
+
+    }).length;
+
+  const disabled =
+    allUsers.filter(
+      u=>!isUserActive(u.active)
+    ).length;
+
+  const avgScore =
+    totalUsers
+      ? (
+          totalScore /
+          totalUsers
+        ).toFixed(1)
+      : 0;
+
+  const setText = (id,val)=>{
+
+    const el =
+      document.getElementById(id);
+
+    if(el){
+      el.textContent = val;
+    }
+
+  };
+
+  setText(
+    'kpiTotalUsers',
+    totalUsers
+  );
+
+  setText(
+    'kpiJudgeUsers',
+    judges
+  );
+
+  setText(
+    'kpiRecordUsers',
+    records
+  );
+
+  setText(
+    'kpiDisabledUsers',
+    disabled
+  );
+
+  setText(
+    'kpiAverageScore',
+    avgScore
+  );
+
+  setText(
+    'kpiJudgeA',
+    judgeA
+  );
+
+  setText(
+    'kpiJudgeB',
+    judgeB
+  );
+
+  setText(
+    'kpiJudgeC',
+    judgeC
+  );
+
+  setText(
+    'kpiRecordA',
+    recordA
+  );
+
+  setText(
+    'kpiRecordB',
+    recordB
+  );
+
+  setText(
+    'kpiRecordC',
+    recordC
+  );
+
+}
+
+/*********************************************************
+ * 依畫面條件取得過濾後資料
+ *********************************************************/
+function getFilteredUsers(){
+
+  const result = allUsers.filter(u => {
+
+    const keyword =
+      currentKeyword
+        .trim()
+        .toLowerCase();
+
+    const searchArea = [
+
+      u.username,
+      u.name,
+      u.note,
+      u.email,
+      u.phone
+
+    ]
+    .join(' ')
+    .toLowerCase();
+
+    const hitKeyword =
+      !keyword ||
+      searchArea.includes(keyword);
+
+    const role =
+      String(u.role || '');
+
+    const hitRole =
+      currentRoleFilter === 'all'
+      ||
+      role.includes(
+        currentRoleFilter
+      );
+
+    return (
+      hitKeyword &&
+      hitRole
+    );
+
+  });
+
+  /*************************************************
+   * 排序
+   *************************************************/
+  if(sortField){
+
+    result.sort((a,b)=>{
+
+      let av = a[sortField];
+      let bv = b[sortField];
+
+      // 字串排序
+      if(sortField === 'name'){
+
+        av = String(av || '');
+        bv = String(bv || '');
+
+        return sortAsc
+          ? av.localeCompare(bv,'zh-TW')
+          : bv.localeCompare(av,'zh-TW');
+
+      }
+
+      // 數字排序
+      av = Number(av || 0);
+      bv = Number(bv || 0);
+
+      return sortAsc
+        ? av - bv
+        : bv - av;
+
+    });
+
+  }
+
+  return result;
+
+}
+
+/*********************************************************
+ * 主表顯示證照
+ *********************************************************/
+function displayLicenseShort(level,type){
+
+  if(!level || level === 'N'){
+    return '無';
+  }
+
+  if(type === 'judge'){
+    return `${level}級裁判`;
+  }
+
+  if(type === 'record'){
+    return `${level}級紀錄`;
+  }
+
+  return level;
+
+}
+
+/*********************************************************
+ * User V3 主表格
+ *********************************************************/
+function renderUserTable(){
+
+  const tbody =
+    document.getElementById(
+      'userTableBody'
+    );
+
+  if(!tbody){
+    return;
+  }
+
+  const users =
+    getFilteredUsers();
+
+  tbody.innerHTML = '';
+
+  users.forEach(u=>{
+
+    const tr =
+      document.createElement('tr');
+
+    const qualificationBadges =
+      buildQualificationBadges(u);
+
+    const activeClass =
+      isUserActive(u.active)
+        ? 'status-active'
+        : 'status-disable';
+
+    const activeText =
+      isUserActive(u.active)
+        ? '啟用'
+        : '停用';
+
+    const powerClass =
+      isUserActive(u.active)
+        ? 'power-on'
+        : 'power-off';
+
+    const quality =
+      Number(
+        u.quality_score || 0
+      );
+
+    let qualityColor =
+      '#64748b';
+
+    if(quality >= 80){
+      qualityColor = '#16a34a';
+    }
+    else if(quality >= 60){
+      qualityColor = '#2563eb';
+    }
+    else if(quality >= 40){
+      qualityColor = '#f59e0b';
+    }
+    else{
+      qualityColor = '#dc2626';
+    }
+
+    tr.innerHTML = `
+
+      <td>
+
+        <div
+          style="
+            font-weight:700;
+            margin-bottom:6px;
+          ">
+
+          #${u.note || '-'}
+
+        </div>
+
+        <span
+          class="
+            status-badge
+            ${activeClass}
+          ">
+
+          ${activeText}
+
+        </span>
+
+      </td>
+
+      <td>
+
+        <div class="tb-name">
+          ${u.name || '-'}
+        </div>
+
+        <div class="tb-account">
+          ${u.username || ''}
+        </div>
+
+      </td>
+
+      <td>
+
+        <div class="table-badges">
+        
+          ${qualificationBadges}
+        
+        </div>
+
+      </td>
+
+      <td>
+
+        <div
+          style="
+            font-size:18px;
+            font-weight:700;
+          ">
+
+          ${u.exp_total || 0}
+
+        </div>
+
+        <div
+          class="attendance-rate">
+
+          ${u.completed_rate || 0}%
+
+        </div>
+
+      </td>
+
+      <td>
+      
+        <div
+          style="
+            color:${qualityColor};
+            font-size:18px;
+            font-weight:800;
+          ">
+      
+          ${u.quality_score || 0}
+      
+        </div>
+      
+        <div
+          style="
+            font-size:12px;
+            color:#64748b;
+          ">
+      
+          評分 ${u.final_score || 0}
+      
+        </div>
+      
+      </td>
+
+      <td>
+      
+        <div
+          style="
+            font-size:12px;
+            color:#dc2626;
+          ">
+      
+          ${u.email || '-'}
+      
+        </div>
+      
+        <div
+          style="
+            font-size:12px;
+            color:#64748b;
+            margin-top:2px;
+          ">
+      
+          ${u.phone || '-'}
+      
+        </div>
+      
+      </td>
+
+      <td class="action-col">
+
+        <div class="action-group">
+
+          <button
+            class="action-btn copy"
+            onclick="
+              copyUserInfo(
+                '${u.username || ''}',
+                '${u.email || ''}',
+                '${u.name || ''}'
+              )">
+
+            📋
+
+          </button>
+
+          <button
+            class="action-btn stat"
+            onclick="
+              showUserStatistics(
+                '${u.user_id}'
+              )">
+
+            📊
+
+          </button>
+
+          <button
+            class="action-btn edit"
+            onclick="
+              openEditUserModal(
+                '${u.user_id}'
+              )">
+
+            ✏️
+
+          </button>
+
+          <button
+            class="action-btn password"
+            onclick="
+              resetPassword(
+                '${u.user_id}'
+              )">
+
+            🔑
+
+          </button>
+
+          <button
+            class="action-btn delete"
+            onclick="
+              deleteUser(
+                '${u.user_id}',
+                '${u.username}'
+              )">
+
+            🗑
+
+          </button>
+
+          <button
+            class="action-btn ${powerClass}"
+            onclick="
+              toggleActive(
+                '${u.user_id}',
+                ${!isUserActive(u.active)}
+              )">
+
+            ⏻
+
+          </button>
+
+        </div>
+
+      </td>
+
+    `;
+
+    tbody.appendChild(tr);
+
+  });
+
+}
+
+/*********************************************************
+ * 套用搜尋與身份篩選
+ *********************************************************/
+function applyFilter(){
+
+  const keywordBox =
+    document.getElementById(
+      'txtSearch'
+    );
+
+  if(keywordBox){
+    currentKeyword =
+      keywordBox.value || '';
+  }
+
+  const checkedRole =
+    document.querySelector(
+      'input[name="roleFilter"]:checked'
+    );
+
+  if(checkedRole){
+    currentRoleFilter =
+      checkedRole.value;
+  }
+
+  renderUserTable();
+
+}
+
+
+/*********************************************************
+ * 個人統計
+ *********************************************************/
+function showUserStatistics(userId){
+
+  const user =
+    allUsers.find(
+      u =>
+        String(u.user_id)
+        ===
+        String(userId)
+    );
+
+  if(!user){
+
+    showToast(
+      '找不到使用者',
+      'error'
+    );
+
+    return;
+  }
+
+  const qualificationBadges =
+    buildQualificationBadges(
+      user
+    );
+
+  let qualityColor =
+    '#64748b';
+
+  const quality =
+    Number(
+      user.quality_score || 0
+    );
+
+  if(quality >= 80){
+    qualityColor = '#16a34a';
+  }
+  else if(quality >= 60){
+    qualityColor = '#2563eb';
+  }
+  else if(quality >= 40){
+    qualityColor = '#f59e0b';
+  }
+  else{
+    qualityColor = '#dc2626';
+  }
+
+  document
+    .getElementById(
+      'statisticsModal'
+    )
+    .classList
+    .remove('hidden');
+
+  document
+    .getElementById(
+      'statisticsContent'
+    )
+    .innerHTML = `
+
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <strong>姓名</strong>
+          <div style="font-size:18px;">
+            ${user.name || '-'}
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <strong>帳號</strong>
+          <div style="font-size:18px;">
+            ${user.username || '-'}
+          </div>
+        </div>
+
+        <div class="stat-card">
+
+          <strong>
+            資格
+          </strong>
+
+          <div
+            class="table-badges"
+            style="margin-top:8px;">
+
+            ${qualificationBadges}
+
+          </div>
+
+        </div>
+
+        <div class="stat-card">
+          <strong>帳號狀態</strong>
+
+          <div
+            style="
+              font-size:18px;
+              color:${
+                isUserActive(user.active)
+                  ? '#16a34a'
+                  : '#dc2626'
+              };
+            ">
+
+            ${
+              isUserActive(user.active)
+                ? '啟用'
+                : '停用'
+            }
+
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <strong>總經驗</strong>
+          <div>
+            ${user.exp_total || 0}
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <strong>裁判經驗</strong>
+          <div>
+            ${user.exp_judge || 0}
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <strong>紀錄經驗</strong>
+          <div>
+            ${user.exp_record || 0}
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <strong>完成率</strong>
+          <div>
+            ${user.completed_rate || 0}%
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <strong>遲到率</strong>
+          <div>
+            ${user.late_rate || 0}%
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <strong>缺席率</strong>
+          <div>
+            ${user.no_show_rate || 0}%
+          </div>
+        </div>
+
+        <div class="stat-card">
+
+          <strong>
+            品質分數
+          </strong>
+
+          <div
+            style="
+              color:${qualityColor};
+            ">
+
+            ${user.quality_score || 0}
+
+          </div>
+
+        </div>
+
+        <div class="stat-card">
+
+          <strong>
+            總評分
+          </strong>
+
+          <div>
+            ${user.final_score || 0}
+          </div>
+
+        </div>
+
+        <div class="stat-card">
+
+          <strong>
+            最後登入
+          </strong>
+
+          <div
+            style="
+              font-size:14px;
+              line-height:1.4;
+            ">
+
+            ${
+              formatDateTime(
+                user.last_login
+              )
+            }
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+}
+
+
+/*********************************************************
+ * 重設密碼
+ *********************************************************/
+function resetPassword(userId){
+
+  if(
+    !confirm(
+      '確定重設此帳號密碼？'
+    )
+  ){
+    return;
+  }
+  
+  showLoading(
+    '重設密碼中...'
+  );
+
+  callApi(
+    {
+      action:'changePassword',
+      user_id:userId,
+      new_password:'pppppppp'
+    },
+    res => {
+
+      hideLoading();
+      
+      if(
+        !res ||
+        res.result === 'error'
+      ){
+        showToast(
+          res?.message || '重設失敗',
+          'error'
+        );
+        return;
+      }
+
+      showToast(
+        '密碼已重設為 pppppppp',
+        'success'
+      );
+
+    }
+  );
+
+}
+
+/*********************************************************
+ * 編輯使用者
+ *********************************************************/
+function openEditUserModal(userId){
+
+  openUserModal(
+    'edit',
+    userId
+  );
+
+}
+
+/*********************************************************
+ * Open User Modal
+ *********************************************************/
+function openUserModal(
+  mode,
+  userId = ''
+){
+
+  currentModalMode = mode;
+  currentModalUserId = userId;
+
+  document
+    .getElementById('userModal')
+    .classList
+    .remove('hidden');
+
+  const title =
+    document.getElementById(
+      'userModalTitle'
+    );
+
+  // ======================
+  // 新增模式
+  // ======================
+
+  if(mode === 'create'){
+
+    title.textContent =
+      '新增使用者';
+
+    document.getElementById(
+      'modalUsername'
+    ).value = '';
+
+    document.getElementById(
+      'modalName'
+    ).value = '';
+
+    document.getElementById(
+      'modalNote'
+    ).value = '';
+
+    document.getElementById(
+      'modalEmail'
+    ).value = '';
+
+    document.getElementById(
+      'modalPhone'
+    ).value = '';
+
+    document.getElementById(
+      'judgeLevel'
+    ).value = 'N';
+
+    document.getElementById(
+      'recordLevel'
+    ).value = 'N';
+
+    document.getElementById(
+      'roleJudge'
+    ).checked = false;
+
+    document.getElementById(
+      'roleChiefJudge'
+    ).checked = false;
+
+    document.getElementById(
+      'roleRecord'
+    ).checked = false;
+
+    document.getElementById(
+      'roleRecordChief'
+    ).checked = false;
+
+    document.getElementById(
+      'roleAdmin'
+    ).checked = false;
+
+    document.getElementById(
+      'modalUsername'
+    ).readOnly = false;
+
+    document.getElementById(
+      'userSystemInfo'
+    ).innerHTML = `
+      尚未建立帳號
+    `;
+        
+    return;
+
+  }
+
+  // ======================
+  // 編輯模式
+  // ======================
+
+  if(mode === 'edit'){
+
+    const user =
+      allUsers.find(
+        u =>
+          String(u.user_id) ===
+          String(userId)
+      );
+
+    if(!user){
+
+      showToast(
+        '找不到使用者',
+        'error'
+      );
+
+      return;
+
+    }
+
+    title.textContent =
+      '編輯使用者';
+
+    document.getElementById(
+      'modalUsername'
+    ).value =
+      user.username || '';
+
+    document.getElementById(
+      'modalName'
+    ).value =
+      user.name || '';
+
+    document.getElementById(
+      'modalNote'
+    ).value =
+      user.note || '';
+
+    document.getElementById(
+      'modalEmail'
+    ).value =
+      user.email || '';
+
+    document.getElementById(
+      'modalPhone'
+    ).value =
+      user.phone || '';
+
+    const roles =
+      String(user.role || '')
+        .split(',');
+
+    document.getElementById(
+      'roleJudge'
+    ).checked =
+      roles.includes('judge');
+
+    document.getElementById(
+      'roleChiefJudge'
+    ).checked =
+      roles.includes(
+        'chief_judge'
+      );
+
+    document.getElementById(
+      'roleRecord'
+    ).checked =
+      roles.includes('record');
+
+    document.getElementById(
+      'roleRecordChief'
+    ).checked =
+      roles.includes(
+        'record_chief'
+      );
+
+    document.getElementById(
+      'roleAdmin'
+    ).checked =
+      roles.includes('admin');
+
+    const [
+      judgeLv,
+      recordLv
+    ] = splitLevel(user.level);
+
+    document.getElementById(
+      'judgeLevel'
+    ).value = judgeLv;
+    
+    document.getElementById(
+      'recordLevel'
+    ).value = recordLv;
+
+    document.getElementById(
+      'modalUsername'
+    ).readOnly = true;
+
+    document.getElementById(
+      'userSystemInfo'
+    ).innerHTML = `
+    
+    <div class="system-info-grid">
+      <div class="system-info-item">
+        <div class="system-info-label">
+          帳號狀態
+        </div>
+        <div class="system-info-value">
+          ${
+            isUserActive(user.active)
+            ? '啟用'
+            : '停用'
+          }
+        </div>
+      </div>
+    
+      <div class="system-info-item">
+        <div class="system-info-label">
+          最後登入
+        </div>
+        <div class="system-info-value">
+          ${
+            formatDateTime(
+              user.last_login
+            )
+          }
+        </div>
+      </div>
+    
+      <div class="system-info-item">
+        <div class="system-info-label">
+          總經驗
+        </div>
+        <div class="system-info-value">
+          ${
+            user.exp_total || 0
+          }
+        </div>
+      </div>
+    
+      <div class="system-info-item">
+        <div class="system-info-label">
+          品質分數
+        </div>
+        <div class="system-info-value">
+          ${
+            user.quality_score || 0
+          }
+        </div>
+    
+      </div>
+    
+    </div>
+    
+    `;
+
+  }
+
+}
+
+
+/*********************************************************
+ * Close User Modal
+ *********************************************************/
+function closeUserModal(){
+
+  document
+    .getElementById('userModal')
+    .classList
+    .add('hidden');
+
+}
+
+/*********************************************************
+ * 建立角色字串
+ *********************************************************/
+function buildRoleString(){
+
+  const roles = [];
+
+  if(
+    document.getElementById(
+      'roleJudge'
+    )?.checked
+  ){
+    roles.push('judge');
+  }
+
+  if(
+    document.getElementById(
+      'roleChiefJudge'
+    )?.checked
+  ){
+    roles.push('chief_judge');
+  }
+
+  if(
+    document.getElementById(
+      'roleRecord'
+    )?.checked
+  ){
+    roles.push('record');
+  }
+
+  if(
+    document.getElementById(
+      'roleRecordChief'
+    )?.checked
+  ){
+    roles.push('record_chief');
+  }
+
+  if(
+    document.getElementById(
+      'roleAdmin'
+    )?.checked
+  ){
+    roles.push('admin');
+  }
+
+  return roles.join(',');
+
+}
+
+/*********************************************************
+ * Modal 儲存
+ *********************************************************/
+function saveUserModal(){
+  
+  showLoading('資料儲存中...');
+  
+  const username =
+    document.getElementById(
+      'modalUsername'
+    ).value.trim();
+
+  const name =
+    document.getElementById(
+      'modalName'
+    ).value.trim();
+
+  const note =
+    document.getElementById(
+      'modalNote'
+    ).value.trim();
+
+  const email =
+    document.getElementById(
+      'modalEmail'
+    ).value.trim();
+
+  const phone =
+    document.getElementById(
+      'modalPhone'
+    ).value.trim();
+
+  const role =
+    buildRoleString();
+
+  const judgeLevel =
+    document.getElementById(
+      'judgeLevel'
+    ).value;
+
+  const recordLevel =
+    document.getElementById(
+      'recordLevel'
+    ).value;
+
+  const level =
+    `${judgeLevel},${recordLevel}`;
+
+  if(!username){
+
+    hideLoading();
+    
+    showToast(
+      '請輸入帳號',
+      'warn'
+    );
+
+    return;
+
+  }
+
+  if(!name){
+
+    hideLoading();
+    
+    showToast(
+      '請輸入姓名',
+      'warn'
+    );
+
+    return;
+
+  }
+
+  // ======================
+  // 新增
+  // ======================
+
+  if(
+    currentModalMode === 'create'
+  ){
+    
+    showLoading(
+      '建立帳號中...'
+    );
+        
+    callApi(
+      {
+        action:'createUser',
+        username,
+        name,
+        email
+      },
+      res => {
+        
+        hideLoading();
+        
+        if(
+          !res ||
+          res.result === 'error'
+        ){
+
+          showToast(
+            res?.message || '新增失敗',
+            'error'
+          );
+
+          return;
+
+        }
+
+        // 如有其它欄位再補寫
+        // 第二階段再整合
+
+        showToast(
+          '新增成功',
+          'success'
+        );
+
+        closeUserModal();
+
+        loadUsers();
+
+      }
+    );
+
+    return;
+
+  }
+  
+  // ======================
+  // 編輯
+  // ======================
+
+  if(
+    currentModalMode === 'edit'
+  ){
+
+  showLoading(
+    '更新資料中...'
+  );
+    
+    const updates = {
+  
+      note,
+      name,
+      email,
+      phone,
+      role,
+      level
+  
+    };
+  
+    const fields =
+      Object.entries(updates);
+  
+    let finished = 0;
+    let hasError = false;
+  
+    fields.forEach(([field,value])=>{
+  
+      callApi(
+        {
+          action:'updateUserField',
+          user_id:currentModalUserId,
+          field,
+          value
+        },
+        res => {
+  
+          if(
+            !res ||
+            res.result === 'error'
+          ){
+  
+            hasError = true;
+  
+            showToast(
+              res?.message ||
+              `更新 ${field} 失敗`,
+              'error'
+            );
+  
+          }
+  
+          finished++;
+  
+          if(
+            finished === fields.length
+          ){
+          
+            hideLoading();
+          
+            if(!hasError){
+          
+              showToast(
+                '更新成功',
+                'success'
+              );
+          
+              closeUserModal();
+          
+              loadUsers();
+          
+            }
+          }
+        }
+      );
+  
+    });
+  
+  }
+
+}
+
+// close 統計數據
+function closeStatisticsModal(){
+
+  document
+    .getElementById(
+      'statisticsModal'
+    )
+    .classList
+    .add('hidden');
+
+}
+
+/*********************************************************
+ * 匯出 Users CSV
+ *********************************************************/
+function exportUsers(){
+
+  if(
+    !allUsers ||
+    allUsers.length === 0
+  ){
+
+    showToast(
+      '沒有可匯出的資料',
+      'warn'
+    );
+
+    return;
+
+  }
+
+  const headers = [
+
+    '背號',
+    '帳號',
+    '姓名',
+    'Email',
+    '電話',
+    '身份',
+    '證照等級',
+    '帳號狀態',
+    '最後登入',
+    '總經驗',
+    '裁判經驗',
+    '紀錄經驗',
+    '完成率',
+    '遲到率',
+    '缺席率',
+    '品質分數',
+    '總評分'
+
+  ];
+
+  const rows = allUsers.map(u => [
+
+    u.note || '',
+    u.username || '',
+    u.name || '',
+    u.email || '',
+    u.phone || '',
+    u.role || '',
+    u.level || '',
+
+    isUserActive(u.active)
+      ? '啟用'
+      : '停用',
+
+    formatDateTime(
+      u.last_login
+    ),
+
+    u.exp_total || 0,
+    u.exp_judge || 0,
+    u.exp_record || 0,
+
+    `${u.completed_rate || 0}%`,
+    `${u.late_rate || 0}%`,
+    `${u.no_show_rate || 0}%`,
+
+    u.quality_score || 0,
+    u.final_score || 0
+
+  ]);
+
+  const csvRows = [
+
+    headers.join(','),
+
+    ...rows.map(row=>
+      row.map(v => {
+
+        const value =
+          String(v || '');
+
+        return `"${value.replace(/"/g,'""')}"`;
+
+      }).join(',')
+    )
+
+  ];
+
+  const csvContent =
+    '\uFEFF' +
+    csvRows.join('\n');
+
+  const blob =
+    new Blob(
+      [csvContent],
+      {
+        type:'text/csv;charset=utf-8;'
+      }
+    );
+
+  const link =
+    document.createElement('a');
+
+  const url =
+    URL.createObjectURL(blob);
+
+  link.href = url;
+
+  const today =
+    new Date();
+
+  const filename =
+    `Users_${
+      today.getFullYear()
+    }${
+      String(
+        today.getMonth()+1
+      ).padStart(2,'0')
+    }${
+      String(
+        today.getDate()
+      ).padStart(2,'0')
+    }.csv`;
+
+  link.download =
+    filename;
+
+  document.body.appendChild(
+    link
+  );
+
+  link.click();
+
+  document.body.removeChild(
+    link
+  );
+
+  URL.revokeObjectURL(
+    url
+  );
+
+  showToast(
+    '使用者資料匯出完成',
+    'success'
+  );
+
+}
+
+/*********************************************************
+ * 複製帳號資訊
+ *********************************************************/
+function copyUserInfo(
+  username,
+  email='',
+  name=''
+){
+
+  const text =
+
+`姓名：${name}
+
+帳號：${username}
+
+Email：${email || '-'}`;
+
+  navigator.clipboard
+    .writeText(text)
+    .then(()=>{
+
+      showToast(
+        '帳號資訊已複製',
+        'success'
+      );
+
+    })
+    .catch(()=>{
+
+      showToast(
+        '複製失敗',
+        'error'
+      );
+
+    });
+
+}
+
+/*********************************************************
+ * 身份 + 證照合併
+ *********************************************************/
+function buildQualificationBadges(user){
+
+  const badges = [];
+
+  const roles =
+    String(user.role || '')
+    .split(',');
+
+  const [
+    judgeLv,
+    recordLv
+  ] = splitLevel(
+    user.level || 'N,N'
+  );
+
+  // 裁判
+
+  if(roles.includes('judge')){
+
+    badges.push(
+      `
+      <span
+        class="
+          role-badge
+          role-judge
+        ">
+
+        ${
+          judgeLv !== 'N'
+          ? `${judgeLv}級裁判`
+          : '裁判'
+        }
+
+      </span>
+      `
+    );
+
+  }
+
+  // 紀錄
+
+  if(roles.includes('record')){
+
+    badges.push(
+      `
+      <span
+        class="
+          role-badge
+          role-record
+        ">
+
+        ${
+          recordLv !== 'N'
+          ? `${recordLv}級紀錄`
+          : '紀錄'
+        }
+
+      </span>
+      `
+    );
+
+  }
+
+  // 裁判長
+
+  if(
+    roles.includes(
+      'chief_judge'
+    )
+  ){
+
+    badges.push(
+      `
+      <span
+        class="
+          role-badge
+          role-chief-judge
+        ">
+
+        裁判長
+
+      </span>
+      `
+    );
+
+  }
+
+  // 紀錄長
+
+  if(
+    roles.includes(
+      'record_chief'
+    )
+  ){
+
+    badges.push(
+      `
+      <span
+        class="
+          role-badge
+          role-record-chief
+        ">
+
+        紀錄長
+
+      </span>
+      `
+    );
+
+  }
+
+  // 管理員
+
+  if(
+    roles.includes(
+      'admin'
+    )
+  ){
+
+    badges.push(
+      `
+      <span
+        class="
+          role-badge
+          role-admin
+        ">
+
+        管理員
+
+      </span>
+      `
+    );
+
+  }
+
+  return badges.join('');
+
+}
+</script>
