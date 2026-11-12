@@ -2173,7 +2173,6 @@ function buildRosterHtml(isPreview = true){
 
   const groups = {};
   
-  // ✅ 這裡修正：將原本未定義的 filtered 改為 games
   games.forEach(g=>{
   
     const tournament =
@@ -2201,26 +2200,9 @@ function buildRosterHtml(isPreview = true){
     .sort()
     .forEach(tournament => {
   
-      sections += `
-  
-        <div style="
-          margin-bottom:24px;
-        ">
-  
-          <div style="
-            background:#1e293b;
-            color:#fff;
-            font-size:18px;
-            font-weight:800;
-            padding:10px 14px;
-            border-radius:8px;
-            margin-bottom:10px;
-          ">
-            ${tournament}
-          </div>
-  
-      `;
-  
+      // 組合該聯賽底下的所有場地
+      let fieldSections = '';
+
       Object.keys(groups[tournament])
         .sort()
         .forEach(field => {
@@ -2333,7 +2315,7 @@ function buildRosterHtml(isPreview = true){
               })
               .join('');
   
-          sections += `
+          fieldSections += `
   
             <div style="
               margin-bottom:16px;
@@ -2396,8 +2378,38 @@ function buildRosterHtml(isPreview = true){
           `;
   
         });
-  
+
+      // 每個聯賽區塊上方顯示聯賽名稱，並在左下方帶出日期
       sections += `
+  
+        <div style="
+          margin-bottom:24px;
+        ">
+
+          <div style="
+            background:#1e293b;
+            color:#fff;
+            font-size:18px;
+            font-weight:800;
+            padding:10px 14px;
+            border-radius:8px;
+            margin-bottom:6px;
+          ">
+            ${tournament}
+          </div>
+
+          <div style="
+            font-size:22px;
+            font-weight:700;
+            color:#475569;
+            margin-bottom:12px;
+            padding-left:4px;
+          ">
+            日期：${date}
+          </div>
+
+          ${fieldSections}
+
         </div>
       `;
   
@@ -2416,6 +2428,7 @@ function buildRosterHtml(isPreview = true){
       "
     >
 
+      <!-- 中間 BBT 圖標與文字對齊 -->
       <div
         style="
           display:flex;
@@ -2435,28 +2448,14 @@ function buildRosterHtml(isPreview = true){
           "
         >
 
-        <div>
-
-          <div
-            style="
-              font-size:34px;
-              font-weight:900;
-            "
-          >
-            BBT 裁判暨紀錄班表
-          </div>
-
-          <div
-            style="
-              margin-top:6px;
-              font-size:20px;
-              font-weight:600;
-              color:#475569;
-            "
-          >
-            日期：${date}
-          </div>
-
+        <div
+          style="
+            font-size:34px;
+            font-weight:900;
+            line-height:1.2;
+          "
+        >
+          BBT 裁判暨紀錄班表
         </div>
 
       </div>
