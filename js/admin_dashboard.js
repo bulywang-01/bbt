@@ -2172,20 +2172,27 @@ function buildRosterHtml(isPreview = true){
   }
 
   const groups = {};
-
-  games.forEach(game => {
-
+  
+  // ✅ 這裡修正：將原本未定義的 filtered 改為 games
+  games.forEach(g=>{
+  
     const tournament =
-      game.tournament ||
-      game.league ||
-      '未分類賽事';
-
+      g.tournament || '未分類';
+  
+    const field =
+      g.field || '未指定場地';
+  
     if(!groups[tournament]){
-      groups[tournament] = [];
+      groups[tournament] = {};
     }
-
-    groups[tournament].push(game);
-
+  
+    if(!groups[tournament][field]){
+      groups[tournament][field] = [];
+    }
+  
+    groups[tournament][field]
+      .push(g);
+  
   });
 
   let sections = '';
@@ -2193,131 +2200,13 @@ function buildRosterHtml(isPreview = true){
   Object.keys(groups)
     .sort()
     .forEach(tournament => {
-
-      const rows =
-        groups[tournament]
-          .sort((a,b)=>{
-
-            return (
-              a.time || ''
-            ).localeCompare(
-              b.time || ''
-            );
-
-          })
-          .map(game => {
-
-            return `
-
-              <tr>
-
-                <td style="
-                  text-align:center;
-                  padding:4px;
-                ">
-                  ${game.time || ''}
-                </td>
-
-                <td style="
-                  text-align:center;
-                  padding:4px;
-                  font-weight:700;
-                  color:#2563eb;
-                ">
-                  ${game.game_code || ''}
-                </td>
-
-                <td style="
-                  text-align:center;
-                  padding:4px;
-                ">
-                  ${game.category || ''}
-                </td>
-
-                <td style="
-                  text-align:center;
-                  padding:4px;
-                ">
-                  ${game.away_team || ''}
-                  vs
-                  ${game.home_team || ''}
-                </td>
-
-                <td style="
-                  text-align:center;
-                  padding:4px;
-                ">
-                  ${game.field || ''}
-                </td>
-
-                <td style="text-align:center;">
-                  ${renderName(getJudgeName(game,'PU'))}
-                </td>
-
-                <td style="text-align:center;">
-                  ${renderName(getJudgeName(game,'U1'))}
-                </td>
-
-                <td style="text-align:center;">
-                  ${
-                    Number(game.umpire_count) >= 4
-                      ? renderName(
-                          getJudgeName(game,'U2')
-                        )
-                      : '-'
-                  }
-                </td>
-
-                <td style="text-align:center;">
-                  ${
-                    Number(game.umpire_count) >= 3
-                      ? renderName(
-                          getJudgeName(game,'U3')
-                        )
-                      : '-'
-                  }
-                </td>
-
-                <td style="text-align:center;">
-                  ${renderName(
-                    getRecordName(
-                      game,
-                      'REC_MAIN'
-                    )
-                  )}
-                </td>
-
-                <td style="text-align:center;">
-                  ${renderName(
-                    getRecordName(
-                      game,
-                      'REC_TRAINEE'
-                    )
-                  )}
-                </td>
-
-                <td style="text-align:center;">
-                  ${renderName(
-                    getRecordName(
-                      game,
-                      'REC_VIDEO'
-                    )
-                  )}
-                </td>
-
-              </tr>
-
-            `;
-
-          })
-          .join('');
-
+  
       sections += `
-
+  
         <div style="
-          margin-bottom:20px;
+          margin-bottom:24px;
         ">
-
+  
           <div style="
             background:#1e293b;
             color:#fff;
@@ -2325,60 +2214,193 @@ function buildRosterHtml(isPreview = true){
             font-weight:800;
             padding:10px 14px;
             border-radius:8px;
-            margin-bottom:8px;
+            margin-bottom:10px;
           ">
             ${tournament}
           </div>
-
-          <table
-            style="
-              width:100%;
-              border-collapse:collapse;
-              table-layout:fixed;
-              font-size:14px;
-            "
-          >
-
-            <thead>
-
-              <tr
+  
+      `;
+  
+      Object.keys(groups[tournament])
+        .sort()
+        .forEach(field => {
+  
+          const rows =
+            groups[tournament][field]
+              .sort((a,b)=>{
+  
+                return (
+                  a.time || ''
+                ).localeCompare(
+                  b.time || ''
+                );
+  
+              })
+              .map(game => {
+  
+                return `
+  
+                  <tr>
+  
+                    <td style="text-align:center;padding:4px;">
+                      ${game.time || ''}
+                    </td>
+  
+                    <td style="
+                      text-align:center;
+                      padding:4px;
+                      font-weight:700;
+                      color:#2563eb;
+                    ">
+                      ${game.game_code || ''}
+                    </td>
+  
+                    <td style="text-align:center;padding:4px;">
+                      ${game.category || ''}
+                    </td>
+  
+                    <td style="text-align:center;padding:4px;">
+                      ${game.away_team || ''}
+                      vs
+                      ${game.home_team || ''}
+                    </td>
+  
+                    <td style="text-align:center;">
+                      ${renderName(getJudgeName(game,'PU'))}
+                    </td>
+  
+                    <td style="text-align:center;">
+                      ${renderName(getJudgeName(game,'U1'))}
+                    </td>
+  
+                    <td style="text-align:center;">
+                      ${
+                        Number(game.umpire_count) >= 4
+                          ? renderName(
+                              getJudgeName(game,'U2')
+                            )
+                          : '-'
+                      }
+                    </td>
+  
+                    <td style="text-align:center;">
+                      ${
+                        Number(game.umpire_count) >= 3
+                          ? renderName(
+                              getJudgeName(game,'U3')
+                            )
+                          : '-'
+                      }
+                    </td>
+  
+                    <td style="text-align:center;">
+                      ${
+                        renderName(
+                          getRecordName(
+                            game,
+                            'REC_MAIN'
+                          )
+                        )
+                      }
+                    </td>
+  
+                    <td style="text-align:center;">
+                      ${
+                        renderName(
+                          getRecordName(
+                            game,
+                            'REC_TRAINEE'
+                          )
+                        )
+                      }
+                    </td>
+  
+                    <td style="text-align:center;">
+                      ${
+                        renderName(
+                          getRecordName(
+                            game,
+                            'REC_VIDEO'
+                          )
+                        )
+                      }
+                    </td>
+  
+                  </tr>
+  
+                `;
+  
+              })
+              .join('');
+  
+          sections += `
+  
+            <div style="
+              margin-bottom:16px;
+            ">
+  
+              <div style="
+                background:#f8fafc;
+                border-left:5px solid #f59e0b;
+                padding:10px 14px;
+                font-size:16px;
+                font-weight:800;
+                color:#0f172a;
+                margin-bottom:6px;
+              ">
+                📍 ${field}
+              </div>
+  
+              <table
                 style="
-                  background:#e2e8f0;
-                  font-weight:800;
+                  width:100%;
+                  border-collapse:collapse;
+                  table-layout:fixed;
+                  font-size:14px;
                 "
               >
-
-                <th style="width:60px;">時間</th>
-                <th style="width:80px;">場次</th>
-                <th style="width:80px;">組別</th>
-                <th style="width:220px;">對戰</th>
-                <th style="width:110px;">場地</th>
-
-                <th style="width:70px;">主審</th>
-                <th style="width:70px;">一壘</th>
-                <th style="width:70px;">二壘</th>
-                <th style="width:70px;">三壘</th>
-
-                <th style="width:70px;">紀錄</th>
-                <th style="width:70px;">實習</th>
-                <th style="width:70px;">影像</th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              ${rows}
-
-            </tbody>
-
-          </table>
-
+  
+                <thead>
+  
+                  <tr style="
+                    background:#e2e8f0;
+                    font-weight:800;
+                  ">
+  
+                    <th style="width:60px;">時間</th>
+                    <th style="width:80px;">場次</th>
+                    <th style="width:80px;">組別</th>
+                    <th style="width:250px;">對戰</th>
+                    <th style="width:70px;">主審</th>
+                    <th style="width:70px;">一壘</th>
+                    <th style="width:70px;">二壘</th>
+                    <th style="width:70px;">三壘</th>
+                    <th style="width:70px;">紀錄</th>
+                    <th style="width:70px;">實習</th>
+                    <th style="width:70px;">影像</th>
+  
+                  </tr>
+  
+                </thead>
+  
+                <tbody>
+  
+                  ${rows}
+  
+                </tbody>
+  
+              </table>
+  
+            </div>
+  
+          `;
+  
+        });
+  
+      sections += `
         </div>
-
       `;
-
+  
     });
 
   return `
