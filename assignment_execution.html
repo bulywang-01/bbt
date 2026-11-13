@@ -1,2000 +1,767 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>出勤管理系統</title>
-
-<script src="js/auth.js"></script>
-<script src="js/config.js"></script>
-<script src="js/utils.js"></script>
- 
-<style>
-
-body{
-  font-family: system-ui;
-  background:#f5f6f8;
-  margin:0;
-}
-
-.main{
-  max-width:1100px;
-  margin:auto;
-  padding:16px;
-}
-
-.game-card{
-  background:#fff;
-  border-radius:14px;
-  padding:14px;
-  margin-bottom:14px;
-  box-shadow:0 4px 12px rgba(0,0,0,.08);
-}
-
-/* ✅ 補賽卡 */
-.game-card.resumed{
-  border:2px solid #3b82f6;
-  box-shadow:0 4px 12px rgba(59,130,246,0.2);
-  background:#eff6ff; /* ✅ 淡藍底 */
-}
-
-.header-bar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
-}
-
-.game-title{
-  font-weight:800;
-}
-
-.btn-complete-all{
-  margin-left:10px;
-  background:#16a34a;
-  color:#fff;
-  border:none;
-  padding:4px 10px;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-/* =========================
-   人員卡
-========================= */
-.person{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-
-  padding:10px;
-  margin-bottom:6px;
-  border-radius:10px;
-  border-bottom:1px dashed #ddd;
-
-  transition:all .2s ease;
-}
-
-.person:last-child{
-  border-bottom:none;
-}
-
-.person:hover{
-  background:#f9fafb;
-}
-
-/* 狀態底色 */
-.person.completed{
- background:#ecfdf5;
-}
-.person.no_show{
- background:#fef2f2;
-}
-.person.late{
- background:#fffbeb;
-}
-
-.person.hold{
-  background:#fff7ed;   /* 延賽（橘） */
-}
-
-.person.cancelled{
-  background:#e5e7eb;   /* 停賽（灰） */
-  opacity:0.6;
-}
-
-
-/* 支援左側線 */
-.person.replacement{
-  border-left:4px solid #6366f1;
-}
-
-/* =========================
-   左側資訊
-========================= */
-.info{
-  min-width:160px;
-}
-
-.info-line{
-  font-size:14px;
-  font-weight:500;
-}
-
-.role{ font-weight:700; }
-
-/* =========================
-   操作區
-========================= */
-.actions-box{
-  display:flex;
-  gap:6px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-
-.select-user{
-  padding:4px;
-  border-radius:6px;
-}
-
-/* =========================
-   按鈕
-========================= */
-.btn{
-  padding:4px 10px;
-  border:none;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:600;
-  color:#fff;
-  cursor:pointer;
-  box-shadow:0 1px 2px rgba(0,0,0,.1);
-}
-
-.btn:hover{
-  transform:translateY(-1px);
-}
-
-.btn-ok{background:#16a34a;}
-.btn-no{background:#dc2626;}
-.btn-late{background:#f59e0b;}
-.btn-assign{background:#3b82f6;}
-.btn-replace{background:#4f46e5;}
-
-/* =========================
-   標籤（重點）
-========================= */
-.tag{
-  display:inline-block;
-  padding:2px 8px;
-  border-radius:10px;
-  font-size:12px;
-  margin-left:4px;
-}
-
-.tag-ok{
-  background:#16a34a;
-  color:#fff;
-}
-
-.tag-late{
-  background:#f59e0b;
-  color:#fff;
-}
-
-.tag-no{
-  background:#dc2626;
-  color:#fff;
-}
- 
-.tag-hold{
-  background:#f59e0b;  /* 延賽 */
-  color:#fff;
-}
-
-.tag-cancel{
-  background:#6b7280;  /* 停賽 */
-  color:#fff;
-}
- 
-.tag-replace{
-  background:#4f46e5;
-  color:#fff;
-}
-
-/* =========================
-   小狀態字
-========================= */
-.status-mini{
-  font-weight:700;
-  margin-left:4px;
-}
-
-/* =========================
-   Tabs
-========================= */
-.tabs{
-  display:flex;
-  gap:10px;
-  margin-bottom:12px;
-}
-
-.tab{
-  padding:8px 14px;
-  border-radius:20px;
-  background:#e5e7eb;
-  cursor:pointer;
-}
-
-.tab.active{
-  background:#2563eb;
-  color:#fff;
-}
-
-/* =========================
-   空資料
-========================= */
-.empty{
-  text-align:center;
-  color:#999;
-  padding:40px;
-}
-
-/* =========================
-   RWD
-========================= */
-@media(max-width:600px){
-  .person{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-}
-
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
-}
-
-.modal.hidden{
-  display:none;
-}
-
-.modal-box{
-  width:90%;
-  max-width:900px;
-  background:#ffffff;
-  opacity:1;
-  border-radius:12px;
-  padding:12px;
-  max-height:85vh;
-  overflow:auto;
-}
-
-.modal-header{
-  display:flex;
-  justify-content:space-between;
-  font-weight:800;
-  margin-bottom:8px;
-}
-
-.year-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-
-.year-table th{
-  text-align:left;
-  padding:6px;
-  border-bottom:2px solid #ddd;
-}
-
-.year-table td{
-  padding:6px;
-  border-bottom:1px solid #eee;
-}
-
-/* ✅ 卡片 */
-.stat-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-}
-
-@media(max-width:600px){
-  .stat-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
-}
-
-.stat-card{
-  background:#fff;
-  border-radius:12px;
-  padding:10px;
-  text-align:center;
-  box-shadow:0 2px 6px rgba(0,0,0,0.05);
-}
-
-.stat-title{
-  font-size:12px;
-  color:#666;
-  margin-bottom:4px;
-}
-
-.stat-value{
-  font-size:18px;
-  font-weight:700;
-}
-
-
-/* ✅ 小表格 */
-.mini-table{
-  width:100%;
-  border-collapse:collapse;
-  text-align:center;
-  font-size:14px;
-}
-
-.mini-table th,
-.mini-table td{
-  padding:6px;
-  border-bottom:1px solid #eee;
-}
-
-.mini-table th{
-  color:#666;
-  font-size:13px;
-}
-
-.badge.warn{
-  background:#f59e0b;  /* 延賽 */
-  color:#fff;
-}
-
-.badge.cancel{
-  background:#6b7280;  /* 停賽 */
-  color:#fff;
-}
-
-.person.ignore{
-  background:#e5e7eb;
-  opacity:0.6;
-}
-
-.person-group{
-  margin-bottom:10px;
-  padding:10px;
-  background:#fafafa;
-  border-radius:10px;
-}
-
-.role-title{
-  font-weight:700;
-  margin-bottom:4px;
-}
-
-.candidate-row{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:6px;
-}
-
-.candidate{
-  display:flex;
-  align-items:center;
-  gap:4px;
-  background:#fff;
-  padding:4px 8px;
-  border-radius:6px;
-}
-
-.name{
-  font-size:13px;
-}
-
-/* ✅ 原人刪除線 */
-.name.line-through{
-  text-decoration: line-through;
-  color:#999;
-}
-
-/* ✅ 支援高亮 */
-.name.replace-highlight{
-  background:#eef2ff;
-  border-radius:6px;
-  padding:2px 6px;
-}
-
-/* ✅ 主審第一位高亮 */
-.person-group.highlight{
-  border:2px solid #3b82f6;
-  background:#eff6ff;
-}
-
-/* KPI 卡片加顏色 */
-.stat-card:nth-child(1){ border-left:4px solid #2563eb; }
-.stat-card:nth-child(2){ border-left:4px solid #16a34a; }
-.stat-card:nth-child(3){ border-left:4px solid #f59e0b; }
-.stat-card:nth-child(4){ border-left:4px solid #9333ea; }
-
-/* 表格強化 */
-.mini-table th{
-  color:#374151;
-  font-weight:700;
-}
-
-.mini-table td{
-  color:#111;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BBT 聯盟 - 出勤確認中心</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- 共用 CSS -->
+  <link rel="stylesheet" href="common.css">
+
+  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+    body{ background:#eef2f7; font-family: 'Noto Sans TC', sans-serif; }
+    .main{ padding:20px; max-width:1400px; margin:auto; }
+
+    .panel{
+      background:#fff;
+      padding:18px;
+      border-radius:16px;
+      box-shadow: 0 4px 12px rgba(15,23,42,.08);
+      margin-bottom:18px;
+      border:1px solid #e2e8f0;
+    }
+
+    /* 遊戲卡片 */
+    .game-card{
+      background:#fff;
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:14px;
+      border:1px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      transition:.2s;
+    }
+    .game-card:hover{ box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+    .game-card.resumed{
+      border:2px solid #3b82f6;
+      box-shadow:0 4px 12px rgba(59,130,246,0.15);
+      background:#eff6ff;
+    }
+
+    .game-title{
+      font-weight:800;
+      font-size:15px;
+      color:#0f172a;
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:12px;
+      padding-bottom:10px;
+      border-bottom:1px solid #f1f5f9;
+    }
+
+    .btn-complete-all{
+      background:#16a34a;
+      color:#fff;
+      border:none;
+      padding:4px 10px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:12px;
+    }
+    .btn-complete-all:hover{ background:#15803d; }
+
+    /* 人員卡 */
+    .person{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:10px 12px;
+      margin-bottom:6px;
+      border-radius:10px;
+      background:#fafafa;
+      border:1px solid #f1f5f9;
+      transition:all .2s ease;
+    }
+    .person:hover{ background:#f8fafc; }
+    .person.completed{ background:#ecfdf5; border-color:#bbf7d0; }
+    .person.no_show{ background:#fef2f2; border-color:#fecaca; }
+    .person.late{ background:#fffbeb; border-color:#fde68a; }
+    .person.hold{ background:#fff7ed; border-color:#ffedd5; }
+    .person.cancelled{ background:#e5e7eb; opacity:0.6; }
+    .person.replacement{ border-left:4px solid #6366f1; }
+
+    .info{ min-width:160px; }
+    .info-line{ font-size:14px; font-weight:500; color:#334155; }
+
+    .actions-box{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .select-user{ padding:4px 8px; border-radius:8px; border:1px solid #cbd5e1; font-size:13px; background:#fff; height:30px; }
+
+    .btn{
+      padding:4px 12px;
+      border:none;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      color:#fff;
+      cursor:pointer;
+      box-shadow:0 1px 2px rgba(0,0,0,.1);
+      transition:.15s;
+      height:28px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .btn:hover{ transform:translateY(-1px); }
+    .btn-ok{ background:#16a34a; }
+    .btn-no{ background:#dc2626; }
+    .btn-late{ background:#f59e0b; }
+    .btn-assign{ background:#3b82f6; }
+    .btn-replace{ background:#4f46e5; }
+
+    .tag{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:10px;
+      font-size:12px;
+      margin-left:4px;
+      font-weight:700;
+    }
+    .tag-ok{ background:#16a34a; color:#fff; }
+    .tag-late{ background:#f59e0b; color:#fff; }
+    .tag-no{ background:#dc2626; color:#fff; }
+    .tag-replace{ background:#4f46e5; color:#fff; }
+    .status-mini{ font-weight:700; margin-left:4px; }
+
+    /* Tabs */
+    .tabs{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+    .tab{
+      padding:8px 16px;
+      border-radius:12px;
+      background:#e2e8f0;
+      cursor:pointer;
+      font-weight:700;
+      font-size:13px;
+      color:#475569;
+      transition:.2s;
+    }
+    .tab:hover{ background:#cbd5e1; }
+    .tab.active{ background:#2563eb; color:#fff; box-shadow:0 4px 12px rgba(37,99,235,0.25); }
+
+    .empty{ text-align:center; color:#94a3b8; padding:40px; font-weight:600; }
+
+    /* Modal */
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,0.5);
+      backdrop-filter:blur(4px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+    }
+    .modal.hidden{ display:none; }
+    .modal-box{
+      width:90%;
+      max-width:900px;
+      background:#ffffff;
+      border-radius:16px;
+      padding:20px;
+      max-height:85vh;
+      overflow:auto;
+      box-shadow:0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .modal-header{ display:flex; justify-content:space-between; align-items:center; font-weight:800; margin-bottom:14px; font-size:18px; color:#0f172a; }
+
+    .year-table{ width:100%; border-collapse:collapse; font-size:14px; }
+    .year-table th{ text-align:left; padding:10px; border-bottom:2px solid #e2e8f0; background:#f8fafc; color:#334155; font-weight:700; }
+    .year-table td{ padding:10px; border-bottom:1px solid #f1f5f9; }
+
+    .stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+    @media(max-width:600px){ .stat-grid{ grid-template-columns:repeat(2,1fr); } }
+    .stat-card{ background:#fff; border-radius:12px; padding:14px; text-align:center; border:1px solid #e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.02); }
+    .stat-card:nth-child(1){ border-left:4px solid #2563eb; }
+    .stat-card:nth-child(2){ border-left:4px solid #16a34a; }
+    .stat-card:nth-child(3){ border-left:4px solid #f59e0b; }
+    .stat-card:nth-child(4){ border-left:4px solid #9333ea; }
+    .stat-title{ font-size:12px; color:#64748b; margin-bottom:4px; font-weight:700; }
+    .stat-value{ font-size:22px; font-weight:900; color:#0f172a; }
+
+    .mini-table{ width:100%; border-collapse:collapse; text-align:center; font-size:14px; }
+    .mini-table th, .mini-table td{ padding:8px; border-bottom:1px solid #e2e8f0; }
+    .mini-table th{ color:#334155; font-weight:700; background:#f8fafc; }
+
+    .person-group{
+      margin-bottom:10px;
+      padding:12px;
+      background:#f8fafc;
+      border-radius:12px;
+      border:1px solid #e2e8f0;
+    }
+    .role-title{ font-weight:700; margin-bottom:8px; color:#334155; font-size:13px; }
+    .candidate-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+    .candidate{ display:flex; align-items:center; gap:4px; background:#fff; padding:6px 10px; border-radius:8px; border:1px solid #cbd5e1; }
+    .name.line-through{ text-decoration:line-through; color:#94a3b8; }
+    .name.replace-highlight{ background:#eef2ff; border-radius:6px; padding:2px 6px; color:#3b82f6; font-weight:700; }
+    .person-group.highlight{ border:2px solid #3b82f6; background:#eff6ff; }
+  </style>
 </head>
 
-<body>
+<body class="bg-slate-100 antialiased text-slate-800">
 
-<div id="header-container"></div>
+<div class="flex min-h-screen">
 
-<div class="main">
-
-  <!-- 年度統計 Modal -->
-  <div id="yearModal" class="modal hidden">
-    <div class="modal-box">
+  <!-- Mobile Overlay -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
   
-      <div class="modal-header">
-        <span>📊 年度統計</span>
-        <button onclick="closeYearModal()">✖</button>
+  <!-- Sidebar (管理員風格一致) -->
+  <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 z-50 flex flex-col justify-between transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shrink-0 border-r border-slate-800 shadow-2xl lg:shadow-none">
+    <div>
+      <div class="h-16 flex items-center justify-between px-5 bg-slate-950 border-b border-slate-800">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h1 class="font-black text-white text-base tracking-wide">BBT 管理中心</h1>
+            <p class="text-[12px] font-bold text-slate-400">出勤與賽事後端控制台</p>
+          </div>
+        </div>
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
       </div>
-  
-      <div id="yearContent">載入中...</div>
-  
+
+      <nav class="p-3.5 space-y-1 text-xs font-semibold overflow-y-auto max-h-[calc(100vh-140px)]">
+        <div class="text-[10px] text-slate-500 font-bold px-3 pt-2 pb-1 uppercase tracking-wider">主控數據中心</div>
+        <a href="admin_dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition"><i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>管理總覽</span></a>
+
+        <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">排班管理</div>
+        <a href="judge_dashboard_admin.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition"><i data-lucide="flag" class="w-4 h-4"></i><span>裁判排班</span></a>
+        <a href="record_dashboard_admin.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition"><i data-lucide="clipboard-list" class="w-4 h-4"></i><span>紀錄排班</span></a>
+
+        <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">出勤管理</div>
+        <a href="assignment_execution.html" class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/30">
+          <div class="flex items-center space-x-3"><i data-lucide="clipboard-check" class="w-4 h-4"></i><span>出勤確認</span></div>
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        </a>
+
+        <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">系統管理</div>
+        <a href="admin_games.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition"><i data-lucide="calendar-range" class="w-4 h-4"></i><span>賽事管理</span></a>
+        <a href="admin_course.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition"><i data-lucide="book-open" class="w-4 h-4"></i><span>課程管理</span></a>
+        <a href="admin_users.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition"><i data-lucide="users" class="w-4 h-4"></i><span>帳號管理</span></a>
+
+        <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">統計報表</div>
+        <a href="report.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition"><i data-lucide="file-bar-chart" class="w-4 h-4"></i><span>出勤報表</span></a>
+      </nav>
     </div>
-  </div>
 
- <!-- 個人分析 Modal -->
- <div id="userModal" class="modal hidden">
-   <div class="modal-box">
- 
-     <div class="modal-header">
-       <span>📊 個人數據分析</span>
-       <button onclick="closeUserModal()">✖</button>
-     </div>
- 
-     <div id="userContent">載入中...</div>
- 
-   </div>
- </div>
- 
-  <div class="header-bar">
-    <h2>✅ 出勤管理</h2>
-  
-    <button class="btn-create"
-      onclick="runAutoAssign()">
-      ⚙️ 建立出勤
-    </button>
-    <button onclick="loadYearly()">
-      📊 年度統計
-    </button>
-    <button class="btn-recalc"
-      onclick="recalcScore()">
-      🔄 重算分數
-    </button>
-  </div>
+    <div class="p-3.5 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div id="sidebarAvatar" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 font-black flex items-center justify-center text-sm">-</div>
+        <div>
+          <div id="sidebarUserName" class="text-xs font-bold text-white">-</div>
+          <div id="sidebarUserRole" class="text-[10px] text-amber-400">-</div>
+        </div>
+      </div>
+      <button onclick="logout()" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg" title="登出"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+    </div>
+  </aside>
 
-  <div id="list"></div>
+  <!-- Main Content Wrapper -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 shrink-0 shadow-sm">
+      <div class="flex items-center space-x-3">
+        <button onclick="toggleSidebar()" class="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+        <h2 class="font-black text-slate-900 text-base sm:text-lg tracking-tight">BBT 出勤管理中心</h2>
+      </div>
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <button onclick="load()" class="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition" title="重新整理">
+          <i data-lucide="refresh-cw" class="w-4.5 h-4.5"></i>
+        </button>
+        <a href="index.html" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+          <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>回首頁</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Scrollable Content Area -->
+    <div class="overflow-y-auto flex-1">
+      <div class="main">
+
+        <!-- Page Header Title Bar -->
+        <div class="panel" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="font-size:22px; font-weight:900; color:#0f172a;">✅ 現場出勤簽到與執行確認</div>
+            <div style="font-size:13px; color:#64748b; margin-top:4px;">即時核對與點名各場次裁判及紀錄人員出勤狀況，更新狀態將直接同步至出勤績效報表</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn" style="background:#2563eb; height:36px; padding:0 14px;" onclick="runAutoAssign()">⚙️ 建立出勤</button>
+            <button class="btn" style="background:#475569; height:36px; padding:0 14px;" onclick="loadYearly()">📊 年度統計</button>
+            <button class="btn btn-recalc" style="background:#7c3aed; height:36px; padding:0 14px;" onclick="recalcScore()">🔄 重算分數</button>
+          </div>
+        </div>
+
+        <!-- 年度統計 Modal -->
+        <div id="yearModal" class="modal hidden">
+          <div class="modal-box">
+            <div class="modal-header">
+              <span>📊 年度統計總表</span>
+              <button onclick="closeYearModal()" style="border:none; background:none; font-size:18px; cursor:pointer; color:#64748b;">✖</button>
+            </div>
+            <div id="yearContent">載入中...</div>
+          </div>
+        </div>
+
+        <!-- 個人分析 Modal -->
+        <div id="userModal" class="modal hidden">
+          <div class="modal-box">
+            <div class="modal-header">
+              <span>📊 個人數據分析</span>
+              <button onclick="closeUserModal()" style="border:none; background:none; font-size:18px; cursor:pointer; color:#64748b;">✖</button>
+            </div>
+            <div id="userContent">載入中...</div>
+          </div>
+        </div>
+
+        <!-- List Container -->
+        <div id="list"></div>
+
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
-
-  /* ========================
-     按是否鎖定只顯示更正鍵
-  ======================== */
-function isGameLocked(g){
-  // return g.list.every(p => p.status !== 'scheduled');
- 
-  return g.list.every(p => 
-    p.status === 'completed' || p.status === 'late'
-  );
-}
-
-  /* ========================
-     Header
-  ======================== */ 
   let userList = [];
-  
-  // ✅ 初始化
-  document.addEventListener('DOMContentLoaded',()=>{
-    loadHeader();
+  let currentTab = 'pending';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    loadUserInfo();
     loadUsers();
   });
- 
-    function loadHeader() {
-    fetch('header.html')
-      .then(r => r.text())
-      .then(html => {
-        const hc = document.getElementById('header-container');
-        if (!hc) return;
-  
-        hc.innerHTML = html;
-  
-        // ✅ 一律從 session 重新設定 role（唯一正解）
-        const session = (typeof getSession === 'function')
-          ? getSession()
-          : JSON.parse(localStorage.getItem('session_user') || '{}');
-  
-        document.body.classList.remove(
-          'role-admin',
-          'role-judge',
-          'role-record'
-        );
-  
-        if (session && session.role) {
-          const roles = session.role.split(',').map(r => r.trim());
-  
-          if (roles.includes('admin')) {
-            document.body.classList.add('role-admin');
-          }
-          if (roles.includes('judge') || roles.includes('chief_judge')) {
-            document.body.classList.add('role-judge');
-          }
-          if (roles.includes('record') || roles.includes('record_chief')) {
-            document.body.classList.add('role-record');
-          }
-        }
-  
-        // ✅ 顯示登入者姓名
-        if (session && session.name) {
-          const nameEl = document.getElementById('header-username');
-          if (nameEl) nameEl.textContent = session.name;
-        }
-      })
-      .catch(err => console.error('Header 載入失敗', err));
+
+  function loadUserInfo() {
+    const session = (typeof getSession === 'function') ? getSession() : JSON.parse(localStorage.getItem('session_user') || '{}');
+    if (session && session.name) {
+      document.getElementById('sidebarUserName').textContent = session.name;
+      document.getElementById('sidebarUserRole').textContent = session.role || '管理員';
+      document.getElementById('sidebarAvatar').textContent = session.name.charAt(0);
+    }
   }
- 
-  /* ========================
-     Users
-  ======================== */
-function loadUsers(){
-  callApi({action:'getUsers'}, res=>{
 
-    if(!res){
-      toast('API 無回應','error');
-      return;
-    }
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    sidebar.classList.toggle('-translate-x-full');
+    overlay.classList.toggle('hidden');
+  }
 
-    if(res.result !== 'ok'){
-      toast('讀取使用者失敗','error');
-      return;
-    }
+  function loadUsers(){
+    callApi({action:'getUsers'}, res=>{
+      if(!res || res.result !== 'ok'){
+        toast('讀取使用者失敗','error');
+        return;
+      }
+      userList = res.users || [];
+      load();
+    });
+  }
 
-    userList = res.users || [];
+  function isGameReady(g){
+    if (!g) return false;
+    const gameDate = new Date(g.date);
+    if (isNaN(gameDate)) return false;
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    gameDate.setHours(0,0,0,0);
+
+    const isPast = gameDate <= today;
+    const status = Number(g.status);
+
+    return isPast && (status === 0 || status === 1 || status === 4);
+  }
+
+  function isGameLocked(g){
+    return (g.list || []).length > 0 && g.list.every(p => p.status === 'completed' || p.status === 'late');
+  }
+
+  function load(){
+    const el = document.getElementById('list');
+    el.innerHTML = `<div class="empty">⏳ 資料載入中...</div>`;
+
+    callApi({action:'getAssignments'}, res=>{
+      if(!res || !res.data){
+        el.innerHTML = `<div class="empty">❌ 讀取失敗</div>`;
+        return;
+      }
+
+      const games = res.data;
+      window._lastData = games;
+      const data = games.filter(g => isGameReady(g));
+      render(data);
+    });
+  }
+
+  function render(list){
+    const el = document.getElementById('list');
+
+    const pending = list.filter(g => Number(g.status) === 0);
+    const done = list.filter(g => Number(g.status) === 4);
+    const hold = list.filter(g => Number(g.status) === 1);
+    const resumed = list.filter(g => Number(g.from_hold) === 1);
+
+    let data = [];
+    if (currentTab === 'pending') data = pending;
+    if (currentTab === 'done') data = done;
+    if (currentTab === 'hold') data = hold;
+    if (currentTab === 'resumed') data = resumed;
+
+    el.innerHTML = `
+      <div class="tabs">
+        <div class="tab ${currentTab==='pending'?'active':''}" onclick="switchTab('pending')">🔴 未完成 (${pending.length})</div>
+        <div class="tab ${currentTab==='done'?'active':''}" onclick="switchTab('done')">✅ 已完成 (${done.length})</div>
+        <div class="tab ${currentTab==='hold'?'active':''}" onclick="switchTab('hold')">⚠️ 延賽 (${hold.length})</div>
+        <div class="tab ${currentTab==='resumed'?'active':''}" onclick="switchTab('resumed')">🔄 補賽 (${resumed.length})</div>
+      </div>
+      ${data.length ? data.map(renderGame).join('') : '<div class="empty">目前沒有此分類的出勤資料</div>'}
+    `;
+  }
+
+  function switchTab(t){
+    currentTab = t;
     load();
-    console.log(userList);
-  });
-}
-
- // 只顯示已完賽
-function isGameReady(g){
-
-  if (!g) return false;
-
-  const gameDate = new Date(g.date);
-  if (isNaN(gameDate)) return false;
-
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  gameDate.setHours(0,0,0,0);
-
-  const isPast = gameDate <= today;   // ✅ 今天也算
-
-  const status = Number(g.status);
-
-  // 顯示條件
-  return isPast && (
-    status === 0 ||   // 正常
-    status === 1 ||   // 延賽
-    status === 4      // 完成
-  );
-}
- 
-/* ========================
-   主載入
- ======================== */
-
-  
-  /* ========================
-     Render 核心程式
-  ======================== */
-let currentTab = 'pending';
-
-function render(list){
-
-  const el = document.getElementById('list');
-
-  if (!list.length){
-    el.innerHTML = '<div class="empty">目前沒有出勤資料</div>';
-    return;
   }
 
-  // ✅ ✅ ✅ 最新分類（用 Game.status）
-  const pending = list.filter(g => Number(g.status) === 0);
-  const done = list.filter(g => Number(g.status) === 4);
-  const hold = list.filter(g => Number(g.status) === 1);
-  // const resumed = list.filter(g => Number(g.status) === 4 && Number(g.from_hold) === 1);
- 
-  // ✅ ✅ ✅ 補賽（全部）
-  const resumed = list.filter(g =>Number(g.from_hold) === 1);
+  function renderGame(g){
+    const statusNum = Number(g.status || 0);
+    const isResumed = Number(g.from_hold || 0) === 1;
+    const info = getTournamentInfo(g.tournament_type || 'default');
 
-
-  let data = [];
-
-  if (currentTab === 'pending') data = pending;
-  if (currentTab === 'done') data = done;
-  if (currentTab === 'hold') data = hold;
-  if (currentTab === 'resumed') data = resumed;
-
-  el.innerHTML = `
-    <div class="tabs">
-
-      <div class="tab ${currentTab==='pending'?'active':''}"
-           onclick="switchTab('pending')">
-        🔴 未完成 (${pending.length})
-      </div>
-
-      <div class="tab ${currentTab==='done'?'active':''}"
-           onclick="switchTab('done')">
-        ✅ 已完成 (${done.length})
-      </div>
-
-      <div class="tab ${currentTab==='hold'?'active':''}"
-           onclick="switchTab('hold')">
-        ⚠️ 延賽 (${hold.length})
-      </div>
-
-      <div class="tab ${currentTab==='resumed'?'active':''}"
-           onclick="switchTab('resumed')">
-        🔄 補賽 (${resumed.length})
-      </div>
-
-    </div>
-
-    ${data.map(renderGame).join('')}
-  `;
-}
-
-// 切換資料的地方
-function switchTab(t){
-  currentTab = t;
-  load();
-}
-
-
-
-   /* ========================
-     收合功能
-  ======================== */
-  function toggleDone(){
-   const el = document.getElementById('doneSection');
-   el.style.display = el.style.display === 'none' ? 'block' : 'none';
- }
-  
-  /* ========================
-     下拉選單
-  ======================== */
-  function renderUserSelect(p){
-  
-    return `
-      <select data-id="${p.assignment_id}">
-        <option value="">--換人--</option>
-        ${userList.map(u=>
-          `<option value="${u.user_id}">
-            ${u.name} ${u.note ? '('+u.note+')' : ''}
-          </option>`
-        ).join('')}
-      </select>
-    `;
-  }
-
-// 主入口
-function load(){
-
-  const el = document.getElementById('list');
-
-  el.innerHTML = `<div class="empty">⏳ 資料載入中...</div>`;
-
-  callApi({action:'getAssignments'}, res=>{
-
-    if(!res || !res.data){
-      el.innerHTML = `<div class="empty">❌ 讀取失敗</div>`;
-      return;
-    }
-
-    const games = res.data;
-
-    // ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
-    window._lastData = games;
-
-    // ✅ ✅ ✅ 重點：
-    const data = games.filter(g => isGameReady(g));
-
-    render(data);
-
-  });
-}
-
-// 每場 render，支援＋鎖定＋更正＋顏色
-function renderGame(g){
-
-  const statusNum = Number(g.status || 0);
-  const isResumed = Number(g.from_hold || 0) === 1;
-
-  // ✅ 賽事資訊
-  const info = getTournamentInfo(g.tournament_type);
-
-  let statusHTML = '';
-
-  // ✅ ① 延賽
-  if (statusNum === 1){
-    statusHTML = `
-      <span style="margin-left:10px;color:#f59e0b;font-weight:700;">
-        ⚠️ 延賽
-      </span>
-
-      <button class="btn"
-        style="margin-left:8px;background:#2563eb;"
-        onclick="reopenGame('${g.game_id}')">
-        🔄 補賽
-      </button>
-    `;
-  }
-
-  // ✅ ② 停賽
-  else if (statusNum === 2){
-    statusHTML = `
-      <span style="margin-left:10px;color:#6b7280;font-weight:700;">
-        ⛔ 停賽
-      </span>
-    `;
-  }
-
-  // ✅ ③ 已完成（保留）
-  else if (statusNum === 3){
-    statusHTML = `
-      <span style="margin-left:10px;color:#16a34a;font-weight:700;">
-        ✅ 已完成
-      </span>
-    `;
-  }
-
-  // ✅ ④ 完成（含補賽完成）
-  else if (statusNum === 4){
-
-    if (isResumed){
+    let statusHTML = '';
+    if (statusNum === 1){
       statusHTML = `
-        <span style="margin-left:10px;color:#2563eb;font-weight:700;">
-          🔄 補賽完成
-        </span>
+        <span style="margin-left:10px;color:#f59e0b;font-weight:700;">⚠️ 延賽</span>
+        <button class="btn" style="margin-left:8px;background:#2563eb;" onclick="reopenGame('${g.game_id}')">🔄 補賽</button>
       `;
-    }else{
-      statusHTML = `
-        <span style="margin-left:10px;color:#16a34a;font-weight:700;">
-          ✅ 已完成
-        </span>
-      `;
-    }
-  }
-
-  // ✅ ⑤ 未完成（含補賽中🔥）
-  else{
-
-    // ✅ ✅ ✅ 補賽中顯示
-    if (isResumed){
-      statusHTML += `
-        <span style="margin-left:10px;color:#2563eb;font-weight:700;">
-          🔄 補賽中
-        </span>
-      `;
+    } else if (statusNum === 2){
+      statusHTML = `<span style="margin-left:10px;color:#6b7280;font-weight:700;">⛔ 停賽</span>`;
+    } else if (statusNum === 4){
+      statusHTML = isResumed 
+        ? `<span style="margin-left:10px;color:#2563eb;font-weight:700;">🔄 補賽完成</span>` 
+        : `<span style="margin-left:10px;color:#16a34a;font-weight:700;">✅ 已完成</span>`;
+    } else {
+      if (isResumed){
+        statusHTML += `<span style="margin-left:10px;color:#2563eb;font-weight:700;">🔄 補賽中</span>`;
+      }
+      if (!isGameLocked(g)){
+        statusHTML += `
+          <button class="btn-complete-all" onclick="completeGame('${g.game_id}')">✅ 整場完成</button>
+          <button class="btn" style="margin-left:8px;background:#f59e0b;" onclick="setGameHold('${g.game_id}')">⚠️ 延賽</button>
+        `;
+      } else {
+        statusHTML += `<span style="margin-left:10px;color:#16a34a;font-weight:700;">✅ 已完成</span>`;
+      }
     }
 
-    if (!isGameLocked(g)){
-      statusHTML += `
-        <button class="btn-complete-all"
-          onclick="completeGame('${g.game_id}')">
-          ✅ 整場完成
-        </button>
-
-        <button class="btn"
-          style="margin-left:8px;background:#f59e0b;"
-          onclick="setGameHold('${g.game_id}')">
-          ⚠️ 延賽
-        </button>
-      `;
-    }
-    else{
-      statusHTML += `
-        <span style="margin-left:10px;color:#16a34a;font-weight:700;">
-          ✅ 已完成
-        </span>
-      `;
-    }
-  }
-
-
-  const cardClass = isResumed ? 'game-card resumed' : 'game-card';
-  
-  return `
-    <div class="${cardClass}" data-game-id="${g.game_id}">
-
-
-      <div class="game-title">
-        📅 ${g.date} ｜ ${g.game_code || ''} ｜ ${g.field || ''}
-
-        ｜ <span style="color:${info.color};font-weight:700;">
-            ${info.text}
-          </span>
-
-        ${statusHTML}
-      </div>
-
-      ${renderGroup(g)}
-
-    </div>
-  `;
-}
-
-
-// 支援一定在原人下面
-function renderGroup(g){
-
-  const list = g.list || [];
-
-  // ✅ group by role
-  const roleMap = {};
-  list.forEach(p=>{
-    if (!roleMap[p.role]) roleMap[p.role] = [];
-    roleMap[p.role].push(p);
-  });
-
-  let html = '';
-
-  Object.keys(roleMap).forEach(role=>{
-  
-    // ✅ ✅ ✅ 🔥 防止 undefined / 空角色
-    if (!role || role === 'undefined') return;
-  
-    const rows = roleMap[role];
-  
-    html += renderRoleRow(role, rows, g);
-  
-  });
-
-  return html;
-}
-
-// 配合上面的程式新增
-function renderRoleRow(role, rows, g){
-
-  rows.sort((a,b)=>{
-    return new Date(a.create_at || 0) - new Date(b.create_at || 0);
-  });
-
-  const hasNoShow =
-    window._lastData
-      ?.find(x => x.game_id == g.game_id)
-      ?.list
-      ?.some(x => x.role === role && x.status === 'no_show');
-
-  const firstAssign = rows.find(x => x.assignment_id);
-
-  const original = rows.find(x => Number(x.is_replacement) !== 1);
-  const replacement = rows.find(x => Number(x.is_replacement) === 1);
-
-  function renderTag(p){
-
-    if (!p) return '';
-
-    const statusTag =
-      p.status === 'completed'
-        ? '<span class="tag tag-ok">完</span>'
-      : p.status === 'late'
-        ? '<span class="tag tag-late">遲</span>'
-      : p.status === 'no_show'
-        ? '<span class="tag tag-no">缺</span>'
-      : (p.status === 'scheduled' && p.name)
-        ? '<span class="status-mini" style="color:#888;">待</span>'
-      : '';
-
-    const replaceTag =
-      Number(p.is_replacement) === 1
-        ? '<span class="tag tag-replace">支</span>'
-        : '';
-
-    const extraClass = `
-      ${p.status === 'no_show' ? 'line-through' : ''}
-      ${Number(p.is_replacement) === 1 ? 'replace-highlight' : ''}
-    `;
+    const cardClass = isResumed ? 'game-card resumed' : 'game-card';
 
     return `
-      <span class="name ${extraClass}">
-        ${p.name || '（未確認）'} ${statusTag}${replaceTag}
-      </span>
-    `;
-  }
-
-  let candidateHTML = '';
-
-  if (replacement){
-    candidateHTML = `
-      <div class="candidate">
-        ${renderTag(original)}
-        <span style="margin:0 6px;">／</span>
-        ${renderTag(replacement)}
+      <div class="${cardClass}" data-game-id="${g.game_id}">
+        <div class="game-title">
+          <span>📅 ${g.date} ｜ ${g.game_code || ''} ｜ ${g.field || ''}</span>
+          <span>｜ <span style="color:${info.color || '#2563eb'};font-weight:700;">${info.text || '聯盟賽事'}</span></span>
+          ${statusHTML}
+        </div>
+        ${renderGroup(g)}
       </div>
     `;
-  }else{
-    candidateHTML = rows.map((p,i)=>`
-      <div class="candidate">
-        ${renderTag(p)}
-      </div>
-    `).join('');
   }
 
-  const highlightClass = role === 'PU' ? 'highlight' : '';
+  function renderGroup(g){
+    const list = g.list || [];
+    const roleMap = {};
+    list.forEach(p=>{
+      if (!roleMap[p.role]) roleMap[p.role] = [];
+      roleMap[p.role].push(p);
+    });
 
-  return `
-    <div class="person-group ${highlightClass}">
-
-      <div class="role-title">
-        ${getRoleText(role)}
-      </div>
-
-      <div class="candidate-row">
-        ${candidateHTML}
-      </div>
-
-      <div class="actions-box">
-
-        <button class="btn btn-ok"
-          onclick="handleAutoDecision('${g.game_id}','${role}','completed')">
-          完成
-        </button>
-
-        <button class="btn btn-late"
-          onclick="handleAutoDecision('${g.game_id}','${role}','late')">
-          遲到
-        </button>
-
-        <button class="btn btn-no"
-          onclick="handleAutoDecision('${g.game_id}','${role}','no_show')">
-          缺席
-        </button>
-
-        ${
-          (!hasNoShow && firstAssign)
-          ? `
-            <button class="btn btn-assign"
-              onclick="quickAssign('${firstAssign.assignment_id}', this)">
-              改派
-            </button>
-          `
-          : ''
-        }
-
-        ${
-          hasNoShow
-          ? `
-            <button class="btn btn-replace"
-              onclick="quickReplace('${g.game_id}','${role}', this)">
-              + 支援
-            </button>
-          `
-          : ''
-        }
-
-        <select class="select-user">
-          <option value="">選擇人員</option>
-          ${
-            userList
-              .filter(u => {
-
-                if (u.role.includes('admin')) return false;
-
-                if (role.startsWith('REC')){
-                  return (
-                    u.role.includes('record') ||
-                    u.role.includes('record_chief')
-                  );
-                }
-
-                return (
-                  u.role.includes('judge') ||
-                  u.role.includes('chief_judge')
-                );
-
-              })
-              .map(u =>
-                `<option value="${u.user_id}">
-                  ${u.name || u.username}
-                </option>`
-              ).join('')
-          }
-        </select>
-
-      </div>
-
-    </div>
-  `;
-}
-
-// 核心決策引擎
-function handleAutoDecision(gameId, role, status){
-
-  const g = window._lastData?.find(
-    x => x.game_id == gameId
-  );
-
-  if (!g){
-    toast('找不到賽事','error');
-    return;
+    let html = '';
+    Object.keys(roleMap).forEach(role=>{
+      if (!role || role === 'undefined') return;
+      html += renderRoleRow(role, roleMap[role], g);
+    });
+    return html;
   }
 
-  const list = g.list.filter(
-    x => x.role === role
-  );
+  function renderRoleRow(role, rows, g){
+    rows.sort((a,b)=> new Date(a.create_at || 0) - new Date(b.create_at || 0));
 
-  // ✅ 先找支援
-  const replacement = list.find(
-    x => Number(x.is_replacement) === 1
-  );
+    const hasNoShow = rows.some(x => x.status === 'no_show');
+    const firstAssign = rows.find(x => x.assignment_id);
+    const original = rows.find(x => Number(x.is_replacement) !== 1);
+    const replacement = rows.find(x => Number(x.is_replacement) === 1);
 
-  let targetId = '';
+    function renderTag(p){
+      if (!p) return '';
+      const statusTag = p.status === 'completed' ? '<span class="tag tag-ok">完</span>'
+        : p.status === 'late' ? '<span class="tag tag-late">遲</span>'
+        : p.status === 'no_show' ? '<span class="tag tag-no">缺</span>'
+        : (p.status === 'scheduled' && p.name) ? '<span class="status-mini" style="color:#888;">待</span>' : '';
 
-  // ✅ 有支援優先更新支援
-  if (replacement){
+      const replaceTag = Number(p.is_replacement) === 1 ? '<span class="tag tag-replace">支</span>' : '';
+      const extraClass = `${p.status === 'no_show' ? 'line-through' : ''} ${Number(p.is_replacement) === 1 ? 'replace-highlight' : ''}`;
 
-    targetId = replacement.assignment_id;
-
-  }else{
-
-    const original = list.find(x =>
-      Number(x.is_replacement) !== 1 &&
-      x.assignment_id &&
-      x.status !== 'no_show'
-    );
-
-    targetId = original?.assignment_id || '';
-
-  }
-
-  if (!targetId){
-    toast('找不到可操作人員','error');
-    return;
-  }
-
-  updateStatus(targetId, status);
-
-}
-
-
-
-// 「選人＋送出」核心
-function handleMultiSelect(gameId, role, status){
-
-  const radios = document.querySelectorAll(
-    `[data-game-id="${gameId}"] input[name="select_${gameId}_${role}"]`
-  );
-
-  let selected = null;
-
-  radios.forEach(r=>{
-    if (r.checked) selected = r.value;
-  });
-
-  // ✅ ✅ ✅ 多人但沒選
-  if (radios.length > 0 && !selected){
-    toast('請先選擇實際出席人','warn');
-    return;
-  }
-
-  // ✅ ✅ ✅ 單人（沒有 radio）
-  if (radios.length === 0){
-
-    // ✅ 找該 role 第一人
-    const first = document.querySelector(
-      `[data-game-id="${gameId}"] .person-group`
-    );
-
-    // 👉 直接抓 list（最穩）
-    const g = window._lastData?.find(x => x.game_id == gameId);
-
-    if (!g){
-      toast('找不到資料','error');
-      return;
+      return `<span class="name ${extraClass}">${p.name || '（未確認）'} ${statusTag}${replaceTag}</span>`;
     }
 
-    const p = (g.list || []).find(x => x.role === role);
-
-    if (!p){
-      toast('找不到人員','error');
-      return;
-    }
-
-    selected = p.assignment_id;
-  }
-
-  if (!selected){
-    toast('找不到人員','error');
-    return;
-  }
-
-  updateStatus(selected, status);
-}
- 
-// ✅ 共用 render row（避免重複）
-function renderRow(p, g, isReplacement=false){
-
-  const list = g.list || [];
-
-  const isNoShow = p.status === 'no_show';
-  const isCompleted = p.status === 'completed';
-  const isLate = p.status === 'late';
-  const isScheduled = p.status === 'scheduled';
-
-  // const hasUser = !!p.name;
-  
-  // ✅ ✅ ✅ 若沒 name，用 user_id 補查
-  let displayName = p.name;
-  
-  if (!displayName && p.user_id){
-    const u = userList.find(x => String(x.user_id) === String(p.user_id));
-    if (u){
-      displayName = u.name || u.username;
-    }
-  }
-  
-  const hasUser = !!displayName;
-
-  const usedUserIds = list.map(x => String(x.user_id || ''));
-
-  // ✅ 判斷該角色是否已有支援
-  const hasSupport = list.some(x =>
-    x.role === p.role && Number(x.is_replacement) === 1
-  );
-
-  const locked = isGameLocked(g);
-  const done = (p.status === 'completed' || p.status === 'late');
-  // const isHold = p.status === 'hold';
-  // const isCancelled = p.status === 'ignore' || p.status === 'cancelled';
-  // const isHold = g.status_text === 'hold';
-  // const isCancelled = g.status_text === 'ignore';
-  const isHold = Number(g.status) === 1;
-  const isCancelled = Number(g.status) === 2
-  const isGameCompleted = Number(g.status) === 3;
-
-
-
-  const replaceTag = p.is_replacement == 1
-    ? '<span class="tag tag-replace">支</span>'
-    : '';
-
-  const statusTag = {
-    completed:'<span class="tag tag-ok">完成</span>',
-    late:'<span class="tag tag-late">遲</span>',
-    no_show:'<span class="tag tag-no">缺</span>',
-    hold:'<span class="tag tag-hold">延</span>',        // ✅ 新增
-    ignore:'<span class="tag tag-cancel">停</span>',    // ✅ 新增
-    scheduled:''
-  };
-
-
-  /* ========================
-     🎯 狀態機核心
-  ======================== */
-
-  let actionHTML = '';
-
-  // ✅ 已鎖定 / 已完成 / 已延賽 / 已停賽
-  if (locked || done || isHold || isCancelled){
-
-    actionHTML = `
-      <button onclick="unlock('${p.assignment_id}')">
-        ✏️ 更正
-      </button>
-    `;
-  }
-
-  // ✅ 可操作狀態
-  else{
-
-    // ✅ 正常按鈕
-    actionHTML += `
-      <button class="btn btn-ok"
-        onclick="updateStatus('${p.assignment_id}','completed',this)">
-        完成
-      </button>
-
-      <button class="btn btn-late"
-        onclick="updateStatus('${p.assignment_id}','late',this)">
-        遲到
-      </button>
-
-      <button class="btn btn-no"
-        onclick="updateStatus('${p.assignment_id}','no_show',this)">
-        缺席
-      </button>
-    `;
-
-    // ✅ 改派（沒缺席才能）
-    if (!isNoShow){
-      actionHTML += `
-        <button class="btn btn-assign"
-          onclick="quickAssign('${p.assignment_id}', this)">
-          改派
-        </button>
+    let candidateHTML = '';
+    if (replacement){
+      candidateHTML = `
+        <div class="candidate">${renderTag(original)}<span style="margin:0 6px;">／</span>${renderTag(replacement)}</div>
       `;
+    } else {
+      candidateHTML = rows.map(p => `<div class="candidate">${renderTag(p)}</div>`).join('');
     }
 
-    // ✅ ⭐⭐⭐ 核心：缺席 → 顯示支援
-    if (isNoShow){
+    const highlightClass = role === 'PU' ? 'highlight' : '';
 
-      if (!hasSupport){
-
-        // ✅ 顯示支援按鈕
-        actionHTML += `
-          <button class="btn btn-replace"
-            onclick="quickReplace('${g.game_id}','${p.role}', this)">
-            + 支援
-          </button>
-        `;
-      }
-      else{
-
-        // ✅ 已支援 → 鎖顯示
-        actionHTML += `
-          <span style="color:#2563eb;font-weight:700;">
-            ✅ 已支援
-          </span>
-        `;
-      }
-    }
-
-    // ✅ 人員選單
-   const usedUserIds = list.map(x => String(x.user_id || ''));
-   
-   actionHTML += `
-     <select class="select-user">
-      <option value="">選擇人員</option>
-      ${
-        userList
-          .filter(u => {
-    
-            // ❌ 完全排除 admin
-            if (u.role.includes('admin')) return false;
-    
-            // ✅ 紀錄
-            if (role.startsWith('REC')){
-              return (
-                u.role.includes('record') ||
-                u.role.includes('record_chief')
-              );
-            }
-    
-            // ✅ 裁判
-            return (
-              u.role.includes('judge') ||
-              u.role.includes('chief_judge')
-            );
-    
-          })
-          .map(u =>
-            `<option value="${u.user_id}">
-              ${u.name || u.username}
-            </option>`
-          ).join('')
-      }
-    </select>
-   `;
-  }
-
-  return `
-    <div class="person ${p.status} ${isReplacement ? 'replacement' : ''}"
-         data-id="${p.assignment_id}"
-         data-role="${p.role}">
-
-      <div class="info">
-        <div class="info-line">
-          ${getRoleText(p.role)} ${replaceTag}
-          ｜ ${displayName || '（待位）'}
-          ｜ ${
-            hasUser
-              ? `<span class="status-mini">${statusTag[p.status] || ''}</span>`
-              : getStatusText(p.status)
-          }
+    return `
+      <div class="person-group ${highlightClass}">
+        <div class="role-title">${getRoleText(role)}</div>
+        <div class="candidate-row">${candidateHTML}</div>
+        <div class="actions-box">
+          <button class="btn btn-ok" onclick="handleAutoDecision('${g.game_id}','${role}','completed')">完成</button>
+          <button class="btn btn-late" onclick="handleAutoDecision('${g.game_id}','${role}','late')">遲到</button>
+          <button class="btn btn-no" onclick="handleAutoDecision('${g.game_id}','${role}','no_show')">缺席</button>
+          ${(!hasNoShow && firstAssign) ? `<button class="btn btn-assign" onclick="quickAssign('${firstAssign.assignment_id}', this)">改派</button>` : ''}
+          ${hasNoShow ? `<button class="btn btn-replace" onclick="quickReplace('${g.game_id}','${role}', this)">+ 支援</button>` : ''}
+          <select class="select-user">
+            <option value="">選擇人員</option>
+            ${userList.filter(u => {
+              if (u.role.includes('admin')) return false;
+              if (role.startsWith('REC')) return u.role.includes('record') || u.role.includes('record_chief');
+              return u.role.includes('judge') || u.role.includes('chief_judge');
+            }).map(u => `<option value="${u.user_id}">${u.name || u.username}</option>`).join('')}
+          </select>
         </div>
       </div>
+    `;
+  }
 
-      <div class="actions-box">
-        ${actionHTML}
-      </div>
-    </div>
-  `;
-}
+  function handleAutoDecision(gameId, role, status){
+    const g = window._lastData?.find(x => x.game_id == gameId);
+    if (!g){ toast('找不到賽事','error'); return; }
 
+    const list = g.list.filter(x => x.role === role);
+    const replacement = list.find(x => Number(x.is_replacement) === 1);
+    let targetId = replacement ? replacement.assignment_id : (list.find(x => Number(x.is_replacement) !== 1 && x.assignment_id)?.assignment_id || '');
 
-  
-  /* ========================
-     更新狀態
-  ======================== */
-  function updateStatus(id, status, btn){
-  
-    if (btn && btn.disabled) return;
-    if (btn) btn.disabled = true;
-  
-    const textMap = {
-      completed:'完成',
-      no_show:'缺席',
-      late:'遲到'
-    };
-  
-    toast(`更新「${textMap[status]}」中...`,'loading');
-  
+    if (!targetId){
+      toast('找不到可操作人員','error');
+      return;
+    }
+    updateStatus(targetId, status);
+  }
+
+  function updateStatus(id, status){
+    const textMap = { completed:'完成', no_show:'缺席', late:'遲到', scheduled:'重置' };
+    toast(`更新狀態中...`,'loading');
+
     callApi({
       action:'updateAssignment',
       assignment_id:id,
       status:status
     }, res=>{
-  
-      // ✅ 🔥 先清 loading
-      toast('', 'ok'); 
-  
-
-
-     if (res && res.result === 'ok'){
-     
-       toast(`✅ 已標記：${textMap[status]}`);
-     
-       // updateRowUI(id, status);
-       load();   // ✅ 直接重整
-     
-       // ✅ ✅ ✅ 🔥 如果是 no_show，要刷新（讓 "支" 出現）
-       if (status === 'no_show'){
-         setTimeout(load, 0);
-       }
-     }
-      else{
-        toast(res.message || '更新失敗','error');
-        if (btn) btn.disabled = false;
+      if (res && res.result === 'ok'){
+        toast(`✅ 已標記：${textMap[status] || status}`);
+        load();
+      } else {
+        toast(res?.message || '更新失敗','error');
       }
-  
     });
   }
-  
-  /* ========================
-     ✅ Toast通知（關鍵）
-  ======================== */
-  let currentToast = null;
-  
-  function toast(msg,type='ok'){
-  
-    // ✅ 清掉舊的
-    if (currentToast){
-      currentToast.remove();
-      currentToast = null;
-    }
-  
-    const div = document.createElement('div');
-  
-    const colorMap = {
-      ok:'#16a34a',
-      error:'#dc2626',
-      warn:'#f59e0b',
-      loading:'#374151'
-    };
-  
-    div.innerHTML = msg;
-  
-    div.style = `
-      position:fixed;
-      bottom:20px;
-      left:50%;
-      transform:translateX(-50%);
-      background:${colorMap[type]};
-      color:#fff;
-      padding:10px 16px;
-      border-radius:8px;
-      z-index:9999;
-      font-size:14px;
-    `;
-  
-    document.body.appendChild(div);
-    currentToast = div;
-  
-    // ✅ loading 不自動消失
-    if (type !== 'loading'){
-      setTimeout(()=>{
-        if (div === currentToast){
-          div.remove();
-          currentToast = null;
-        }
-      },1500);
-    }
-  }
 
-  /* ========================
-     ✅ 異動出勤狀態，解鎖按鍵
-  ======================== */
- function unlock(id){
+  function quickAssign(id, btn){
+    const group = btn.closest('.person-group');
+    const select = group?.querySelector('.select-user');
+    const uid = select?.value;
 
-  if (!confirm('確定要更正這筆出勤狀態？')) return;
+    if (!uid){ toast('請先選人','warn'); return; }
 
-  toast('解鎖中...','loading');
+    const gameId = btn.closest('.game-card')?.dataset.gameId;
+    const g = window._lastData?.find(x => x.game_id == gameId);
+    const p = (g?.list || []).find(x => x.assignment_id == id);
 
-  callApi({
-    action:'updateAssignment',
-    assignment_id:id,
-    status:'scheduled'
-  }, res => {
+    if (!p){ toast('找不到人員資料','error'); return; }
+    const role = p.role;
 
-    if (res.result === 'ok'){
-      toast('✅ 已解鎖，可重新編輯');
-      load();
-    }else{
-      toast(res.message || '解鎖失敗','error');
-    }
-
-  });
-}
-
-// 支援時「原人自動 no_show」
- function autoNoShow(gameId, role){
-
-  callApi({
-    action:'autoNoShow',
-    game_id:gameId,
-    role:role
-  });
-}
-
-// 判斷是否已完成
-function isGameCompleted(g){
-
-  // ✅ ✅ ✅ ① 優先使用 Game.status（正式標準）
-  if (g && g.status !== undefined){
-    return Number(g.status) === 3;
-  }
-
-  // ✅ ✅ ✅ ② fallback（避免舊資料或 API 沒帶 status）
-  const roleDone = {};
-
-  (g.list || []).forEach(p=>{
-    if (p.status === 'completed'){
-      roleDone[p.role] = true;
-    }
-  });
-
-  const roleCount = new Set((g.list || []).map(x=>x.role)).size;
-
-  return Object.keys(roleDone).length === roleCount;
-}
-
-
-// 狀態中文化
-function getStatusText(s){
-
- const map = {
-   scheduled:'待確認',
-   completed:'已完成',
-   late:'遲到',
-   no_show:'缺席',
-   hold:'延賽',
-   ignore:'停賽'
- };
-
-
-  return map[s] || s;
-}
-
-
-function getRoleText(role){
-
-  const map = {
-    PU:'主審',
-    U1:'一壘審',
-    U2:'二壘審',
-    U3:'三壘審',
-    REC_MAIN:'紀錄員',
-    REC_TRAINEE:'實習紀錄員',
-    REC_VIDEO:'影像紀錄員'
-  };
-
-  return map[role] || role;
-}
-
-// 狀態 badge
-function getStatusBadge(s){
-
-  const map = {
-    completed:'<span class="badge done">已完成</span>',
-    no_show:'<span class="badge no">缺席</span>',
-    late:'<span class="badge late">遲到</span>',
-    scheduled:'<span class="badge">待確認</span>',
-    hold:'<span class="badge warn">延賽</span>',
-    ignore:'<span class="badge cancel">停賽</span>'
-
-  };
-
-  return map[s] || '';
-}
-
-// 快速改派
-function quickAssign(id, btn){
-
-  const group = btn.closest('.person-group');
-  if (!group){
-    toast('找不到區塊','error');
-    return;
-  }
-
-  const select = group.querySelector('.select-user');
-  const uid = select?.value;
-
-  if (!uid){
-    toast('請先選人','warn');
-    return;
-  }
-
-  const gameId = btn.closest('.game-card')?.dataset.gameId;
-
-  const g = window._lastData?.find(x => x.game_id == gameId);
-  const p = (g?.list || []).find(x => x.assignment_id == id);
-
-  if (!p){
-    toast('找不到人員資料','error');
-    return;
-  }
-
-  const role = p.role;
-
-  let params = {};
-  let action = '';
-
-  if (!role.startsWith('REC')){
-    action = 'assignJudgeToPosition_admin';
-    params = {
-      action,
+    let params = !role.startsWith('REC') ? {
+      action: 'assignJudgeToPosition_admin',
       game_id: gameId,
       role: role,
       judge_id: uid
-    };
-  }else{
-    action = 'assignRecord_admin';
-    params = {
-      action,
+    } : {
+      action: 'assignRecord_admin',
       game_id: gameId,
       record_role: role,
       user_id: uid
     };
-  }
 
-  console.log('assign payload =', params);
-
-  callApi(params, (res)=>{
-
-    if (!res || res.result !== 'ok'){
-      toast(res?.message || '❌ 改派失敗','error');
-      return;
-    }
-
-    toast('✅ 已改派');
-    load();
-  });
-}
-
-
-
-/* ========================
-   快速支援（最終穩定版）
-======================== */
-function quickReplace(gameId, role, btn){
-
-  const group = btn.closest('.person-group');
-  if (!group){
-    toast('找不到區塊','error');
-    return;
-  }
-
-  const select = group.querySelector('.select-user');
-  const uid = select?.value;
-
-  if (!uid){
-    toast('請先選支援人員','warn');
-    return;
-  }
-
-  toast('新增支援中...','loading');
-
-  callApi({
-    action:'addReplacement',
-    game_id:gameId,
-    role:role,
-    user_id:uid
-  }, (res)=>{
-
-    if(!res){
-      toast('API 無回應','error');
-      return;
-    }
-
-    if(res.result !== 'ok'){
-      toast(res.message || '新增失敗','error');
-      return;
-    }
-
-    autoNoShow(gameId, role);
-
-    toast('✅ 支援成功');
-    load();
-  });
-}
-
-
-// 判斷是否有遲到，才能遞補
-function checkRoleNoShow(gameId, role){
-
-  const card = document.querySelector(`[data-game-id="${gameId}"]`);
-  if (!card) return false;
-
-  const rows = card.querySelectorAll('.person');
-
-  for (let r of rows){
-
-    if (
-      r.getAttribute('data-role') === role &&
-      r.classList.contains('no_show')
-    ){
-      return true;
-    }
-  }
-
-  return false;
-}
-
-
-// 一鍵整場完成
-function completeGame(gameId){
-
-  // ✅ 🔥 檢查是否有未選
-  const groups = document.querySelectorAll(
-    `[data-game-id="${gameId}"] .candidate-row`
-  );
-
-  for (let g of groups){
-
-    const radios = g.querySelectorAll('input[type="radio"]');
-
-    if (radios.length > 0){
-
-      let ok = false;
-
-      radios.forEach(r=>{
-        if (r.checked) ok = true;
-      });
-
-      if (!ok){
-        toast('有位置尚未選擇人員','warn');
+    callApi(params, (res)=>{
+      if (!res || res.result !== 'ok'){
+        toast(res?.message || '❌ 改派失敗','error');
         return;
       }
-    }
-  }
-
-  if(!confirm('確定整場完成？')) return;
-
-   callApi({
-     action:'completeGame',
-     game_id:gameId
-   }, res=>{
-   
-     console.log('completeGame=',res);
-   
-     if (
-       res &&
-       (
-         res.result === 'ok' ||
-         res.success === true
-       )
-     ){
-   
-       toast('✅ 完成');
-   
-       setTimeout(load,100);
-   
-     }else{
-   
-       toast('❌ 完成失敗','error');
-   
-     }
-   
-   });
-}
-
-
-
-// 單一完成
-function completeOne(btn){
-
-  const row = btn.closest('.person');
-
-  const assignmentId = row.dataset.id;   // ✅ 每一個人都要有
-  if(!assignmentId){
-    console.error('❌ 找不到 assignment_id');
-    return;
-  }
-
-  toast('處理中...','loading');
-
-  callApi({
-    action:'updateAssignment',
-    assignment_id: assignmentId,
-    status: 'completed'
-  }, res => {
-
-    console.log('updateAssignment=',res);
-
-    if(res.result==='ok'){
-      toast('✅ 已完成');
+      toast('✅ 已改派');
       load();
-    }else{
-      toast('❌ 失敗','error');
-    }
-
-  });
-}
- 
-//
-function updateRowUI(id, status){
-
-  const row = document.querySelector(`[data-id="${id}"]`);
-  if (!row) return;
-
-  // ✅ 更新顏色
-  row.classList.remove('completed','no_show','late','scheduled');
-  row.classList.add(status);
-
-  // ✅ ✅ ✅ 🔥 更新狀態文字（你現在缺這行）
-  const statusEl = row.querySelector('.status');
-  if (statusEl){
-    statusEl.innerHTML = getStatusText(status);
-  }
-
-  // ✅ 如果變回 scheduled → 重新開啟按鈕
-  if (status !== 'completed'){
-    const actions = row.querySelector('.actions-box');
-    if (actions && actions.innerHTML.includes('更正')){
-      setTimeout(()=>{
-        load();   // ✅ 保證回復完整UI
-      },100);
-    }
-  }
-
-  // ✅ ✅ ✅ 🔥 如果完成 → 切換為鎖定UI
-  if (status === 'completed'){
-
-    const actions = row.querySelector('.actions-box');
-
-    if (actions){
-      actions.innerHTML = `
-        <button onclick="unlock('${id}')">
-          ✏️ 更正
-        </button>
-      `;
-    }
-  }
-}
-
-// 一鍵重新計算分數
-function recalcScore(){
-
-  if(!confirm('確定重新計算所有分數？')) return;
-
-  const btn = document.querySelector('.btn-recalc');
-
-  // ✅ 防連點
-  if (btn && btn.dataset.loading === '1') return;
-
-  if (btn){
-    btn.dataset.loading = '1';
-    btn.disabled = true;
-    btn.innerText = '計算中...';
-  }
-
-  toast('分數計算中...','loading');
-
-  callApi({action:'recalcAllScores'}, res=>{
-
-    console.log('recalc result =', res);
-
-    // ✅ 清按鈕狀態
-    if (btn){
-      btn.dataset.loading = '0';
-      btn.disabled = false;
-      btn.innerText = '🔄 重算分數';
-    }
-
-    // ✅ ✅ ✅ 正確判斷（只看 result）
-    if (!res || res.result !== 'ok'){
-      toast(res?.message || '❌ 計算失敗','error');
-      return;
-    }
-
-    // ✅ ✅ ✅ 統一欄位（關鍵）
-    const count =
-      res.users_updated ??
-      res.updated ??
-      res.count ??
-      0;
-
-    // ✅ 永遠成功（不看 count）
-    toast(`✅ 分數已更新（${count}人）`);
-
-  });
-}
-
-// 建立出勤資料
-function runAutoAssign(){
-
-  if(!confirm('建立尚未產生的出勤資料？')) return;
-
-  toast('建立中...','loading');
-
-  callApi({action:'autoCreateAssignment'}, res=>{
-
-    if (res.result === 'ok'){
-      toast(`✅ 已建立 ${res.created} 筆`);
-      load();
-    }else{
-      toast('❌ 建立失敗','error');
-    }
-
-  });
-}
-
-// 年度統計
-function loadYearly(){
-
-  const year = new Date().getFullYear();
-
-  document.getElementById('yearModal').classList.remove('hidden');
-  document.getElementById('yearContent').innerHTML = '載入中...';
-
-  callApi({
-    action:'getYearlyExperience',
-    year:year
-  }, res=>{
-
-    if (!res || res.result !== 'ok'){
-      document.getElementById('yearContent').innerHTML =
-        '<div class="empty">❌ 讀取失敗</div>';
-      return;
-    }
-
-    const judge = res.judge || [];
-    const record = res.record || [];
-    const all = [...judge, ...record];
-
-    window._yearRaw = {
-      judge,
-      record,
-      allAssignments: []
-    };
-
-    window._yearData = all;
-    window._yearType = 'all';
-
-    // ✅ ✅ ✅ 關鍵：一定要先抓 assignment
-    callApi({action:'getAssignments'}, res2=>{
-
-      window._yearRaw.allAssignments = res2?.data || [];
-
-      console.log('✅ assignments loaded',
-        window._yearRaw.allAssignments.length
-      );
-
-      renderYearTable('all');
-
     });
-
-  });
-}
-
-
-// 切換（裁判 / 紀錄）
-function renderYearTable(type){
-
-  window._yearType = type;
-
-  let list = [];
-
-  if (type === 'judge'){
-    list = window._yearRaw.judge;
-  }
-  else if (type === 'record'){
-    list = window._yearRaw.record;
-  }
-  else{
-    list = window._yearData;
   }
 
-  if (!list.length){
-    document.getElementById('yearContent').innerHTML =
-      '<div class="empty">此分類沒有資料</div>';
-    return;
+  function quickReplace(gameId, role, btn){
+    const group = btn.closest('.person-group');
+    const select = group?.querySelector('.select-user');
+    const uid = select?.value;
+
+    if (!uid){ toast('請先選支援人員','warn'); return; }
+    toast('新增支援中...','loading');
+
+    callApi({
+      action:'addReplacement',
+      game_id:gameId,
+      role:role,
+      user_id:uid
+    }, (res)=>{
+      if(!res || res.result !== 'ok'){
+        toast(res?.message || '新增失敗','error');
+        return;
+      }
+      toast('✅ 支援成功');
+      load();
+    });
   }
 
-  drawTable(list);
-}
+  function completeGame(gameId){
+    if(!confirm('確定整場完成？')) return;
+    callApi({ action:'completeGame', game_id:gameId }, res=>{
+      if (res && (res.result === 'ok' || res.success === true)){
+        toast('✅ 整場完成');
+        load();
+      } else {
+        toast('❌ 完成失敗','error');
+      }
+    });
+  }
 
-// 年度統計 Tab 抽出
-function renderYearTabs(){
-  return `
-    <button onclick="switchYearType('all')"
-      style="${window._yearType==='all'?'background:#2563eb;color:#fff':''}">
-      全部(${window._yearData.length})
-    </button>
+  function reopenGame(gameId){
+    if (!confirm('確定要重新開放此場比賽（補賽）？')) return;
+    toast('補賽開啟中...','loading');
+    callApi({ action:'reopenGame', game_id:gameId }, res=>{
+      if (res && res.result === 'ok'){
+        toast('✅ 已開放補賽');
+        load();
+      } else {
+        toast(res?.message || '❌ 補賽失敗','error');
+      }
+    });
+  }
 
-    <button onclick="switchYearType('judge')"
-      style="${window._yearType==='judge'?'background:#2563eb;color:#fff':''}">
-      裁判(${window._yearRaw.judge.length})
-    </button>
+  function setGameHold(gameId){
+    if (!confirm('確定要將本場設為延賽？')) return;
+    toast('更新中...','loading');
+    callApi({ action:'setGameStatus', game_id:gameId, status:1 }, res=>{
+      if (res && res.result === 'ok'){
+        toast('✅ 已延賽');
+        load();
+      } else {
+        toast('❌ 失敗','error');
+      }
+    });
+  }
 
-    <button onclick="switchYearType('record')"
-      style="${window._yearType==='record'?'background:#2563eb;color:#fff':''}">
-      紀錄(${window._yearRaw.record.length})
-    </button>
-  `;
-}
+  function runAutoAssign(){
+    if(!confirm('建立尚未產生的出勤資料？')) return;
+    toast('建立中...','loading');
+    callApi({ action:'autoCreateAssignment' }, res=>{
+      if (res && res.result === 'ok'){
+        toast(`✅ 已建立 ${res.created || 0} 筆`);
+        load();
+      } else {
+        toast(res?.message || '建立失敗','error');
+      }
+    });
+  }
 
- 
-// 年度統計的表格
-// ✅ 狀態
-window._yearType = 'all';
-window._yearData = [];
-window._yearRaw = { judge:[], record:[] };
+  function recalcScore(){
+    if(!confirm('確定重新計算所有分數？')) return;
+    toast('分數計算中...','loading');
+    callApi({ action:'recalcAllScores' }, res=>{
+      if (!res || res.result !== 'ok'){
+        toast(res?.message || '❌ 計算失敗','error');
+        return;
+      }
+      toast(`✅ 分數已更新`);
+    });
+  }
 
-// ✅ 分數格式
-function fmt(n){
-  const num = Number(n ?? 0);
-  return Number.isInteger(num) ? num : num.toFixed(2);
-}
+  function loadYearly(){
+    const year = new Date().getFullYear();
+    document.getElementById('yearModal').classList.remove('hidden');
+    document.getElementById('yearContent').innerHTML = '載入中...';
 
-// ✅ 排名 icon
-function rankIcon(r){
-  if (r === 1) return '🥇';
-  if (r === 2) return '🥈';
-  if (r === 3) return '🥉';
-  return r;
-}
- 
-// 表格（最終UI）
-function drawTable(list){
+    callApi({ action:'getYearlyExperience', year:year }, res=>{
+      if (!res || res.result !== 'ok'){
+        document.getElementById('yearContent').innerHTML = '<div class="empty">❌ 讀取失敗</div>';
+        return;
+      }
+      const judge = res.judge || [];
+      const record = res.record || [];
+      window._yearRaw = { judge, record, allAssignments: [] };
+      window._yearData = [...judge, ...record];
+      window._yearType = 'all';
 
-  list.sort((a,b)=>{
-    if ((b.final_score ?? 0) !== (a.final_score ?? 0)){
-      return (b.final_score ?? 0) - (a.final_score ?? 0);
+      callApi({action:'getAssignments'}, res2=>{
+        window._yearRaw.allAssignments = res2?.data || [];
+        renderYearTable('all');
+      });
+    });
+  }
+
+  function renderYearTable(type){
+    window._yearType = type;
+    let list = type === 'judge' ? window._yearRaw.judge : type === 'record' ? window._yearRaw.record : window._yearData;
+    if (!list.length){
+      document.getElementById('yearContent').innerHTML = '<div class="empty">此分類沒有資料</div>';
+      return;
     }
-    if ((b.completed ?? 0) !== (a.completed ?? 0)){
-      return (b.completed ?? 0) - (a.completed ?? 0);
-    }
-    return (a.no_show ?? 0) - (b.no_show ?? 0);
-  });
+    drawTable(list);
+  }
 
-  list.forEach((u,i)=> u.rank = i+1);
+  function renderYearTabs(){
+    return `
+      <div style="display:flex; gap:6px; margin-bottom:12px;">
+        <button class="btn" style="height:32px; ${window._yearType==='all'?'background:#2563eb;':'background:#cbd5e1;color:#333;'}" onclick="switchYearType('all')">全部 (${window._yearData.length})</button>
+        <button class="btn" style="height:32px; ${window._yearType==='judge'?'background:#2563eb;':'background:#cbd5e1;color:#333;'}" onclick="switchYearType('judge')">裁判 (${window._yearRaw.judge.length})</button>
+        <button class="btn" style="height:32px; ${window._yearType==='record'?'background:#2563eb;':'background:#cbd5e1;color:#333;'}" onclick="switchYearType('record')">紀錄 (${window._yearRaw.record.length})</button>
+      </div>
+    `;
+  }
+
+  function switchYearType(type){
+    renderYearTable(type);
+  }
 
   function fmt(n){
     const num = Number(n ?? 0);
@@ -2007,6 +774,44 @@ function drawTable(list){
     if (r === 3) return '🥉';
     return r;
   }
+
+// 表格（最終UI + 去重處理）
+function drawTable(list){
+
+  // ✅ 透過 Map 以 user_id 進行去重，避免重複的使用者被列出多次
+  const uniqueMap = new Map();
+  list.forEach(item => {
+    const uid = String(item.user_id || item.name); // 優先用 user_id，若無則用 name
+    if (!uniqueMap.has(uid)) {
+      // 深拷貝一份避免汙染原始資料
+      uniqueMap.set(uid, { ...item });
+    } else {
+      // 若重複出現，可將數據進行累加或合併（視需求而定，這裡示範數值累加）
+      const existing = uniqueMap.get(uid);
+      existing.attendance = (Number(existing.attendance) || 0) + (Number(item.attendance) || 0);
+      existing.completed = (Number(existing.completed) || 0) + (Number(item.completed) || 0);
+      existing.late = (Number(existing.late) || 0) + (Number(item.late) || 0);
+      existing.no_show = (Number(existing.no_show) || 0) + (Number(item.no_show) || 0);
+      existing.score_total = (Number(existing.score_total) || 0) + (Number(item.score_total) || 0);
+      // 分數或權重可取較高者或平均
+      existing.final_score = Math.max(Number(existing.final_score) || 0, Number(item.final_score) || 0);
+    }
+  });
+
+  // 轉回陣列
+  const dedupedList = Array.from(uniqueMap.values());
+
+  dedupedList.sort((a,b)=>{
+    if ((b.final_score ?? 0) !== (a.final_score ?? 0)){
+      return (b.final_score ?? 0) - (a.final_score ?? 0);
+    }
+    if ((b.completed ?? 0) !== (a.completed ?? 0)){
+      return (b.completed ?? 0) - (a.completed ?? 0);
+    }
+    return (a.no_show ?? 0) - (b.no_show ?? 0);
+  });
+
+  dedupedList.forEach((u,i)=> u.rank = i+1);
 
   let html = '';
 
@@ -2031,7 +836,7 @@ function drawTable(list){
 
   html += '</tr></thead><tbody>';
 
-  list.forEach(p=>{
+  dedupedList.forEach(p=>{
 
     const total = p.attendance ?? 0;
     const career = p.career_attendance ?? total;
@@ -2083,416 +888,69 @@ function drawTable(list){
   document.getElementById('yearContent').innerHTML = html;
 }
 
-// 等級
-function renderLevel(lv){
-
-  const map = {
-    S:{c:'#9333ea',t:'S'},
-    A:{c:'#2563eb',t:'A'},
-    B:{c:'#16a34a',t:'B'},
-    C:{c:'#d97706',t:'C'},
-    N:{c:'#6b7280',t:'N'}
-  };
-
-  const m = map[lv] || map.N;
-
-  return `<span style="color:${m.c};font-weight:700">${m.t}</span>`;
-}
-
-// 關閉年度統計的按
-function closeYearModal(){
-  document.getElementById('yearModal').classList.add('hidden');
-}
-
-//
-function switchYearType(type){
-  window._yearType = type;
-  renderYearTable(type);
-}
-
-// 個人分析模組
-function openUserDetail(userId){
-
-  if (!window._yearRaw?.allAssignments?.length){
-    alert('資料尚未載入完成');
-    return;
+  function renderLevel(lv){
+    const map = { S:{c:'#9333ea',t:'S'}, A:{c:'#2563eb',t:'A'}, B:{c:'#16a34a',t:'B'}, C:{c:'#d97706',t:'C'}, N:{c:'#6b7280',t:'N'} };
+    const m = map[lv] || map.N;
+    return `<span style="color:${m.c};font-weight:700">${m.t}</span>`;
   }
 
-  const all = window._yearData || [];
-  const p = all.find(x => String(x.user_id) === String(userId));
-  if (!p) return;
+  function closeYearModal(){ document.getElementById('yearModal').classList.add('hidden'); }
+  function closeUserModal(){ document.getElementById('userModal').classList.add('hidden'); }
 
-  document.getElementById('userModal').classList.remove('hidden');
+  function openUserDetail(userId){
+    if (!window._yearRaw?.allAssignments?.length){ alert('資料尚未載入完成'); return; }
+    const p = (window._yearData || []).find(x => String(x.user_id) === String(userId));
+    if (!p) return;
 
-  // =========================
-  // ✅ 年度資料
-  // =========================
-  const total = p.attendance ?? 0;
-  const completed = p.completed ?? 0;
-  const late = p.late ?? 0;
-  const no_show = p.no_show ?? 0;
-
-  // ✅ 年度出勤品質
-  // ✅ 表現品質（不含缺席）
-  const yearValid = completed + late;
-  const yearQuality = yearValid
-    ? Math.round((completed / yearValid) * 100)
-    : 0;
-  
-  // ✅ ✅ ✅ 出勤品質（含缺席）🔥
-  const yearAttendanceQuality =
-    (completed + late + no_show)
-      ? Math.round((completed / (completed + late + no_show)) * 100)
-      : 0;
-
-
-  // =========================
-  // ✅ ✅ ✅ 生涯計算（唯一標準🔥）
-  // =========================
-  let career_completed = 0;
-  let career_late = 0;
-  let career_no_show = 0;
-
-  const roleCareer = {};
-
-  const allAssign = window._yearRaw.allAssignments || [];
-
-  allAssign.forEach(g => {
-
-    (g.list || []).forEach(a => {
-
-      if (String(a.user_id) !== String(userId)) return;
-
-      if (a.status === 'completed'){
-        career_completed++;
-      }
-
-      if (a.status === 'late'){
-        career_late++;
-      }
-
-      if (a.status === 'no_show'){
-        career_no_show++;
-      }
-
-      // ✅ ✅ ✅ 角色只算有效
-      if (a.status === 'completed' || a.status === 'late'){
-
-        if (!roleCareer[a.role]) roleCareer[a.role] = 0;
-        roleCareer[a.role]++;
-
-      }
-
-    });
-
-  });
-
-  const career_total = career_completed + career_late;
-
-  // ✅ ✅ ✅ 生涯品質（新增🔥）
-  const careerQuality = career_total
-    ? Math.round((career_completed / career_total) * 100)
-    : 0;
-
-  /* =========================
-     ✅ 角色表
-  ========================= */
-  const roleTableHTML = (()=>{
-
-    const roleCount = p.role_count || {};
-    const roleCompleted = p.role_completed || {};
-
-    const roles = Object.keys(roleCount);
-
-    if (!roles.length){
-      return '<div class="empty">無角色資料</div>';
-    }
-
-    let html = `
-      <table class="mini-table">
-        <thead>
-          <tr>
-            <th>角色</th>
-            <th>年度</th>
-            <th>生涯</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-
-    roles.forEach(r=>{
-
-      const total = roleCount[r] || 0;
-      const done  = roleCompleted[r] || 0;
-      const career = roleCareer[r] || 0;
-
-      html += `
-        <tr>
-          <td>${mapRole(r)}</td>
-          <td>
-            <span style="font-weight:700;color:#111;">
-              ${done} / ${total}
-            </span>
-          </td>
-          <td>${career}</td>
-        </tr>
-      `;
-    });
-
-    html += '</tbody></table>';
-
-    return html;
-  })();
-
-  // ✅ 穩定標記
-  const stable =
-    no_show === 0 && completed >= 10 ? '🔥 穩定' : '';
-
-  /* =========================
-     ✅ UI
-  ========================= */
-  document.getElementById('userContent').innerHTML = `
-    <div style="padding:12px;">
-
-      <h3 style="margin-bottom:6px;">
-        ${p.name} ${stable}
-      </h3>
-
-      <div style="color:#666;margin-bottom:14px;">
-        聯盟等級：${renderLevel(p.league_level)}
-      </div>
-
+    document.getElementById('userModal').classList.remove('hidden');
+    document.getElementById('userContent').innerHTML = `
+      <h3 style="font-size:16px; font-weight:800; margin-bottom:6px;">${p.name}</h3>
+      <div style="color:#64748b; margin-bottom:14px; font-size:13px;">聯盟等級：${renderLevel(p.league_level)}</div>
       <div class="stat-grid">
-
         ${card('經驗值', fmt(p.score_total))}
-        ${card('年度出勤', total)}
-        ${card('生涯品質', careerQuality + '%')}
-        ${card('出勤穩定度', yearAttendanceQuality + '%')}
-
-
+        ${card('年度出勤', p.attendance ?? 0)}
+        ${card('完成場次', p.completed ?? 0)}
+        ${card('排位分數', fmt(p.final_score))}
       </div>
-
-      <hr style="margin:14px 0;">
-
-      <table class="mini-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>完成</th>
-            <th>遲到</th>
-            <th>缺席</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>年度</td>
-            <td>${completed}</td>
-            <td>${late}</td>
-            <td>${no_show}</td>
-          </tr>
-          <tr>
-            <td>生涯</td>
-            <td>${career_completed}</td>
-            <td>${career_late}</td>
-            <td>${career_no_show}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <hr style="margin:14px 0;">
-
-      <h4>📊 各角色分布（生涯）</h4>
-        ${roleTableHTML}
-
-      <canvas id="roleChart" width="380" height="260"></canvas>
-
-    </div>
-  `;
-
-  // ✅ ✅ ✅ 圖表統一
-  drawRoleChart(roleCareer);
-}
-
-
-
-// 畫圓餅圖
-function drawRoleChart(data){
-
-  const canvas = document.getElementById('roleChart');
-  if (!canvas) return;
-
-  const ctx = canvas.getContext('2d');
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const values = Object.values(data);
-  // const labels = Object.keys(data);
-  const labels = Object.keys(data).map(mapRole);
-  const rawKeys = Object.keys(data);
-
-  const total = values.reduce((a,b)=>a+b, 0);
-
-  if (!total){
-    ctx.font = "14px sans-serif";
-    ctx.fillText('無資料', 90, 130);
-    return;
+    `;
   }
 
-  const colorMap = {
-    '主審':'#2563eb',
-    '一壘審':'#16a34a',
-    '二壘審':'#f59e0b',
-    '三壘審':'#dc2626',
-    '紀錄員':'#9333ea',
-    '影像紀錄員':'#0ea5e9',
-    '實習紀錄員':'#6b7280'
-  };
+  function card(label, value){
+    return `<div class="stat-card"><div class="stat-title">${label}</div><div class="stat-value">${value}</div></div>`;
+  }
 
-  let start = 0;
+  function getRoleText(role){
+    const map = { PU:'主審', U1:'一壘審', U2:'二壘審', U3:'三壘審', REC_MAIN:'紀錄員', REC_TRAINEE:'實習紀錄員', REC_VIDEO:'影像紀錄員' };
+    return map[role] || role;
+  }
 
-  // ✅ 圓餅
-  values.forEach((v,i)=>{
+  function getTournamentInfo(type){
+    const map = {
+      default: { text: '聯盟賽事', color: '#2563eb' },
+      cup: { text: '盃賽', color: '#16a34a' },
+      league: { text: '聯賽', color: '#7c3aed' }
+    };
+    return map[type] || map.default;
+  }
 
-    const slice = (v/total) * Math.PI * 2;
-
-    ctx.beginPath();
-    ctx.moveTo(110,130);
-    ctx.arc(110,130,90, start, start+slice);
-    ctx.closePath();
-
-    const roleName = mapRole(rawKeys[i]);
-    const color = colorMap[roleName] || '#999';
-
-    ctx.fillStyle = color;
-    ctx.fill();
-
-    start += slice;
-  });
-
-  // ✅ ✅ 中心數（只畫一次）
-  ctx.fillStyle = "#111";
-  ctx.font = "bold 16px sans-serif";
-  ctx.fillText(total + '場', 90, 135);
-
-  // ✅ 圖例
-  ctx.font = "13px sans-serif";
-
-  labels.forEach((l,i)=>{
-
-    const count = data[l];
-    const percent = Math.round((count/total) * 100);
-
-    const y = 60 + i * 26;
-
-    const color = colorMap[l] || '#999';
-
-
-    // ✅ ① 先畫色塊
-    ctx.fillStyle = color;
-    ctx.fillRect(210, y, 12, 12);
-  
-    // ✅ ② 再畫文字（蓋在上面）
-    ctx.fillStyle = "#333";
-    ctx.font = "13px sans-serif";
-
-    // 調整圖示文字位置
-    ctx.fillText(
-      `${l}  ${count} (${percent}%)`,
-       230,
-      y + 10
-    );
-
-  });
-}
-
-
-// 關閉個人分析模組
-function closeUserModal(){
-  document.getElementById('userModal').classList.add('hidden');
-}
-
-// 英文代碼中文化
-function mapRole(role){
-
-  const m = {
-    PU:'主審',
-    U1:'一壘審',
-    U2:'二壘審',
-    U3:'三壘審',
-    REC_MAIN:'紀錄員',
-    REC_VIDEO:'影像紀錄員',
-    REC_TRAINEE:'實習紀錄員'
-  };
-
-  return m[role] || role;
-}
-
-// 卡片美化用
-function card(label, value){
-  return `
-    <div class="stat-card">
-      <div class="stat-title">${label}</div>
-      <div class="stat-value">${value}</div>
-    </div>
-  `;
-}
-
-// 補賽
-function reopenGame(gameId){
-
-  if (!confirm('確定要重新開放此場比賽（補賽）？')) return;
-
-  toast('補賽開啟中...','loading');
-
-  callApi({
-    action:'reopenGame',
-    game_id:gameId
-  }, res=>{
-
-    console.log('reopenGame result =', res);  // ✅ 🔥 debug用
-
-    if (!res){
-      toast('❌ API 無回應','error');
-      return;
+  let currentToast = null;
+  function toast(msg, type='ok'){
+    if (currentToast){ currentToast.remove(); currentToast = null; }
+    const div = document.createElement('div');
+    const colorMap = { ok:'#16a34a', error:'#dc2626', warn:'#f59e0b', loading:'#374151' };
+    div.innerHTML = msg;
+    div.style = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:${colorMap[type] || '#374151'}; color:#fff; padding:10px 16px; border-radius:8px; z-index:9999; font-size:14px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,.2);`;
+    document.body.appendChild(div);
+    currentToast = div;
+    if (type !== 'loading'){
+      setTimeout(()=>{ if (div === currentToast){ div.remove(); currentToast = null; } }, 2000);
     }
+  }
 
-    if (res.result === 'ok'){
-      toast('✅ 已開放補賽，可重新指派');
-      load();
-      return;
-    }
-
-    // ✅ ✅ ✅ 🔥 顯示後端錯誤訊息（關鍵）
-    toast(res.message || '❌ 補賽失敗','error');
-
-  });
-}
-
-
-// 延賽
-function setGameHold(gameId){
-
-  if (!confirm('確定要將本場設為延賽？')) return;
-
-  toast('更新中...','loading');
-
-  callApi({
-    action:'setGameStatus',
-    game_id:gameId,
-    status:1   // hold
-  }, res=>{
-    if (res.result === 'ok'){
-      toast('✅ 已延賽');
-      load();
-    }else{
-      toast('❌ 失敗','error');
-    }
-  });
-}
-
+  function logout() {
+    localStorage.removeItem('session_user');
+    window.location.href = 'login.html';
+  }
 </script>
-
 </body>
 </html>
