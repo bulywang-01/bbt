@@ -9,11 +9,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <!-- ✅ 你原本就有的 JS（一定要） -->
+  <!-- 核心 JS -->
   <script src="js/auth.js"></script>
   <script src="js/config.js"></script>
   <script src="js/admin_dashboard.js"></script>
@@ -42,71 +41,18 @@
   </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
-    body { 
-      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
+    body { font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-    /* 桌機缺額紅底黃字 */
-    .vacancy-badge{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:32px;
-      padding:2px 8px;
-      border-radius:999px;
-      background:#dc2626;
-      color:#facc15;
-      font-weight:700;
-      font-size:12px;
-    }
-    
-    .assigned-name{
-      color:#fde047;
-      font-weight:600;
-    }
-
-    /*手機版*/
-    .mobile-duty{
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-      margin-top:6px;
-    }
-    
-    .duty-ok{
-      background:#16a34a;
-      color:#fff;
-      border-radius:999px;
-      padding:2px 8px;
-      font-size:11px;
-      font-weight:700;
-    }
-    
-    .duty-miss{
-      background:#dc2626;
-      color:#facc15;
-      border-radius:999px;
-      padding:2px 8px;
-      font-size:11px;
-      font-weight:700;
-    }
+    .vacancy-badge{ display:inline-flex; align-items:center; justify-content:center; min-width:32px; padding:2px 8px; border-radius:999px; background:#dc2626; color:#facc15; font-weight:700; font-size:12px; }
+    .assigned-name{ color:#fde047; font-weight:600; }
+    .mobile-duty{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+    .duty-ok{ background:#16a34a; color:#fff; border-radius:999px; padding:2px 8px; font-size:11px; font-weight:700; }
+    .duty-miss{ background:#dc2626; color:#facc15; border-radius:999px; padding:2px 8px; font-size:11px; font-weight:700; }
   </style>
-  
 </head>
 <body class="h-full antialiased text-slate-800 flex overflow-hidden">
 
@@ -116,7 +62,7 @@
      class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity">
 </div>
 
-<!-- Sidebar -->
+<!-- Sidebar (統一高質感側邊欄) -->
 <aside id="sidebar"
   class="fixed lg:static inset-y-0 left-0 w-64
          bg-slate-900 text-slate-300
@@ -128,1114 +74,415 @@
          shadow-2xl lg:shadow-none">
 
   <div>
-
     <!-- Logo -->
     <div class="h-16 flex items-center justify-between px-5 bg-slate-950 border-b border-slate-800">
-
       <div class="flex items-center space-x-3">
-
         <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-brand-500/20">
           <i data-lucide="shield-check" class="w-5 h-5"></i>
         </div>
-
         <div>
-
-          <h1 class="font-black text-white text-base tracking-wide">
-            BBT 管理中心
-          </h1>
-
-          <p class="text-[10px] font-bold text-slate-400">
-            出勤與賽事後端控制台
-          </p>
-
+          <h1 class="font-black text-white text-base tracking-wide">BBT 管理中心</h1>
+          <p class="text-[10px] font-bold text-slate-400">出勤與賽事後端控制台</p>
         </div>
-
       </div>
-
-      <button onclick="toggleSidebar()"
-              class="lg:hidden text-slate-400 hover:text-white p-1">
-
+      <button onclick="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white p-1">
         <i data-lucide="x" class="w-5 h-5"></i>
-
       </button>
-
     </div>
 
     <!-- Navigation -->
     <nav class="p-3.5 space-y-1 text-xs font-semibold overflow-y-auto max-h-[calc(100vh-140px)]">
-
-      <!-- Dashboard -->
-      <div class="text-[10px] text-slate-500 font-bold px-3 pt-2 pb-1 uppercase tracking-wider">
-        主控數據中心
-      </div>
-
-      <a href="admin_dashboard.html"
-         class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-brand-600 text-white font-bold shadow-lg shadow-brand-600/30">
-
-        <div class="flex items-center space-x-3">
-          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-          <span>管理總覽</span>
-        </div>
-
+      <div class="text-[10px] text-slate-500 font-bold px-3 pt-2 pb-1 uppercase tracking-wider">主控數據中心</div>
+      <a href="admin_dashboard.html" class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-brand-600 text-white font-bold shadow-lg shadow-brand-600/30">
+        <div class="flex items-center space-x-3"><i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>管理總覽</span></div>
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-
       </a>
 
-      <!-- 排班管理 -->
-
-      <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">
-        排班管理
-      </div>
-
-      <a href="judge_dashboard_admin.html"
-         class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
-
-        <div class="flex items-center space-x-3">
-          <i data-lucide="flag" class="w-4 h-4"></i>
-          <span>裁判排班</span>
-        </div>
-
-        <span id="sidebarJudgeShortage"
-              class="text-[10px] text-rose-400">
-        </span>
-
+      <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">排班管理</div>
+      <a href="judge_dashboard_admin.html" class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+        <div class="flex items-center space-x-3"><i data-lucide="flag" class="w-4 h-4"></i><span>裁判排班</span></div>
+        <span id="sidebarJudgeShortage" class="text-[10px] text-rose-400"></span>
+      </a>
+      <a href="record_dashboard_admin.html" class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+        <div class="flex items-center space-x-3"><i data-lucide="clipboard-list" class="w-4 h-4"></i><span>紀錄排班</span></div>
+        <span id="sidebarRecordShortage" class="text-[10px] text-emerald-400"></span>
       </a>
 
-      <a href="record_dashboard_admin.html"
-         class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
-
-        <div class="flex items-center space-x-3">
-          <i data-lucide="clipboard-list" class="w-4 h-4"></i>
-          <span>紀錄排班</span>
-        </div>
-
-        <span id="sidebarRecordShortage"
-              class="text-[10px] text-emerald-400">
-        </span>
-
+      <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">出勤管理</div>
+      <a href="assignment_execution.html" class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+        <div class="flex items-center space-x-3"><i data-lucide="clipboard-check" class="w-4 h-4"></i><span>出勤確認</span></div>
+        <span id="sidebarnoSignupCount" class="text-[10px] text-amber-400"></span>
       </a>
 
-      <!-- 出勤管理 -->
-
-      <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">
-        出勤管理
-      </div>
-
-      <a href="assignment_execution.html"
-         class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
-
-        <div class="flex items-center space-x-3">
-          <i data-lucide="clipboard-check" class="w-4 h-4"></i>
-          <span>出勤確認</span>
-        </div>
-
-        <span id="sidebarnoSignupCount"
-              class="text-[10px] text-amber-400">
-        </span>
-
+      <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">系統管理</div>
+      <a href="admin_games.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+        <i data-lucide="calendar-range" class="w-4 h-4"></i><span>賽事管理</span>
+      </a>
+      <a href="admin_course.html" class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+        <div class="flex items-center space-x-3"><i data-lucide="book-open" class="w-4 h-4"></i><span>課程管理</span></div>
+      </a>
+      <a href="admin_users.html" class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+        <div class="flex items-center space-x-3"><i data-lucide="users" class="w-4 h-4"></i><span>帳號管理</span></div>
+        <span id="sidebarUserCount" class="text-[10px] text-slate-500"></span>
       </a>
 
-      <!-- 系統管理 -->
-
-      <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">
-        系統管理
-      </div>
-
-      <a href="admin_games.html"
-         class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
-
-        <i data-lucide="calendar-range" class="w-4 h-4"></i>
-        <span>賽事管理</span>
-
+      <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">統計報表</div>
+      <a href="#" onclick="openAnnualModal('judge')" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+        <i data-lucide="bar-chart-3" class="w-4 h-4"></i><span>裁判年度總表</span>
       </a>
-
-      <a href="admin_users.html"
-         class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
-
-        <div class="flex items-center space-x-3">
-          <i data-lucide="users" class="w-4 h-4"></i>
-          <span>帳號管理</span>
-        </div>
-
-        <span id="sidebarUserCount"
-              class="text-[10px] text-slate-500">
-        </span>
-
+      <a href="#" onclick="openAnnualModal('record')" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+        <i data-lucide="pie-chart" class="w-4 h-4"></i><span>紀錄年度總表</span>
       </a>
-
-      <!-- 報表 -->
-
-      <div class="text-[10px] text-slate-500 font-bold px-3 pt-4 pb-1 uppercase tracking-wider">
-        統計報表
-      </div>
-
-      <a href="#"
-         onclick="openAnnualModal('judge')"
-         class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
-
-        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-        <span>裁判年度總表</span>
-
+      <a href="report.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
+        <i data-lucide="file-bar-chart" class="w-4 h-4"></i><span>出勤報表</span>
       </a>
-
-      <a href="#"
-         onclick="openAnnualModal('record')"
-         class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
-
-        <i data-lucide="pie-chart" class="w-4 h-4"></i>
-        <span>紀錄年度總表</span>
-
-      </a>
-
-      <a href="report.html"
-         class="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 hover:text-white transition">
-
-        <i data-lucide="file-bar-chart" class="w-4 h-4"></i>
-        <span>出勤報表</span>
-
-      </a>
-
     </nav>
-
   </div>
 
   <!-- Footer -->
-
   <div class="p-3.5 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
-
     <div class="flex items-center space-x-3">
-
       <div id="sidebarAvatar" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 font-black flex items-center justify-center text-sm">-</div>
-
       <div>
         <div id="sidebarUserName" class="text-xs font-bold text-white">-</div>
         <div id="sidebarUserRole" class="text-[10px] text-amber-400">-</div>
       </div>
-
     </div>
-
-    <button onclick="alert('登出')"
-            class="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg">
-
+    <button title="登出系統" onclick="typeof logout === 'function' ? logout() : alert('登出')" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition">
       <i data-lucide="log-out" class="w-4 h-4"></i>
-
     </button>
-
   </div>
-
 </aside>
 
+<!-- 2. MAIN CONTENT AREA -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-100">
 
-  <!-- 2. MAIN CONTENT AREA -->
-  <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-100">
-
-    <!-- Top Navigation Header -->
-    <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20 shrink-0 shadow-sm">
-      <div class="flex items-center space-x-3">
-        <button onclick="toggleSidebar()" class="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition">
-          <i data-lucide="menu" class="w-5 h-5"></i>
-        </button>
-        <div>
-          <h2 class="font-black text-slate-900 text-base sm:text-lg tracking-tight">
-            BBT 出勤管理中心
-          </h2>
-        </div>
+  <!-- Top Navigation Header -->
+  <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20 shrink-0 shadow-sm">
+    <div class="flex items-center space-x-3">
+      <button onclick="toggleSidebar()" class="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+      <div>
+        <h2 class="font-black text-slate-900 text-base sm:text-lg tracking-tight">BBT 出勤管理中心</h2>
       </div>
+    </div>
 
-      <!-- Top Header Right Controls -->
-      <div class="flex items-center space-x-2 sm:space-x-3">
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <button onclick="showToast('已更新最新出勤數據！')" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition relative" title="重新整理數據">
+        <i data-lucide="refresh-cw" class="w-4.5 h-4.5"></i>
+      </button>
+      <a href="index.html" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
+        <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span>回首頁</span>
+      </a>
+    </div>
+  </header>
 
-        <button onclick="showToast('已更新最新出勤數據！')" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition relative" title="重新整理數據">
-          <i data-lucide="refresh-cw" class="w-4.5 h-4.5"></i>
-        </button>
+  <!-- Scrollable Main Dashboard Container -->
+  <main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-7xl w-full mx-auto">
 
-        <a href="index.html" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm">
-          <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span>回首頁</span>
-        </a>
-      </div>
-    </header>
-
-    <!-- Scrollable Main Dashboard Container -->
-    <main class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-7xl w-full mx-auto">
-
-    <!-- =====================================================
-         🚨 本週人力狀況
-    ===================================================== -->
+    <!-- 本週人力狀況 -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-    
-      <!-- 左側 -->
       <div class="lg:col-span-3 flex flex-col gap-4">
-    
-          <!-- 裁判人力 -->
+        <!-- 裁判人力 -->
         <div class="bg-white border border-rose-200 rounded-2xl p-4 shadow-sm">
-      
           <div class="flex items-center justify-between mb-3">
-      
             <div>
-      
-              <div class="text-sm font-black text-rose-600">
-                本週裁判人力
-              </div>
-      
-              <div class="text-xs text-slate-500">
-                本週待派遣賽事
-              </div>
-      
+              <div class="text-sm font-black text-rose-600">本週裁判人力</div>
+              <div class="text-xs text-slate-500">本週待派遣賽事</div>
             </div>
-      
-            <i data-lucide="flag"
-               class="w-5 h-5 text-rose-600"></i>
-      
+            <i data-lucide="flag" class="w-5 h-5 text-rose-600"></i>
           </div>
-      
           <table class="w-full text-[14px]">
-      
             <thead>
-      
               <tr class="border-b border-slate-200">
-      
-                <th class="text-left py-1.5 font-bold">
-                  職位
-                </th>
-      
-                <th class="text-center py-1.5">
-                  應派
-                </th>
-      
-                <th class="text-center py-1.5">
-                  指派
-                </th>
-      
-                <th class="text-center py-1.5">
-                  報名
-                </th>
-      
-                <th class="text-center py-1.5">
-                  缺額
-                </th>
-      
+                <th class="text-left py-1.5 font-bold">職位</th>
+                <th class="text-center py-1.5">應派</th>
+                <th class="text-center py-1.5">指派</th>
+                <th class="text-center py-1.5">報名</th>
+                <th class="text-center py-1.5">缺額</th>
               </tr>
-      
             </thead>
-      
-            <tbody id="judgeStaffTable">
-            </tbody>
-      
+            <tbody id="judgeStaffTable"></tbody>
             <tfoot>
-      
               <tr class="border-t border-slate-200 bg-slate-50 font-black">
-      
-                <td class="py-2">
-                  總計
-                </td>
-      
-                <td id="judgeTotalRequired"
-                    class="text-center">
-                  0
-                </td>
-      
-                <td id="judgeTotalAssigned"
-                    class="text-center">
-                  0
-                </td>
-      
-                <td id="judgeTotalSignup"
-                    class="text-center">
-                  0
-                </td>
-      
-                <td id="judgeTotalVacancy"
-                    class="text-center text-rose-600">
-                  0
-                </td>
-      
+                <td class="py-2">總計</td>
+                <td id="judgeTotalRequired" class="text-center">0</td>
+                <td id="judgeTotalAssigned" class="text-center">0</td>
+                <td id="judgeTotalSignup" class="text-center">0</td>
+                <td id="judgeTotalVacancy" class="text-center text-rose-600">0</td>
               </tr>
-      
             </tfoot>
-      
           </table>
-      
         </div>
       
         <!-- 紀錄人力 -->
         <div class="bg-white border border-emerald-200 rounded-2xl p-4 shadow-sm">
-      
           <div class="flex items-center justify-between mb-3">
-      
             <div>
-      
-              <div class="text-sm font-black text-emerald-600">
-                本週紀錄人力
-              </div>
-      
-              <div class="text-xs text-slate-500">
-                本週待派遣賽事
-              </div>
-      
+              <div class="text-sm font-black text-emerald-600">本週紀錄人力</div>
+              <div class="text-xs text-slate-500">本週待派遣賽事</div>
             </div>
-      
-            <i data-lucide="clipboard-list"
-               class="w-5 h-5 text-emerald-600"></i>
-      
+            <i data-lucide="clipboard-list" class="w-5 h-5 text-emerald-600"></i>
           </div>
-      
           <table class="w-full text-[14px]">
-      
             <thead>
-      
               <tr class="border-b border-slate-200">
-      
-                <th class="text-left py-1.5 font-bold">
-                  職位
-                </th>
-      
-                <th class="text-center py-1.5">
-                  應派
-                </th>
-      
-                <th class="text-center py-1.5">
-                  指派
-                </th>
-      
-                <th class="text-center py-1.5">
-                  報名
-                </th>
-      
-                <th class="text-center py-1.5">
-                  缺額
-                </th>
-      
+                <th class="text-left py-1.5 font-bold">職位</th>
+                <th class="text-center py-1.5">應派</th>
+                <th class="text-center py-1.5">指派</th>
+                <th class="text-center py-1.5">報名</th>
+                <th class="text-center py-1.5">缺額</th>
               </tr>
-      
             </thead>
-      
-            <tbody id="recordStaffTable">
-            </tbody>
-      
+            <tbody id="recordStaffTable"></tbody>
             <tfoot>
-      
               <tr class="border-t border-slate-200 bg-slate-50 font-black">
-      
-                <td class="py-2">
-                  總計
-                </td>
-      
-                <td id="recordTotalRequired"
-                    class="text-center">
-                  0
-                </td>
-      
-                <td id="recordTotalAssigned"
-                    class="text-center">
-                  0
-                </td>
-      
-                <td id="recordTotalSignup"
-                    class="text-center">
-                  0
-                </td>
-      
-                <td id="recordTotalVacancy"
-                    class="text-center text-rose-600">
-                  0
-                </td>
-      
+                <td class="py-2">總計</td>
+                <td id="recordTotalRequired" class="text-center">0</td>
+                <td id="recordTotalAssigned" class="text-center">0</td>
+                <td id="recordTotalSignup" class="text-center">0</td>
+                <td id="recordTotalVacancy" class="text-center text-rose-600">0</td>
               </tr>
-      
             </tfoot>
-      
           </table>
-      
         </div>
-
       </div>
     
       <!-- 本週派遣班表 -->
-      <div
-        class="
-          lg:col-span-9
-          bg-gradient-to-r
-          from-slate-900
-          to-slate-800
-          rounded-2xl
-          p-4
-          shadow-xl
-          text-white
-          h-full
-          flex
-          flex-col
-        "
-      >
-      
-        <!-- 第一列 -->
+      <div class="lg:col-span-9 bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-4 shadow-xl text-white h-full flex flex-col">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 mb-3 border-b border-white/10">
-        
-          <div
-            id="weeklyBoardTitle"
-            class="
-              text-lg
-              font-black
-              text-amber-400
-            "
-          >
-            本週班表
-          </div>
-        
-          <div
-            class="
-              flex
-              flex-wrap
-              items-center
-              gap-3
-              text-xs
-              w-full
-              md:w-auto
-            "
-          >
-        
-            <span>
-        
-              尚缺席位：
-        
-              <span
-                id="totalVacancy"
-                class="
-                  font-black
-                  text-rose-400
-                "
-              >
-                0
-              </span>
-        
-            </span>
-        
-            <span>
-        
-              完成率：
-        
-              <span
-                id="staffFillRate"
-                class="
-                  font-black
-                  text-amber-300
-                "
-              >
-                0%
-              </span>
-        
-            </span>
-        
+          <div id="weeklyBoardTitle" class="text-lg font-black text-amber-400">本週班表</div>
+          <div class="flex flex-wrap items-center gap-3 text-xs w-full md:w-auto">
+            <span>尚缺席位：<span id="totalVacancy" class="font-black text-rose-400">0</span></span>
+            <span>完成率：<span id="staffFillRate" class="font-black text-amber-300">0%</span></span>
             <div class="w-28">
-        
-              <div
-                class="
-                  h-2
-                  rounded-full
-                  bg-white/10
-                "
-              >
-        
-                <div
-                  id="staffFillRateBar"
-                  class="
-                    h-2
-                    rounded-full
-                    bg-amber-400
-                  "
-                  style="width:0%"
-                ></div>
-        
+              <div class="h-2 rounded-full bg-white/10">
+                <div id="staffFillRateBar" class="h-2 rounded-full bg-amber-400" style="width:0%"></div>
               </div>
-        
             </div>
-        
-            <button
-              onclick="showRosterPreview()"
-              class="
-                w-full
-                md:w-auto
-                px-3
-                py-2
-                rounded-lg
-                bg-amber-500
-                hover:bg-amber-400
-                text-slate-900
-                text-xs
-                font-black
-              "
-            >
+            <button onclick="showRosterPreview()" class="w-full md:w-auto px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-black">
               📋 下載班表
             </button>
-        
           </div>
-        
         </div>
-      
-        <!-- 班表主體 -->
-      
-        <div
-          id="weeklyDutyBoard"
-          class="
-            flex-1
-            overflow-auto
-            min-h-0
-          "
-        >
-      
-          <div class="text-slate-400">
-            載入中...
-          </div>
-      
+        <div id="weeklyDutyBoard" class="flex-1 overflow-auto min-h-0">
+          <div class="text-slate-400">載入中...</div>
         </div>
-      
       </div>
     </section>
 
-    <!-- =====================================================
-         📊 賽事營運數據
-    ===================================================== -->
+    <!-- 賽事營運數據 -->
     <section class="space-y-3">
-    
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <div class="w-2 h-5 bg-brand-600 rounded-full"></div>
-          <h3 class="font-black text-slate-900 text-base">
-            賽事營運數據
-          </h3>
+          <h3 class="font-black text-slate-900 text-base">賽事營運數據</h3>
         </div>
-    
-        <span
-          id="seasonProgressText"
-          class="text-xs text-slate-500 font-bold">
-          賽季進度 --
-        </span>
-    
+        <span id="seasonProgressText" class="text-xs text-slate-500 font-bold">賽季進度 --</span>
       </div>
-    
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-    
-        <!-- 全年賽程 -->
-    
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-    
           <div class="flex items-center justify-between text-slate-500">
-            <span class="text-xs font-bold">
-              全年賽程總數
-            </span>
-    
-            <i data-lucide="trophy"
-               class="w-4 h-4 text-brand-600"></i>
+            <span class="text-xs font-bold">全年賽程總數</span>
+            <i data-lucide="trophy" class="w-4 h-4 text-brand-600"></i>
           </div>
-    
           <div class="mt-2 flex items-baseline justify-between">
-    
-            <span
-              id="totalGames"
-              class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              --
-            </span>
-    
-            <span class="text-xs font-bold text-slate-400">
-              場賽事
-            </span>
-    
+            <span id="totalGames" class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">--</span>
+            <span class="text-xs font-bold text-slate-400">場賽事</span>
           </div>
-    
-          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3">
-            <div class="bg-brand-600 h-1.5 rounded-full w-full"></div>
-          </div>
-    
+          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3"><div class="bg-brand-600 h-1.5 rounded-full w-full"></div></div>
         </div>
-    
-        <!-- 已完賽 -->
-    
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-    
           <div class="flex items-center justify-between text-slate-500">
-            <span class="text-xs font-bold">
-              已完賽
-            </span>
-    
-            <i data-lucide="check-circle"
-               class="w-4 h-4 text-emerald-600"></i>
+            <span class="text-xs font-bold">已完賽</span>
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
           </div>
-    
           <div class="mt-2 flex items-baseline justify-between">
-    
-            <span
-              id="completedGames"
-              class="text-2xl sm:text-3xl font-black text-emerald-600 tracking-tight">
-              --
-            </span>
-    
-            <span
-              id="completedRate"
-              class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-    
-              --
-    
-            </span>
-    
+            <span id="completedGames" class="text-2xl sm:text-3xl font-black text-emerald-600 tracking-tight">--</span>
+            <span id="completedRate" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">--</span>
           </div>
-    
-          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3">
-            <div
-              id="completedBar"
-              class="bg-emerald-500 h-1.5 rounded-full"
-              style="width:0%">
-            </div>
-          </div>
-    
+          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3"><div id="completedBar" class="bg-emerald-500 h-1.5 rounded-full" style="width:0%"></div></div>
         </div>
-    
-        <!-- 未完賽 -->
-    
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-    
           <div class="flex items-center justify-between text-slate-500">
-            <span class="text-xs font-bold">
-              未完賽
-            </span>
-    
-            <i data-lucide="hourglass"
-               class="w-4 h-4 text-brand-500"></i>
+            <span class="text-xs font-bold">未完賽</span>
+            <i data-lucide="hourglass" class="w-4 h-4 text-brand-500"></i>
           </div>
-    
           <div class="mt-2 flex items-baseline justify-between">
-    
-            <span
-              id="pendingGames"
-              class="text-2xl sm:text-3xl font-black text-brand-600 tracking-tight">
-              --
-            </span>
-    
-            <span class="text-xs font-bold text-slate-400">
-              待執行
-            </span>
-    
+            <span id="pendingGames" class="text-2xl sm:text-3xl font-black text-brand-600 tracking-tight">--</span>
+            <span class="text-xs font-bold text-slate-400">待執行</span>
           </div>
-    
-          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3">
-            <div
-              id="pendingBar"
-              class="bg-brand-500 h-1.5 rounded-full"
-              style="width:0%">
-            </div>
-          </div>
-    
+          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3"><div id="pendingBar" class="bg-brand-500 h-1.5 rounded-full" style="width:0%"></div></div>
         </div>
-    
-        <!-- 本週賽事 -->
-    
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-    
           <div class="flex items-center justify-between text-slate-500">
-            <span class="text-xs font-bold">
-              本週賽事
-            </span>
-    
-            <i data-lucide="flame"
-               class="w-4 h-4 text-amber-500"></i>
+            <span class="text-xs font-bold">本週賽事</span>
+            <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
           </div>
-    
           <div class="mt-2 flex items-baseline justify-between">
-    
-            <span
-              id="weekGames"
-              class="text-2xl sm:text-3xl font-black text-amber-500 tracking-tight">
-              --
-            </span>
-    
-            <span class="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-              本週焦點
-            </span>
-    
+            <span id="weekGames" class="text-2xl sm:text-3xl font-black text-amber-500 tracking-tight">--</span>
+            <span class="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">本週焦點</span>
           </div>
-    
-          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3">
-            <div
-              id="weekBar"
-              class="bg-amber-500 h-1.5 rounded-full"
-              style="width:0%">
-            </div>
-          </div>
-    
+          <div class="w-full bg-slate-100 rounded-full h-1.5 mt-3"><div id="weekBar" class="bg-amber-500 h-1.5 rounded-full" style="width:0%"></div></div>
         </div>
-    
       </div>
-    
     </section>
 
-    <!-- =====================================================
-         👥 人員與帳號結構數據
-    ===================================================== -->
+    <!-- 人員與帳號結構數據 -->
     <section class="space-y-3">
-    
       <div class="flex items-center space-x-2">
         <div class="w-2 h-5 bg-indigo-600 rounded-full"></div>
-        <h3 class="font-black text-slate-900 text-base">
-          人員與帳號結構數據
-        </h3>
+        <h3 class="font-black text-slate-900 text-base">人員與帳號結構數據</h3>
       </div>
-    
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-    
-        <!-- 帳號總數 -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-    
           <div>
-            <span class="text-xs font-bold text-slate-500">
-              帳號總數
-            </span>
-    
-            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-              <span id="totalUsers">-</span>
-              <span class="text-xs font-normal text-slate-400">
-                人
-              </span>
-            </div>
+            <span class="text-xs font-bold text-slate-500">帳號總數</span>
+            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1"><span id="totalUsers">-</span> <span class="text-xs font-normal text-slate-400">人</span></div>
           </div>
-    
-          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-            <i data-lucide="users" class="w-5 h-5"></i>
-          </div>
-    
+          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="users" class="w-5 h-5"></i></div>
         </div>
-    
-        <!-- 裁判總人數 -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-    
           <div>
-            <span class="text-xs font-bold text-slate-500">
-              裁判總人數
-            </span>
-    
-            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-              <span id="totalJudges">-</span>
-              <span class="text-xs font-normal text-slate-400">
-                人
-              </span>
-            </div>
+            <span class="text-xs font-bold text-slate-500">裁判總人數</span>
+            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1"><span id="totalJudges">-</span> <span class="text-xs font-normal text-slate-400">人</span></div>
           </div>
-    
-          <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
-            <i data-lucide="flag" class="w-5 h-5"></i>
-          </div>
-    
+          <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="flag" class="w-5 h-5"></i></div>
         </div>
-    
-        <!-- 紀錄員總人數 -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-    
           <div>
-            <span class="text-xs font-bold text-slate-500">
-              紀錄員總人數
-            </span>
-    
-            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-              <span id="totalRecords">-</span>
-              <span class="text-xs font-normal text-slate-400">
-                人
-              </span>
-            </div>
+            <span class="text-xs font-bold text-slate-500">紀錄員總人數</span>
+            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1"><span id="totalRecords">-</span> <span class="text-xs font-normal text-slate-400">人</span></div>
           </div>
-    
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-            <i data-lucide="notebook-pen" class="w-5 h-5"></i>
-          </div>
-    
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="notebook-pen" class="w-5 h-5"></i></div>
         </div>
-    
-        <!-- 系統管理員 -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-    
           <div>
-            <span class="text-xs font-bold text-slate-500">
-              系統管理員
-            </span>
-    
-            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-              <span id="totalAdmins">-</span>
-              <span class="text-xs font-normal text-slate-400">
-                人
-              </span>
-            </div>
+            <span class="text-xs font-bold text-slate-500">系統管理員</span>
+            <div class="text-2xl sm:text-3xl font-black text-slate-900 mt-1"><span id="totalAdmins">-</span> <span class="text-xs font-normal text-slate-400">人</span></div>
           </div>
-    
-          <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
-            <i data-lucide="shield-alert" class="w-5 h-5"></i>
-          </div>
-    
+          <div class="p-3 bg-purple-50 text-purple-600 rounded-xl"><i data-lucide="shield-alert" class="w-5 h-5"></i></div>
         </div>
-    
       </div>
-    
     </section>
 
-    <!-- =====================================================
-         📋 本週賽事裁判/紀錄缺額清單
-    ===================================================== -->
-    <section id="missing-games-section"
-             class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-    
-      <!-- Header -->
+    <!-- 本週賽事裁判/紀錄缺額清單 -->
+    <section id="missing-games-section" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-    
         <div class="flex items-center space-x-3">
-    
-          <div class="p-2 bg-rose-100 text-rose-600 rounded-xl">
-            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-          </div>
-    
+          <div class="p-2 bg-rose-100 text-rose-600 rounded-xl"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
           <div>
-    
-            <h3 class="font-black text-slate-900 text-base">
-              本週賽事裁判/紀錄缺額清單
-            </h3>
-    
-            <p class="text-xs text-slate-500">
-              本週尚未完成裁判或紀錄報名或指派之賽事
-            </p>
-    
+            <h3 class="font-black text-slate-900 text-base">本週賽事裁判/紀錄缺額清單</h3>
+            <p class="text-xs text-slate-500">本週尚未完成裁判或紀錄報名或指派之賽事</p>
           </div>
-    
         </div>
-    
         <div class="flex items-center space-x-2">
-    
-          <span
-            id="vacancyGameCount"
-            class="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
-    
-            載入中...
-    
-          </span>
-
-    
+          <span id="vacancyGameCount" class="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">載入中...</span>
         </div>
-    
       </div>
-    
-      <!-- 手機版 Card -->
-      <div id="vacancy-card-container"
-           class="block md:hidden">
-      </div>
-      
-      <!-- 桌機版 Table -->
-      <div id="vacancy-table-container"
-           class="hidden md:block overflow-x-auto">
-      
+      <div id="vacancy-card-container" class="block md:hidden"></div>
+      <div id="vacancy-table-container" class="hidden md:block overflow-x-auto">
         <table class="w-full text-left border-collapse">
-      
           <thead>
-      
             <tr class="bg-slate-50 text-slate-500 text-[11px] font-black uppercase tracking-wider border-b border-slate-200">
-      
-              <th class="py-3 px-4">
-                聯賽 / 場次
-              </th>
-      
-              <th class="py-3 px-4">
-                賽事時間
-              </th>
-      
-              <th class="py-3 px-4">
-                對戰隊伍
-              </th>
-      
-              <th class="py-3 px-4">
-                球場地點
-              </th>
-      
-              <th class="py-3 px-4">
-                待派遣職位
-              </th>
-      
+              <th class="py-3 px-4">聯賽 / 場次</th>
+              <th class="py-3 px-4">賽事時間</th>
+              <th class="py-3 px-4">對戰隊伍</th>
+              <th class="py-3 px-4">球場地點</th>
+              <th class="py-3 px-4">待派遣職位</th>
             </tr>
-      
           </thead>
-      
-          <tbody
-            id="vacancy-table-body"
-            class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-      
-            <tr>
-      
-              <td colspan="6"
-                  class="text-center py-10 text-slate-400">
-      
-                載入中...
-      
-              </td>
-      
-            </tr>
-      
+          <tbody id="vacancy-table-body" class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
+            <tr><td colspan="6" class="text-center py-10 text-slate-400">載入中...</td></tr>
           </tbody>
-      
         </table>
-      
       </div>
-    
-      <!-- Footer -->
-    
-      <div
-        id="vacancy-table-footer"
-        class="p-3 bg-slate-50 border-t border-slate-200 text-center text-xs text-slate-500 font-semibold">
-    
-        載入中...
-    
-      </div>
-    
+      <div id="vacancy-table-footer" class="p-3 bg-slate-50 border-t border-slate-200 text-center text-xs text-slate-500 font-semibold">載入中...</div>
     </section>
 
-    </main>
-  </div>
+  </main>
+</div>
 
-  <!-- MODAL / DRAWER DIALOG (Interactive Demo) -->
-  <div id="admin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 id="modal-title" class="font-black text-slate-900 text-base">指派裁判員</h3>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div id="modal-content" class="text-xs text-slate-600 space-y-3">
-        <p>請選擇欲手動指派進此場次的裁判員：</p>
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">可用裁判名單</label>
-請稍後
-        </div>
-      </div>
-      <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
-        <button onclick="closeModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">取消</button>
-        <button onclick="confirmAssignment()" class="px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white transition shadow">確認補派</button>
-      </div>
+<!-- MODAL / DRAWER DIALOG -->
+<div id="admin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <h3 id="modal-title" class="font-black text-slate-900 text-base">指派裁判員</h3>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div id="modal-content" class="text-xs text-slate-600 space-y-3">
+      <p>請選擇欲手動指派進此場次的裁判員：</p>
+      <div><label class="block font-bold text-slate-700 mb-1">可用裁判名單</label>請稍後</div>
+    </div>
+    <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+      <button onclick="closeModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">取消</button>
+      <button onclick="confirmAssignment()" class="px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white transition shadow">確認補派</button>
     </div>
   </div>
+</div>
 
-  <!-- TOAST NOTIFICATION -->
-  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
-    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
-    <span id="toast-msg">操作成功</span>
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+  <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+  <span id="toast-msg">操作成功</span>
+</div>
+
+<!-- 快速指派 -->
+<div id="quickAssignModal" class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg">
+    <div class="p-4 border-b"><h3 id="quickAssignTitle" class="font-bold text-lg"></h3></div>
+    <div id="quickAssignList" class="max-h-[500px] overflow-y-auto p-4"></div>
   </div>
+</div>
 
-
-  <!-- 快速指派 -->
-  <div id="quickAssignModal" class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg">
-      <div class="p-4 border-b">
-        <h3 id="quickAssignTitle" class="font-bold text-lg"></h3>
+<!-- 班表預覽 -->
+<div id="rosterPreviewModal" class="fixed inset-0 z-[999] hidden bg-black/60 p-4 overflow-auto">
+  <div class="mx-auto bg-white rounded-2xl shadow-xl max-w-6xl p-4">
+    <div class="flex justify-between mb-4">
+      <div class="font-black text-xl"></div>
+      <div class="flex gap-2">
+        <button onclick="exportRosterImage()" class="px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-bold">下載PNG</button>
+        <button onclick="closeRosterPreview()" class="px-3 py-2 rounded-lg bg-slate-300 text-sm">關閉</button>
       </div>
-     <div id="quickAssignList" class="max-h-[500px] overflow-y-auto p-4"></div>
     </div>
+    <div id="rosterPrintArea" class="overflow-auto max-h-[75vh]"></div>
   </div>
-    
-  <script>
-    // Initialize Lucide Icons
-    lucide.createIcons();
+</div>
 
-    // Toggle Sidebar on Mobile
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
-      sidebar.classList.toggle('-translate-x-full');
-      overlay.classList.toggle('hidden');
-    }
+<script>
+  lucide.createIcons();
 
-    // Modal Control
-    function showModal(title) {
-      document.getElementById('modal-title').innerText = title;
-      document.getElementById('admin-modal').classList.remove('hidden');
-    }
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) sidebar.classList.toggle('-translate-x-full');
+    if (overlay) overlay.classList.toggle('hidden');
+  }
 
-    function closeModal() {
-      document.getElementById('admin-modal').classList.add('hidden');
-    }
+  function showModal(title) {
+    document.getElementById('modal-title').innerText = title;
+    document.getElementById('admin-modal').classList.remove('hidden');
+  }
 
-    function assignReferee(matchInfo, role) {
-      document.getElementById('modal-title').innerText = `指派 ${role} - ${matchInfo}`;
-      document.getElementById('admin-modal').classList.remove('hidden');
-    }
+  function closeModal() {
+    document.getElementById('admin-modal').classList.add('hidden');
+  }
 
-    // Toast Notification logic
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      document.getElementById('toast-msg').innerText = msg;
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 3000);
-    }
-    
-  </script>
+  function assignReferee(matchInfo, role) {
+    document.getElementById('modal-title').innerText = `指派 ${role} - ${matchInfo}`;
+    document.getElementById('admin-modal').classList.remove('hidden');
+  }
 
-        <div
-          id="rosterPreviewModal"
-          class="
-            fixed inset-0
-            z-[999]
-            hidden
-            bg-black/60
-            p-4
-            overflow-auto
-          "
-        >
-        
-          <div
-            class="
-              mx-auto
-              bg-white
-              rounded-2xl
-              shadow-xl
-              max-w-6xl
-              p-4
-            "
-          >
-
-      
-          <div class="flex justify-between mb-4">
-      
-            <div class="font-black text-xl">
-              
-            </div>
-      
-            <div class="flex gap-2">
-      
-              <button
-                onclick="exportRosterImage()"
-                class="
-                  px-3 py-2
-                  rounded-lg
-                  bg-emerald-600
-                  text-white
-                  text-sm
-                  font-bold
-                ">
-                下載PNG
-              </button>
-      
-              <button
-                onclick="closeRosterPreview()"
-                class="
-                  px-3 py-2
-                  rounded-lg
-                  bg-slate-300
-                  text-sm
-                ">
-                關閉
-              </button>
-      
-            </div>
-      
-          </div>
-      
-          <div id="rosterPrintArea" class="overflow-auto max-h-[75vh]"></div>
-      
-        </div>
-      
-      </div>
-              
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-msg').innerText = msg;
+    toast.classList.remove('translate-y-20', 'opacity-0');
+    setTimeout(() => {
+      toast.classList.add('translate-y-20', 'opacity-0');
+    }, 3000);
+  }
+</script>
 </body>
 </html>
