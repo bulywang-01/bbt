@@ -695,6 +695,7 @@ function openMyRegistrations() {
         const courseInfo = allCourses.find(c => String(c.course_id) === String(item.course_id)) || {};
         const mergedItem = {
           ...item,
+          course_name: item.course_name || courseInfo.course_name || '', // 👈 補上這行
           date: item.date || courseInfo.date || '',
           signup_end: item.signup_end || courseInfo.signup_end || courseInfo.signupEnd || '',
           training_hours: item.training_hours || courseInfo.training_hours || 0,
