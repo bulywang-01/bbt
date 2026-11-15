@@ -469,13 +469,14 @@
       updateRealProgressBars();
     });
 
-    // 🏆 修正分類條件：精準區分裁判組（主審、一壘、二壘、三壘等）與紀錄組
+    // 🏆 強固版本週聯盟班表格式化引擎（自動防禦官方 js 覆寫）
     function beautifyWeeklySchedule() {
       const container = document.getElementById('weeklyContent');
       if (!container) return;
       
       let text = container.innerText || container.textContent;
-      if (!text || text.trim() === '' || container.dataset.processed === 'true') return;
+      // 如果已經被美化過，或沒有內容，則跳過
+      if (!text || text.trim() === '' || container.querySelector('.league-schedule-wrapper')) return;
       
       let lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
       if (lines.length === 0) return;
@@ -500,26 +501,21 @@
       };
       
       lines.forEach(line => {
-        // 判斷日期
         if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(line)) {
           if (currentVenue) pushVenue();
           outputHtml += `<div class="sch-date-header">📅 ${line}</div>`;
         } 
-        // 判斷場地
         else if (line.includes('場') || line.includes('大學') || line.includes('綜合') || line.includes('球場') || line.includes('📍')) {
           if (currentVenue) pushVenue();
           currentVenue = { venueName: line.replace('📍', '').trim(), matches: [] };
         } 
-        // 判斷時間與代碼
         else if (/^\d{2}:\d{2}/.test(line) && line.length < 25 && !line.includes('：')) {
           if (currentMatch) pushMatch();
           currentMatch = { timeCode: line, teams: '', roles: {} };
         } 
-        // 判斷對戰組合
         else if ((line.includes('VS') || line.includes('ＶＳ') || line.includes('vs')) && currentMatch && !currentMatch.teams) {
           currentMatch.teams = line;
         } 
-        // 判斷職務與人員
         else if (line.includes('：') || line.includes(':')) {
           if (!currentMatch) {
             currentMatch = { timeCode: '賽事', teams: '', roles: {} };
@@ -543,7 +539,6 @@
       
       outputHtml += '</div>';
       container.innerHTML = outputHtml;
-      container.dataset.processed = 'true';
     }
 
     function renderVenueCard(venue) {
@@ -562,7 +557,6 @@
             </div>
           `;
           
-          // 修正分類判斷：將主審、一壘、二壘、三壘、裁判相關職位全數納入裁判組
           if (key.includes('主審') || key.includes('一壘') || key.includes('二壘') || key.includes('三壘') || key.includes('審') || key.includes('裁判')) {
             refBoxes.push(boxHtml);
           } else {
@@ -596,20 +590,23 @@
       `;
     }
 
-    // 安全監聽本週班表，加入狀態鎖徹底避免網頁卡死
+    // 🛡️ 雙重保險：1. 監聽點擊按鈕事件 2. 強固型 MutationObserver 隨時攔截官方 js 的內容覆寫
     window.addEventListener('DOMContentLoaded', () => {
+      const weeklyBtn = document.getElementById('open-weekly');
+      if (weeklyBtn) {
+        weeklyBtn.addEventListener('click', () => {
+          // 點擊後延遲 150ms 確保官方 ajax 塞入文字，立刻執行美化
+          setTimeout(beautifyWeeklySchedule, 150);
+          setTimeout(beautifyWeeklySchedule, 400); // 雙重保險確保非同步載入完成
+        });
+      }
+
       const weeklyEl = document.getElementById('weeklyContent');
       if (weeklyEl) {
-        let isFormatting = false;
-        const observer = new MutationObserver((mutations, obs) => {
-          if (isFormatting) return;
-          let html = weeklyEl.innerHTML;
-          if (html && !html.includes('sch-venue-card') && !html.includes('載入中')) {
-            isFormatting = true;
-            obs.disconnect(); // 暫停監聽以防迴圈
+        const observer = new MutationObserver(() => {
+          // 只要內容改變且尚未美化，立刻執行
+          if (!weeklyEl.querySelector('.league-schedule-wrapper')) {
             beautifyWeeklySchedule();
-            obs.observe(weeklyEl, { childList: true, subtree: true, characterData: true });
-            isFormatting = false;
           }
         });
         observer.observe(weeklyEl, { childList: true, subtree: true, characterData: true });
@@ -1055,7 +1052,7 @@
         <h3>📌 使用提醒</h3>
         <ul>
           <li>報名前請確認日期、時間、球場與職務。</li>
-          <li>報名成功後請再次確認自己的姓名已顯示於正確位置。</li>
+          <li>報名成功後請再次確認您的姓名已顯示於正確位置。</li>
           <li>若看到「已有人報名」，請以系統最新畫面為準。</li>
           <li>若出現時間衝突或母隊迴避提醒，請改選其他場次。</li>
         </ul>
