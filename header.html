@@ -1,136 +1,136 @@
-<!-- ================= App Header V2.0 ================= -->
+<!-- ================= Executive Navy Two-Tier Header ================= -->
 <style>
 #app-header {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 10px 16px;
-  box-shadow: 0 2px 8px rgba(15,23,42,0.03);
+  background: #0f172a; /* 深海商務藍 */
+  color: #ffffff;
+  border-bottom: 2px solid #1e3a8a;
   position: sticky;
   top: 0;
   z-index: 50;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 
-#app-header .nav {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+.header-tier-1 {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-brand {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f8fafc;
+  text-decoration: none;
+}
+
+.header-user-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.header-user-info span {
+  color: #f1f5f9;
+  font-weight: 700;
+}
+
+.header-user-info a {
+  color: #93c5fd;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.header-user-info a:hover {
+  color: #ffffff;
+}
+
+.header-tier-2 {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 20px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
 }
 
 #app-header .item {
-  width: 74px;
-  height: 74px;
   display: none;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 2px;
-  font-size: 12px;
-  font-weight: 800;
-  border-radius: 12px;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
   text-decoration: none;
   transition: all 0.2s ease;
-  border: 1px solid transparent;
-  box-sizing: border-box;
-}
-  
-#app-header .icon { font-size: 22px; }
-
-#app-header .item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(37,99,235,0.1);
-  border-color: #cbd5e1;
-}
-
-/* 顏色主題配置 */
-#app-header .home   { display: flex; background: #f8fafc; color: #334155; border-color: #e2e8f0; }
-#app-header .course { background: #eff6ff; color: #1d4ed8; display: flex !important; border-color: #dbeafe; }
-#app-header .judge  { background: #f0fdf4; color: #15803d; border-color: #dcfce7; }
-#app-header .record { background: #faf5ff; color: #7e22ce; border-color: #f3e8ff; }
-#app-header .admin  { background: #fff7ed; color: #c2410c; border-color: #ffedd5; }
-
-/* 權限控制 */
-body.role-judge  #app-header .judge  { display: flex; }
-body.role-record #app-header .record { display: flex; }
-body.role-admin  #app-header .admin  { display: flex; }
-
-#app-header .text small {
-  font-size: 10px;
-  font-weight: 700;
-  color: inherit;
-  display: block;
-  max-width: 65px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.04);
   white-space: nowrap;
 }
 
-/* 📱 手機螢幕優化：改為橫向滑動列，不佔滿整個畫面 */
+#app-header .item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* 角色權限顯示控制：預設隱藏特定身分按鈕，透過 body 類別展開 */
+#app-header .home   { display: flex !important; background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+#app-header .course { display: flex !important; }
+#app-header .judge  { display: none; }
+#app-header .record { display: none; }
+#app-header .admin  { display: none; }
+
+body.role-judge  #app-header .judge  { display: flex !important; }
+body.role-record #app-header .record { display: flex !important; }
+body.role-admin  #app-header .admin  { display: flex !important; }
+body.role-admin  #app-header .judge  { display: flex !important; }
+body.role-admin  #app-header .record { display: flex !important; }
+
 @media (max-width: 768px) {
-  #app-header {
-    padding: 8px 12px;
-  }
-  #app-header .nav {
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: 8px;
-    padding-bottom: 4px;
-  }
-  #app-header .nav::-webkit-scrollbar {
-    display: none; 
-  }
-  #app-header .item {
-    flex: 0 0 68px;
-    width: 68px;
-    height: 68px;
-    font-size: 11px;
-  }
-  #app-header .icon {
-    font-size: 20px;
-  }
+  .header-tier-1 { padding: 8px 14px; }
+  .header-tier-2 { padding: 6px 14px; gap: 6px; }
+  #app-header .item { padding: 6px 10px; font-size: 12px; }
 }
 </style>
 
-<div id="app-header">
-  <nav class="nav">
+<header id="app-header">
+  <!-- 第一層：品牌與使用者管理 -->
+  <div class="header-tier-1">
+    <a href="index.html" class="header-brand">
+      <span>⚾ BBT 軟式棒球聯盟</span>
+    </a>
+    <div class="header-user-info">
+      <div>歡迎，<span id="header-username">使用者</span></div>
+      <a href="change_password.html">修改密碼</a>
+      <a href="#" onclick="logout()" style="color: #f87171;">登出</a>
+    </div>
+  </div>
+
+  <!-- 第二層：主要功能導覽列 -->
+  <div class="header-tier-2">
     <a href="index.html" class="item home">
-      <span class="icon">🏠</span>
-      <span class="text">首頁</span>
+      <span>🏠</span> 首頁
     </a>
-
     <a href="course.html" class="item course">
-      <span class="icon">📚</span>
-      <span class="text">課程專區</span>
+      <span>📚</span> 課程專區
     </a>
-
     <a href="judge_dashboard.html" class="item judge">
-      <span class="icon">🧑‍⚖️</span>
-      <span class="text">裁判班表</span>
+      <span>🧑‍⚖️</span> 裁判班表
     </a>
-
     <a href="record_dashboard.html" class="item record">
-      <span class="icon">📝</span>
-      <span class="text">紀錄班表</span>
+      <span>📝</span> 紀錄班表
     </a>
-
     <a href="admin_dashboard.html" class="item admin">
-      <span class="icon">⚙️</span>
-      <span class="text">管理介面</span>
+      <span>⚙️</span> 系統管理
     </a>
-
-    <a href="change_password.html" class="item home">
-      <span class="icon">🔐</span>
-      <span class="text">修改密碼</span>
-    </a>
-
-    <a href="#" class="item home" onclick="logout()">
-      <span class="icon">🚪</span>
-      <span class="text">登出<br><small id="header-username"></small></span>
-    </a>
-  </nav>
-</div>
+  </div>
+</header>

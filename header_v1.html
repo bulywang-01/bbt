@@ -1,0 +1,136 @@
+<!-- ================= App Header V2.0 ================= -->
+<style>
+#app-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 10px 16px;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.03);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+#app-header .nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+#app-header .item {
+  width: 74px;
+  height: 74px;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+}
+  
+#app-header .icon { font-size: 22px; }
+
+#app-header .item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37,99,235,0.1);
+  border-color: #cbd5e1;
+}
+
+/* 顏色主題配置 */
+#app-header .home   { display: flex; background: #f8fafc; color: #334155; border-color: #e2e8f0; }
+#app-header .course { background: #eff6ff; color: #1d4ed8; display: flex !important; border-color: #dbeafe; }
+#app-header .judge  { background: #f0fdf4; color: #15803d; border-color: #dcfce7; }
+#app-header .record { background: #faf5ff; color: #7e22ce; border-color: #f3e8ff; }
+#app-header .admin  { background: #fff7ed; color: #c2410c; border-color: #ffedd5; }
+
+/* 權限控制 */
+body.role-judge  #app-header .judge  { display: flex; }
+body.role-record #app-header .record { display: flex; }
+body.role-admin  #app-header .admin  { display: flex; }
+
+#app-header .text small {
+  font-size: 10px;
+  font-weight: 700;
+  color: inherit;
+  display: block;
+  max-width: 65px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 📱 手機螢幕優化：改為橫向滑動列，不佔滿整個畫面 */
+@media (max-width: 768px) {
+  #app-header {
+    padding: 8px 12px;
+  }
+  #app-header .nav {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+  #app-header .nav::-webkit-scrollbar {
+    display: none; 
+  }
+  #app-header .item {
+    flex: 0 0 68px;
+    width: 68px;
+    height: 68px;
+    font-size: 11px;
+  }
+  #app-header .icon {
+    font-size: 20px;
+  }
+}
+</style>
+
+<div id="app-header">
+  <nav class="nav">
+    <a href="index.html" class="item home">
+      <span class="icon">🏠</span>
+      <span class="text">首頁</span>
+    </a>
+
+    <a href="course.html" class="item course">
+      <span class="icon">📚</span>
+      <span class="text">課程專區</span>
+    </a>
+
+    <a href="judge_dashboard.html" class="item judge">
+      <span class="icon">🧑‍⚖️</span>
+      <span class="text">裁判班表</span>
+    </a>
+
+    <a href="record_dashboard.html" class="item record">
+      <span class="icon">📝</span>
+      <span class="text">紀錄班表</span>
+    </a>
+
+    <a href="admin_dashboard.html" class="item admin">
+      <span class="icon">⚙️</span>
+      <span class="text">管理介面</span>
+    </a>
+
+    <a href="change_password.html" class="item home">
+      <span class="icon">🔐</span>
+      <span class="text">修改密碼</span>
+    </a>
+
+    <a href="#" class="item home" onclick="logout()">
+      <span class="icon">🚪</span>
+      <span class="text">登出<br><small id="header-username"></small></span>
+    </a>
+  </nav>
+</div>

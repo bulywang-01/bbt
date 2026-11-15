@@ -18,50 +18,52 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
+      background: #f1f5f9; /* Executive Navy 背景 */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Noto Sans TC", sans-serif;
-      color: #1e293b;
+      color: #0f172a;
       letter-spacing: 0.2px;
     }
     
-    .main { max-width: 1200px; margin: 0 auto; padding: 18px 20px; }
+    .main { max-width: 1200px; margin: 0 auto; padding: 20px; }
     
-    /* 通用卡片容器 (更緊湊的內距) */
+    /* 商務風面板卡片 */
     .panel {
       background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 18px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
       padding: 18px 20px;
-      margin-bottom: 14px;
-      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+      transition: all 0.2s ease;
     }
     .panel:hover {
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+      border-color: #94a3b8;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
     }
 
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
-      gap: 8px;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e2e8f0;
     }
     .section-header h3 {
       margin: 0;
       font-size: 16px;
       font-weight: 800;
-      color: #0f172a;
+      color: #1e293b;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       white-space: nowrap;
     }
 
-    /* ===== 頂部歡迎與統計儀表板 ===== */
+    /* ===== 頂部歡迎與統計儀表板 (Executive Navy + 緊湊三欄樞紐看板) ===== */
     .welcome-box {
-      background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
-      border: 1px solid #dbeafe;
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border-top: 4px solid #1e3a8a;
     }
     .welcome-top {
       display: flex;
@@ -69,54 +71,68 @@
       align-items: flex-end;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .welcome-title { font-size: 22px; font-weight: 900; color: #1e3a8a; }
-    .welcome-role { font-size: 15px; color: #2563eb; font-weight: 800; margin-top: 2px; }
-    .welcome-name { font-size: 18px; font-weight: 700; color: #111827; margin-top: 4px; }
-    .welcome-sub { font-size: 12px; color: #64748b; }
+    .welcome-role { font-size: 14px; color: #2563eb; font-weight: 800; margin-top: 2px; }
+    .welcome-name { font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 4px; }
+    .welcome-sub { font-size: 12px; color: #64748b; font-weight: 700; }
 
-    /* 數據統計三欄 */
+    /* 📊 緊湊三欄樞紐表格看板：固定 3 欄並排，絕不垂直堆疊，極致節省空間 */
     .user-stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      gap: 8px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 8px;
       margin: 12px 0;
     }
     .stat-card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 10px 8px;
-      text-align: center;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      text-align: left;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-      border: 1px solid #f1f5f9;
-      transition: transform 0.2s;
+      justify-content: space-between;
+      gap: 3px;
+      transition: transform 0.2s, border-color 0.2s;
+      min-width: 0;
     }
-    .stat-card:hover { transform: translateY(-2px); }
-    .stat-card:nth-child(1) { background: linear-gradient(135deg, #eff6ff, #ffffff); border-top: 3px solid #2563eb; }
-    .stat-card:nth-child(2) { background: linear-gradient(135deg, #ecfdf5, #ffffff); border-top: 3px solid #16a34a; }
-    .stat-card:nth-child(3) { background: linear-gradient(135deg, #fff7ed, #ffffff); border-top: 3px solid #ea580c; }
+    .stat-card:hover { border-color: #94a3b8; }
     
-    .stat-title { font-size: 12px; font-weight: 700; color: #475569; }
-    .stat-value { font-size: 30px; font-weight: 900; color: #0f172a; line-height: 1.1; }
-    .stat-sub { font-size: 11px; color: #64748b; }
+    .stat-title { font-size: 11px; font-weight: 700; color: #475569; white-space: nowrap; }
+    .stat-val-row { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; flex-wrap: wrap; }
+    .stat-value { font-size: 22px; font-weight: 900; color: #1e3a8a; line-height: 1.1; }
+    .stat-sub { font-size: 10px; color: #64748b; font-weight: 700; white-space: nowrap; }
 
-    /* 個人分析區美化 */
+    .kpi-progress-track {
+      background: #e2e8f0;
+      border-radius: 999px;
+      height: 4px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .kpi-progress-fill-blue { background: #2563eb; width: 0%; height: 100%; transition: width 0.4s ease; }
+    .kpi-progress-fill-green { background: #10b981; width: 0%; height: 100%; transition: width 0.4s ease; }
+    .kpi-progress-fill-amber { background: #d97706; width: 0%; height: 100%; transition: width 0.4s ease; }
+
+    /* 個人分析區（完全移除外框與多餘背景，不包一層） */
     #home-user-analysis {
-      background: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      border-radius: 12px;
-      padding: 10px 14px;
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
       font-size: 13px;
-      color: #475569;
-      margin-bottom: 12px;
+      color: #334155;
+      margin-bottom: 14px;
+      box-shadow: none !important;
     }
 
-    /* 快捷按鈕列 (自適應填滿寬度，不留白邊) */
+    /* 快捷按鈕列 */
     .welcome-actions {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
@@ -126,25 +142,24 @@
       padding: 10px 8px;
       font-size: 13px;
       font-weight: 800;
-      border-radius: 12px;
-      border: none;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
       cursor: pointer;
       transition: all 0.2s;
       text-align: center;
       white-space: nowrap;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     }
-    .pill:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
-    .pill-blue { background: #e0edff; color: #1d4ed8; }
-    .pill-green { background: #dcfce7; color: #15803d; }
-    .pill-orange { background: #ffedd5; color: #c2410c; }
+    .pill:hover { background: #e2e8f0; border-color: #94a3b8; transform: translateY(-1px); }
+    .pill-blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .pill-green { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+    .pill-orange { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
 
     /* ===== 中段雙欄並排：開課資訊 + 最新公告 ===== */
     .dashboard-mid-grid {
       display: grid;
       grid-template-columns: 1fr 1.2fr;
-      gap: 14px;
-      margin-bottom: 14px;
+      gap: 16px;
+      margin-bottom: 16px;
     }
     .dashboard-mid-grid .panel {
       margin-bottom: 0;
@@ -159,28 +174,31 @@
       flex: 1;
     }
     .home-course-card {
-      background: linear-gradient(135deg, #f0fdf4, #ffffff);
-      border: 1px solid #bbf7d0;
-      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
       padding: 12px 14px;
       transition: all 0.2s ease;
     }
-    .home-course-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.05); }
-    .home-course-title { font-size: 14px; font-weight: 800; color: #166534; margin-bottom: 4px; }
+    .home-course-card:hover { border-color: #94a3b8; }
+    .home-course-title { font-size: 14px; font-weight: 800; color: #1e3a8a; margin-bottom: 4px; }
     .home-course-info { font-size: 12px; color: #475569; line-height: 1.5; }
 
     .notice-list { display: flex; flex-direction: column; gap: 8px; }
     .notice-item {
       background: #f8fafc;
-      border-left: 3px solid #2563eb;
-      border-radius: 8px;
+      border-left: 3px solid #1e3a8a;
+      border-radius: 6px;
       padding: 9px 12px;
       color: #334155;
       font-size: 13px;
       line-height: 1.5;
+      border-top: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
     }
 
-    /* ===== 文件中心 (完整 6 張卡片，3x2 整齊排列) ===== */
+    /* ===== 文件中心 ===== */
     .download-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -192,17 +210,16 @@
       justify-content: center;
       text-decoration: none;
       background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
       padding: 12px 14px;
       transition: all 0.2s;
       color: #0f172a;
     }
     .download-card:hover {
       background: #ffffff;
-      border-color: #93c5fd;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(37, 99, 235, 0.08);
+      border-color: #1e3a8a;
+      transform: translateY(-1px);
     }
     .download-title { font-size: 14px; font-weight: 800; margin-bottom: 3px; color: #1e293b; }
     .download-desc { font-size: 12px; color: #64748b; line-height: 1.4; }
@@ -216,38 +233,171 @@
 
     /* ===== 彈窗 Overlay ===== */
     .overlay {
-      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5);
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
       display: none; align-items: center; justify-content: center; z-index: 9999;
       backdrop-filter: blur(2px);
     }
     .overlay-box {
       background: #fff; width: 92vw; max-width: 520px; max-height: 85vh;
-      border-radius: 18px; padding: 20px; overflow-y: auto;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+      border-radius: 14px; padding: 20px; overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      border: 1px solid #cbd5e1;
     }
-    .overlay-box h2 { margin-top: 0; font-size: 18px; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+    .overlay-box h2 { margin-top: 0; font-size: 18px; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
     .system-guide-box { width: 95vw !important; max-width: 860px !important; }
 
     .close-btn.full {
-      width: 100%; padding: 12px 0; border-radius: 12px; border: none;
-      background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff;
+      width: 100%; padding: 12px 0; border-radius: 8px; border: none;
+      background: #1e3a8a; color: #fff;
       font-size: 15px; font-weight: 800; margin-top: 14px; cursor: pointer;
     }
+    .close-btn.full:hover { background: #1d4ed8; }
 
-    .week-alert {
-      margin-bottom: 12px; padding: 10px 14px; border-radius: 12px;
-      background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #fcd34d;
-      color: #92400e; font-size: 13px; font-weight: 800;
-      display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+    /* ===== 🏆 本週聯盟賽事班表：裁判與紀錄獨立分行顯示 ===== */
+    #weeklyContent {
+      font-size: 13px;
+      color: #1e293b;
+      line-height: 1.5;
+    }
+    .league-schedule-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sch-date-header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 900;
+      margin-top: 8px;
+      box-shadow: 0 2px 4px rgba(30, 58, 138, 0.15);
+    }
+    .sch-venue-card {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-top: 6px;
+    }
+    .sch-venue-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #1e40af;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 6px;
+    }
+    .sch-match-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    }
+    .sch-match-item:last-child {
+      margin-bottom: 0;
+    }
+    .sch-match-info-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .sch-time-badge {
+      background: #1e3a8a;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .sch-teams {
+      font-weight: 900;
+      color: #0f172a;
+      font-size: 13px;
+      flex: 1;
+      text-align: right;
+    }
+    .sch-role-group-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #475569;
+      margin: 6px 0 3px 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .sch-roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+      gap: 4px;
+    }
+    .sch-role-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      padding: 4px 6px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sch-role-box.assigned {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      color: #166534;
+    }
+    .sch-role-box.unassigned {
+      color: #94a3b8;
+    }
+    .sch-role-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #64748b;
+    }
+    .sch-role-name {
+      font-size: 11px;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* 個人數據分析彈窗美化 */
+    #userContent table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      background: #ffffff;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+    }
+    #userContent th, #userContent td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+    #userContent th {
+      background: #f1f5f9;
+      color: #1e293b;
+      font-weight: 800;
     }
 
     .footer {
-      text-align: center; padding: 16px 12px 24px;
+      text-align: center; padding: 20px 12px 24px;
       color: #64748b; font-size: 12px; line-height: 1.6;
     }
     .footer .title { font-size: 14px; font-weight: 800; color: #334155; }
 
-    /* 📱 手機版與平板 RWD 自動調整 */
     @media (max-width: 900px) {
       .dashboard-mid-grid { grid-template-columns: 1fr; }
       .welcome-actions { grid-template-columns: repeat(3, 1fr); }
@@ -256,9 +406,8 @@
 
     @media (max-width: 600px) {
       .main { padding: 12px; }
-      .panel { padding: 14px; border-radius: 16px; }
-      .user-stats { gap: 8px; }
-      .stat-value { font-size: 24px; }
+      .stat-card { padding: 6px 8px; }
+      .stat-value { font-size: 19px; }
       .welcome-actions { grid-template-columns: repeat(2, 1fr); }
       .download-grid { grid-template-columns: 1fr; }
       .system-center { grid-template-columns: repeat(2, 1fr); }
@@ -268,7 +417,6 @@
 
 <body>
 
-  <!-- Header 容器 -->
   <div id="header-container"></div>
 
   <script>
@@ -294,12 +442,185 @@
         .catch(err => console.error('Header 載入失敗', err));
     }
     document.addEventListener('DOMContentLoaded', loadHeader);
+
+    // 動態計算並更新真實進度條比例的即時監聽腳本
+    function updateRealProgressBars() {
+      const judgeVal = parseInt(document.getElementById('stat-judge')?.textContent) || 0;
+      const recordVal = parseInt(document.getElementById('stat-record')?.textContent) || 0;
+      const totalVal = parseInt(document.getElementById('stat-total')?.textContent) || 0;
+
+      const scaleMax = Math.max(totalVal, 25);
+
+      const fillJudge = document.getElementById('fill-judge');
+      const fillRecord = document.getElementById('fill-record');
+      const fillTotal = document.getElementById('fill-total');
+
+      if (fillJudge) fillJudge.style.width = Math.min(100, (judgeVal / scaleMax) * 100) + '%';
+      if (fillRecord) fillRecord.style.width = Math.min(100, (recordVal / scaleMax) * 100) + '%';
+      if (fillTotal) fillTotal.style.width = Math.min(100, (totalVal / scaleMax) * 100) + '%';
+    }
+
+    const progressObserver = new MutationObserver(updateRealProgressBars);
+    window.addEventListener('DOMContentLoaded', () => {
+      ['stat-judge', 'stat-record', 'stat-total'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) progressObserver.observe(el, { childList: true, characterData: true, subtree: true });
+      });
+      updateRealProgressBars();
+    });
+
+    // 🏆 修正分類條件：精準區分裁判組（主審、一壘、二壘、三壘等）與紀錄組
+    function beautifyWeeklySchedule() {
+      const container = document.getElementById('weeklyContent');
+      if (!container) return;
+      
+      let text = container.innerText || container.textContent;
+      if (!text || text.trim() === '' || container.dataset.processed === 'true') return;
+      
+      let lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+      if (lines.length === 0) return;
+      
+      let outputHtml = '<div class="league-schedule-wrapper">';
+      let currentVenue = null;
+      let currentMatch = null;
+      
+      let pushMatch = () => {
+        if (currentMatch && currentVenue) {
+          currentVenue.matches.push(currentMatch);
+          currentMatch = null;
+        }
+      };
+      
+      let pushVenue = () => {
+        if (currentVenue) {
+          pushMatch();
+          outputHtml += renderVenueCard(currentVenue);
+          currentVenue = null;
+        }
+      };
+      
+      lines.forEach(line => {
+        // 判斷日期
+        if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(line)) {
+          if (currentVenue) pushVenue();
+          outputHtml += `<div class="sch-date-header">📅 ${line}</div>`;
+        } 
+        // 判斷場地
+        else if (line.includes('場') || line.includes('大學') || line.includes('綜合') || line.includes('球場') || line.includes('📍')) {
+          if (currentVenue) pushVenue();
+          currentVenue = { venueName: line.replace('📍', '').trim(), matches: [] };
+        } 
+        // 判斷時間與代碼
+        else if (/^\d{2}:\d{2}/.test(line) && line.length < 25 && !line.includes('：')) {
+          if (currentMatch) pushMatch();
+          currentMatch = { timeCode: line, teams: '', roles: {} };
+        } 
+        // 判斷對戰組合
+        else if ((line.includes('VS') || line.includes('ＶＳ') || line.includes('vs')) && currentMatch && !currentMatch.teams) {
+          currentMatch.teams = line;
+        } 
+        // 判斷職務與人員
+        else if (line.includes('：') || line.includes(':')) {
+          if (!currentMatch) {
+            currentMatch = { timeCode: '賽事', teams: '', roles: {} };
+          }
+          let parts = line.split(/[:：]/);
+          let title = parts[0] ? parts[0].trim() : '';
+          let name = parts[1] ? parts[1].trim() : '－';
+          currentMatch.roles[title] = name;
+        } 
+        else {
+          if (currentMatch && !currentMatch.teams) {
+            currentMatch.teams = line;
+          }
+        }
+      });
+      
+      if (currentMatch) pushMatch();
+      if (currentVenue) {
+        outputHtml += renderVenueCard(currentVenue);
+      }
+      
+      outputHtml += '</div>';
+      container.innerHTML = outputHtml;
+      container.dataset.processed = 'true';
+    }
+
+    function renderVenueCard(venue) {
+      let matchesHtml = venue.matches.map(m => {
+        let refBoxes = [];
+        let recBoxes = [];
+        
+        Object.keys(m.roles).forEach(key => {
+          let name = m.roles[key] || '－';
+          let isAssigned = (name !== '－' && name !== '-');
+          let boxClass = isAssigned ? 'sch-role-box assigned' : 'sch-role-box unassigned';
+          let boxHtml = `
+            <div class="${boxClass}">
+              <span class="sch-role-label">${key}</span>
+              <span class="sch-role-name">${name}</span>
+            </div>
+          `;
+          
+          // 修正分類判斷：將主審、一壘、二壘、三壘、裁判相關職位全數納入裁判組
+          if (key.includes('主審') || key.includes('一壘') || key.includes('二壘') || key.includes('三壘') || key.includes('審') || key.includes('裁判')) {
+            refBoxes.push(boxHtml);
+          } else {
+            recBoxes.push(boxHtml);
+          }
+        });
+
+        return `
+          <div class="sch-match-item">
+            <div class="sch-match-info-row">
+              <span class="sch-time-badge">⏰ ${m.timeCode}</span>
+              <span class="sch-teams">${m.teams || '對戰組合未定'}</span>
+            </div>
+            ${refBoxes.length > 0 ? `
+              <div class="sch-role-group-title">🧑‍⚖️ 裁判組</div>
+              <div class="sch-roles-grid">${refBoxes.join('')}</div>
+            ` : ''}
+            ${recBoxes.length > 0 ? `
+              <div class="sch-role-group-title">📝 紀錄與影像組</div>
+              <div class="sch-roles-grid">${recBoxes.join('')}</div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="sch-venue-card">
+          <div class="sch-venue-title">📍 ${venue.venueName}</div>
+          ${matchesHtml}
+        </div>
+      `;
+    }
+
+    // 安全監聽本週班表，加入狀態鎖徹底避免網頁卡死
+    window.addEventListener('DOMContentLoaded', () => {
+      const weeklyEl = document.getElementById('weeklyContent');
+      if (weeklyEl) {
+        let isFormatting = false;
+        const observer = new MutationObserver((mutations, obs) => {
+          if (isFormatting) return;
+          let html = weeklyEl.innerHTML;
+          if (html && !html.includes('sch-venue-card') && !html.includes('載入中')) {
+            isFormatting = true;
+            obs.disconnect(); // 暫停監聽以防迴圈
+            beautifyWeeklySchedule();
+            obs.observe(weeklyEl, { childList: true, subtree: true, characterData: true });
+            isFormatting = false;
+          }
+        });
+        observer.observe(weeklyEl, { childList: true, subtree: true, characterData: true });
+      }
+    });
   </script>
 
   <div class="main">
     <div id="content"></div>
     
-    <!-- 1️⃣ 歡迎與核心儀表板 -->
+    <!-- 1️⃣ 歡迎與核心儀表板 (Executive Navy 緊湊三欄樞紐看板) -->
     <div class="panel welcome-box">
       <div class="welcome-top">
         <div>
@@ -312,24 +633,41 @@
 
       <div id="welcome-alert"></div>
       
+      <!-- 樞紐表格化看板 ＋ 動態真實數據進度條（三欄並排不換行） -->
       <div class="user-stats">
         <div class="stat-card">
           <div class="stat-title">🧑‍⚖️ 裁判場次</div>
-          <div class="stat-value" id="stat-judge">--</div>
-          <div class="stat-sub" id="stat-judge-sub"></div>
+          <div class="stat-val-row">
+            <span class="stat-value" id="stat-judge">--</span>
+            <span class="stat-sub" id="stat-judge-sub"></span>
+          </div>
+          <div class="kpi-progress-track">
+            <div class="kpi-progress-fill-blue" id="fill-judge"></div>
+          </div>
         </div>
         <div class="stat-card">
           <div class="stat-title">📝 紀錄場次</div>
-          <div class="stat-value" id="stat-record">--</div>
-          <div class="stat-sub" id="stat-record-sub"></div>
+          <div class="stat-val-row">
+            <span class="stat-value" id="stat-record">--</span>
+            <span class="stat-sub" id="stat-record-sub"></span>
+          </div>
+          <div class="kpi-progress-track">
+            <div class="kpi-progress-fill-green" id="fill-record"></div>
+          </div>
         </div>
         <div class="stat-card">
           <div class="stat-title">📊 年度總計</div>
-          <div class="stat-value" id="stat-total">--</div>
-          <div class="stat-sub" id="stat-total-sub"></div>
+          <div class="stat-val-row">
+            <span class="stat-value" id="stat-total">--</span>
+            <span class="stat-sub" id="stat-total-sub">出勤率 100%</span>
+          </div>
+          <div class="kpi-progress-track">
+            <div class="kpi-progress-fill-amber" id="fill-total"></div>
+          </div>
         </div>
       </div>
       
+      <!-- 個人分析區（已移除額外包覆的外框與背景） -->
       <div id="home-user-analysis">⏳ 個人數據資料載入中...</div>
 
       <div class="welcome-actions">
@@ -342,13 +680,13 @@
       </div>
     </div>
 
-    <!-- 2️⃣ 雙欄並排：聯盟開課資訊 ＋ 最新公告 (不浪費左右空間) -->
+    <!-- 2️⃣ 雙欄並排：聯盟開課資訊 ＋ 最新公告 -->
     <div class="dashboard-mid-grid">
       <!-- 左欄：聯盟開課資訊 -->
-      <div class="panel" style="background: linear-gradient(135deg, #f8fafc, #f0fdf4); border-color: #bbf7d0;">
+      <div class="panel" style="background: #f8fafc; border-color: #cbd5e1;">
         <div class="section-header">
           <h3>🎓 聯盟開課資訊</h3>
-          <a href="course.html" style="font-size: 12px; color: #15803d; font-weight: 800; text-decoration: none; white-space: nowrap;">查看全部 →</a>
+          <a href="course.html" style="font-size: 12px; color: #1e3a8a; font-weight: 800; text-decoration: none; white-space: nowrap;">查看全部 →</a>
         </div>
         <div id="home-course-container" class="home-course-grid">
           <div style="color: #64748b; font-size: 13px; padding: 8px;">載入聯盟開課資訊中...</div>
@@ -368,13 +706,12 @@
       </div>
     </div>
 
-    <!-- 3️⃣ 文件中心 (完整 6 項資料：規章/官網/規則 + 二/三/四人制移補位) -->
+    <!-- 3️⃣ 文件中心 -->
     <div class="panel">
       <div class="section-header">
         <h3>📚 文件與手冊中心</h3>
       </div>
       <div class="download-grid">
-        <!-- 第一排 -->
         <a href="https://bbtls.com/a03.php" target="_blank" class="download-card">
           <div class="download-title">📘 聯盟賽事規章</div>
           <div class="download-desc">BBT聯盟正式競賽規章</div>
@@ -387,8 +724,6 @@
           <div class="download-title">📖 棒球規則</div>
           <div class="download-desc">中華民國棒球規則 2024 年版</div>
         </a>
-
-        <!-- 第二排 (補回完整的裁判移補位手冊) -->
         <a href="umpire_2man_rotation.pdf" target="_blank" class="download-card">
           <div class="download-title">⚾ 二人制移補位</div>
           <div class="download-desc">WBSC 英文版裁判二人制移補位手冊</div>
@@ -533,703 +868,438 @@
   
       </div>
     </div>
-  </div>
 
-  <!-- ===============================
-  📝 紀錄員守則 Overlay
-  =============================== -->
-  <div id="record-rules-overlay" class="overlay">
-    <div class="overlay-box">
+    <!-- 紀錄員守則 Overlay -->
+    <div id="record-rules-overlay" class="overlay">
+      <div class="overlay-box">
   
-      <h2>📝 BBT 聯盟例行賽｜紀錄員守則</h2>
+        <h2>📝 BBT 聯盟例行賽｜紀錄員守則</h2>
   
-      <div style="margin-bottom:10px;">
-        ◎ 規章：
-        <a href="https://bbtls.com/a03.php" target="_blank">
-          https://bbtls.com/a03.php
-        </a>
-      </div>
-  
-      <h3>— 賽前 —</h3>
-      <ul>
-        <li>請穿著 BBT 紀錄制服</li>
-        <li>準備器材：黑筆 / 紅筆、紀錄單A4、計時器、MVP / SVP 獎牌</li>
-        <li>土城球場需協助收：布條、比賽球</li>
-        <li>請至少於比賽前 10~15 分鐘到場，向兩隊收各一張已填寫先發單</li>
-        <li>請向主審告知為今日紀錄員</li>
-      </ul>
-  
-      <h3>— 比賽中 —</h3>
-      <ul>
-        <li>
-          <strong>換人流程：</strong>
-          總教練 → 主審 → 記錄於先發單 → 再告知紀錄員
-        </li>
-  
-        <li>每局結束請與主審核對分數</li>
-  
-        <li>
-          若時間達賽前 15 分鐘且平手，
-          下局進入 <strong>突破僵局制</strong>
-        </li>
-  
-        <li>
-          七局制 or 2.5 小時<br>
-          第五局起雙方分差達 <strong>10 分(含)</strong> → 提前結束
-        </li>
-  
-        <li>
-          <strong>突破僵局制：</strong><br>
-          0 出局，二壘有跑者（前一局最後出局者）<br>
-          若再平手：可加開或判和局<br>
-          * 季後賽無和局制
-        </li>
-  
-        <li>
-          單一投手：
-          <ul>
-            <li>累計超過 3 次觸身球</li>
-            <li>或 2 次頭部觸身球</li>
-          </ul>
-          必須強制退場
-        </li>
-      </ul>
-  
-      <h3>— 比賽結束 —</h3>
-      <ul>
-        <li>選出 MVP（勝隊）與 SVP（敗隊）並頒獎與拍照</li>
-        <li>比賽用球全部收回</li>
-        <li>
-          群組回報：比數、勝投、中繼、後援、MVP、SVP<br>
-          （可手寫拍照回傳）
-        </li>
-      </ul>
-  
-      <h3>— 紀錄懶人包 —</h3>
-      <ul>
-        <li>
-          <a href="https://drive.google.com/file/d/1Zs7OHkshjxLKw3FFXeJbpn9UKArgNjPL/view?usp=sharing" target="_blank">
-            記錄符號一覽表
+        <div style="margin-bottom:10px;">
+          ◎ 規章：
+          <a href="https://bbtls.com/a03.php" target="_blank">
+            https://bbtls.com/a03.php
           </a>
-        </li>
+        </div>
   
-        <li>
-          <a href="https://drive.google.com/file/d/1tQRNsC7pctm-AZuCtRpbfdGy4JHQzw4B/view?usp=drive_link" target="_blank">
-            BBT 官方記錄格式
-          </a>
-        </li>
+        <h3>— 賽前 —</h3>
+        <ul>
+          <li>請穿著 BBT 紀錄制服</li>
+          <li>準備器材：黑筆 / 紅筆、紀錄單A4、計時器、MVP / SVP 獎牌</li>
+          <li>土城球場需協助收：布條、比賽球</li>
+          <li>請至少於比賽前 10~15 分鐘到場，向兩隊收各一張已填寫先發單</li>
+          <li>請向主審告知為今日紀錄員</li>
+        </ul>
   
-        <li>
-          <a href="https://docs.google.com/spreadsheets/d/1wwk2yeYu6yuEup4fmfsRQz5X8MkoU_4m/edit?usp=sharing" target="_blank">
-            攻守記錄整理 EXCEL
-          </a>
-        </li>
-      </ul>
+        <h3>— 比賽中 —</h3>
+        <ul>
+          <li>
+            <strong>換人流程：</strong>
+            總教練 → 主審 → 記錄於先發單 → 再告知紀錄員
+          </li>
   
-      <button class="close-btn full" onclick="hideOverlay('record-rules-overlay')">
-        關閉
-      </button>
+          <li>每局結束請與主審核對分數</li>
   
+          <li>
+            若時間達賽前 15 分鐘且平手，
+            下局進入 <strong>突破僵局制</strong>
+          </li>
+  
+          <li>
+            七局制 or 2.5 小時<br>
+            第五局起雙方分差達 <strong>10 分(含)</strong> → 提前結束
+          </li>
+  
+          <li>
+            <strong>突破僵局制：</strong><br>
+            0 出局，二壘有跑者（前一局最後出局者）<br>
+            若再平手：可加開或判和局<br>
+            * 季後賽無和局制
+          </li>
+  
+          <li>
+            單一投手：
+            <ul>
+              <li>累計超過 3 次觸身球</li>
+              <li>或 2 次頭部觸身球</li>
+            </ul>
+            必須強制退場
+          </li>
+        </ul>
+  
+        <h3>— 比賽結束 —</h3>
+        <ul>
+          <li>選出 MVP（勝隊）與 SVP（敗隊）並頒獎與拍照</li>
+          <li>比賽用球全部收回</li>
+          <li>
+            群組回報：比數、勝投、中繼、後援、MVP、SVP<br>
+            （可手寫拍照回傳）
+          </li>
+        </ul>
+  
+        <h3>— 紀錄懶人包 —</h3>
+        <ul>
+          <li>
+            <a href="https://drive.google.com/file/d/1Zs7OHkshjxLKw3FFXeJbpn9UKArgNjPL/view?usp=sharing" target="_blank">
+              記錄符號一覽表
+            </a>
+          </li>
+  
+          <li>
+            <a href="https://drive.google.com/file/d/1tQRNsC7pctm-AZuCtRpbfdGy4JHQzw4B/view?usp=drive_link" target="_blank">
+              BBT 官方記錄格式
+            </a>
+          </li>
+  
+          <li>
+            <a href="https://docs.google.com/spreadsheets/d/1wwk2yeYu6yuEup4fmfsRQz5X8MkoU_4m/edit?usp=sharing" target="_blank">
+              攻守記錄整理 EXCEL
+            </a>
+          </li>
+        </ul>
+  
+        <button class="close-btn full" onclick="hideOverlay('record-rules-overlay')">
+          關閉
+        </button>
+  
+      </div>
     </div>
-  </div>
 
+    <!-- 聯盟賽制 Overlay -->
+    <div id="league-overlay" class="overlay" style="display:none;">
+      <div class="overlay-box">
+        <h2>📘 BBT 賽制規定 Rules</h2>
   
-  <!-- ===============================
-  📘 聯盟賽制 Overlay（比照裁判守則）
-  =============================== -->
-  <div id="league-overlay" class="overlay" style="display:none;">
-    <div class="overlay-box">
-      <h2>📘 BBT 賽制規定 Rules</h2>
+        <h3>一、例行賽</h3>
+        <ul>
+          <li>本季採分區制，大聯盟組 8 隊、小聯盟組 8 隊，雙循環制。</li>
+          <li>合計 112 場賽事，每隊進行 14 場例行賽。</li>
+        </ul>
   
-      <h3>一、例行賽</h3>
-      <ul>
-        <li>本季採分區制，大聯盟組 8 隊、小聯盟組 8 隊，雙循環制。</li>
-        <li>合計 112 場賽事，每隊進行 14 場例行賽。</li>
-      </ul>
+        <h3>二、比賽用球</h3>
+        <ul>
+          <li>比賽用球：KENKO BALL（全日本軟式野球聯盟公認球）。</li>
+          <li>賽後將進行回收重複使用。</li>
+        </ul>
   
-      <h3>二、比賽用球</h3>
-      <ul>
-        <li>比賽用球：KENKO BALL（全日本軟式野球聯盟公認球）。</li>
-        <li>賽後將進行回收重複使用。</li>
-      </ul>
+        <h3>三、比賽時間</h3>
+        <ul>
+          <li>正式比賽 7 局或 2.5 小時制（依事前認定）。</li>
+          <li>時間屆滿前 15 分鐘且平手，下局進入突破僵局制。</li>
+          <li>突破僵局：0 出局，進攻方二、三壘有人。</li>
+        </ul>
   
-      <h3>三、比賽時間</h3>
-      <ul>
-        <li>正式比賽 7 局或 2.5 小時制（依事前認定）。</li>
-        <li>時間屆滿前 15 分鐘且平手，下局進入突破僵局制。</li>
-        <li>突破僵局：0 出局，進攻方二、三壘有人。</li>
-      </ul>
+        <h3>四、提前結束</h3>
+        <ul>
+          <li class="important">例行賽、季後賽、冠軍賽：雙方分數差 10 分（含）以上，判定提前結束。</li>
+          <li>未滿 3 局不列入正式比賽；滿 3 局為正式比賽。</li>
+        </ul>
   
-      <h3>四、提前結束</h3>
-      <ul>
-        <li class="important">例行賽、季後賽、冠軍賽：雙方分數差 10 分（含）以上，判定提前結束。</li>
-        <li>未滿 3 局不列入正式比賽；滿 3 局為正式比賽。</li>
-      </ul>
+        <h3>五、裁判配置</h3>
+        <ul>
+          <li>大聯盟：三人制裁判。</li>
+          <li>小聯盟：兩人制裁判。</li>
+        </ul>
   
-      <h3>五、裁判配置</h3>
-      <ul>
-        <li>大聯盟：三人制裁判。</li>
-        <li>小聯盟：兩人制裁判。</li>
-      </ul>
+        <h3>六、季後賽</h3>
+        <ul>
+          <li>季後賽採單淘汰制。</li>
+          <li>依例行賽戰績前四名晉級。</li>
+          <li>對戰組合由各隊派員抽籤決定。</li>
+        </ul>
   
-      <h3>六、季後賽</h3>
-      <ul>
-        <li>季後賽採單淘汰制。</li>
-        <li>依例行賽戰績前四名晉級。</li>
-        <li>對戰組合由各隊派員抽籤決定。</li>
-      </ul>
+        <h3>七、迴避原則</h3>
+        <ul>
+          <li><strong>嚴格禁止：</strong>例行賽、季後賽、冠軍賽，裁判不得執法所屬母隊賽事。</li>
+          <li>開放範圍：跨隊交流案、熱身賽、冬季聯盟。</li>
+        </ul>
   
-      <h3>七、迴避原則</h3>
-      <ul>
-        <li><strong>嚴格禁止：</strong>例行賽、季後賽、冠軍賽，裁判不得執法所屬母隊賽事。</li>
-        <li>開放範圍：跨隊交流案、熱身賽、冬季聯盟。</li>
-      </ul>
-  
-      <button onclick="document.getElementById('league-overlay').style.display='none'" class="close-btn full">
-        關閉
-      </button>
+        <button onclick="document.getElementById('league-overlay').style.display='none'" class="close-btn full">
+          關閉
+        </button>
+      </div>
     </div>
-  </div>
 
-  <!-- ===============================
-  ℹ️ 系統功能說明
-  =============================== -->
-  <div id="system-guide-overlay" class="overlay">
-  
-    <div class="overlay-box system-guide-box">
-  
-      <h2>ℹ️ BBT 出勤管理系統功能說明</h2>
-  
-      <p>
-        本系統提供裁判員與紀錄員進行賽事報名、取消、查詢與出勤管理，
-        並透過各項防呆機制與貼心功能，協助維持報名公平與資料正確。
-      </p>
-  
-      <h3>🛡️ 報名防呆機制</h3>
-  
-      <ul>
-        <li><strong>同位置唯一報名</strong>：同一場、同一位置只保留一位報名者。</li>
-  
-        <li><strong>雙人同時搶位保護</strong>：多人同時報名時，以先完成者為準。</li>
-  
-        <li><strong>防重覆點擊</strong>：避免因網路延遲或重覆按鈕造成重覆報名。</li>
-  
-        <li><strong>同場裁判單一位置限制</strong>：同一場僅能擔任一個裁判位置。</li>
-  
-        <li><strong>裁判／紀錄職務互斥</strong>：同一場不可同時擔任裁判與紀錄職務。</li>
-  
-        <li><strong>時間衝堂檢查</strong>：避免同時間或相近時間重覆接任場次。</li>
-  
-        <li><strong>轉場緩衝保護</strong>：同場地約保留30分鐘、跨場地約保留60分鐘轉場時間。</li>
-  
-        <li><strong>母隊迴避機制</strong>：不可報名自己母隊的賽事。</li>
-  
-        <li><strong>過期／延賽／停賽／鎖定保護</strong>：禁止操作非開放狀態賽事。</li>
-      </ul>
-  
-      <h3>✨ 貼心功能</h3>
-  
-      <ul>
-        <li>我的報名位置高亮顯示。</li>
-  
-        <li>支援一鍵取消報名。</li>
-  
-        <li>即時顯示待位、衝突與不可報名狀態。</li>
-  
-        <li>不同賽事類型使用不同顏色呈現。</li>
-  
-        <li>手機、平板、電腦皆可操作。</li>
-  
-        <li>報名與取消後自動更新卡片資訊。</li>
-  
-        <li>明確顯示報名失敗原因。</li>
-      </ul>
-  
-      <h3>📌 使用提醒</h3>
-  
-      <ul>
-        <li>報名前請確認日期、時間、球場與職務。</li>
-  
-        <li>報名成功後請再次確認自己的姓名已顯示於正確位置。</li>
-  
-        <li>若看到「已有人報名」，請以系統最新畫面為準。</li>
-  
-        <li>若出現時間衝突或母隊迴避提醒，請改選其他場次。</li>
-      </ul>
-  
-      <div style="
-        margin-top:16px;
-        padding:12px;
-        border-radius:10px;
-        background:#f5f8ff;
-        border:1px solid #dbeafe;
-        color:#1e40af;
-        line-height:1.6;
-      ">
-        ✅ 系統會協助把關報名規則，避免重覆報名、衝堂、趕場與誤報名。<br>
-        ✅ 若發現異常或有功能建議，歡迎向聯盟反映。
+    <!-- ===============================
+    ℹ️ 系統功能說明
+    =============================== -->
+    <div id="system-guide-overlay" class="overlay">
+      <div class="overlay-box system-guide-box">
+        <h2>ℹ️ BBT 出勤管理系統功能說明</h2>
+        <p>
+          本系統提供裁判員與紀錄員進行賽事報名、取消、查詢與出勤管理，
+          並透過各項防呆機制與貼心功能，協助維持報名公平與資料正確。
+        </p>
+        <h3>🛡️ 報名防呆機制</h3>
+        <ul>
+          <li><strong>同位置唯一報名</strong>：同一場、同一位置只保留一位報名者。</li>
+          <li><strong>雙人同時搶位保護</strong>：多人同時報名時，以先完成者為準。</li>
+          <li><strong>防重覆點擊</strong>：避免因網路延遲或重覆按鈕造成重覆報名。</li>
+          <li><strong>同場裁判單一位置限制</strong>：同一場僅能擔任一個裁判位置。</li>
+          <li><strong>裁判／紀錄職務互斥</strong>：同一場不可同時擔任裁判與紀錄職務。</li>
+          <li><strong>時間衝堂檢查</strong>：避免同時間或相近時間重覆接任場次。</li>
+          <li><strong>轉場緩衝保護</strong>：同場地約保留30分鐘、跨場地約保留60分鐘轉場時間。</li>
+          <li><strong>母隊迴避機制</strong>：不可報名自己母隊的賽事。</li>
+          <li><strong>過期／延賽／停賽／鎖定保護</strong>：禁止操作非開放狀態賽事。</li>
+        </ul>
+        <h3>✨ 貼心功能</h3>
+        <ul>
+          <li>我的報名位置高亮顯示。</li>
+          <li>支援一鍵取消報名。</li>
+          <li>即時顯示待位、衝突與不可報名狀態。</li>
+          <li>不同賽事類型使用不同顏色呈現。</li>
+          <li>手機、平板、電腦皆可操作。</li>
+          <li>報名與取消後自動更新卡片資訊。</li>
+          <li>明確顯示報名失敗原因。</li>
+        </ul>
+        <h3>📌 使用提醒</h3>
+        <ul>
+          <li>報名前請確認日期、時間、球場與職務。</li>
+          <li>報名成功後請再次確認自己的姓名已顯示於正確位置。</li>
+          <li>若看到「已有人報名」，請以系統最新畫面為準。</li>
+          <li>若出現時間衝突或母隊迴避提醒，請改選其他場次。</li>
+        </ul>
+        <div style="margin-top:16px; padding:12px; border-radius:10px; background:#f5f8ff; border:1px solid #dbeafe; color:#1e40af; line-height:1.6;">
+          ✅ 系統會協助把關報名規則，避免重覆報名、衝堂、趕場與誤報名。<br>
+          ✅ 若發現異常或有功能建議，歡迎向聯盟反映。
+        </div>
+        <button class="close-btn full" onclick="hideOverlay('system-guide-overlay')">關閉</button>
       </div>
-  
-      <button
-        class="close-btn full"
-        onclick="hideOverlay('system-guide-overlay')"
-      >
-        關閉
-      </button>
-  
     </div>
-  
-  </div>
 
-<div id="system-history-overlay" class="overlay">
-  
-    <div class="overlay-box system-guide-box">
-  
-      <h2>📜 BBT 出勤管理系統開發日誌</h2>
-  
-      <p>
-        本系統由聯盟實際營運需求出發，
-        逐步發展成整合裁判、紀錄員、
-        出勤管理、培訓課程與統計分析的平台。
-      </p>
-  
-      <h3>🚀 第一階段｜人工管理時期</h3>
-  
-      <ul>
-        <li>裁判與紀錄員透過群組以人工方式報名。</li>
-      </ul>
-  
-      <h3>💻 第二階段｜報名系統建立</h3>
-  
-      <ul>
-        <li>導入 Google Apps Script 與 Google Sheet。</li>
-        <li>建立裁判與紀錄報名功能。</li>
-        <li>可直接於手機完成報名。</li>
-        <li>初步建立身分登入機制。</li>
-      </ul>
-  
-      <h3>📅 第三階段｜班表管理</h3>
-  
-      <ul>
-        <li>新增我的班表功能。</li>
-        <li>新增本週聯盟班表。</li>
-        <li>支援即時檢視裁判與紀錄配置。</li>
-        <li>支援取消報名。</li>
-      </ul>
-  
-      <h3>🛡️ 第四階段｜防呆機制強化</h3>
-  
-      <ul>
-        <li>裁判單場僅能擔任一個位置。</li>
-        <li>裁判與紀錄職務互斥。</li>
-        <li>時間衝堂檢查。</li>
-        <li>轉場緩衝保護機制。</li>
-        <li>過期場次鎖定。</li>
-        <li>延賽／停賽／鎖定狀態控制。</li>
-      </ul>
-  
-      <h3>⚾ 第五階段｜聯盟規則整合</h3>
-  
-      <ul>
-        <li>加入裁判守則。</li>
-        <li>加入紀錄守則。</li>
-        <li>加入聯盟賽制說明。</li>
-        <li>文件下載中心整合。</li>
-      </ul>
-  
-      <h3>📊 第六階段｜數據分析</h3>
-  
-      <ul>
-        <li>個人出勤統計。</li>
-        <li>裁判場次統計。</li>
-        <li>紀錄場次統計。</li>
-        <li>年度累積分析。</li>
-        <li>個人數據儀表板。</li>
-      </ul>
-  
-      <h3>🏅 第七階段｜公平性優化</h3>
-  
-      <ul>
-        <li>母隊迴避機制上線。</li>
-        <li>不可執法自己母隊賽事。</li>
-        <li>報名頁面直接鎖定。</li>
-        <li>即時提示不可報名原因。</li>
-      </ul>
-  
-      <h3>⚡ 第八階段｜搶位保護機制</h3>
-  
-      <ul>
-        <li>導入 Script Lock 保護。</li>
-        <li>避免多人同時搶位造成重覆報名。</li>
-        <li>新增位置唯一檢查。</li>
-        <li>新增即時更新機制。</li>
-        <li>新增搶位失敗提示訊息。</li>
-      </ul>
-
-      <h3>🎓 第九階段｜課程培訓與繳費系統</h3>
-  
-      <ul>
-        <li>新增課程大廳與線上報名功能。</li>
-        <li>支援正取額滿自動轉候補與遞補機制。</li>
-        <li>個人課程與學習歷程查詢（含年度與累計完訓時數）。</li>
-        <li>繳費資訊更新機制（支援現場付款與轉帳後五碼填報）。</li>
-        <li>完訓時數紀錄與證照審核狀態追蹤。</li>
-      </ul>
-  
-      <h3>🎯 現行版本特色</h3>
-  
-      <ul>
-        <li>手機與電腦同步支援。</li>
-        <li>即時報名與取消。</li>
-        <li>自動衝堂檢查。</li>
-        <li>母隊迴避。</li>
-        <li>公平搶位保護。</li>
-        <li>個人數據分析。</li>
-        <li>聯盟文件整合。</li>
-        <li>本週班表整合。</li>
-        <li>課程培訓與繳費管理。</li>
-      </ul>
-  
-      <div style="
-        margin-top:16px;
-        padding:12px;
-        border-radius:10px;
-        background:#f5f8ff;
-        border:1px solid #dbeafe;
-        color:#1e40af;
-        line-height:1.6;
-      ">
-        📅 2025 ~ 2026 持續開發中<br>
-        感謝阿信聯盟長、又田裁判長及各位前輩們與聯盟管理團隊，
-        提供寶貴建議與實際使用回饋，
-        讓系統持續進化與成長。
+    <!-- ===============================
+    📜 系統開發日誌
+    =============================== -->
+    <div id="system-history-overlay" class="overlay">
+      <div class="overlay-box system-guide-box">
+        <h2>📜 BBT 出勤管理系統開發日誌</h2>
+        <p>本系統由聯盟實際營運需求出發，逐步發展成整合裁判、紀錄員、出勤管理、培訓課程與統計分析的平台。</p>
+        <h3>🚀 第一階段｜人工管理時期</h3>
+        <ul><li>裁判與紀錄員透過群組以人工方式報名。</li></ul>
+        <h3>💻 第二階段｜報名系統建立</h3>
+        <ul>
+          <li>導入 Google Apps Script 與 Google Sheet。</li>
+          <li>建立裁判與紀錄報名功能。</li>
+          <li>可直接於手機完成報名。</li>
+          <li>初步建立身分登入機制。</li>
+        </ul>
+        <h3>📅 第三階段｜班表管理</h3>
+        <ul>
+          <li>新增我的班表功能。</li>
+          <li>新增本週聯盟班表。</li>
+          <li>支援即時檢視裁判與紀錄配置。</li>
+          <li>支援取消報名。</li>
+        </ul>
+        <h3>🛡️ 第四階段｜防呆機制強化</h3>
+        <ul>
+          <li>裁判單場僅能擔任一個位置。</li>
+          <li>裁判與紀錄職務互斥。</li>
+          <li>時間衝堂檢查。</li>
+          <li>轉場緩衝保護機制。</li>
+          <li>過期場次鎖定。</li>
+          <li>延賽／停賽／鎖定狀態控制。</li>
+        </ul>
+        <h3>⚾ 第五階段｜聯盟規則整合</h3>
+        <ul>
+          <li>加入裁判守則。</li>
+          <li>加入紀錄守則。</li>
+          <li>加入聯盟賽制說明。</li>
+          <li>文件下載中心整合。</li>
+        </ul>
+        <h3>📊 第六階段｜數據分析</h3>
+        <ul>
+          <li>個人出勤統計。</li>
+          <li>裁判場次統計。</li>
+          <li>紀錄場次統計。</li>
+          <li>年度累積分析。</li>
+          <li>個人數據儀表板。</li>
+        </ul>
+        <h3>🏅 第七階段｜公平性優化</h3>
+        <ul>
+          <li>母隊迴避機制上線。</li>
+          <li>不可執法自己母隊賽事。</li>
+          <li>報名頁面直接鎖定。</li>
+          <li>即時提示不可報名原因。</li>
+        </ul>
+        <h3>⚡ 第八階段｜搶位保護機制</h3>
+        <ul>
+          <li>導入 Script Lock 保護。</li>
+          <li>避免多人同時搶位造成重覆報名。</li>
+          <li>新增位置唯一檢查。</li>
+          <li>新增即時更新機制。</li>
+          <li>新增搶位失敗提示訊息。</li>
+        </ul>
+        <h3>🎓 第九階段｜課程培訓與繳費系統</h3>
+        <ul>
+          <li>新增課程大廳與線上報名功能。</li>
+          <li>支援正取額滿自動轉候補與遞補機制。</li>
+          <li>個人課程與學習歷程查詢（含年度與累計完訓時數）。</li>
+          <li>繳費資訊更新機制（支援現場付款與轉帳後五碼填報）。</li>
+          <li>完訓時數紀錄與證照審核狀態追蹤。</li>
+        </ul>
+        <h3>🎯 現行版本特色</h3>
+        <ul>
+          <li>手機與電腦同步支援。</li>
+          <li>即時報名與取消。</li>
+          <li>自動衝堂檢查。</li>
+          <li>母隊迴避。</li>
+          <li>公平搶位保護。</li>
+          <li>個人數據分析。</li>
+          <li>聯盟文件整合。</li>
+          <li>本週班表整合。</li>
+          <li>課程培訓與繳費管理。</li>
+        </ul>
+        <div style="margin-top:16px; padding:12px; border-radius:10px; background:#f5f8ff; border:1px solid #dbeafe; color:#1e40af; line-height:1.6;">
+          📅 2025 ~ 2026 持續開發中<br>
+          感謝阿信聯盟長、又田裁判長及各位前輩們與聯盟管理團隊，提供寶貴建議與實際使用回饋，讓系統持續進化與成長。
+        </div>
+        <button class="close-btn full" onclick="hideOverlay('system-history-overlay')">關閉</button>
       </div>
-  
-      <button
-        class="close-btn full"
-        onclick="hideOverlay('system-history-overlay')">
-        關閉
-      </button>
-  
     </div>
-  
-  </div>
 
-  <!-- ===============================
-  📊 數據分析說明
-  =============================== -->
-  <div id="analysis-guide-overlay" class="overlay">
-  
-    <div class="overlay-box system-guide-box">
-  
-      <h2>📊 數據分析說明</h2>
-  
-      <p>
-        為協助裁判員與紀錄員掌握個人出勤狀況，
-        系統提供各項統計分析功能，所有數據均依實際報名、
-        指派及出勤紀錄自動計算。
-      </p>
-  
-      <h3>📈 首頁統計數據</h3>
-  
-      <ul>
-  
-        <li>
-          <strong>🧑‍⚖️ 裁判場次</strong><br>
-          統計本年度已完成之裁判執勤場次，
-          包含主審、一壘審、二壘審及三壘審。
-        </li>
-  
-        <li>
-          <strong>📝 紀錄場次</strong><br>
-          統計本年度已完成之紀錄工作場次，
-          包含紀錄員、見習紀錄員及影像紀錄員。
-        </li>
-  
-        <li>
-          <strong>📊 年度總計</strong><br>
-          裁判場次與紀錄場次之合計，
-          用於快速了解年度參與程度。
-        </li>
-  
-      </ul>
-  
-      <h3>📅 我的班表分析</h3>
-  
-      <ul>
-  
-        <li>
-          <strong>未來場次</strong><br>
-          已完成報名或指派但尚未進行之賽事。
-        </li>
-  
-        <li>
-          <strong>已完成場次</strong><br>
-          已完成執勤之賽事紀錄。
-        </li>
-  
-        <li>
-          <strong>取消場次</strong><br>
-          曾報名但已取消之歷史資料。
-        </li>
-  
-      </ul>
-  
-      <h3>🏆 職務統計分析</h3>
-  
-      <ul>
-  
-        <li>
-          統計各裁判職務執勤次數：
-          主審、 一壘審、 二壘審、 三壘審。
-        </li>
-  
-        <li>
-          統計各紀錄職務執勤次數：
-          紀錄員、 見習紀錄員、 影像紀錄員。
-        </li>
-  
-        <li>
-          協助了解個人執勤分布與成長方向。
-        </li>
-  
-      </ul>
-  
-      <h3>📊 出勤品質分析</h3>
-  
-      <ul>
-  
-        <li>
-          <strong>✅ 完成</strong><br>
-          已正常完成出勤之場次。
-        </li>
-  
-        <li>
-          <strong>⏰ 遲到</strong><br>
-          有出勤但未於規定時間到場。
-        </li>
-  
-        <li>
-          <strong>❌ 缺席</strong><br>
-          未到場執勤之紀錄。
-        </li>
-  
-        <li>
-          <strong>🔄 支援</strong><br>
-          臨時協助其他場次執勤之紀錄。
-        </li>
-  
-      </ul>
-  
-      <h3>📋 本週聯盟班表分析</h3>
-  
-      <ul>
-  
-        <li>
-          <strong>本週總場次</strong><br>
-          聯盟本週預計進行之賽事數量。
-        </li>
-  
-        <li>
-          <strong>已完成指派</strong><br>
-          已有人接任之職務數量。
-        </li>
-  
-        <li>
-          <strong>尚缺人力</strong><br>
-          目前仍開放報名之職位數量。
-        </li>
-  
-      </ul>
-  
-      <h3>⚠️ 數據判讀提醒</h3>
-  
-      <ul>
-  
-        <li>
-          大部分統計資料均會於報名、取消、
-          出勤確認後自動更新。
-        </li>
-  
-        <li>
-          統計資料以年度為單位計算，
-          不同年度將分開統計。
-        </li>
-  
-        <li>
-          若發現統計數據異常，
-          請向聯盟管理人員反映協助確認。
-        </li>
-  
-      </ul>
-  
-      <div style="
-        margin-top:16px;
-        padding:12px;
-        border-radius:10px;
-        background:#f5f8ff;
-        border:1px solid #dbeafe;
-        color:#1e40af;
-        line-height:1.7;
-      ">
-        ✅ 協助掌握個人出勤狀況<br>
-        ✅ 了解年度服務貢獻<br>
-        ✅ 提供聯盟排班與培訓參考<br>
-        ✅ 提升整體執勤與服務品質
+    <!-- ===============================
+    📊 數據分析說明
+    =============================== -->
+    <div id="analysis-guide-overlay" class="overlay">
+      <div class="overlay-box system-guide-box">
+        <h2>📊 數據分析說明</h2>
+        <p>為協助裁判員與紀錄員掌握個人出勤狀況，系統提供各項統計分析功能，所有數據均依實際報名、指派及出勤紀錄自動計算。</p>
+        <h3>📈 首頁統計數據</h3>
+        <ul>
+          <li><strong>🧑‍⚖️ 裁判場次</strong>：統計本年度已完成之裁判執勤場次，包含主審、一壘審、二壘審及三壘審。</li>
+          <li><strong>📝 紀錄場次</strong>：統計本年度已完成之紀錄工作場次，包含紀錄員、見習紀錄員及影像紀錄員。</li>
+          <li><strong>📊 年度總計</strong>：裁判場次與紀錄場次之合計，用於快速了解年度參與程度。</li>
+        </ul>
+        <h3>📅 我的班表分析</h3>
+        <ul>
+          <li><strong>未來場次</strong>：已完成報名或指派但尚未進行之賽事。</li>
+          <li><strong>已完成場次</strong>：已完成執勤之賽事紀錄。</li>
+          <li><strong>取消場次</strong>：曾報名但已取消之歷史資料。</li>
+        </ul>
+        <h3>🏆 職務統計分析</h3>
+        <ul>
+          <li>統計各裁判職務執勤次數：主審、一壘審、二壘審、三壘審。</li>
+          <li>統計各紀錄職務執勤次數：紀錄員、見習紀錄員、影像紀錄員。</li>
+          <li>協助了解個人執勤分布與成長方向。</li>
+        </ul>
+        <h3>📊 出勤品質分析</h3>
+        <ul>
+          <li><strong>✅ 完成</strong>：已正常完成出勤之場次。</li>
+          <li><strong>⏰ 遲到</strong>：有出勤但未於規定時間到場。</li>
+          <li><strong>❌ 缺席</strong>：未到場執勤之紀錄。</li>
+          <li><strong>🔄 支援</strong>：臨時協助其他場次執勤之紀錄。</li>
+        </ul>
+        <h3>📋 本週聯盟班表分析</h3>
+        <ul>
+          <li><strong>本週總場次</strong>：聯盟本週預計進行之賽事數量。</li>
+          <li><strong>已完成指派</strong>：已有人接任之職務數量。</li>
+          <li><strong>尚缺人力</strong>：目前仍開放報名之職位數量。</li>
+        </ul>
+        <h3>⚠️ 數據判讀提醒</h3>
+        <ul>
+          <li>大部分統計資料均會於報名、取消、出勤確認後自動更新。</li>
+          <li>統計資料以年度為單位計算，不同年度將分開統計。</li>
+          <li>若發現統計數據異常，請向聯盟管理人員反映協助確認。</li>
+        </ul>
+        <div style="margin-top:16px; padding:12px; border-radius:10px; background:#f5f8ff; border:1px solid #dbeafe; color:#1e40af; line-height:1.7;">
+          ✅ 協助掌握個人出勤狀況<br>
+          ✅ 了解年度服務貢獻<br>
+          ✅ 提供聯盟排班與培訓參考<br>
+          ✅ 提升整體執勤與服務品質
+        </div>
+        <button class="close-btn full" onclick="hideOverlay('analysis-guide-overlay')">關閉</button>
       </div>
-  
-      <button
-        class="close-btn full"
-        onclick="hideOverlay('analysis-guide-overlay')">
-        關閉
-      </button>
-  
     </div>
-  </div>
 
-  <!-- ===============================
-  📖 使用教學
-  =============================== -->
-  <div id="user-guide-overlay" class="overlay">
-  
-    <div class="overlay-box system-guide-box">
-  
-      <h2>📖 BBT 出勤系統使用教學</h2>
-  
-      <div class="guide-tip">
-        歡迎使用 BBT 軟式棒球大聯盟出勤系統，本教學將帶您完成登入、報名、取消報名及查詢班表等操作。
-      </div>
-  
-      <div class="guide-step">
-        <h3>🔐 Step 1｜登入系統</h3>
-  
-        <img src="img/guide-01.jpg" class="guide-img">
-  
-        <div class="guide-tip">
-          ✅ 登入網址：
-          <br>
-          <a href="https://bulywang-01.github.io/bbt/login.html" target="_blank">
-            https://bulywang-01.github.io/bbt/login.html
-          </a>
-          <br><br>
-  
-          ✅ 帳號為 Email @ 前帳號或系統預設帳號
-          <br>
-          ✅ 預設密碼：12345678
-          <br>
-          ✅ 第一次登入請立即修改密碼
-          <br>
-          ✅ 支援手機與電腦操作
+    <!-- ===============================
+    📖 使用教學
+    =============================== -->
+    <div id="user-guide-overlay" class="overlay">
+      <div class="overlay-box system-guide-box">
+        <h2>📖 BBT 出勤系統使用教學</h2>
+        <div class="guide-tip">歡迎使用 BBT 軟式棒球大聯盟出勤系統，本教學將帶您完成登入、報名、取消報名及查詢班表等操作。</div>
+        
+        <div class="guide-step">
+          <h3>🔐 Step 1｜登入系統</h3>
+          <img src="img/guide-01.jpg" class="guide-img">
+          <div class="guide-tip">
+            ✅ 登入網址：<br>
+            <a href="https://bulywang-01.github.io/bbt/login.html" target="_blank">https://bulywang-01.github.io/bbt/login.html</a><br><br>
+            ✅ 帳號為 Email @ 前帳號或系統預設帳號<br>
+            ✅ 預設密碼：12345678<br>
+            ✅ 第一次登入請立即修改密碼<br>
+            ✅ 支援手機與電腦操作
+          </div>
         </div>
-      </div>
-  
-      <div class="guide-step">
-        <h3>📅 Step 2｜進入出勤報名</h3>
-  
-        <img src="img/guide-02.jpg" class="guide-img">
-  
-        <div class="guide-tip">
-          點選「出勤報名」即可查看當月份賽程，並可切換瀏覽其他月份班表。
+
+        <div class="guide-step">
+          <h3>📅 Step 2｜進入出勤報名</h3>
+          <img src="img/guide-02.jpg" class="guide-img">
+          <div class="guide-tip">點選「出勤報名」即可查看當月份賽程，並可切換瀏覽其他月份班表。</div>
         </div>
-      </div>
-  
-      <div class="guide-step">
-        <h3>🧑‍⚖️ Step 3｜裁判員報名（桌機版）</h3>
-  
-        <img src="img/guide-03.jpg" class="guide-img">
-  
-        <div class="guide-tip">
-          ✅ 點選主審、一壘審、二壘審或三壘審即可完成報名
-          <br>
-          ✅ 顯示自己姓名代表報名成功
-          <br>
-          ✅ 若多人同時報名，以先完成者為準
-          <br>
-          ✅ 點擊姓名下方【取消】可取消報名
+
+        <div class="guide-step">
+          <h3>🧑‍⚖️ Step 3｜裁判員報名（桌機版）</h3>
+          <img src="img/guide-03.jpg" class="guide-img">
+          <div class="guide-tip">
+            ✅ 點選主審、一壘審、二壘審或三壘審即可完成報名<br>
+            ✅ 顯示自己姓名代表報名成功<br>
+            ✅ 若多人同時報名，以先完成者為準<br>
+            ✅ 點擊姓名下方【取消】可取消報名
+          </div>
         </div>
-      </div>
-  
-      <div class="guide-step">
-        <h3>📱 Step 4｜裁判員報名（手機版）</h3>
-  
-        <img src="img/guide-04.jpg" class="guide-img">
-  
-        <div class="guide-tip">
-          手機版操作方式與桌機版相同，找到欲執勤場次後直接點選職務即可完成報名。
+
+        <div class="guide-step">
+          <h3>📱 Step 4｜裁判員報名（手機版）</h3>
+          <img src="img/guide-04.jpg" class="guide-img">
+          <div class="guide-tip">手機版操作方式與桌機版相同，找到欲執勤場次後直接點選職務即可完成報名。</div>
         </div>
-      </div>
-  
-      <div class="guide-step">
-        <h3>📝 Step 5｜紀錄員報名（桌機版）</h3>
-  
-        <img src="img/guide-05.jpg" class="guide-img">
-  
-        <div class="guide-tip">
-          ✅ 點擊「+報名」即可完成報名
-          <br>
-          ✅ 顯示自己姓名代表報名成功
-          <br>
-          ✅ 如需取消，可點選姓名下方【取消】
+
+        <div class="guide-step">
+          <h3>📝 Step 5｜紀錄員報名（桌機版）</h3>
+          <img src="img/guide-05.jpg" class="guide-img">
+          <div class="guide-tip">
+            ✅ 點擊「+報名」即可完成報名<br>
+            ✅ 顯示自己姓名代表報名成功<br>
+            ✅ 如需取消，可點選姓名下方【取消】
+          </div>
         </div>
-      </div>
-  
-      <div class="guide-step">
-        <h3>📱 Step 6｜紀錄員報名（手機版）</h3>
-  
-        <img src="img/guide-06.jpg" class="guide-img">
-  
-        <div class="guide-tip">
-          ✅ 灰底姓名：已有其他紀錄員報名
-          <br>
-          ✅ 綠底姓名：您已完成報名
+
+        <div class="guide-step">
+          <h3>📱 Step 6｜紀錄員報名（手機版）</h3>
+          <img src="img/guide-06.jpg" class="guide-img">
+          <div class="guide-tip">
+            ✅ 灰底姓名：已有其他紀錄員報名<br>
+            ✅ 綠底姓名：您已完成報名
+          </div>
         </div>
-      </div>
-  
-      <div class="guide-step">
-        <h3>⚠️ Step 7｜注意事項</h3>
-  
-        <!-- <img src="img/guide-07.jpg" class="guide-img"> -->
-  
-        <div class="guide-tip">
-          ✅ 請確認可出勤再進行報名
-          <br>
-          ✅ 臨時無法出勤請盡早取消並通知相關人員
-          <br>
-          ✅ 已過期賽事無法再報名
-          <br>
-          ✅ 同場賽事不可同時擔任裁判與紀錄員
+
+        <div class="guide-step">
+          <h3>⚠️ Step 7｜注意事項</h3>
+          <div class="guide-tip">
+            ✅ 請確認可出勤再進行報名<br>
+            ✅ 臨時無法出勤請盡早取消並通知相關人員<br>
+            ✅ 已過期賽事無法再報名<br>
+            ✅ 同場賽事不可同時擔任裁判與紀錄員
+          </div>
         </div>
-      </div>
-  
-      <div class="guide-step">
-        <h3>❓ Step 8｜常見問題 FAQ</h3>
-  
-        <!-- <img src="img/guide-08.jpg" class="guide-img"> -->
-  
-        <div class="guide-tip">
-          <strong>Q：什麼是「待位中」？</strong>
-          <br>
-          A：表示您已報名該場比賽，目前正在等待其他職務補齊。
-          <br><br>
-  
-          <strong>Q：為什麼有些位置沒有顯示？</strong>
-          <br>
-          A：該場比賽依規定不需要該職務。
-          <br><br>
-  
-          <strong>Q：可以改站位嗎？</strong>
-          <br>
-          A：請先取消原位置，再重新報名新位置即可。
+
+        <div class="guide-step">
+          <h3>❓ Step 8｜常見問題 FAQ</h3>
+          <div class="guide-tip">
+            <strong>Q：什麼是「待位中」？</strong><br>
+            A：表示您已報名該場比賽，目前正在等待其他職務補齊。<br><br>
+            <strong>Q：為什麼有些位置沒有顯示？</strong><br>
+            A：該場比賽依規定不需要該職務。<br><br>
+            <strong>Q：可以改站位嗎？</strong><br>
+            A：請先取消原位置，再重新報名新位置即可。
+          </div>
         </div>
+
+        <button class="close-btn full" onclick="hideOverlay('user-guide-overlay')">關閉</button>
       </div>
-  
-      <button class="close-btn full" onclick="hideOverlay('user-guide-overlay')">關閉</button>
-  
     </div>
-  </div>
-
 
   </div>
-
 </body>
 </html>
