@@ -659,38 +659,248 @@
       </div>
     </div>
 
-    <div id="league-overlay" class="overlay">
-      <div class="overlay-box">
-        <h2>📘 聯盟賽制說明</h2>
-        <div style="font-size:14px; line-height:1.6; color:#334155;">
-          <p>• 例行賽採 7 局制（或時間限制 110 分鐘不開新局）。</p>
-          <p>• 詳細賽制規範請參閱文件中心之《聯盟賽事規章》。</p>
-        </div>
-        <button class="close-btn full" onclick="hideOverlay('league-overlay')">關閉</button>
-      </div>
-    </div>
-
+    <!-- 裁判守則 Overlay -->
     <div id="rules-overlay" class="overlay">
       <div class="overlay-box">
         <h2>🧑‍⚖️ BBT 聯盟例行賽｜裁判守則</h2>
-        <div style="font-size:14px; line-height:1.6; color:#334155;">
-          <p>1. 請於賽前 20 分鐘抵達球場著裝完畢（BBT 裁判制服、裁判帽）。</p>
-          <p>2. 主審須向雙方球隊領取填寫完成之先發打序單並確認人數。</p>
-        </div>
+        
+        <h3>— 賽前 —</h3>
+        <ul>
+          <li>請穿著 BBT 裁判制服，並配戴裁判帽。</li>
+          <li>主審須向雙方球隊各領取一張 <strong>已填寫完成的先發單</strong>。</li>
+          <li>第二場、第三場賽事，請協助 <strong>補畫打擊區線</strong> 並 <strong>簡單整理場地</strong>。</li>
+        </ul>
+        
+        <h3>— 比賽中 —</h3>
+        <ul>
+          <li>
+            <strong>換人規定：</strong>
+            總教練須先向主審說明換人內容，
+            主審請記錄於先發單（請自備筆），
+            並同步告知記錄員。
+          </li>
+        
+          <li>
+            換局時，請先於 <strong>計分板</strong> 上填寫該局分數。
+          </li>
+        
+          <li>
+            比賽採 <strong>七局制 或 2.5 小時制</strong>（依裁判認定）。
+          </li>
+        
+          <li>
+            若比賽時間已達 <strong>賽前 15 分鐘</strong> 且平手，
+            下局即進入 <strong>突破僵局制</strong>。
+          </li>
+        
+          <li>
+            【突破僵局制】<br>
+            0 出局，進攻方 <strong>二、三壘有人</strong>
+            （前一局最後出局者開始）。
+          </li>
+        
+          <li>
+            若再度平手，視時間可再開新局或以和局判定。
+          </li>
+        
+          <li>
+            <strong>※ 季後賽不適用和局制</strong>
+          </li>
+        
+          <li style="color:#c62828;font-weight:700;">
+            第五局起，雙方分數差達 <strong>10 分（含）以上</strong>，
+            判定提前結束比賽。
+          </li>
+        
+          <li>
+            單一投手累計：
+            <ul>
+              <li>超過 <strong>3 次觸身球</strong>，或</li>
+              <li><strong>2 次頭部觸身球</strong></li>
+            </ul>
+            必須強制更換投手。
+          </li>
+        
+          <li>
+            球員須戴 <strong>著膠質釘（塑膠釘）</strong> 方可上場，<br>
+            違規者請立即請其下場修正。
+          </li>
+        
+          <li>
+            <strong>服裝規定：</strong>
+            球隊須穿著 <strong>相同棒球衣與棒球褲</strong>，
+            不得穿著其他運動褲，
+            並請提醒球員 <strong>褲管需紮入</strong>。
+          </li>
+        </ul>
+        
+        <h3>— 比賽結束 —</h3>
+        <ul>
+          <li>比賽用球請 <strong>全數收回</strong>。</li>
+          <li>請安排雙方球隊列隊，<strong>清楚告知比賽結果並致謝</strong>。</li>
+        </ul>
+        
         <button class="close-btn full" onclick="hideOverlay('rules-overlay')">關閉</button>
+  
       </div>
     </div>
+  </div>
 
-    <div id="record-rules-overlay" class="overlay">
-      <div class="overlay-box">
-        <h2>📝 BBT 聯盟例行賽｜紀錄員守則</h2>
-        <div style="font-size:14px; line-height:1.6; color:#334155;">
-          <p>1. 請穿著 BBT 紀錄制服，賽前備妥黑/紅筆、A4 紀錄紙、計時器及現場設備。</p>
-          <p>2. 賽後請確實核對雙方比數、勝敗投及 MVP 資訊並完成系統回報。</p>
-        </div>
-        <button class="close-btn full" onclick="hideOverlay('record-rules-overlay')">關閉</button>
+  <!-- ===============================
+  📝 紀錄員守則 Overlay
+  =============================== -->
+  <div id="record-rules-overlay" class="overlay">
+    <div class="overlay-box">
+  
+      <h2>📝 BBT 聯盟例行賽｜紀錄員守則</h2>
+  
+      <div style="margin-bottom:10px;">
+        ◎ 規章：
+        <a href="https://bbtls.com/a03.php" target="_blank">
+          https://bbtls.com/a03.php
+        </a>
       </div>
+  
+      <h3>— 賽前 —</h3>
+      <ul>
+        <li>請穿著 BBT 紀錄制服</li>
+        <li>準備器材：黑筆 / 紅筆、紀錄單A4、計時器、MVP / SVP 獎牌</li>
+        <li>土城球場需協助收：布條、比賽球</li>
+        <li>請至少於比賽前 10~15 分鐘到場，向兩隊收各一張已填寫先發單</li>
+        <li>請向主審告知為今日紀錄員</li>
+      </ul>
+  
+      <h3>— 比賽中 —</h3>
+      <ul>
+        <li>
+          <strong>換人流程：</strong>
+          總教練 → 主審 → 記錄於先發單 → 再告知紀錄員
+        </li>
+  
+        <li>每局結束請與主審核對分數</li>
+  
+        <li>
+          若時間達賽前 15 分鐘且平手，
+          下局進入 <strong>突破僵局制</strong>
+        </li>
+  
+        <li>
+          七局制 or 2.5 小時<br>
+          第五局起雙方分差達 <strong>10 分(含)</strong> → 提前結束
+        </li>
+  
+        <li>
+          <strong>突破僵局制：</strong><br>
+          0 出局，二壘有跑者（前一局最後出局者）<br>
+          若再平手：可加開或判和局<br>
+          * 季後賽無和局制
+        </li>
+  
+        <li>
+          單一投手：
+          <ul>
+            <li>累計超過 3 次觸身球</li>
+            <li>或 2 次頭部觸身球</li>
+          </ul>
+          必須強制退場
+        </li>
+      </ul>
+  
+      <h3>— 比賽結束 —</h3>
+      <ul>
+        <li>選出 MVP（勝隊）與 SVP（敗隊）並頒獎與拍照</li>
+        <li>比賽用球全部收回</li>
+        <li>
+          群組回報：比數、勝投、中繼、後援、MVP、SVP<br>
+          （可手寫拍照回傳）
+        </li>
+      </ul>
+  
+      <h3>— 紀錄懶人包 —</h3>
+      <ul>
+        <li>
+          <a href="https://drive.google.com/file/d/1Zs7OHkshjxLKw3FFXeJbpn9UKArgNjPL/view?usp=sharing" target="_blank">
+            記錄符號一覽表
+          </a>
+        </li>
+  
+        <li>
+          <a href="https://drive.google.com/file/d/1tQRNsC7pctm-AZuCtRpbfdGy4JHQzw4B/view?usp=drive_link" target="_blank">
+            BBT 官方記錄格式
+          </a>
+        </li>
+  
+        <li>
+          <a href="https://docs.google.com/spreadsheets/d/1wwk2yeYu6yuEup4fmfsRQz5X8MkoU_4m/edit?usp=sharing" target="_blank">
+            攻守記錄整理 EXCEL
+          </a>
+        </li>
+      </ul>
+  
+      <button class="close-btn full" onclick="hideOverlay('record-rules-overlay')">
+        關閉
+      </button>
+  
     </div>
+  </div>
+
+  
+  <!-- ===============================
+  📘 聯盟賽制 Overlay（比照裁判守則）
+  =============================== -->
+  <div id="league-overlay" class="overlay" style="display:none;">
+    <div class="overlay-box">
+      <h2>📘 BBT 賽制規定 Rules</h2>
+  
+      <h3>一、例行賽</h3>
+      <ul>
+        <li>本季採分區制，大聯盟組 8 隊、小聯盟組 8 隊，雙循環制。</li>
+        <li>合計 112 場賽事，每隊進行 14 場例行賽。</li>
+      </ul>
+  
+      <h3>二、比賽用球</h3>
+      <ul>
+        <li>比賽用球：KENKO BALL（全日本軟式野球聯盟公認球）。</li>
+        <li>賽後將進行回收重複使用。</li>
+      </ul>
+  
+      <h3>三、比賽時間</h3>
+      <ul>
+        <li>正式比賽 7 局或 2.5 小時制（依事前認定）。</li>
+        <li>時間屆滿前 15 分鐘且平手，下局進入突破僵局制。</li>
+        <li>突破僵局：0 出局，進攻方二、三壘有人。</li>
+      </ul>
+  
+      <h3>四、提前結束</h3>
+      <ul>
+        <li class="important">例行賽、季後賽、冠軍賽：雙方分數差 10 分（含）以上，判定提前結束。</li>
+        <li>未滿 3 局不列入正式比賽；滿 3 局為正式比賽。</li>
+      </ul>
+  
+      <h3>五、裁判配置</h3>
+      <ul>
+        <li>大聯盟：三人制裁判。</li>
+        <li>小聯盟：兩人制裁判。</li>
+      </ul>
+  
+      <h3>六、季後賽</h3>
+      <ul>
+        <li>季後賽採單淘汰制。</li>
+        <li>依例行賽戰績前四名晉級。</li>
+        <li>對戰組合由各隊派員抽籤決定。</li>
+      </ul>
+  
+      <h3>七、迴避原則</h3>
+      <ul>
+        <li><strong>嚴格禁止：</strong>例行賽、季後賽、冠軍賽，裁判不得執法所屬母隊賽事。</li>
+        <li>開放範圍：跨隊交流案、熱身賽、冬季聯盟。</li>
+      </ul>
+  
+      <button onclick="document.getElementById('league-overlay').style.display='none'" class="close-btn full">
+        關閉
+      </button>
+    </div>
+  </div>
 
     <div id="system-history-overlay" class="overlay">
       <div class="overlay-box">
