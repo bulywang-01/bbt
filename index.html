@@ -469,14 +469,13 @@
       updateRealProgressBars();
     });
 
-    // 🏆 強固版本週聯盟班表格式化引擎（自動防禦官方 js 覆寫）
+    // 🏆 強固版本週聯盟班表格式化引擎（自動防禦官方 AJAX 覆寫）
     function beautifyWeeklySchedule() {
       const container = document.getElementById('weeklyContent');
       if (!container) return;
       
       let text = container.innerText || container.textContent;
-      // 如果已經被美化過，或沒有內容，則跳過
-      if (!text || text.trim() === '' || container.querySelector('.league-schedule-wrapper')) return;
+      if (!text || text.trim() === '' || text.includes('載入中')) return;
       
       let lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
       if (lines.length === 0) return;
@@ -590,26 +589,37 @@
       `;
     }
 
-    // 🛡️ 雙重保險：1. 監聽點擊按鈕事件 2. 強固型 MutationObserver 隨時攔截官方 js 的內容覆寫
+    // 🛡️ 三重防禦機制：按鈕點擊、彈窗顯示、內容變動時自動格式化
     window.addEventListener('DOMContentLoaded', () => {
-      const weeklyBtn = document.getElementById('open-weekly');
-      if (weeklyBtn) {
-        weeklyBtn.addEventListener('click', () => {
-          // 點擊後延遲 150ms 確保官方 ajax 塞入文字，立刻執行美化
-          setTimeout(beautifyWeeklySchedule, 150);
-          setTimeout(beautifyWeeklySchedule, 400); // 雙重保險確保非同步載入完成
+      const openWeeklyBtn = document.getElementById('open-weekly');
+      const weeklyOverlay = document.getElementById('weekly-overlay');
+      const weeklyEl = document.getElementById('weeklyContent');
+
+      // 1. 點擊按鈕時觸發多段延遲（等待 AJAX 載入完成）
+      if (openWeeklyBtn) {
+        openWeeklyBtn.addEventListener('click', () => {
+          [50, 200, 500, 1000].forEach(delay => setTimeout(beautifyWeeklySchedule, delay));
         });
       }
 
-      const weeklyEl = document.getElementById('weeklyContent');
+      // 2. 監聽彈窗顯示狀態（當 overlay 開啟時觸發）
+      if (weeklyOverlay) {
+        const overlayObserver = new MutationObserver(() => {
+          if (weeklyOverlay.style.display === 'block' || window.getComputedStyle(weeklyOverlay).display === 'flex') {
+            [50, 200, 500, 1000].forEach(delay => setTimeout(beautifyWeeklySchedule, delay));
+          }
+        });
+        overlayObserver.observe(weeklyOverlay, { attributes: true, attributeFilter: ['style', 'class'] });
+      }
+
+      // 3. 監聽內容變動：一旦被官方 JS 覆寫回純文字，立刻重新排版
       if (weeklyEl) {
-        const observer = new MutationObserver(() => {
-          // 只要內容改變且尚未美化，立刻執行
+        const contentObserver = new MutationObserver(() => {
           if (!weeklyEl.querySelector('.league-schedule-wrapper')) {
             beautifyWeeklySchedule();
           }
         });
-        observer.observe(weeklyEl, { childList: true, subtree: true, characterData: true });
+        contentObserver.observe(weeklyEl, { childList: true, subtree: true, characterData: true });
       }
     });
   </script>
