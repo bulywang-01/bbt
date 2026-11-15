@@ -263,6 +263,217 @@
       .download-grid { grid-template-columns: 1fr; }
       .system-center { grid-template-columns: repeat(2, 1fr); }
     }
+
+/* ===== 班表彈窗寬度加寬 ===== */
+    #schedule-overlay .overlay-box,
+    #weekly-overlay .overlay-box {
+      max-width: 780px;
+      width: 95vw;
+      background: #f8fafc;
+    }
+
+    /* ===== 📅 我的班表卡片樣式 ===== */
+    .my-duty-row {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #94a3b8;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      transition: transform 0.15s ease;
+    }
+    .my-duty-row:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+    .my-duty-row.this-week {
+      border-left-color: #f59e0b;
+      background: linear-gradient(to right, #fffbeb, #ffffff);
+    }
+    .my-duty-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 8px;
+    }
+    .my-duty-datetime {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .week-badge {
+      background: #f59e0b;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+    .my-duty-role {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .my-duty-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 13px;
+      padding-top: 6px;
+      border-top: 1px dashed #e2e8f0;
+    }
+    .my-duty-field {
+      color: #475569;
+      font-weight: 600;
+    }
+    .my-duty-match {
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .my-duty-match .vs {
+      color: #dc2626;
+      font-weight: 900;
+      margin: 0 5px;
+      font-size: 12px;
+    }
+    .my-duty-tourney {
+      font-size: 11px;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+
+    /* ===== 📊 本週聯盟班表卡片樣式 ===== */
+    .league-date-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #1e3a8a;
+      margin: 18px 0 10px;
+      padding: 6px 12px;
+      background: #dbeafe;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    .league-field-box {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+    .league-field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+    .league-field-count {
+      font-size: 12px;
+      color: #2563eb;
+      background: #eff6ff;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .league-game-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .league-game-item:last-child {
+      margin-bottom: 0;
+    }
+    .league-game-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .league-time-code {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .league-time {
+      font-size: 14px;
+      font-weight: 800;
+      color: #dc2626;
+    }
+    .league-code {
+      font-size: 12px;
+      font-weight: 800;
+      color: #2563eb;
+      background: #dbeafe;
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+    .league-teams {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+    .league-teams .vs {
+      color: #94a3b8;
+      margin: 0 5px;
+      font-size: 12px;
+    }
+    .crew-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+      gap: 6px;
+    }
+    .crew-tag {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .crew-tag.is-me {
+      background: #fef3c7;
+      border-color: #f59e0b;
+      color: #92400e;
+      font-weight: 800;
+    }
+    .crew-role {
+      color: #64748b;
+      font-size: 11px;
+    }
+    .crew-tag.is-me .crew-role {
+      color: #b45309;
+    }
+    .crew-name {
+      font-weight: 700;
+      color: #0f172a;
+    }
   </style>
 </head>
 
