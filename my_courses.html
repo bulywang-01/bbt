@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的課程 / 報名紀錄</title>
+
+  <link rel="stylesheet" href="css/signup_dashboard.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body data-page-title="我的課程紀錄" class="page-course">
+
+  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/core.js"></script>
+
+  <div id="header-container"></div>
+
+  <script>
+    function loadHeader() {
+      fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById('header-container').innerHTML = html;
+          const session = (typeof getSession === 'function') ? getSession() : null;
+          document.body.classList.remove('role-admin', 'role-judge', 'role-record');
+          if (session && session.role) {
+            const roles = session.role.split(',').map(r => r.trim());
+            if (roles.includes('admin')) document.body.classList.add('role-admin');
+            if (roles.includes('judge') || roles.includes('chief_judge')) document.body.classList.add('role-judge');
+            if (roles.includes('record') || roles.includes('record_chief')) document.body.classList.add('role-record');
+          }
+        })
+        .catch(err => console.error('Header 載入失敗', err));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadHeader();
+      loadMyCourses();
+    });
+
+  // 日期時間格式
+  function formatDateOnly(isoString) {
+    if (!isoString) return '未定';
+    const d = new Date(isoString);
+    if (isNaN(d)) return isoString; // 如果本來就不是時間格式就原樣回傳
+    
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  </script>
+
+  <div class="main max-w-5xl mx-auto p-6">
+    <div class="mb-6 flex justify-between items-center">
+      <div>
+        <h2 class="text-2xl font-black text-slate-900">🎓 我的課程與報名紀錄</h2>
+        <p class="text-sm text-slate-500">在此檢視您的課程正取/候補狀態、繳費狀況與上課相關資訊。</p>
+      </div>
+      <a href="course.html" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-xl text-sm transition">
+        回課程大廳
+      </a>
+    </div>
+
+    <!-- 課程清單容器 -->
+    <div id="my-courses-container" class="space-y-4">
+      <div class="text-center py-10 text-slate-400">載入您的報名紀錄中...</div>
+    </div>
+  </div>
+
+  <script>
+    function loadMyCourses() {
+      const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (!session.user_id) {
+        alert('請先登入系統');
+        location.href = 'login.html';
+        return;
+      }
+
+      const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : (typeof API_URL !== 'undefined' ? API_URL : '');
+      const callbackName = 'jsonp_my_courses_' + Math.round(100000 * Math.random());
+
+      window[callbackName] = function(res) {
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+
+        if (res && res.result === 'ok') {
+          // 過濾出目前登入者的紀錄
+          const myList = (res.data || []).filter(item => String(item.user_id) === String(session.user_id));
+          renderMyCourses(myList);
+        } else {
+          document.getElementById('my-courses-container').innerHTML = `<div class="row-warning">載入紀錄失敗：${res ? res.message : '未知錯誤'}</div>`;
+        }
+      };
+
+      const script = document.createElement('script');
+      script.src = `${baseUrl}?action=getTrainingLog&user_id=${session.user_id}&callback=${callbackName}`;
+      script.onerror = function() {
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+        document.getElementById('my-courses-container').innerHTML = `<div class="row-warning">網路連線異常</div>`;
+      };
+      document.body.appendChild(script);
+    }
+
+    function renderMyCourses(list) {
+      const container = document.getElementById('my-courses-container');
+      const activeList = list.filter(item => item.status !== 'cancelled');
+
+      if (!activeList.length) {
+        container.innerHTML = `
+          <div class="bg-white rounded-2xl p-10 text-center border border-slate-200 shadow-sm">
+            <p class="text-slate-400 mb-4">您目前沒有任何有效的課程報名紀錄。</p>
+            <a href="course.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">
+              前往瀏覽近期課程
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      const statusMap = {
+        applied: { text: '已申請 (正取)', class: 'bg-blue-50 text-blue-700 border-blue-200' },
+        confirmed: { text: '已錄取', class: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+        waitlist: { text: '候補中', class: 'bg-amber-50 text-amber-700 border-amber-200' }
+      };
+
+      const paymentMap = {
+        unpaid: { text: '未繳費', class: 'text-rose-600 font-semibold' },
+        paid: { text: '已繳費', class: 'text-emerald-600 font-semibold' }
+      };
+
+      container.innerHTML = activeList.map(item => {
+        const st = statusMap[item.status] || { text: item.status, class: 'bg-slate-50 text-slate-700' };
+        const pay = paymentMap[item.payment_status] || { text: item.payment_status, class: 'text-slate-600' };
+
+        return `
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 text-xs font-bold rounded-md border ${st.class}">${st.text}</span>
+                <span class="text-xs text-slate-400 font-mono">報名序號: ${item.log_id}</span>
+              </div>
+              <h3 class="text-lg font-bold text-slate-900">${item.course_name}</h3>
+              <div class="text-sm text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
+                <span>📅 日期：${formatDateOnly(item.date) || '未定'}</span>
+                <span>📍 地點：${item.location || '未定'}</span>
+                <span>💰 繳費狀態：<span class="${pay.class}">${pay.text}</span></span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+              <button onclick="cancelEnrollment('${item.course_id}', '${item.log_id}')" class="px-4 py-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 font-semibold text-sm transition">
+                取消報名
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function cancelEnrollment(courseId, logId) {
+      if (!confirm('確定要取消此課程的報名嗎？若您為正取，系統將自動遞補下一位候補者。')) return;
+
+      const session = JSON.parse(localStorage.getItem('session_user') || '{}');
+      const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : (typeof API_URL !== 'undefined' ? API_URL : '');
+      const callbackName = 'jsonp_cancel_' + Math.round(100000 * Math.random());
+
+      window[callbackName] = function(res) {
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+
+        if (res && res.result === 'ok') {
+          alert('✅ 已成功取消報名');
+          loadMyCourses();
+        } else {
+          alert('❌ 取消失敗：' + (res ? res.message : '未知錯誤'));
+        }
+      };
+
+      const script = document.createElement('script');
+      script.src = `${baseUrl}?action=cancelCourseEnrollment&user_id=${session.user_id}&course_id=${courseId}&log_id=${logId}&callback=${callbackName}`;
+      script.onerror = function() {
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+        alert('網路連線異常');
+      };
+      document.body.appendChild(script);
+    }
+  </script>
+</body>
+</html>
