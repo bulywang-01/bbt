@@ -495,23 +495,30 @@ function openMySchedule(){
     sunday.setHours(23,59,59,999);
 
     list.innerHTML = myGames.map(g => {
-      const d = parseDate(g.date);
-      const isThisWeek = d && d >= monday && d <= sunday;
-
-      return `
-        <div class="my-duty-row ${isThisWeek ? 'this-week' : ''}">
-          <div class="my-duty-line1">
-            ${isThisWeek ? `<span class="week-badge">本週</span>` : ''}
-            ${formatDateTW(g.date)} ｜${getTime(g)} ｜${g.field || '-'}
-            <span class="my-duty-role">${getMyRoleText(g.my_position)}</span>
-          </div>
-          <div class="my-duty-line2">
-            <span class="tournament">${g.tournament || '-'}${g.category ? `-${g.category}` : ''}</span> ｜
-            <span class="matchup">${g.away_team || ''}<span class="vs">VS</span>${g.home_team || ''}</span>
-          </div>
-        </div>
-      `;
-    }).join('');
+          const d = parseDate(g.date);
+          const isThisWeek = d && d >= monday && d <= sunday;
+          const tourneyText = `${g.tournament || ''}${g.category ? `-${g.category}` : ''}`;
+    
+          return `
+            <div class="my-duty-row ${isThisWeek ? 'this-week' : ''}">
+              <div class="my-duty-header">
+                <div class="my-duty-datetime">
+                  ${isThisWeek ? `<span class="week-badge">本週</span>` : ''}
+                  <span>🗓️ ${formatDateTW(g.date)}</span>
+                  <span style="color:#dc2626;">⏰ ${getTime(g)}</span>
+                </div>
+                <span class="my-duty-role">${getMyRoleText(g.my_position)}</span>
+              </div>
+              <div class="my-duty-body">
+                <div class="my-duty-field">📍 ${g.field || '未定場地'}</div>
+                <div class="my-duty-match">
+                  ${tourneyText ? `<span class="my-duty-tourney">${tourneyText}</span>` : ''}
+                  ${g.away_team || '客隊'}<span class="vs">VS</span>${g.home_team || '主隊'}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
 
     setGameCache(myGames);
   });
@@ -525,248 +532,136 @@ function openMySchedule(){
  * ✅ 本週聯盟班表
  *********************************************************/
 function openWeeklySchedule(){
+  const overlay = document.getElementById('weekly-overlay');
+  const content = document.getElementById('weeklyContent');
 
-  const overlay =
-    document.getElementById(
-      'weekly-overlay'
-    );
-
-  const content =
-    document.getElementById(
-      'weeklyContent'
-    );
-
-  if(overlay){
-    overlay.style.display = 'flex';
-  }
-
-  if(!content){
-    return;
-  }
+  if (overlay) overlay.style.display = 'flex';
+  if (!content) return;
 
   renderLoading(content);
 
-  callApi(
-    {
-      action:'getSignableGames',
-      user_id: session.user_id
-    },
-    res => {
+  callApi({
+    action: 'getSignableGames',
+    user_id: session.user_id
+  }, res => {
+    if (!res || res.result !== 'ok') {
+      content.innerHTML = '載入失敗';
+      return;
+    }
 
-      if(
-        !res ||
-        res.result !== 'ok'
-      ){
-        content.innerHTML =
-          '載入失敗';
-        return;
+    const games = (res.games || []).map(safeMerge);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const day = now.getDay() === 0 ? 7 : now.getDay();
+
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (day - 1));
+    monday.setHours(0, 0, 0, 0);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+
+    const weekGames = games.filter(g => {
+      if (Number(g.status || 0) === 3) return false;
+      const d = parseDate(g.date);
+      if (!(d && d >= monday && d <= sunday)) return false;
+
+      if (typeof WEEKLY_SCHEDULE_CONFIG !== 'undefined' && WEEKLY_SCHEDULE_CONFIG.mode === 'LIMIT') {
+        const tournament = String(g.tournament || '').trim();
+        if (!WEEKLY_SCHEDULE_CONFIG.tournaments.includes(tournament)) return false;
       }
+      return true;
+    });
 
-      const games =
-        (res.games || [])
-          .map(safeMerge);
+    if (!weekGames.length) {
+      content.innerHTML = `<div style="text-align:center; padding:24px; color:#64748b;">本週沒有賽事</div>`;
+      return;
+    }
 
-      const now =
-        new Date();
+    const dateGroups = {};
+    weekGames.forEach(g => {
+      const date = g.date || '未指定日期';
+      const field = g.field || '未指定場地';
+      if (!dateGroups[date]) dateGroups[date] = {};
+      if (!dateGroups[date][field]) dateGroups[date][field] = [];
+      dateGroups[date][field].push(g);
+    });
 
-      now.setHours(
-        0,0,0,0
-      );
+    let html = '';
 
-      const day =
-        now.getDay() === 0
-          ? 7
-          : now.getDay();
+    Object.keys(dateGroups)
+      .sort((a, b) => new Date(a) - new Date(b))
+      .forEach(date => {
+        html += `<div class="league-date-title">📅 ${formatDateTW(date) || date}（${date}）</div>`;
 
-      const monday =
-        new Date(now);
-
-      monday.setDate(
-        now.getDate() - (day - 1)
-      );
-
-      monday.setHours(
-        0,0,0,0
-      );
-
-      const sunday =
-        new Date(monday);
-
-      sunday.setDate(
-        monday.getDate() + 6
-      );
-
-      sunday.setHours(
-        23,59,59,999
-      );
-
-      const weekGames =
-        games.filter(g => {
-
-          if(
-            Number(
-              g.status || 0
-            ) === 3
-          ){
-            return false;
-          }
-
-          const d =
-            parseDate(g.date);
-
-          if(
-            !(d &&
-              d >= monday &&
-              d <= sunday)
-          ){
-            return false;
-          }
-
-          if(
-            typeof WEEKLY_SCHEDULE_CONFIG !== 'undefined' &&
-            WEEKLY_SCHEDULE_CONFIG.mode === 'LIMIT'
-          ){
-
-            const tournament =
-              String(
-                g.tournament || ''
-              ).trim();
-
-            if(
-              !WEEKLY_SCHEDULE_CONFIG.tournaments.includes(tournament)
-            ){
-              return false;
-            }
-
-          }
-
-          return true;
-
-        });
-
-      if(!weekGames.length){
-
-        content.innerHTML =
-          '本週沒有賽事';
-
-        return;
-      }
-
-      const dateGroups = {};
-
-      weekGames.forEach(g => {
-
-        const date =
-          g.date ||
-          '未指定日期';
-
-        const field =
-          g.field ||
-          '未指定場地';
-
-        if(!dateGroups[date]){
-          dateGroups[date] = {};
-        }
-
-        if(!dateGroups[date][field]){
-          dateGroups[date][field] = [];
-        }
-
-        dateGroups[date][field]
-          .push(g);
-
-      });
-
-      let html = '';
-
-      Object.keys(dateGroups)
-
-        .sort(
-          (a,b)=>
-            new Date(a) -
-            new Date(b)
-        )
-
-        .forEach(date => {
+        const fieldGroups = dateGroups[date];
+        Object.keys(fieldGroups).sort().forEach(field => {
+          const fieldGames = fieldGroups[field].sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
           html += `
-
-            <div style="
-              font-size:20px;
-              font-weight:900;
-              color:#1e3a8a;
-              margin:16px 0 10px;
-              border-bottom:2px solid #dbeafe;
-              padding-bottom:6px;
-            ">
-              📅 ${date}
+            <div class="league-field-box">
+              <div class="league-field-header">
+                <span>📍 ${field}</span>
+                <span class="league-field-count">共 ${fieldGames.length} 場</span>
+              </div>
+              ${renderWeeklyCards(fieldGames)}
             </div>
-
           `;
-
-          const fieldGroups =
-            dateGroups[date];
-
-          Object.keys(fieldGroups)
-
-            .sort()
-
-            .forEach(field => {
-
-              const fieldGames =
-                fieldGroups[field]
-
-                .sort((a,b)=>{
-
-                  return (
-                    a.time || ''
-                  ).localeCompare(
-                    b.time || ''
-                  );
-
-                });
-
-              html += `
-
-                <div class="
-                  league-field-header
-                ">
-
-                  📍 ${field}
-
-                  <span style="
-                    float:right;
-                    font-size:12px;
-                    color:#64748b;
-                    font-weight:700;
-                  ">
-
-                    ${fieldGames.length}場
-
-                  </span>
-
-                </div>
-
-              `;
-
-              html +=
-                renderWeeklyTable(
-                  fieldGames
-                );
-
-            });
-
         });
+      });
 
-      content.innerHTML =
-        html;
+    content.innerHTML = html;
+    setGameCache(weekGames);
+  });
+}
 
-      setGameCache(
-        weekGames
-      );
+function renderWeeklyCards(list) {
+  const myName = session?.name || '';
 
-    }
-  );
+  return list.map(g => {
+    const umpireCount = Number(g.umpire_count || 2);
+    const slots = [
+      { role: '主審', name: safeName(g.judges?.PU) },
+      { role: '一壘', name: safeName(g.judges?.U1) }
+    ];
+    if (umpireCount >= 3) slots.push({ role: '三壘', name: safeName(g.judges?.U3) });
+    if (umpireCount >= 4) slots.push({ role: '二壘', name: safeName(g.judges?.U2) });
+
+    slots.push(
+      { role: '紀錄', name: safeName(g.records?.REC_MAIN) },
+      { role: '見習', name: safeName(g.records?.REC_TRAINEE) },
+      { role: '影像', name: safeName(g.records?.REC_VIDEO) }
+    );
+
+    const crewHtml = slots.map(s => {
+      const display = s.name || '-';
+      const isMe = myName && display === myName;
+      return `
+        <div class="crew-tag ${isMe ? 'is-me' : ''}">
+          <span class="crew-role">${s.role}</span>
+          <span class="crew-name">${display}</span>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="league-game-item">
+        <div class="league-game-top">
+          <div class="league-time-code">
+            <span class="league-time">⏰ ${getTime(g)}</span>
+            <span class="league-code">${g.game_code || '-'}</span>
+          </div>
+          <div class="league-teams">
+            ${g.away_team || '客隊'}<span class="vs">VS</span>${g.home_team || '主隊'}
+          </div>
+        </div>
+        <div class="crew-grid">
+          ${crewHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderWeeklyTable(list){
