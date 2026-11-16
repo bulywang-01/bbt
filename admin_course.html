@@ -1412,7 +1412,8 @@ function renderEnrollmentTable() {
         `;
       }
 
-      const safeNote = (item.admin_note || '').replace(/"/g, '&quot;');
+      // 💡 直接對應後端的 admin_note 欄位
+      const safeNote = String(item.admin_note || '').replace(/"/g, '&quot;');
 
       return `
         <tr class="hover:bg-slate-50 transition">
@@ -1432,11 +1433,14 @@ function renderEnrollmentTable() {
           <td class="p-4 text-xs font-bold text-slate-700">${item.dietary || '葷食'}</td>
           <td class="p-4">${statusBadge}</td>
           <td class="p-4">${payBadge}</td>
+          
+          <!-- 💡 管理員備註輸入框 -->
           <td class="p-4 min-w-[160px]">
             <input type="text" value="${safeNote}" placeholder="點擊輸入備註..." 
               onchange="saveEnrollmentNote('${item.log_id}', this.value)"
               class="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-blue-500 focus:outline-none transition">
           </td>
+
           <td class="p-4 text-right">${actionHtml}</td>
         </tr>
       `;
