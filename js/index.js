@@ -967,7 +967,7 @@ function loadHomeAnnouncements() {
 
   if (!container) return;
 
-  container.innerHTML = `<div style="color: #64748b; font-size: 13px; padding: 8px;">⏳ 正在向後端請求公告資料...</div>`;
+  container.innerHTML = `<div style="color: #64748b; font-size: 13px; padding: 8px;">⏳ 公告資料截入中...</div>`;
 
   try {
     callApi({ action: 'getAnnouncements' }, res => {
