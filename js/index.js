@@ -495,39 +495,29 @@ function openMySchedule(){
     sunday.setHours(23,59,59,999);
 
     list.innerHTML = myGames.map(g => {
-          const d = parseDate(g.date);
-          const isThisWeek = d && d >= monday && d <= sunday;
-          const tourneyText = `${g.tournament || ''}${g.category ? `-${g.category}` : ''}`;
-    
-          return `
-            <div class="my-duty-row ${isThisWeek ? 'this-week' : ''}">
-              <div class="my-duty-header">
-                <div class="my-duty-datetime">
-                  ${isThisWeek ? `<span class="week-badge">本週</span>` : ''}
-                  <span>🗓️ ${formatDateTW(g.date)}</span>
-                  <span style="color:#dc2626;">⏰ ${getTime(g)}</span>
-                </div>
-                <span class="my-duty-role">${getMyRoleText(g.my_position)}</span>
-              </div>
-              <div class="my-duty-body">
-                <div class="my-duty-field">📍 ${g.field || '未定場地'}</div>
-                <div class="my-duty-match">
-                  ${tourneyText ? `<span class="my-duty-tourney">${tourneyText}</span>` : ''}
-                  ${g.away_team || '客隊'}<span class="vs">VS</span>${g.home_team || '主隊'}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
+      const d = parseDate(g.date);
+      const isThisWeek = d && d >= monday && d <= sunday;
+
+      return `
+        <div class="my-duty-row ${isThisWeek ? 'this-week' : ''}">
+          <div class="my-duty-line1">
+            ${isThisWeek ? `<span class="week-badge">本週</span>` : ''}
+            ${formatDateTW(g.date)} ｜${getTime(g)} ｜${g.field || '-'}
+            <span class="my-duty-role">${getMyRoleText(g.my_position)}</span>
+          </div>
+          <div class="my-duty-line2">
+            <span class="tournament">${g.tournament || '-'}${g.category ? `-${g.category}` : ''}</span> ｜
+            <span class="matchup">${g.away_team || ''}<span class="vs">VS</span>${g.home_team || ''}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     setGameCache(myGames);
   });
 }
 
 
-/*********************************************************
- * ✅ 本週聯盟班表
- *********************************************************/
 /*********************************************************
  * ✅ 本週聯盟班表
  *********************************************************/
@@ -541,74 +531,67 @@ function openWeeklySchedule(){
   renderLoading(content);
 
   callApi({
-    action: 'getSignableGames',
+    action:'getSignableGames',
     user_id: session.user_id
   }, res => {
-    if (!res || res.result !== 'ok') {
+
+    if (!res || res.result !== 'ok'){
       content.innerHTML = '載入失敗';
       return;
     }
 
     const games = (res.games || []).map(safeMerge);
     const now = new Date();
-    now.setHours(0, 0, 0, 0);
+    now.setHours(0,0,0,0);
     const day = now.getDay() === 0 ? 7 : now.getDay();
-
     const monday = new Date(now);
     monday.setDate(now.getDate() - (day - 1));
-    monday.setHours(0, 0, 0, 0);
-
+    monday.setHours(0,0,0,0);
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
-    sunday.setHours(23, 59, 59, 999);
-
+    sunday.setHours(23,59,59,999);
+    
     const weekGames = games.filter(g => {
       if (Number(g.status || 0) === 3) return false;
       const d = parseDate(g.date);
       if (!(d && d >= monday && d <= sunday)) return false;
-
-      if (typeof WEEKLY_SCHEDULE_CONFIG !== 'undefined' && WEEKLY_SCHEDULE_CONFIG.mode === 'LIMIT') {
+      
+      if (typeof WEEKLY_SCHEDULE_CONFIG !== 'undefined' && WEEKLY_SCHEDULE_CONFIG.mode === 'LIMIT'){
         const tournament = String(g.tournament || '').trim();
         if (!WEEKLY_SCHEDULE_CONFIG.tournaments.includes(tournament)) return false;
       }
       return true;
     });
 
-    if (!weekGames.length) {
-      content.innerHTML = `<div style="text-align:center; padding:24px; color:#64748b;">本週沒有賽事</div>`;
+    if (!weekGames.length){
+      content.innerHTML = '本週沒有賽事';
       return;
     }
 
     const dateGroups = {};
-    weekGames.forEach(g => {
-      const date = g.date || '未指定日期';
-      const field = g.field || '未指定場地';
-      if (!dateGroups[date]) dateGroups[date] = {};
-      if (!dateGroups[date][field]) dateGroups[date][field] = [];
-      dateGroups[date][field].push(g);
+    weekGames.forEach(g=>{
+      if (!dateGroups[g.date]) dateGroups[g.date] = {};
+      const field = g.field || '未知場地';
+      if (!dateGroups[g.date][field]) dateGroups[g.date][field] = [];
+      dateGroups[g.date][field].push(g);
     });
 
     let html = '';
-
     Object.keys(dateGroups)
-      .sort((a, b) => new Date(a) - new Date(b))
+      .sort((a,b)=>new Date(a)-new Date(b))
       .forEach(date => {
-        html += `<div class="league-date-title">📅 ${formatDateTW(date) || date}（${date}）</div>`;
-
+        html += `<div style="font-size:18px; font-weight:800; margin:12px 0 6px; color:#1a237e;">${date}</div>`;
         const fieldGroups = dateGroups[date];
-        Object.keys(fieldGroups).sort().forEach(field => {
-          const fieldGames = fieldGroups[field].sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
-          html += `
-            <div class="league-field-box">
-              <div class="league-field-header">
-                <span>📍 ${field}</span>
-                <span class="league-field-count">共 ${fieldGames.length} 場</span>
-              </div>
-              ${renderWeeklyCards(fieldGames)}
-            </div>
-          `;
-        });
+        Object.keys(fieldGroups)
+          .sort()
+          .forEach(field => {
+            const list = fieldGroups[field];
+            list.sort((a,b)=> new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
+
+            html += `<div class="league-field-header">📍 ${field}（${list.length}場）</div>`;
+            html += renderWeeklyTable(list);
+          });
       });
 
     content.innerHTML = html;
@@ -616,162 +599,36 @@ function openWeeklySchedule(){
   });
 }
 
-function renderWeeklyCards(list) {
-  const myName = session?.name || '';
-
+function renderWeeklyTable(list){
   return list.map(g => {
-    const umpireCount = Number(g.umpire_count || 2);
-    const slots = [
-      { role: '主審', name: safeName(g.judges?.PU) },
-      { role: '一壘', name: safeName(g.judges?.U1) }
-    ];
-    if (umpireCount >= 3) slots.push({ role: '三壘', name: safeName(g.judges?.U3) });
-    if (umpireCount >= 4) slots.push({ role: '二壘', name: safeName(g.judges?.U2) });
-
-    slots.push(
-      { role: '紀錄', name: safeName(g.records?.REC_MAIN) },
-      { role: '見習', name: safeName(g.records?.REC_TRAINEE) },
-      { role: '影像', name: safeName(g.records?.REC_VIDEO) }
-    );
-
-    const crewHtml = slots.map(s => {
-      const display = s.name || '-';
-      const isMe = myName && display === myName;
-      return `
-        <div class="crew-tag ${isMe ? 'is-me' : ''}">
-          <span class="crew-role">${s.role}</span>
-          <span class="crew-name">${display}</span>
-        </div>
-      `;
-    }).join('');
+    const judgeRoles = getJudgeRoles(g);
+    const judgeHtml = judgeRoles.length
+      ? judgeRoles.map(role => `
+          <div>${roleMap(role)}：<span class="league-duty-name">${safeName(g.judges?.[role]) || '－'}</span></div>
+        `).join('')
+      : `<div>無需裁判</div>`;
 
     return `
-      <div class="league-game-item">
-        <div class="league-game-top">
-          <div class="league-time-code">
-            <span class="league-time">⏰ ${getTime(g)}</span>
+      <div class="league-row">
+        <div class="league-head">
+          <div class="league-time-row">
+            <span class="league-time">${getTime(g)}</span>
             <span class="league-code">${g.game_code || '-'}</span>
           </div>
-          <div class="league-teams">
-            ${g.away_team || '客隊'}<span class="vs">VS</span>${g.home_team || '主隊'}
-          </div>
+          <div class="league-match">${g.away_team || ''}<span class="vs">VS</span>${g.home_team || ''}</div>
         </div>
-        <div class="crew-grid">
-          ${crewHtml}
+        <div class="league-duty">
+          <div class="league-duty-left">${judgeHtml}</div>
+          <div class="league-duty-right">
+            <div>紀錄：<span class="league-duty-name">${safeName(g.records?.REC_MAIN) || '－'}</span></div>
+            <div>見習：<span class="league-duty-name">${safeName(g.records?.REC_TRAINEE) || '－'}</span></div>
+            <div>影像：<span class="league-duty-name">${safeName(g.records?.REC_VIDEO) || '－'}</span></div>
+          </div>
         </div>
       </div>
     `;
   }).join('');
 }
-
-function renderWeeklyTable(list){
-
-  const rows = list.map(g => `
-
-    <tr>
-
-      <td>
-        ${getTime(g)}
-      </td>
-
-      <td
-        style="
-          color:#2563eb;
-          font-weight:800;
-        ">
-
-        ${g.game_code || '-'}
-
-      </td>
-
-      <td>${safeName(g.judges?.PU) || '-'}</td>
-
-      <td>${safeName(g.judges?.U1) || '-'}</td>
-
-      <td>
-        ${
-          Number(g.umpire_count) >= 4
-          ? (safeName(g.judges?.U2) || '-')
-          : '-'
-        }
-      </td>
-
-      <td>
-        ${
-          Number(g.umpire_count) >= 3
-          ? (safeName(g.judges?.U3) || '-')
-          : '-'
-        }
-      </td>
-
-      <td>
-        ${safeName(g.records?.REC_MAIN) || '-'}
-      </td>
-
-      <td>
-        ${safeName(g.records?.REC_TRAINEE) || '-'}
-      </td>
-
-      <td>
-        ${safeName(g.records?.REC_VIDEO) || '-'}
-      </td>
-
-    </tr>
-
-  `).join('');
-
-  return `
-
-    <table
-      style="
-        width:100%;
-        border-collapse:collapse;
-        font-size:13px;
-        margin-bottom:12px;
-      "
-    >
-
-      <thead>
-
-        <tr
-          style="
-            background:#f1f5f9;
-          "
-        >
-
-          <th>時間</th>
-
-          <th>場次</th>
-
-          <th>主審</th>
-
-          <th>一壘</th>
-
-          <th>二壘</th>
-
-          <th>三壘</th>
-
-          <th>紀錄</th>
-
-          <th>見習</th>
-
-          <th>影像</th>
-
-        </tr>
-
-      </thead>
-
-      <tbody>
-
-        ${rows}
-
-      </tbody>
-
-    </table>
-
-  `;
-}
-
 
 
 /*********************************************************
