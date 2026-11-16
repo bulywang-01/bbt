@@ -24,23 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initHeader();
   }
 
-  // ✅ Welcome
-  renderWelcome();
-
-  // ✅ 綁按鈕事件
-  bindButtons();
-
-  // ✅ 載入統計
-  loadDashboard();
-
-  // ✅ 載入本週出勤提醒
-  loadWeeklyReminder();
-  
-  // ✅ 載入個人數據分析
-  loadHomeUserAnalysis();
-
-  // ✅ 首頁載入聯盟開課資訊
-  loadHomeCourses();
+  renderWelcome();  // ✅ Welcome
+  bindButtons();  // ✅ 綁按鈕事件
+  loadDashboard();  // ✅ 載入統計
+  loadWeeklyReminder();  // ✅ 載入本週出勤提醒
+  loadHomeUserAnalysis();  // ✅ 載入個人數據分析
+  loadHomeCourses();  // ✅ 首頁載入聯盟開課資訊
+  loadHomeAnnouncements();  // 載入公告
 
 });
 
@@ -939,4 +929,274 @@ function getJudgeRoles(g){
 
 function roleMap(r){
   return { PU:'主審', U1:'一壘', U2:'二壘', U3:'三壘' }[r] || r;
+}
+
+/*********************************************************
+ * ✅ 系統公告模組 (CMS 前台顯示 + 管理員權限保護)
+ *********************************************************/
+
+// 檢查當前使用者是否為管理員
+function checkAdminPermission() {
+  if (!session || !session.role) return false;
+  const roles = session.role.split(',').map(r => r.trim());
+  return roles.includes('admin');
+}
+
+/*********************************************************
+ * ✅ 強化版：首頁載入最新公告（含防卡死與錯誤提示）
+ *********************************************************/
+/*********************************************************
+ * 🛠️ 除錯防護版：首頁載入最新公告
+ *********************************************************/
+function loadHomeAnnouncements() {
+  const container = document.getElementById('home-notice-list');
+  const adminBtn = document.getElementById('open-cms-btn');
+
+  console.log("🔍 [Debug] 當前 Session 資料:", session);
+
+  // 權限控制
+  if (adminBtn) {
+    if (checkAdminPermission()) {
+      adminBtn.style.display = 'inline-block';
+      console.log("✅ [Debug] 已成功顯示「管理公告」按鈕");
+    } else {
+      adminBtn.style.display = 'none';
+      console.log("🔒 [Debug] 非管理員身分，隱藏管理按鈕");
+    }
+  }
+
+  if (!container) return;
+
+  container.innerHTML = `<div style="color: #64748b; font-size: 13px; padding: 8px;">⏳ 正在向後端請求公告資料...</div>`;
+
+  try {
+    callApi({ action: 'getAnnouncements' }, res => {
+      console.log("📥 [Debug] 後端回傳的公告 API 結果:", res);
+
+      if (!res) {
+        container.innerHTML = `<div style="color: #dc2626; font-size: 13px; padding: 8px;">⚠️ 錯誤：後端回傳空白 (null)</div>`;
+        return;
+      }
+
+      if (res.result !== 'ok') {
+        container.innerHTML = `<div style="color: #dc2626; font-size: 13px; padding: 8px;">⚠️ 後端回傳錯誤：${res.message || '未知錯誤'}</div>`;
+        return;
+      }
+
+      const list = res.announcements || [];
+      if (list.length === 0) {
+        container.innerHTML = `<div style="color: #64748b; font-size: 13px; padding: 8px;">目前尚無最新公告。</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(item => {
+          // 優先權大於 1 顯示紅色「置頂」小標籤
+          const pinBadge = Number(item.priority) > 1
+            ? `<span style="background:#fee2e2; color:#dc2626; font-size:11px; font-weight:800; padding:2px 7px; border-radius:4px;">置頂</span>`
+            : '';
+          const titleText = item.title ? item.title : '';
+    
+          // 標題與內文上下分層排版
+          const headerRow = (pinBadge || titleText) ? `
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px;">
+              ${pinBadge}
+              ${titleText ? `<span style="font-weight: 900; color: #1e3a8a; font-size: 13.5px;">📢 ${titleText}</span>` : ''}
+            </div>
+          ` : '';
+    
+          return `
+            <div class="notice-item">
+              ${headerRow}
+              <div style="color: #334155; font-size: 13px; line-height: 1.6; word-break: break-word;">
+                ${item.content_html}
+              </div>
+            </div>
+          `;
+        }).join('');
+      
+    });
+  } catch (err) {
+    console.error("❌ [Debug] 呼叫 callApi 發生例外錯誤:", err);
+    container.innerHTML = `<div style="color: #dc2626; font-size: 13px; padding: 8px;">⚠️ 程式例外：${err.message}</div>`;
+  }
+}
+
+function openAnnouncementAdmin() {
+  // 🔒 雙重防護：防止透過主控台或非正規方式強行開啟
+  if (!checkAdminPermission()) {
+    alert('權限不足：只有系統管理員（admin）才能管理系統公告！');
+    return;
+  }
+
+  const overlay = document.getElementById('cms-announcement-overlay');
+  if (overlay) overlay.style.display = 'flex';
+  resetCmsForm();
+  loadAdminAnnouncementList();
+}
+
+function loadAdminAnnouncementList() {
+  if (!checkAdminPermission()) return;
+
+  const listEl = document.getElementById('cms-admin-list');
+  if (!listEl) return;
+  listEl.innerHTML = `<div style="color:#64748b; font-size:13px; text-align:center; padding:12px;">⏳ 讀取公告資料中...</div>`;
+
+  callApi({ action: 'getAllAnnouncementsAdmin' }, res => {
+    const list = res?.announcements || [];
+    window._adminAnnouncements = list;
+
+    if (!res || res.result !== 'ok' || list.length === 0) {
+      listEl.innerHTML = `<div style="color:#64748b; font-size:13px; text-align:center; padding:12px;">目前沒有任何公告資料</div>`;
+      return;
+    }
+
+    listEl.innerHTML = list.map(item => {
+      const isActive = item.status === 'Y' || item.status === 'ACTIVE';
+      const statusBadge = isActive
+        ? `<span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:800;">顯示中 (Y)</span>`
+        : `<span style="background:#f1f5f9; color:#64748b; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:800;">已隱藏 (N)</span>`;
+
+      const dateRange = (item.start_date || item.end_date)
+        ? `📅 期間：${item.start_date || '即刻起'} ~ ${item.end_date || '永久'}`
+        : `📅 期間：永久顯示`;
+
+      return `
+        <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:4px;">
+              <span style="background:#1e3a8a; color:#fff; font-size:11px; font-weight:800; padding:1px 6px; border-radius:4px;">ID #${item.announcement_id}</span>
+              <span style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:11px; font-weight:800; padding:1px 6px; border-radius:4px;">優先權: ${item.priority}</span>
+              ${statusBadge}
+              <span style="font-size:11px; color:#64748b;">${dateRange}</span>
+            </div>
+            <div style="font-size:13px; color:#0f172a; line-height:1.4; word-break:break-word;">
+              ${item.title ? `<strong>[${item.title}]</strong> ` : ''}${item.content_html}
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0;">
+            <button onclick="editAnnouncementItem(${item.announcement_id})" style="padding:4px 10px; font-size:12px; font-weight:700; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:5px; cursor:pointer;">✏️ 編輯</button>
+            <button onclick="removeAnnouncementItem(${item.announcement_id})" style="padding:4px 10px; font-size:12px; font-weight:700; background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:5px; cursor:pointer;">🗑️ 刪除</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  });
+}
+
+function editAnnouncementItem(id) {
+  if (!checkAdminPermission()) return;
+  const item = (window._adminAnnouncements || []).find(x => Number(x.announcement_id) === Number(id));
+  if (!item) return;
+
+  document.getElementById('cms-form-title').textContent = `✏️ 編輯公告 (ID #${item.announcement_id})`;
+  document.getElementById('cms-id').value = item.announcement_id;
+  document.getElementById('cms-title').value = item.title || '';
+  document.getElementById('cms-priority').value = item.priority ?? 1;
+  document.getElementById('cms-status').value = (item.status === 'Y' || item.status === 'ACTIVE') ? 'Y' : 'N';
+  document.getElementById('cms-start').value = item.start_date || '';
+  document.getElementById('cms-end').value = item.end_date || '';
+  document.getElementById('cms-content').value = item.content_html || '';
+}
+
+function resetCmsForm() {
+  document.getElementById('cms-form-title').textContent = '➕ 新增公告';
+  document.getElementById('cms-id').value = '';
+  document.getElementById('cms-title').value = '';
+  document.getElementById('cms-priority').value = '1';
+  document.getElementById('cms-status').value = 'Y';
+  document.getElementById('cms-start').value = '';
+  document.getElementById('cms-end').value = '';
+  document.getElementById('cms-content').value = '';
+}
+
+function submitAnnouncementForm() {
+  if (!checkAdminPermission()) {
+    alert('權限不足！');
+    return;
+  }
+
+  const content = document.getElementById('cms-content').value.trim();
+  if (!content) {
+    alert('請輸入公告內文！');
+    return;
+  }
+
+  const btn = document.getElementById('cms-submit-btn');
+  btn.disabled = true;
+  btn.textContent = '儲存中...';
+
+  const payload = {
+    action: 'saveAnnouncement',
+    announcement_id: document.getElementById('cms-id').value,
+    title: document.getElementById('cms-title').value.trim(),
+    priority: document.getElementById('cms-priority').value || 1,
+    status: document.getElementById('cms-status').value,
+    start_date: document.getElementById('cms-start').value,
+    end_date: document.getElementById('cms-end').value,
+    content_html: content
+  };
+
+  callApi(payload, res => {
+    btn.disabled = false;
+    btn.textContent = '💾 儲存公告';
+
+    if (!res || res.result !== 'ok') {
+      alert('儲存失敗：' + (res?.message || '未知錯誤'));
+      return;
+    }
+
+    resetCmsForm();
+    loadAdminAnnouncementList(); // 重新整理後台管理清單
+    loadHomeAnnouncements();     // 同步更新首頁公告畫面
+  });
+}
+
+function removeAnnouncementItem(id) {
+  if (!checkAdminPermission()) return;
+  if (!confirm(`確定要刪除公告 ID #${id} 嗎？刪除後無法復原。`)) return;
+
+  callApi({ action: 'deleteAnnouncement', announcement_id: id }, res => {
+    if (!res || res.result !== 'ok') {
+      alert('刪除失敗：' + (res?.message || '未知錯誤'));
+      return;
+    }
+    loadAdminAnnouncementList();
+    loadHomeAnnouncements();
+  });
+}
+
+/*********************************************************
+ * 🎨 CMS 公告內文格式化工具列輔助函式
+ *********************************************************/
+function formatText(tag) {
+  const textarea = document.getElementById('cms-content');
+  if (!textarea) return;
+
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  const selectedText = text.substring(start, end);
+
+  let replacement = '';
+  if (tag === 'strong') {
+    replacement = `<strong>${selectedText || '粗體文字'}</strong>`;
+  } else if (tag === 'em') {
+    replacement = `<em>${selectedText || '斜體文字'}</em>`;
+  } else if (tag === 'u') {
+    replacement = `<u>${selectedText || '底線文字'}</u>`;
+  } else if (tag === 'a') {
+    const url = prompt('請輸入連結網址 (URL):', 'https://');
+    if (!url) return;
+    replacement = `<a href="${url}" target="_blank">${selectedText || '連結文字'}</a>`;
+  } else if (tag === 'br') {
+    replacement = '<br>';
+  }
+
+  // 將標籤包覆或插入至游標/選取位置
+  textarea.value = text.substring(0, start) + replacement + text.substring(end);
+  textarea.focus();
+  
+  // 設定游標位置至插入內容的結尾
+  const newCursorPos = start + replacement.length;
+  textarea.setSelectionRange(newCursorPos, newCursorPos);
 }
