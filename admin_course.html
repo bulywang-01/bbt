@@ -424,7 +424,7 @@
                       <th>出席狀態</th>
                       <th>簽到時間</th>
                       <th>簽退時間</th>
-                      <th class="text-right">出勤快捷操作</th>
+                      <th class="text-center">出勤快捷操作</th>
                     </tr>
                   </thead>
                   <tbody id="attendanceTableBody">
@@ -1943,9 +1943,15 @@ BBT 軟式棒球聯盟 敬上`;
 
       const isActuallyPresent = hasCheckedIn || hasCheckedOut || item.attendance_status === 'present';
 
-      const attBadge = isActuallyPresent
-        ? `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800">出席 (present)</span>`
-        : `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-slate-100 text-slate-600">缺席 (absent)</span>`;
+      // ✅ 三段式出席狀態判定：已出席 > 尚未開課 > 缺席
+      let attBadge = '';
+      if (isActuallyPresent) {
+        attBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800">出席 (present)</span>`;
+      } else if (isCourseNotStarted) {
+        attBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200">尚未開課</span>`;
+      } else {
+        attBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-slate-100 text-slate-600">缺席 (absent)</span>`;
+      }
 
       const checkinBtnDisabled = (isCourseNotStarted || hasCheckedIn) ? 'disabled' : '';
       const checkoutBtnDisabled = (!hasCheckedIn || hasCheckedOut) ? 'disabled' : '';
@@ -1969,7 +1975,8 @@ BBT 軟式棒球聯盟 敬上`;
           <td class="p-4">${attBadge}</td>
           <td class="p-4 text-xs font-mono font-bold text-slate-700 whitespace-nowrap">${checkinHtml}</td>
           <td class="p-4 text-xs font-mono font-bold text-slate-700 whitespace-nowrap">${checkoutHtml}</td>
-          <td class="p-4 text-right space-x-2 whitespace-nowrap">
+          <!-- 💡 這裡將 text-right 改為 text-center -->
+          <td class="p-4 text-center space-x-2 whitespace-nowrap">
             <button onclick="doAttendanceAction('${item.log_id}', 'checkin')" ${checkinBtnDisabled} class="px-2.5 py-1.5 rounded-xl border text-xs font-extrabold transition ${checkinBtnClass}">
               ${checkinBtnText}
             </button>
