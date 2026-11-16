@@ -317,13 +317,24 @@
           </section>
 
           <section class="table-panel">
-            <div class="table-header">
+            <div class="table-header flex-wrap">
               <div class="table-title">🛡️ 報名學員與匯款後五碼清單</div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="batchApprovePayments()" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-extrabold shadow-sm transition cursor-pointer">
+                  ✅ 批次確認已繳費
+                </button>
+                <button type="button" onclick="exportEnrollmentsCSV()" class="px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-extrabold shadow-sm transition cursor-pointer">
+                  📥 匯出報名名單 (CSV)
+                </button>
+              </div>
             </div>
             <div class="table-wrapper">
               <table class="user-table">
                 <thead>
                   <tr>
+                    <th class="w-10 text-center">
+                      <input type="checkbox" id="selectAllEnrollments" onchange="toggleAllEnrollments(this)" class="w-4 h-4 accent-blue-600 cursor-pointer">
+                    </th>
                     <th># 紀錄編號 / 時間</th>
                     <th>課程名稱</th>
                     <th>學員姓名 / 電話</th>
@@ -331,11 +342,12 @@
                     <th>餐飲需求</th>
                     <th>身分</th>
                     <th>繳費狀態</th>
+                    <th>管理員備註</th>
                     <th class="text-right">管理操作</th>
                   </tr>
                 </thead>
                 <tbody id="enrollmentTableBody">
-                  <tr><td colspan="8" class="text-center py-12 text-slate-400 font-bold">載入報名資料中...</td></tr>
+                  <tr><td colspan="10" class="text-center py-12 text-slate-400 font-bold">載入報名資料中...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1315,23 +1327,26 @@ function renderEnrollmentTable() {
     const pFilter = document.getElementById('filterPaymentStatus').value;
     const keyword = (document.getElementById('txtEnrollSearch').value || '').toLowerCase();
 
+    // 每次重新渲染時重設全選框
+    const selectAllEl = document.getElementById('selectAllEnrollments');
+    if (selectAllEl) selectAllEl.checked = false;
+
     const filtered = allEnrollments.filter(item => {
       const matchC = cFilter === 'all' || String(item.course_id) === String(cFilter);
       const matchP = pFilter === 'all' || String(item.payment_status) === String(pFilter);
-      const text = [item.name, item.phone, item.payment_account, item.course_name].join(' ').toLowerCase();
+      const text = [item.name, item.phone, item.payment_account, item.course_name, item.admin_note].join(' ').toLowerCase();
       const matchKw = !keyword || text.includes(keyword);
       return matchC && matchP && matchKw;
     });
 
     if (!filtered.length) {
-      tbody.innerHTML = `<tr><td colspan="8" class="text-center py-12 text-slate-400 font-bold">沒有符合條件的報名資料</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-slate-400 font-bold">沒有符合條件的報名資料</td></tr>`;
       return;
     }
 
     tbody.innerHTML = filtered.map(item => {
       const payStatus = item.payment_status;
       const isWaitlist = item.status === 'waitlist';
-      
       const isCancelled = item.status === 'cancelled' || payStatus === 'refunded' || item.status === 'refunded';
 
       let statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">正取</span>`;
@@ -1341,7 +1356,6 @@ function renderEnrollmentTable() {
         statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">已取消</span>`;
       }
 
-      // 💡 處理後五碼呈現：99999 顯示為「現場繳費」
       const rawAtm = String(item.payment_account || '').trim();
       let atmDisplay = rawAtm;
       if (rawAtm === '99999') {
@@ -1350,7 +1364,6 @@ function renderEnrollmentTable() {
         atmDisplay = '未填寫';
       }
 
-      // 💡 依據有無資訊調整繳費狀態與顏色
       let payBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800">尚未繳費</span>`;
       if (payStatus === 'paid') {
         payBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800">已繳費</span>`;
@@ -1363,6 +1376,12 @@ function renderEnrollmentTable() {
       const courseObj = allCourses.find(c => String(c.course_id) === String(item.course_id));
       const defaultFee = courseObj ? (courseObj.fee || 0) : 0;
       const currentAmount = item.payment_amount !== undefined && item.payment_amount !== '' ? item.payment_amount : defaultFee;
+
+      // 只有尚未繳費且未取消的學員可以勾選進行批次確認
+      const canBatchCheck = (payStatus !== 'paid' && !isCancelled);
+      const checkboxHtml = canBatchCheck
+        ? `<input type="checkbox" class="enroll-checkbox w-4 h-4 accent-emerald-600 cursor-pointer" value="${item.log_id}" data-fee="${currentAmount}">`
+        : `<input type="checkbox" disabled class="w-4 h-4 opacity-30">`;
 
       let actionHtml = '';
       if (payStatus === 'paid') {
@@ -1393,8 +1412,11 @@ function renderEnrollmentTable() {
         `;
       }
 
+      const safeNote = (item.admin_note || '').replace(/"/g, '&quot;');
+
       return `
         <tr class="hover:bg-slate-50 transition">
+          <td class="p-4 text-center">${checkboxHtml}</td>
           <td class="p-4 text-xs">
             <div class="font-extrabold text-slate-900">#${item.log_id || '-'}</div>
             <div class="text-slate-400 mt-0.5">${item.created_at || '-'}</div>
@@ -1410,6 +1432,11 @@ function renderEnrollmentTable() {
           <td class="p-4 text-xs font-bold text-slate-700">${item.dietary || '葷食'}</td>
           <td class="p-4">${statusBadge}</td>
           <td class="p-4">${payBadge}</td>
+          <td class="p-4 min-w-[160px]">
+            <input type="text" value="${safeNote}" placeholder="點擊輸入備註..." 
+              onchange="saveEnrollmentNote('${item.log_id}', this.value)"
+              class="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-blue-500 focus:outline-none transition">
+          </td>
           <td class="p-4 text-right">${actionHtml}</td>
         </tr>
       `;
@@ -2267,6 +2294,137 @@ BBT 軟式棒球聯盟 敬上`;
       showToast('網路連線異常，請重整頁面', 'error');
     };
     document.body.appendChild(script);
+  }
+
+// =========================================================
+  // 🚀 新增：全選、批次確認繳費、匯出報名 CSV、儲存備註
+  // =========================================================
+
+  function toggleAllEnrollments(source) {
+    const checkboxes = document.querySelectorAll('.enroll-checkbox');
+    checkboxes.forEach(cb => {
+      cb.checked = source.checked;
+    });
+  }
+
+  function batchApprovePayments() {
+    const checkedBoxes = Array.from(document.querySelectorAll('.enroll-checkbox:checked'));
+    if (checkedBoxes.length === 0) {
+      showToast('請先勾選至少一位尚未繳費的學員！', 'error');
+      return;
+    }
+
+    if (!confirm(`確定要將勾選的 ${checkedBoxes.length} 位學員批次確認為「已繳費」嗎？`)) return;
+
+    const payloadList = checkedBoxes.map(cb => ({
+      log_id: cb.value,
+      amount: Number(cb.dataset.fee) || 0
+    }));
+
+    showLoading(`正在批次更新 ${payloadList.length} 筆繳費狀態...`);
+    const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : (typeof API_URL !== 'undefined' ? API_URL : '');
+    const cb = 'jsonp_batch_pay_' + Math.round(100000 * Math.random());
+
+    const params = new URLSearchParams({
+      action: 'batchUpdatePaymentStatus',
+      items: JSON.stringify(payloadList),
+      callback: cb,
+      _t: Date.now()
+    });
+
+    window[cb] = function(res) {
+      delete window[cb];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      hideLoading();
+
+      if (res && (res.result === 'ok' || res.result === 'success')) {
+        showToast(res.message || `成功批次確認 ${payloadList.length} 筆繳費！`, 'success');
+        loadEnrollmentData('enrollments');
+      } else {
+        showToast(res ? res.message : '批次更新失敗', 'error');
+      }
+    };
+
+    const script = document.createElement('script');
+    script.src = `${baseUrl}?${params.toString()}`;
+    script.onerror = function() {
+      delete window[cb];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      hideLoading();
+      showToast('網路連線異常，請重試', 'error');
+    };
+    document.body.appendChild(script);
+  }
+
+  function saveEnrollmentNote(logId, noteText) {
+    const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : (typeof API_URL !== 'undefined' ? API_URL : '');
+    const cb = 'jsonp_save_note_' + Math.round(100000 * Math.random());
+
+    const params = new URLSearchParams({
+      action: 'updateEnrollmentNote',
+      log_id: logId,
+      admin_note: noteText.trim(),
+      callback: cb,
+      _t: Date.now()
+    });
+
+    window[cb] = function(res) {
+      delete window[cb];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (res && (res.result === 'ok' || res.result === 'success')) {
+        showToast('備註已儲存', 'success');
+        const target = allEnrollments.find(i => String(i.log_id) === String(logId));
+        if (target) target.admin_note = noteText.trim();
+      } else {
+        showToast(res ? res.message : '備註儲存失敗', 'error');
+      }
+    };
+
+    const script = document.createElement('script');
+    script.src = `${baseUrl}?${params.toString()}`;
+    document.body.appendChild(script);
+  }
+
+function exportEnrollmentsCSV() {
+    const cFilter = document.getElementById('filterCourseSelect').value;
+    const pFilter = document.getElementById('filterPaymentStatus').value;
+    const keyword = (document.getElementById('txtEnrollSearch').value || '').toLowerCase();
+
+    const filtered = allEnrollments.filter(item => {
+      const matchC = cFilter === 'all' || String(item.course_id) === String(cFilter);
+      const matchP = pFilter === 'all' || String(item.payment_status) === String(pFilter);
+      const text = [item.name, item.phone, item.payment_account, item.course_name, item.admin_note].join(' ').toLowerCase();
+      const matchKw = !keyword || text.includes(keyword);
+      return matchC && matchP && matchKw;
+    });
+
+    if (!filtered.length) {
+      showToast('目前篩選條件下沒有可匯出的資料', 'error');
+      return;
+    }
+
+    let csv = '\uFEFF紀錄編號,報名時間,課程名稱,學員姓名,聯絡電話,匯款後五碼,餐飲需求,報名身分,繳費狀態,管理員備註\n';
+    filtered.forEach(item => {
+      const statusText = item.status === 'waitlist' ? '候補' : (item.status === 'cancelled' ? '已取消' : '正取');
+      const payText = item.payment_status === 'paid' ? '已繳費' : (item.payment_status === 'refunded' ? '已退費' : '尚未繳費');
+      const atm = item.payment_account === '99999' ? '現場繳費' : (item.payment_account || '未填寫');
+      const note = (item.admin_note || '').replace(/"/g, '""');
+
+      // 💡 關鍵修正：在電話前面加上 \t (Tab字元) 或單引號，強迫 Excel 視為文字格式，保留開頭的 0
+      const rawPhone = String(item.phone || '').trim();
+      const phoneText = rawPhone ? `\t${rawPhone}` : '';
+
+      csv += `"#${item.log_id}","${item.created_at || ''}","${item.course_name || ''}","${item.name || ''}","${phoneText}","${atm}","${item.dietary || '葷食'}","${statusText}","${payText}","${note}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `BBT課程報名與餐飲名單_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('報名名單 CSV 已匯出！', 'success');
   }
 </script>
 </body>
