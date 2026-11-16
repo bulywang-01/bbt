@@ -184,18 +184,24 @@
     .home-course-title { font-size: 14px; font-weight: 800; color: #1e3a8a; margin-bottom: 4px; }
     .home-course-info { font-size: 12px; color: #475569; line-height: 1.5; }
 
-    .notice-list { display: flex; flex-direction: column; gap: 8px; }
+    .notice-list { display: flex; flex-direction: column; gap: 10px; }
     .notice-item {
       background: #f8fafc;
-      border-left: 3px solid #1e3a8a;
-      border-radius: 6px;
-      padding: 9px 12px;
+      border-left: 4px solid #1e3a8a;
+      border-radius: 8px;
+      padding: 12px 16px;
       color: #334155;
       font-size: 13px;
-      line-height: 1.5;
+      line-height: 1.6;
       border-top: 1px solid #e2e8f0;
       border-right: 1px solid #e2e8f0;
       border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+      transition: all 0.2s ease;
+    }
+    .notice-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.05);
     }
 
     /* ===== 文件中心 ===== */
@@ -469,7 +475,7 @@
       updateRealProgressBars();
     });
 
-    // 🏆 精準防禦型本週聯盟班表格式化引擎（完美避開時間帶冒號的誤判）
+    // 🏆 強固版本週聯盟班表格式化引擎（自動防禦官方 AJAX 覆寫）
     function beautifyWeeklySchedule() {
       const container = document.getElementById('weeklyContent');
       if (!container) return;
@@ -500,31 +506,22 @@
       };
       
       lines.forEach(line => {
-        // 1. 判斷日期
-        if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(line) || (line.includes('/') && line.length <= 10 && !line.includes('VS'))) {
+        if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(line)) {
           if (currentVenue) pushVenue();
           outputHtml += `<div class="sch-date-header">📅 ${line}</div>`;
         } 
-        // 2. 判斷場地
         else if (line.includes('場') || line.includes('大學') || line.includes('綜合') || line.includes('球場') || line.includes('📍')) {
           if (currentVenue) pushVenue();
           currentVenue = { venueName: line.replace('📍', '').trim(), matches: [] };
         } 
-        // 3. 判斷時間與賽事代碼 (開頭為 00:00)
-        else if (/^\d{2}:\d{2}/.test(line)) {
+        else if (/^\d{2}:\d{2}/.test(line) && line.length < 25 && !line.includes('：')) {
           if (currentMatch) pushMatch();
           currentMatch = { timeCode: line, teams: '', roles: {} };
         } 
-        // 4. 判斷對戰組合 (包含 VS)
-        else if (line.toUpperCase().includes('VS') || line.includes('ＶＳ')) {
-          if (currentMatch) {
-            currentMatch.teams = line;
-          } else {
-            currentMatch = { timeCode: '賽事', teams: line, roles: {} };
-          }
+        else if ((line.includes('VS') || line.includes('ＶＳ') || line.includes('vs')) && currentMatch && !currentMatch.teams) {
+          currentMatch.teams = line;
         } 
-        // 5. 嚴格判斷職務與人員：必須包含已知職位名稱 AND 冒號，絕不誤判時間
-        else if ((line.includes('主審') || line.includes('一壘') || line.includes('二壘') || line.includes('三壘') || line.includes('紀錄') || line.includes('見習') || line.includes('影像') || line.includes('裁判')) && (line.includes('：') || line.includes(':'))) {
+        else if (line.includes('：') || line.includes(':')) {
           if (!currentMatch) {
             currentMatch = { timeCode: '賽事', teams: '', roles: {} };
           }
@@ -533,7 +530,6 @@
           let name = parts[1] ? parts[1].trim() : '－';
           currentMatch.roles[title] = name;
         } 
-        // 6. 其他情況 (如隊伍名稱)
         else {
           if (currentMatch && !currentMatch.teams) {
             currentMatch.teams = line;
@@ -605,12 +601,14 @@
       const weeklyOverlay = document.getElementById('weekly-overlay');
       const weeklyEl = document.getElementById('weeklyContent');
 
+      // 1. 點擊按鈕時觸發多段延遲（等待 AJAX 載入完成）
       if (openWeeklyBtn) {
         openWeeklyBtn.addEventListener('click', () => {
           [50, 200, 500, 1000].forEach(delay => setTimeout(beautifyWeeklySchedule, delay));
         });
       }
 
+      // 2. 監聽彈窗顯示狀態（當 overlay 開啟時觸發）
       if (weeklyOverlay) {
         const overlayObserver = new MutationObserver(() => {
           if (weeklyOverlay.style.display === 'block' || window.getComputedStyle(weeklyOverlay).display === 'flex') {
@@ -620,6 +618,7 @@
         overlayObserver.observe(weeklyOverlay, { attributes: true, attributeFilter: ['style', 'class'] });
       }
 
+      // 3. 監聽內容變動：一旦被官方 JS 覆寫回純文字，立刻重新排版
       if (weeklyEl) {
         const contentObserver = new MutationObserver(() => {
           if (!weeklyEl.querySelector('.league-schedule-wrapper')) {
@@ -707,7 +706,7 @@
         </div>
       </div>
 
-      <!-- 右欄：最新公告 -->
+      <!-- 右欄：最新公告
       <div class="panel">
         <div class="section-header">
           <h3>📢 最新公告</h3>
@@ -716,6 +715,19 @@
           <div class="notice-item">⚾ <strong>系統更新</strong>：首頁現已整合「聯盟開課資訊」快速預覽，方便各位夥伴掌握培訓動態。</div>
           <div class="notice-item">⚾ <strong>10/16</strong> - 十一月份賽程將於 10/17 (六) 12:00 起開放報名，請點選上方班表，詳細資訊請看Line群組。</div>
           <div class="notice-item">⚾ <strong>8/13</strong> - 由於三峽北大的租金屬於高單價，該場地舉辦的 "例行賽" 賽事將調整為安排四場比賽。</div>
+        </div>
+      </div> -->
+      
+      <!-- 右欄：最新公告 -->
+      <div class="panel">
+        <div class="section-header">
+          <h3>📢 最新公告</h3>
+          <button id="open-cms-btn" onclick="openAnnouncementAdmin()" style="display:none; padding:4px 10px; font-size:12px; font-weight:800; color:#1e3a8a; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; cursor:pointer;">
+            ⚙️ 管理公告
+          </button>
+        </div>
+        <div id="home-notice-list" class="notice-list">
+          <div style="color: #64748b; font-size: 13px; padding: 8px;">⏳ 載入最新公告中...</div>
         </div>
       </div>
     </div>
@@ -1070,7 +1082,7 @@
         <ul>
           <li>報名前請確認日期、時間、球場與職務。</li>
           <li>報名成功後請再次確認您的姓名已顯示於正確位置。</li>
-          <li>若看到<span>已有人報名</span>，請以系統最新畫面為準。</li>
+          <li>若看到「已有人報名」，請以系統最新畫面為準。</li>
           <li>若出現時間衝突或母隊迴避提醒，請改選其他場次。</li>
         </ul>
         <div style="margin-top:16px; padding:12px; border-radius:10px; background:#f5f8ff; border:1px solid #dbeafe; color:#1e40af; line-height:1.6;">
@@ -1315,5 +1327,77 @@
     </div>
 
   </div>
+
+    <!-- ===============================
+    📢 系統公告管理後台 (CMS Overlay) - 僅限管理員
+    =============================== -->
+    <div id="cms-announcement-overlay" class="overlay">
+      <div class="overlay-box system-guide-box">
+        <h2>📢 系統公告管理 (CMS)</h2>
+
+        <!-- 新增 / 編輯表單 -->
+        <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:14px; margin-bottom:16px;">
+          <div style="font-weight:800; color:#1e3a8a; margin-bottom:10px; font-size:14px;" id="cms-form-title">➕ 新增公告</div>
+          <input type="hidden" id="cms-id" value="" />
+
+          <div style="display:grid; grid-template-columns: 1fr 100px 110px; gap:8px; margin-bottom:8px;">
+            <div>
+              <label style="font-size:11px; font-weight:700; color:#475569;">公告標題 / 標籤（如：系統更新、10/16）</label>
+              <input type="text" id="cms-title" placeholder="選填，留空則無粗體前綴" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" />
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:700; color:#475569;">優先權 (數字)</label>
+              <input type="number" id="cms-priority" value="1" min="1" max="999" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" />
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:700; color:#475569;">發布狀態</label>
+              <select id="cms-status" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;">
+                <option value="Y">Y (顯示)</option>
+                <option value="N">N (隱藏)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+            <div>
+              <label style="font-size:11px; font-weight:700; color:#475569;">上架日期（選填，留空立即生效）</label>
+              <input type="date" id="cms-start" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" />
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:700; color:#475569;">下架日期（選填，過期自動隱藏）</label>
+              <input type="date" id="cms-end" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" />
+            </div>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:700; color:#475569; display:block; margin-bottom:4px;">公告內文（支援純文字或 HTML 標籤）*</label>
+            
+          <!-- 🎨 格式化快捷工具列（用清晰的中文與顏色設定） -->
+            <div style="display:flex; gap:6px; margin-bottom:6px; background:#f1f5f9; padding:6px; border-radius:6px; border:1px solid #cbd5e1; flex-wrap:wrap;">
+              <button type="button" onclick="formatText('strong')" style="padding:4px 10px; font-weight:bold; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-size:12px;">粗體 (B)</button>
+              <button type="button" onclick="formatText('em')" style="padding:4px 10px; font-style:italic; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-size:12px;">斜體 (I)</button>
+              <button type="button" onclick="formatText('u')" style="padding:4px 10px; text-decoration:underline; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-size:12px;">底線 (U)</button>
+              <button type="button" onclick="formatText('a')" style="padding:4px 10px; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-size:12px;">🔗 超連結</button>
+              <button type="button" onclick="formatText('br')" style="padding:4px 10px; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-size:12px;">↩ 換行</button>
+            </div>
+
+            <textarea id="cms-content" rows="4" placeholder="請輸入公告內容..." style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-family:inherit;"></textarea>
+          </div>
+
+          <div style="display:flex; gap:8px; justify-content:flex-end;">
+            <button type="button" onclick="resetCmsForm()" style="padding:8px 14px; border-radius:6px; border:1px solid #cbd5e1; background:#fff; color:#475569; font-weight:700; cursor:pointer; font-size:13px;">清空重填</button>
+            <button type="button" onclick="submitAnnouncementForm()" id="cms-submit-btn" style="padding:8px 18px; border-radius:6px; border:none; background:#1e3a8a; color:#fff; font-weight:800; cursor:pointer; font-size:13px;">💾 儲存公告</button>
+          </div>
+        </div>
+
+        <!-- 既有公告列表 -->
+        <div style="font-weight:800; color:#1e293b; margin-bottom:8px; font-size:14px;">📋 公告列表（依優先權 ＞ 編號排序）</div>
+        <div id="cms-admin-list" style="display:flex; flex-direction:column; gap:8px; max-height:320px; overflow-y:auto;">
+          <div style="color:#64748b; font-size:13px; text-align:center; padding:12px;">載入中...</div>
+        </div>
+
+        <button class="close-btn full" onclick="hideOverlay('cms-announcement-overlay')">關閉</button>
+      </div>
+    </div>
 </body>
 </html>
