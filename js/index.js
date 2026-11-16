@@ -990,13 +990,12 @@ function loadHomeAnnouncements() {
       }
 
       container.innerHTML = list.map(item => {
-          // 優先權大於 1 顯示紅色「置頂」小標籤
-          const pinBadge = Number(item.priority) > 1
+          // ✅ 修正：只有當 priority 等於 99 時，才顯示紅色的「置頂」標籤
+          const pinBadge = Number(item.priority) === 99
             ? `<span style="background:#fee2e2; color:#dc2626; font-size:11px; font-weight:800; padding:2px 7px; border-radius:4px;">置頂</span>`
             : '';
           const titleText = item.title ? item.title : '';
     
-          // 標題與內文上下分層排版
           const headerRow = (pinBadge || titleText) ? `
             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px;">
               ${pinBadge}
