@@ -1232,7 +1232,11 @@ function loadAllData() {
       if (res && (res.result === 'ok' || res.result === 'success')) {
         allEnrollments = (res.data || []).map(item => ({
           ...item,
-          payment_status: String(item.payment_status || 'unpaid').trim().toLowerCase()
+          payment_status: String(item.payment_status || 'unpaid').trim().toLowerCase(),
+          // 💡 萬能防護：相容各種後端欄位名稱格式 (admin_note / adminNote / note)
+          admin_note: item.admin_note !== undefined ? item.admin_note : 
+                     (item.adminNote !== undefined ? item.adminNote : 
+                     (item.note !== undefined ? item.note : ''))
         }));
         
         updateEnrollmentStats();
