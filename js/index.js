@@ -695,6 +695,13 @@ function renderHomeUserAnalysis(p){
   const completed = p.completed ?? 0;
   const rate = total ? Math.round((completed/total)*100) : 0;
 
+  // 👉 動態將出勤率數字與紫色進度條更新到畫面上
+  const rateEl = document.getElementById('stat-rate');
+  if (rateEl) rateEl.textContent = `${rate}%`;
+
+  const fillRateEl = document.getElementById('fill-rate'); // 記得幫紫色進度條加個 id
+  if (fillRateEl) fillRateEl.style.width = `${rate}%`;
+  
   document.getElementById('home-user-analysis').innerHTML = `
     <div style="display:flex; flex-direction:column; gap:6px;">
       <div class="user-stats" style="margin: 0 !important;">
