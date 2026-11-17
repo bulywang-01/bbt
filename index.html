@@ -169,7 +169,7 @@
     .pill-orange { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
     .pill-blue-action { background: #eff6ff; color: #1e3a8a; border-color: #bfdbfe; }
 
-    /* ===== 📅 我的班表：單層卡片＋本週底色區分＋位置移至下一列並放大＋置中對戰 ===== */
+    /* ===== 📅 我的班表：單層卡片＋本週底色區分＋球場後無｜＋位置移至下一列並放大＋置中對戰 ===== */
     #my-schedule-list {
       font-size: 13px;
       color: #1e293b;
@@ -376,7 +376,7 @@
     }
     .close-btn.full:hover { background: #1d4ed8; }
 
-    /* ===== 🏆 專業精煉版週聯盟賽事班表 ===== */
+    /* ===== 🏆 專業精煉版週聯盟賽事班表 (商務卡片風) ===== */
     #weeklyContent {
       font-size: 12px;
       color: #1e293b;
@@ -386,14 +386,14 @@
     .league-schedule-wrapper {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     .sch-date-header {
       background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
       color: #ffffff;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
       font-weight: 900;
       box-shadow: 0 1px 3px rgba(30, 58, 138, 0.12);
       font-family: inherit;
@@ -401,28 +401,28 @@
     .sch-venue-card {
       background: #f8fafc;
       border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 10px 12px;
+      border-radius: 10px;
+      padding: 12px 14px;
       margin-top: 2px;
     }
     .sch-venue-title {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 800;
       color: #1e40af;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       gap: 6px;
-      border-bottom: 1.5px solid #cbd5e1;
-      padding-bottom: 5px;
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 6px;
       font-family: inherit;
     }
     .sch-match-item {
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 6px;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
     }
     .sch-match-item:last-child {
@@ -433,16 +433,16 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin-bottom: 6px;
-      padding-bottom: 4px;
-      border-bottom: 1px dashed #f1f5f9;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed #e2e8f0;
     }
     .sch-time-badge {
       background: #1e3a8a;
       color: #fff;
-      padding: 2px 6px;
+      padding: 3px 8px;
       border-radius: 4px;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
       white-space: nowrap;
       font-family: inherit;
@@ -450,16 +450,16 @@
     .sch-teams {
       font-weight: 900;
       color: #0f172a;
-      font-size: 12px;
+      font-size: 13px;
       flex: 1;
       text-align: right;
       font-family: inherit;
     }
     .sch-role-group-title {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
       color: #475569;
-      margin: 6px 0 3px 2px;
+      margin: 8px 0 4px 2px;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -467,18 +467,18 @@
     }
     .sch-roles-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
-      gap: 4px;
+      grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+      gap: 6px;
     }
     .sch-role-box {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 5px;
-      padding: 4px 6px;
+      border-radius: 6px;
+      padding: 6px 8px;
       text-align: center;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
       font-family: inherit;
     }
     .sch-role-box.assigned {
@@ -492,13 +492,13 @@
       color: #94a3b8;
     }
     .sch-role-label {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       color: #64748b;
       font-family: inherit;
     }
     .sch-role-name {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -622,7 +622,7 @@
       if (!container) return;
       
       let text = container.innerText || container.textContent;
-      if (!text || text.trim() === '' || text.includes('載入中')) return;
+      if (!text || text.trim() === '' || text.includes('載入中') || container.dataset.beautified === 'true') return;
       
       let lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
       if (lines.length === 0) return;
@@ -647,21 +647,26 @@
       };
       
       lines.forEach(line => {
+        // 日期列
         if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(line)) {
           if (currentVenue) pushVenue();
           outputHtml += `<div class="sch-date-header">📅 ${line}</div>`;
         } 
+        // 球場場地列
         else if (line.includes('場') || line.includes('大學') || line.includes('綜合') || line.includes('球場') || line.includes('📍')) {
           if (currentVenue) pushVenue();
           currentVenue = { venueName: line.replace('📍', '').trim(), matches: [] };
         } 
+        // 比賽時間與場代 (如 11:20 A051)
         else if (/^\d{2}:\d{2}/.test(line) && line.length < 25 && !line.includes('：')) {
           if (currentMatch) pushMatch();
           currentMatch = { timeCode: line, teams: '', roles: {} };
         } 
+        // 對戰組合 (含 VS 前後自動補空格)
         else if ((line.includes('VS') || line.includes('ＶＳ') || line.includes('vs')) && currentMatch && !currentMatch.teams) {
-          currentMatch.teams = line;
+          currentMatch.teams = line.replace(/\s*(VS|ＶＳ|vs)\s*/g, ' VS ');
         } 
+        // 執法名單職務
         else if (line.includes('：') || line.includes(':')) {
           if (!currentMatch) {
             currentMatch = { timeCode: '賽事', teams: '', roles: {} };
@@ -673,7 +678,7 @@
         } 
         else {
           if (currentMatch && !currentMatch.teams) {
-            currentMatch.teams = line;
+            currentMatch.teams = line.replace(/\s*(VS|ＶＳ|vs)\s*/g, ' VS ');
           }
         }
       });
@@ -684,6 +689,7 @@
       }
       
       outputHtml += '</div>';
+      container.dataset.beautified = 'true';
       container.innerHTML = outputHtml;
     }
 
@@ -736,7 +742,7 @@
       `;
     }
 
-    // 📅 「我的班表」格式化引擎：移除「本週」與「📅」圖示、球場後方無｜、位置移至下一列並放大、對戰VS前後空格、底下置中
+    // 📅 「我的班表」格式化引擎：移除「本週」與「📅」圖示、球場後無｜、位置移至下一列並放大、對戰VS前後空格、底下置中
     function beautifyMySchedule() {
       const container = document.getElementById('my-schedule-list');
       if (!container) return;
@@ -809,20 +815,36 @@
       }
     }
 
-    // 🛡️ 即時攔截 MutationObserver：當非同步資料灌入 #my-schedule-list 時自動觸發格式化
+    // 🛡️ 即時攔截 MutationObserver：當非同步資料灌入容器時自動觸發格式化
     window.addEventListener('DOMContentLoaded', () => {
-      const container = document.getElementById('my-schedule-list');
-      if (container) {
+      // 1. 監聽我的班表
+      const schContainer = document.getElementById('my-schedule-list');
+      if (schContainer) {
         const observer = new MutationObserver(() => {
-          if (!container.dataset.processing) {
-            container.dataset.processing = 'true';
+          if (!schContainer.dataset.processing) {
+            schContainer.dataset.processing = 'true';
             setTimeout(() => {
               beautifyMySchedule();
-              delete container.dataset.processing;
+              delete schContainer.dataset.processing;
             }, 50);
           }
         });
-        observer.observe(container, { childList: true, subtree: true, characterData: true });
+        observer.observe(schContainer, { childList: true, subtree: true, characterData: true });
+      }
+
+      // 2. 監聽本週聯盟班表
+      const weeklyContainer = document.getElementById('weeklyContent');
+      if (weeklyContainer) {
+        const weeklyObserver = new MutationObserver(() => {
+          if (!weeklyContainer.dataset.processing) {
+            weeklyContainer.dataset.processing = 'true';
+            setTimeout(() => {
+              beautifyWeeklySchedule();
+              delete weeklyContainer.dataset.processing;
+            }, 50);
+          }
+        });
+        weeklyObserver.observe(weeklyContainer, { childList: true, subtree: true, characterData: true });
       }
 
       const openWeeklyBtn = document.getElementById('open-weekly');
@@ -832,12 +854,16 @@
 
       if (openWeeklyBtn) {
         openWeeklyBtn.addEventListener('click', () => {
+          const c = document.getElementById('weeklyContent');
+          if (c) c.dataset.beautified = '';
           [50, 200, 500, 1000].forEach(delay => setTimeout(beautifyWeeklySchedule, delay));
         });
       }
       if (weeklyOverlay) {
         const overlayObserver = new MutationObserver(() => {
           if (weeklyOverlay.style.display === 'block' || window.getComputedStyle(weeklyOverlay).display === 'flex') {
+            const c = document.getElementById('weeklyContent');
+            if (c) c.dataset.beautified = '';
             [50, 200, 500, 1000].forEach(delay => setTimeout(beautifyWeeklySchedule, delay));
           }
         });
