@@ -18,7 +18,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: #f1f5f9; /* Executive Navy 背景 */
+      background: #f1f5f9;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Noto Sans TC", sans-serif;
       color: #0f172a;
       letter-spacing: 0.2px;
@@ -26,7 +26,6 @@
     
     .main { max-width: 1200px; margin: 0 auto; padding: 20px; }
     
-    /* 商務風面板卡片 */
     .panel {
       background: #ffffff;
       border: 1px solid #cbd5e1;
@@ -62,7 +61,6 @@
       font-family: inherit;
     }
 
-    /* ===== 頂部歡迎與統計儀表板 ===== */
     .welcome-box {
       background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
       border-top: 4px solid #1e3a8a;
@@ -70,7 +68,6 @@
       margin-bottom: 14px !important;
     }
     
-    /* 4宮格統計數據 (桌機 4 欄) */
     .stats-grid-4 {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -111,7 +108,6 @@
     .kpi-progress-fill-amber { background: #d97706; width: 0%; height: 100%; transition: width 0.4s ease; }
     .kpi-progress-fill-purple { background: #7c3aed; width: 100%; height: 100%; }
 
-    /* 🔔 本週執法訊息提示樣式 (強制所有子元素單一橫向一列，絕對不換行) */
     #welcome-alert {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
@@ -139,10 +135,8 @@
     }
     #welcome-alert a:hover { color: #1e3a8a; }
 
-    /* 讓 index.js 能正常掛載個人數據分析，避免 JS 報錯 */
     #home-user-analysis { display: none; }
 
-    /* 三顆按鈕同一列排版：固定大小不自動放大 */
     .welcome-actions-row {
       display: flex;
       justify-content: center;
@@ -169,7 +163,6 @@
     .pill-orange { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
     .pill-blue-action { background: #eff6ff; color: #1e3a8a; border-color: #bfdbfe; }
 
-    /* ===== 📅 我的班表：單層卡片＋本週底色區分＋球場後無｜＋位置移至下一列並放大＋置中對戰 ===== */
     #my-schedule-list {
       font-size: 13px;
       color: #1e293b;
@@ -187,7 +180,6 @@
       flex-direction: column;
       gap: 6px;
     }
-    /* 本週場次專屬底色凸顯 */
     .my-sch-card.is-this-week {
       background: #fffbeb;
       border-color: #fcd34d;
@@ -231,7 +223,6 @@
       border-top: 1px dashed #e2e8f0;
     }
 
-    /* ===== 中段雙欄並排：開課資訊 + 最新公告 ===== */
     .dashboard-mid-grid {
       display: grid;
       grid-template-columns: 1fr 1.2fr;
@@ -283,7 +274,6 @@
       box-shadow: 0 3px 8px rgba(15, 23, 42, 0.05);
     }
 
-    /* ===== 文件與手冊中心 ===== */
     .rules-shortcut-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -345,14 +335,12 @@
     .download-title { font-size: 14px; font-weight: 800; margin-bottom: 3px; color: #1e293b; font-family: inherit; }
     .download-desc { font-size: 12px; color: #64748b; line-height: 1.4; font-family: inherit; }
 
-    /* ===== 系統資訊中心 ===== */
     .system-center {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
     }
 
-    /* ===== 彈窗 Overlay ===== */
     .overlay {
       position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
       display: none; align-items: center; justify-content: center; z-index: 9999;
@@ -376,7 +364,6 @@
     }
     .close-btn.full:hover { background: #1d4ed8; }
 
-    /* ===== 🏆 專業精煉版週聯盟賽事班表 (商務卡片風) ===== */
     #weeklyContent {
       font-size: 12px;
       color: #1e293b;
@@ -506,7 +493,6 @@
       font-family: inherit;
     }
 
-    /* 個人數據分析彈窗美化 */
     #userContent table {
       width: 100%;
       border-collapse: collapse;
@@ -537,7 +523,6 @@
     }
     .footer .title { font-size: 14px; font-weight: 800; color: #334155; font-family: inherit; }
 
-    /* 📱 手機版 RWD：4格統計改為 2×2 網格 */
     @media (max-width: 768px) {
       .stats-grid-4 {
         grid-template-columns: repeat(2, 1fr) !important;
@@ -590,7 +575,6 @@
     }
     document.addEventListener('DOMContentLoaded', loadHeader);
 
-    // 動態計算並更新真實進度條比例的即時監聽腳本
     function updateRealProgressBars() {
       const judgeVal = parseInt(document.getElementById('stat-judge')?.textContent) || 0;
       const recordVal = parseInt(document.getElementById('stat-record')?.textContent) || 0;
@@ -616,7 +600,6 @@
       updateRealProgressBars();
     });
 
-    // 🏆 強固版本週聯盟班表格式化引擎
     function beautifyWeeklySchedule() {
       const container = document.getElementById('weeklyContent');
       if (!container) return;
@@ -647,26 +630,21 @@
       };
       
       lines.forEach(line => {
-        // 日期列
         if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(line)) {
           if (currentVenue) pushVenue();
           outputHtml += `<div class="sch-date-header">📅 ${line}</div>`;
         } 
-        // 球場場地列
         else if (line.includes('場') || line.includes('大學') || line.includes('綜合') || line.includes('球場') || line.includes('📍')) {
           if (currentVenue) pushVenue();
           currentVenue = { venueName: line.replace('📍', '').trim(), matches: [] };
         } 
-        // 比賽時間與場代 (如 11:20 A051)
         else if (/^\d{2}:\d{2}/.test(line) && line.length < 25 && !line.includes('：')) {
           if (currentMatch) pushMatch();
           currentMatch = { timeCode: line, teams: '', roles: {} };
         } 
-        // 對戰組合 (含 VS 前後自動補空格)
         else if ((line.includes('VS') || line.includes('ＶＳ') || line.includes('vs')) && currentMatch && !currentMatch.teams) {
           currentMatch.teams = line.replace(/\s*(VS|ＶＳ|vs)\s*/g, ' VS ');
         } 
-        // 執法名單職務
         else if (line.includes('：') || line.includes(':')) {
           if (!currentMatch) {
             currentMatch = { timeCode: '賽事', teams: '', roles: {} };
@@ -742,7 +720,6 @@
       `;
     }
 
-    // 📅 「我的班表」格式化引擎：移除「本週」與「📅」圖示、球場後無｜、位置移至下一列並放大、對戰VS前後空格、底下置中
     function beautifyMySchedule() {
       const container = document.getElementById('my-schedule-list');
       if (!container) return;
@@ -764,11 +741,9 @@
           line1 = '';
         }
 
-        // 偵測是否為「本週」，若是則套用專屬底色，並移除「本週」與所有「📅」圖示
         let isThisWeek = line1.includes('本週');
         let cleanLine1 = line1.replace(/本週/g, '').replace(/[📅📆]/g, '').trim();
 
-        // 支援半形 | 或全形 ｜ 分隔
         let parts = cleanLine1.split(/[|｜]/).map(p => p.trim()).filter(Boolean);
         let datePart = parts[0] || '';
         let timePart = parts[1] || '';
@@ -777,7 +752,6 @@
         let role = '';
         let venue = venueRolePart;
         
-        // 優先比對完整職稱，確保「八里國中棒球場 主審」能精準分離為「八里國中棒球場」與「主審」
         const rolesList = ['見習紀錄員', '影像紀錄員', '一壘審', '二壘審', '三壘審', '主審', '紀錄員', '記錄員', '影像紀錄', '裁判'];
         for (let r of rolesList) {
           if (venueRolePart.includes(r)) {
@@ -787,10 +761,8 @@
           }
         }
 
-        // 對戰組合的 VS 前後自動加上空白（例如「颶風騎士VSTFT」->「颶風騎士 VS TFT」）
         let cleanLine2 = line2.replace(/\s*(VS|ＶＳ|vs)\s*/g, ' VS ');
 
-        // 上半列：日期 | 時間 | 球場 (球場後面無｜)
         let topSegments = [];
         if (datePart) topSegments.push(`<span>${datePart}</span>`);
         if (timePart) topSegments.push(`<span>${timePart}</span>`);
@@ -815,9 +787,7 @@
       }
     }
 
-    // 🛡️ 即時攔截 MutationObserver：當非同步資料灌入容器時自動觸發格式化
     window.addEventListener('DOMContentLoaded', () => {
-      // 1. 監聽我的班表
       const schContainer = document.getElementById('my-schedule-list');
       if (schContainer) {
         const observer = new MutationObserver(() => {
@@ -832,7 +802,6 @@
         observer.observe(schContainer, { childList: true, subtree: true, characterData: true });
       }
 
-      // 2. 監聽本週聯盟班表
       const weeklyContainer = document.getElementById('weeklyContent');
       if (weeklyContainer) {
         const weeklyObserver = new MutationObserver(() => {
@@ -893,29 +862,18 @@
   <div class="main">
     <div id="content"></div>
     
-    <!-- 1️⃣ 歡迎與核心儀表板 (完美兩行左右對齊，無中間橫槓) -->
+    <!-- 1️⃣ 歡迎與核心儀表板 -->
     <div class="panel welcome-box">
-      <!-- 第一行：左側「出勤管理系統」 | 右側「王韶文 您好，歡迎使用出勤管理系統」 -->
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 8px; margin-bottom: 4px;">
-        <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; white-space: nowrap;">
-          <span style="font-size: 18px; flex-shrink: 0;">⚾</span>
-          <div style="font-size: 16px; font-weight: 900; color: #1e3a8a; flex-shrink: 0;">出勤管理系統</div>
-        </div>
-        <div style="font-size: 13px; font-weight: 800; color: #0f172a; white-space: nowrap; flex-shrink: 0;">
-          王韶文 您好，歡迎使用出勤管理系統
-        </div>
-      </div>
+      <!-- 上下垂直排列（兩行都靠左） -->
+      <div style="display: flex; flex-direction: column; gap: 6px; text-align: left; margin-bottom: 12px;">
+        
+        <!-- 第一行：裁判員／紀錄員（靠左） -->
+        <div id="welcome-role" style="font-size: 13px; color: #2563eb; font-weight: 800; text-align: left;">裁判員／紀錄員</div>
 
-      <!-- 第二行：左側「裁判員／紀錄員」 | 右側「感謝您協助維護聯盟賽事品質」 -->
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 8px; margin-bottom: 12px; white-space: nowrap; overflow: hidden;">
-        <div style="font-size: 12px; color: #2563eb; font-weight: 800; flex-shrink: 0;" id="welcome-role"></div>
-        <div style="font-size: 12px; font-weight: 700; color: #475569; flex-shrink: 0;">
-          感謝您協助維護聯盟賽事品質
-        </div>
-      </div>
+        <!-- 第二行：王韶文 您好，感謝您協助維護聯盟賽事公平與品質（靠左） -->
+        <div id="welcome-name-2" style="font-size: 12px; font-weight: 700; color: #475569; text-align: left;">載入中...</div>
 
-      <!-- 隱藏原生容器供 index.js 寫入名字，確保 JS 邏輯不報錯 -->
-      <span id="welcome-name" style="display:none;"></span>
+      </div>
 
       <!-- 4合1 統一高效數據資訊矩陣 -->
       <div class="stats-grid-4">
@@ -948,10 +906,10 @@
       <!-- 隱藏原生容器供 index.js 掛載，防止 JS 報錯 -->
       <div id="home-user-analysis"></div>
 
-      <!-- 提示訊息（強制單一橫向一列，不換行） -->
+      <!-- 提示訊息 -->
       <div id="welcome-alert">🔔 載入本週執法訊息中...</div>
 
-      <!-- 三顆按鈕放同一列：固定大小不自動放大 -->
+      <!-- 三顆按鈕放同一列 -->
       <div class="welcome-actions-row">
         <button id="open-user-analysis-modal" onclick="openUserModal()" class="pill pill-blue-action">📊 個人數據分析</button>
         <button id="open-schedule" class="pill pill-orange">📅 我的班表</button>
@@ -1597,13 +1555,12 @@
   </div>
 
     <!-- ===============================
-    📢 系統公告管理後台 (CMS Overlay) - 僅限管理員
+    📢 系統公告管理後台 (CMS Overlay)
     =============================== -->
     <div id="cms-announcement-overlay" class="overlay">
       <div class="overlay-box system-guide-box">
         <h2>📢 系統公告管理 (CMS)</h2>
 
-        <!-- 新增 / 編輯表單 -->
         <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:14px; margin-bottom:16px;">
           <div style="font-weight:800; color:#1e3a8a; margin-bottom:10px; font-size:14px;" id="cms-form-title">➕ 新增公告</div>
           <input type="hidden" id="cms-id" value="" />
@@ -1640,7 +1597,6 @@
           <div style="margin-bottom:10px;">
             <label style="font-size:11px; font-weight:700; color:#475569; display:block; margin-bottom:4px;">公告內文（支援純文字或 HTML 標籤）*</label>
             
-          <!-- 🎨 格式化快捷工具列 -->
             <div style="display:flex; gap:6px; margin-bottom:6px; background:#f1f5f9; padding:6px; border-radius:6px; border:1px solid #cbd5e1; flex-wrap:wrap;">
               <button type="button" onclick="formatText('strong')" style="padding:4px 10px; font-weight:bold; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-size:12px;">粗體 (B)</button>
               <button type="button" onclick="formatText('em')" style="padding:4px 10px; font-style:italic; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; font-size:12px;">斜體 (I)</button>
@@ -1658,7 +1614,6 @@
           </div>
         </div>
 
-        <!-- 既有公告列表 -->
         <div style="font-weight:800; color:#1e293b; margin-bottom:8px; font-size:14px;">📋 公告列表（依優先權 ＞ 編號排序）</div>
         <div id="cms-admin-list" style="display:flex; flex-direction:column; gap:8px; max-height:320px; overflow-y:auto;">
           <div style="color:#64748b; font-size:13px; text-align:center; padding:12px;">載入中...</div>
