@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 /*********************************************************
- * ✅ 修正版：首頁載入聯盟開課資訊 (支援報名截止日判斷與日期清洗)
+ * ✅ 修正版：首頁載入聯盟開課資訊 (精簡為課程名稱、上課日、報名狀態)
  *********************************************************/
 function loadHomeCourses() {
   const container = document.getElementById('home-course-container');
@@ -82,11 +82,9 @@ function loadHomeCourses() {
       return `
         <div class="home-course-card" onclick="location.href='course.html'" style="cursor: pointer;">
           <div class="home-course-title">🎓 ${c.course_name || c.title || c.name || '聯盟培訓課程'}</div>
-          <div class="home-course-info">
-            <div>🕒 上課：${courseDate || '另行公佈'}</div>
-            <div style="color: #e11d48; font-weight: 700;">⏳ 截止：${signupEnd || '未設定'}</div>
-            <div>📍 地點：${c.location || '線上/指定場地'}</div>
-            <div style="margin-top: 4px; color: ${statusColor}; font-weight: 700;">狀態：${statusText}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 12px;">
+            <span style="color: #475569; font-weight: 700;">🕒 上課：${courseDate || '另行公佈'}</span>
+            <span style="font-weight: 800; color: ${statusColor};">狀態：${statusText}</span>
           </div>
         </div>
       `;
@@ -108,11 +106,18 @@ function renderWelcome(){
     record:'紀錄員'
   };
 
-  const nameEl = document.getElementById('welcome-name');
+  const nameEl1 = document.getElementById('welcome-name-1');
+  const nameEl2 = document.getElementById('welcome-name-2');
   const roleEl = document.getElementById('welcome-role');
 
-  if (nameEl){
-    nameEl.textContent = session.name + ' 您好，歡迎使用出勤管理系統';
+  const displayName = session.name || '使用者';
+
+  if (nameEl1){
+    nameEl1.textContent = `${displayName} 您好，歡迎使用出勤管理系統`;
+  }
+
+  if (nameEl2){
+    nameEl2.textContent = `${displayName} 您好，感謝您協助維護聯盟賽事公平與品質`;
   }
 
   if (roleEl){
@@ -120,7 +125,7 @@ function renderWelcome(){
       .split(',')
       .map(r => roleMap[r])
       .filter(Boolean)
-      .join('／');
+      .join('／') || '裁判員／紀錄員';
   }
 }
 
@@ -481,7 +486,7 @@ function openMySchedule(){
     monday.setDate(now.getDate() - (day - 1));
     monday.setHours(0,0,0,0);
     const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
+    sunday.setDate(sunday.getDate() + 6);
     sunday.setHours(23,59,59,999);
 
     list.innerHTML = myGames.map(g => {
@@ -538,7 +543,7 @@ function openWeeklySchedule(){
     monday.setDate(now.getDate() - (day - 1));
     monday.setHours(0,0,0,0);
     const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
+    sunday.setDate(sunday.getDate() + 6);
     sunday.setHours(23,59,59,999);
     
     const weekGames = games.filter(g => {
@@ -945,34 +950,25 @@ function checkAdminPermission() {
 /*********************************************************
  * ✅ 強化版：首頁載入最新公告（含防卡死與錯誤提示）
  *********************************************************/
-/*********************************************************
- * 🛠️ 除錯防護版：首頁載入最新公告
- *********************************************************/
 function loadHomeAnnouncements() {
   const container = document.getElementById('home-notice-list');
   const adminBtn = document.getElementById('open-cms-btn');
-
-  console.log("🔍 [Debug] 當前 Session 資料:", session);
 
   // 權限控制
   if (adminBtn) {
     if (checkAdminPermission()) {
       adminBtn.style.display = 'inline-block';
-      console.log("✅ [Debug] 已成功顯示「管理公告」按鈕");
     } else {
       adminBtn.style.display = 'none';
-      console.log("🔒 [Debug] 非管理員身分，隱藏管理按鈕");
     }
   }
 
   if (!container) return;
 
-  container.innerHTML = `<div style="color: #64748b; font-size: 13px; padding: 8px;">⏳ 公告資料截入中...</div>`;
+  container.innerHTML = `<div style="color: #64748b; font-size: 13px; padding: 8px;">⏳ 公告資料載入中...</div>`;
 
   try {
     callApi({ action: 'getAnnouncements' }, res => {
-      console.log("📥 [Debug] 後端回傳的公告 API 結果:", res);
-
       if (!res) {
         container.innerHTML = `<div style="color: #dc2626; font-size: 13px; padding: 8px;">⚠️ 錯誤：後端回傳空白 (null)</div>`;
         return;
@@ -990,7 +986,6 @@ function loadHomeAnnouncements() {
       }
 
       container.innerHTML = list.map(item => {
-          // ✅ 修正：只有當 priority 等於 99 時，才顯示紅色的「置頂」標籤
           const pinBadge = Number(item.priority) === 99
             ? `<span style="background:#fee2e2; color:#dc2626; font-size:11px; font-weight:800; padding:2px 7px; border-radius:4px;">置頂</span>`
             : '';
@@ -1015,13 +1010,11 @@ function loadHomeAnnouncements() {
       
     });
   } catch (err) {
-    console.error("❌ [Debug] 呼叫 callApi 發生例外錯誤:", err);
     container.innerHTML = `<div style="color: #dc2626; font-size: 13px; padding: 8px;">⚠️ 程式例外：${err.message}</div>`;
   }
 }
 
 function openAnnouncementAdmin() {
-  // 🔒 雙重防護：防止透過主控台或非正規方式強行開啟
   if (!checkAdminPermission()) {
     alert('權限不足：只有系統管理員（admin）才能管理系統公告！');
     return;
@@ -1145,8 +1138,8 @@ function submitAnnouncementForm() {
     }
 
     resetCmsForm();
-    loadAdminAnnouncementList(); // 重新整理後台管理清單
-    loadHomeAnnouncements();     // 同步更新首頁公告畫面
+    loadAdminAnnouncementList();
+    loadHomeAnnouncements();
   });
 }
 
@@ -1191,11 +1184,9 @@ function formatText(tag) {
     replacement = '<br>';
   }
 
-  // 將標籤包覆或插入至游標/選取位置
   textarea.value = text.substring(0, start) + replacement + text.substring(end);
   textarea.focus();
   
-  // 設定游標位置至插入內容的結尾
   const newCursorPos = start + replacement.length;
   textarea.setSelectionRange(newCursorPos, newCursorPos);
 }
