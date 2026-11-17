@@ -169,7 +169,7 @@
     .pill-orange { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
     .pill-blue-action { background: #eff6ff; color: #1e3a8a; border-color: #bfdbfe; }
 
-    /* ===== 📅 我的班表：單層卡片＋本週底色區分＋加大位置字體＋置中對戰 ===== */
+    /* ===== 📅 我的班表：單層卡片＋本週底色區分＋位置移至下一列並放大＋置中對戰 ===== */
     #my-schedule-list {
       font-size: 13px;
       color: #1e293b;
@@ -195,13 +195,21 @@
     }
     .my-sch-primary {
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 4px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+    .my-sch-row-top {
+      display: flex;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
       gap: 6px;
-      font-size: 14px;
-      font-weight: 800;
-      color: #1e3a8a;
     }
     .my-sch-divider {
       color: #94a3b8;
@@ -212,14 +220,14 @@
       font-weight: 900;
       color: #c2410c;
       letter-spacing: 0.5px;
-      line-height: 1.1;
+      line-height: 1.2;
     }
     .my-sch-secondary {
       font-size: 12px;
       font-weight: 700;
       color: #475569;
       text-align: center;
-      padding-top: 4px;
+      padding-top: 6px;
       border-top: 1px dashed #e2e8f0;
     }
 
@@ -728,7 +736,7 @@
       `;
     }
 
-    // 📅 「我的班表」格式化引擎：移除「本週」與「📅」圖示、場地與位置加｜且位置加大、對戰VS前後空格、底下置中
+    // 📅 「我的班表」格式化引擎：移除「本週」與「📅」圖示、球場後方無｜、位置移至下一列並放大、對戰VS前後空格、底下置中
     function beautifyMySchedule() {
       const container = document.getElementById('my-schedule-list');
       if (!container) return;
@@ -776,18 +784,20 @@
         // 對戰組合的 VS 前後自動加上空白（例如「颶風騎士VSTFT」->「颶風騎士 VS TFT」）
         let cleanLine2 = line2.replace(/\s*(VS|ＶＳ|vs)\s*/g, ' VS ');
 
-        // 組合第一行：日期 | 時間 | 場地 | 位置(加大，無📅圖示)
-        let primarySegments = [];
-        if (datePart) primarySegments.push(`<span>${datePart}</span>`);
-        if (timePart) primarySegments.push(`<span>${timePart}</span>`);
-        if (venue) primarySegments.push(`<span>${venue}</span>`);
-        if (role) primarySegments.push(`<span class="my-sch-role-highlight">${role}</span>`);
+        // 上半列：日期 | 時間 | 球場 (球場後面無｜)
+        let topSegments = [];
+        if (datePart) topSegments.push(`<span>${datePart}</span>`);
+        if (timePart) topSegments.push(`<span>${timePart}</span>`);
+        if (venue) topSegments.push(`<span>${venue}</span>`);
 
-        let primaryHtml = primarySegments.join('<span class="my-sch-divider">｜</span>');
+        let topHtml = topSegments.join('<span class="my-sch-divider">｜</span>');
 
         outputHtml += `
           <div class="my-sch-card ${isThisWeek ? 'is-this-week' : ''}">
-            <div class="my-sch-primary">${primaryHtml}</div>
+            <div class="my-sch-primary">
+              <div class="my-sch-row-top">${topHtml}</div>
+              ${role ? `<div class="my-sch-role-highlight">${role}</div>` : ''}
+            </div>
             ${cleanLine2 ? `<div class="my-sch-secondary">${cleanLine2}</div>` : ''}
           </div>
         `;
