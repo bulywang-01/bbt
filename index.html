@@ -912,7 +912,7 @@
 
       <!-- 三顆按鈕放同一列 -->
       <div class="welcome-actions-row">
-        <button id="open-user-analysis-modal" onclick="openUserModal()" class="pill pill-blue-action">📊 個人數據分析</button>
+        <button id="open-user-analysis-modal" onclick="openFullAnalysis(session.user_id)" class="pill pill-blue-action">📊 個人數據分析</button>
         <button id="open-schedule" class="pill pill-orange">📅 我的班表</button>
         <button id="open-weekly" class="pill pill-orange">📊 本週聯盟班表</button>
       </div>
@@ -957,11 +957,11 @@
         </button>
         <button id="open-rules" class="rule-card rule-card-judge">
           <div class="rule-card-title">🧑‍⚖️ 裁判守則</div>
-          <div class="rule-card-desc">執法規範與吹判指南</div>
+          <div class="rule-card-desc">執法規範與指南</div>
         </button>
         <button id="open-record-rules" class="rule-card rule-card-record">
           <div class="rule-card-title">📝 紀錄守則</div>
-          <div class="rule-card-desc">記分表填寫與規範說明</div>
+          <div class="rule-card-desc">填寫與規範說明</div>
         </button>
       </div>
       <div class="download-grid">
