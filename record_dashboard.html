@@ -30,9 +30,7 @@
 <div id="header-container"></div>
 
 <script>
-const session = getSession
-  ? getSession() 
-  : JSON.parse(localStorage.getItem('session_user')||'{}');
+const session = (typeof getSession === 'function') ? getSession() : JSON.parse(localStorage.getItem('session_user')||'{}');
  
 function loadHeader() {
   fetch('header.html')
@@ -40,14 +38,22 @@ function loadHeader() {
     .then(html => {
       document.getElementById('header-container').innerHTML = html;
 
+      // ✅ 確保 Header 載入後，立刻將真實姓名填入 #header-username
+      const currentSession = (typeof getSession === 'function' ? getSession() : null) || JSON.parse(localStorage.getItem('session_user') || '{}');
+      if (currentSession && currentSession.name) {
+        const nameEl = document.getElementById('header-username');
+        if (nameEl) {
+          nameEl.textContent = currentSession.name;
+        }
+      }
+
       // ✅ 只用 body class 控制身份
-      const session = (typeof getSession === 'function') ? getSession() : null;
       document.body.classList.remove(
         'role-admin', 'role-judge', 'role-record'
       );
 
-      if (session && session.role) {
-        const roles = session.role.split(',').map(r => r.trim());
+      if (currentSession && currentSession.role) {
+        const roles = currentSession.role.split(',').map(r => r.trim());
 
         if (roles.includes('admin')) {
           document.body.classList.add('role-admin');
@@ -61,13 +67,13 @@ function loadHeader() {
       }
     })
     .catch(err => console.error('Header 載入失敗', err));
-  }
+}
   
-  // 裁入報名頁面重要function
-  document.addEventListener('DOMContentLoaded', () => {
-    loadHeader();   // 只負責 header
-    loadGames();    // 或該頁真正的資料初始化
-  });
+// 載入報名頁面重要function
+document.addEventListener('DOMContentLoaded', () => {
+  loadHeader();   // 負責 header 與名字填入
+  loadGames();    // 該頁真正的資料初始化
+});
 </script>
 
   <div class="main">
