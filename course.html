@@ -374,6 +374,15 @@ function fetchCourses(baseUrl) {
       return str.split(' ')[0] || '';
     }
 
+    function formatShortDeadline(dateStr) {
+      if (!dateStr) return '';
+      const parts = String(dateStr).split('-');
+      if (parts.length === 3) {
+        return `${parts[1].padStart(2, '0')}/${parts[2].padStart(2, '0')}`;
+      }
+      return '';
+    }
+
     function renderCourses() {
       const container = document.getElementById('coursesContainer');
       const keyword = (document.getElementById('searchInput').value || '').toLowerCase();
@@ -452,12 +461,16 @@ function fetchCourses(baseUrl) {
       const cap = Number(c.capacity) || 30;
       const isFull = enrolled >= cap;
 
-      const startDate = safeFormatDate(c.date);
+      const startDate = safeFormatDate(c.date) || '未定';
+      const timeRange = String(c.time || '').trim() || '依公告';
       const rawEndDate = c.signup_end || c.signupEnd || c.end_date;
       const endDate = safeFormatDate(rawEndDate);
+      const shortDeadline = formatShortDeadline(endDate);
       
       const todayStr = new Date().toISOString().split('T')[0];
       const isExpired = endDate && todayStr > endDate;
+      const baseStatusText = isExpired ? '已截止報名' : '報名中';
+      const statusWithDeadline = shortDeadline ? `${baseStatusText}（${shortDeadline}截止）` : baseStatusText;
 
       const existingReg = myRegistrations.find(r => String(r.course_id) === String(c.course_id) && r.status !== 'cancelled');
 
@@ -500,12 +513,12 @@ function fetchCourses(baseUrl) {
               <div class="flex items-center gap-2">
                 <span>📅</span>
                 <span class="font-bold">上課日期：</span>
-                <span>${startDate || '未定'}</span>
+                <span>${startDate}</span>
               </div>
               <div class="flex items-center gap-2">
-                <span>⏳</span>
-                <span class="font-bold text-rose-600">報名截止：</span>
-                <span class="font-bold text-rose-600">${endDate || '未設定'}</span>
+                <span>⏰</span>
+                <span class="font-bold">上課時間：</span>
+                <span>${timeRange}</span>
               </div>
               <div class="flex items-center gap-2">
                 <span>📍</span>
@@ -525,7 +538,7 @@ function fetchCourses(baseUrl) {
               <div class="flex items-center gap-2 pt-1 border-t border-slate-200/60">
                 <span>📌</span>
                 <span class="font-bold">狀態：</span>
-                <span class="${isExpired ? 'text-rose-600 font-black' : 'text-emerald-600 font-bold'}">${isExpired ? '已截止報名' : '報名中'}</span>
+                <span class="${isExpired ? 'text-rose-600 font-black' : 'text-emerald-600 font-bold'}">${statusWithDeadline}</span>
               </div>
             </div>
           </div>
