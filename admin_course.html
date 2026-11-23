@@ -70,11 +70,17 @@ body{ margin:0; padding:0; background:#f8fafc; font-family:system-ui,-apple-syst
 #loadingMask{ position:fixed; inset:0; background:rgba(15,23,42,.25); display:flex; justify-content:center; align-items:center; z-index:20000; }
 #loadingMask.hidden{ display:none; }
 .loading-box{ background:#fff; padding:20px 28px; border-radius:16px; font-weight:700; box-shadow:0 8px 24px rgba(0,0,0,.15); }
-.action-btn{ font-size:14px; width:34px; height:34px; border:none; border-radius:10px; cursor:pointer; transition:.2s; display:inline-flex; align-items:center; justify-content:center; }
-.action-btn:hover{ transform:translateY(-1px); }
-.action-btn.edit{ background:#ffedd5; color:#c2410c; }
-.action-btn.delete{ background:#fee2e2; color:#991b1b; }
-.action-group{ display:flex; gap:6px; }
+.action-group{ display:grid; grid-template-columns:repeat(4,auto); gap:5px; width:fit-content; }
+.action-btn{ font-size:11px; line-height:1.2; font-weight:800; padding:6px 8px; border-radius:7px; cursor:pointer; transition:.15s; display:inline-flex; align-items:center; justify-content:center; white-space:nowrap; }
+.action-btn:hover{ filter:brightness(0.96); }
+.action-btn.pay{ background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; }
+.action-btn.att{ background:#fffbeb; color:#92400e; border:1px solid #fde68a; }
+.action-btn.cert{ background:#f5f3ff; color:#6d28d9; border:1px solid #ddd6fe; }
+.action-btn.fin{ background:#f0fdfa; color:#0f766e; border:1px solid #99f6e4; }
+.action-btn.assign{ background:#059669; color:#ffffff; border:1px solid #059669; }
+.action-btn.mail{ background:#4f46e5; color:#ffffff; border:1px solid #4f46e5; }
+.action-btn.edit{ background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
+.action-btn.delete{ background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
 button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; filter: grayscale(50%); }
 </style>
 </head>
@@ -154,15 +160,8 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 <div class="page-title">📚 課程與報名管理中心</div>
 <div class="page-desc">建立培訓課程、管理報名、審核繳費與退費、記錄出勤打卡、評分及結訓證書發放</div>
 </div>
-<div class="flex items-center gap-2 flex-wrap">
-<button id="tabBtnCourses" onclick="switchTab('courses')" class="tab-btn active">📅 課程場次管理</button>
-<button id="tabBtnEnrollments" onclick="switchTab('enrollments')" class="tab-btn">🛡️ 報名繳費資訊</button>
-<button id="tabBtnAttendance" onclick="switchTab('attendance')" class="tab-btn">⏰ 出勤與簽到</button>
-<button id="tabBtnCertificates" onclick="switchTab('certificates')" class="tab-btn">🎓 成績與證書</button>
-<button onclick="openFinanceReportModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer">
-<span>📊</span>
-<span>財務收／退費報表</span>
-</button>
+<div id="topBackCourseBar" class="flex items-center gap-2 flex-wrap hidden">
+<button id="tabBtnCourses" onclick="switchTab('courses')" class="tab-btn">📅 返回課程清單</button>
 </div>
 </div>
 <div id="tabContentCourses" class="space-y-6">
@@ -306,28 +305,10 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 </section>
 </div>
 <div id="tabContentAttendance" class="space-y-6 hidden">
-<section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-<div>
-<h3 class="font-black text-lg text-slate-900">🎯 請選擇欲進行出勤簽到的課程場次</h3>
-<p class="text-xs text-slate-500 mt-0.5">點選下方課程場次，即可載入該場次的報名學員名單並進行打卡簽到與簽退</p>
-</div>
-<div class="w-full sm:w-72">
-<select id="selectAttendanceCourseDropdown" onchange="onAttendanceCourseSelect(this.value)" class="w-full h-11 border border-slate-300 rounded-xl px-3 font-bold text-slate-800 bg-white shadow-sm">
-<option value="">-- 請選擇課程場次 --</option>
-</select>
-</div>
-</div>
-</section>
-<div id="attendanceActiveSection" class="space-y-6 hidden">
-<div class="flex items-center justify-between bg-blue-50 border border-blue-200 px-5 py-3.5 rounded-2xl">
-<div>
+<div id="attendanceActiveSection" class="space-y-6">
+<div class="bg-blue-50 border border-blue-200 px-5 py-3.5 rounded-2xl">
 <div class="text-xs font-bold text-blue-600">目前檢視中的課程場次</div>
 <div id="activeCourseTitleBanner" class="text-lg font-black text-slate-900 mt-0.5">-</div>
-</div>
-<button onclick="resetAttendanceSelection()" class="px-3 py-1.5 bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold transition shadow-sm">
-切換其他課程
-</button>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -374,7 +355,7 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 </tr>
 </thead>
 <tbody id="attendanceTableBody">
-<tr><td colspan="6" class="text-center py-12 text-slate-400 font-bold">請先選擇上方課程場次</td></tr>
+<tr><td colspan="6" class="text-center py-12 text-slate-400 font-bold">載入學員名單中...</td></tr>
 </tbody>
 </table>
 </div>
@@ -382,28 +363,10 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 </div>
 </div>
 <div id="tabContentCertificates" class="space-y-6 hidden">
-<section class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-<div>
-<h3 class="font-black text-lg text-slate-900">🎓 請選擇欲管理成績與證書的課程場次</h3>
-<p class="text-xs text-slate-500 mt-0.5">點選下方課程場次，即可載入該場次學員名單並進行測驗成績登錄與證書發放</p>
-</div>
-<div class="w-full sm:w-72">
-<select id="selectCertCourseDropdown" onchange="onCertCourseSelect(this.value)" class="w-full h-11 border border-slate-300 rounded-xl px-3 font-bold text-slate-800 bg-white shadow-sm">
-<option value="">-- 請選擇課程場次 --</option>
-</select>
-</div>
-</div>
-</section>
-<div id="certActiveSection" class="space-y-6 hidden">
-<div class="flex items-center justify-between bg-blue-50 border border-blue-200 px-5 py-3.5 rounded-2xl">
-<div>
+<div id="certActiveSection" class="space-y-6">
+<div class="bg-blue-50 border border-blue-200 px-5 py-3.5 rounded-2xl">
 <div class="text-xs font-bold text-blue-600">目前檢視中的課程場次</div>
 <div id="activeCertCourseTitleBanner" class="text-lg font-black text-slate-900 mt-0.5">-</div>
-</div>
-<button onclick="resetCertSelection()" class="px-3 py-1.5 bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold transition shadow-sm">
-切換其他課程
-</button>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -450,7 +413,7 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 </tr>
 </thead>
 <tbody id="certificateTableBody">
-<tr><td colspan="6" class="text-center py-12 text-slate-400 font-bold">請先選擇上方課程場次</td></tr>
+<tr><td colspan="6" class="text-center py-12 text-slate-400 font-bold">載入學員名單中...</td></tr>
 </tbody>
 </table>
 </div>
@@ -794,7 +757,7 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 <div class="bg-blue-50/80 p-3.5 rounded-2xl border border-blue-200 shadow-sm">
 <div class="text-xs font-bold text-blue-700">課程實收淨額</div>
 <div id="finNetIncome" class="text-xl font-black text-blue-700 mt-1">NT$ 0</div>
-<div class="text-[11px] text-blue-500 mt-0.5">已收 － 退費</div>
+<div id="finNetIncomeSub" class="text-[11px] text-blue-500 mt-0.5">已收 － 退費</div>
 </div>
 </div>
 <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
@@ -961,19 +924,49 @@ setTimeout(() => t.remove(), 400);
 function switchTab(tab) {
 const tabs = ['courses', 'enrollments', 'attendance', 'certificates'];
 tabs.forEach(t => {
-const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
 const con = document.getElementById('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
-if (t === tab) {
-if (btn) btn.className = 'tab-btn active';
-if (con) con.classList.remove('hidden');
-} else {
-if (btn) btn.className = 'tab-btn';
-if (con) con.classList.add('hidden');
+if (con) {
+if (t === tab) con.classList.remove('hidden');
+else con.classList.add('hidden');
 }
 });
+const topBackBar = document.getElementById('topBackCourseBar');
+if (topBackBar) {
+if (tab === 'courses') topBackBar.classList.add('hidden');
+else topBackBar.classList.remove('hidden');
+}
 if (tab === 'enrollments' || tab === 'attendance' || tab === 'certificates') {
 loadEnrollmentData(tab);
 }
+}
+function openCourseEnrollments(courseId) {
+switchTab('enrollments');
+const selectEl = document.getElementById('filterCourseSelect');
+if (selectEl) {
+const hasOption = Array.from(selectEl.options).some(opt => String(opt.value) === String(courseId));
+selectEl.value = hasOption ? String(courseId) : 'all';
+}
+renderEnrollmentTable();
+}
+function openCourseAttendance(courseId) {
+selectedAttendanceCourseId = String(courseId);
+switchTab('attendance');
+const courseObj = allCourses.find(c => String(c.course_id) === String(courseId));
+if (courseObj) {
+document.getElementById('activeCourseTitleBanner').textContent = `${courseObj.course_name} (${courseObj.date ? courseObj.date.split('T')[0] : '未定日期'})`;
+}
+updateAttendanceStatsForActiveCourse();
+renderAttendanceTable();
+}
+function openCourseCertificates(courseId) {
+selectedCertCourseId = String(courseId);
+switchTab('certificates');
+const courseObj = allCourses.find(c => String(c.course_id) === String(courseId));
+if (courseObj) {
+document.getElementById('activeCertCourseTitleBanner').textContent = `${courseObj.course_name} (${courseObj.date ? courseObj.date.split('T')[0] : '未定日期'})`;
+}
+updateCertificateStatsForActiveCourse();
+renderCertificateTable();
 }
 function loadAllData() {
 loadCourses();
@@ -991,7 +984,6 @@ if (res && (res.result === 'ok' || res.result === 'success')) {
 allCourses = res.data || [];
 updateKpi();
 renderCourseTable();
-populateAllCourseDropdowns();
 } else {
 showToast((res ? res.message : '載入課程失敗') + '，請重整頁面', 'error');
 }
@@ -1017,61 +1009,6 @@ document.getElementById('kpiOpenCourses').textContent = open;
 document.getElementById('kpiJudgeCourses').textContent = judge;
 document.getElementById('kpiRecordCourses').textContent = record;
 document.getElementById('kpiTotalEnrollments').textContent = enrollments;
-}
-function populateAllCourseDropdowns() {
-let html = `<option value="">-- 請選擇課程場次 (${allCourses.length}個場次) --</option>`;
-allCourses.forEach(c => {
-const dateStr = c.date ? c.date.split('T')[0] : '未定日期';
-html += `<option value="${c.course_id}">${c.course_name} [${dateStr}]</option>`;
-});
-const attDropdown = document.getElementById('selectAttendanceCourseDropdown');
-if (attDropdown) {
-attDropdown.innerHTML = html;
-if (selectedAttendanceCourseId) attDropdown.value = selectedAttendanceCourseId;
-}
-const certDropdown = document.getElementById('selectCertCourseDropdown');
-if (certDropdown) {
-certDropdown.innerHTML = html;
-if (selectedCertCourseId) certDropdown.value = selectedCertCourseId;
-}
-}
-function onAttendanceCourseSelect(courseId) {
-selectedAttendanceCourseId = courseId;
-const activeSec = document.getElementById('attendanceActiveSection');
-if (!courseId) {
-activeSec.classList.add('hidden');
-return;
-}
-activeSec.classList.remove('hidden');
-const courseObj = allCourses.find(c => String(c.course_id) === String(courseId));
-if (courseObj) {
-document.getElementById('activeCourseTitleBanner').textContent = `${courseObj.course_name} (${courseObj.date ? courseObj.date.split('T')[0] : '未定日期'})`;
-}
-loadEnrollmentData('attendance');
-}
-function resetAttendanceSelection() {
-selectedAttendanceCourseId = '';
-document.getElementById('selectAttendanceCourseDropdown').value = '';
-document.getElementById('attendanceActiveSection').classList.add('hidden');
-}
-function onCertCourseSelect(courseId) {
-selectedCertCourseId = courseId;
-const activeSec = document.getElementById('certActiveSection');
-if (!courseId) {
-activeSec.classList.add('hidden');
-return;
-}
-activeSec.classList.remove('hidden');
-const courseObj = allCourses.find(c => String(c.course_id) === String(courseId));
-if (courseObj) {
-document.getElementById('activeCertCourseTitleBanner').textContent = `${courseObj.course_name} (${courseObj.date ? courseObj.date.split('T')[0] : '未定日期'})`;
-}
-loadEnrollmentData('certificates');
-}
-function resetCertSelection() {
-selectedCertCourseId = '';
-document.getElementById('selectCertCourseDropdown').value = '';
-document.getElementById('certActiveSection').classList.add('hidden');
 }
 function renderCourseTable() {
 const tbody = document.getElementById('courseTableBody');
@@ -1125,6 +1062,7 @@ const statusText = isExpired ? '已截止' : (c.course_status === 'closed' ? '�
 let statusClass = 'bg-emerald-100 text-emerald-800';
 if (isExpired || c.course_status === 'closed') statusClass = 'bg-rose-100 text-rose-800';
 else if (c.course_status === 'finished') statusClass = 'bg-slate-100 text-slate-600';
+const safeName = String(c.course_name || '').replace(/'/g, "\\'");
 return `
 <tr>
 <td class="font-bold text-slate-600 whitespace-nowrap">#${c.course_id || '-'}</td>
@@ -1148,18 +1086,16 @@ ${hasValidCert ? `<span class="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 
 <div class="text-slate-500 mt-0.5">👥 已報名 ${c.current_enrollment || 0} / 正取 ${c.capacity || 30}</div>
 </td>
 <td class="whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-xs font-extrabold ${statusClass}">${statusText}</span></td>
-<td class="action-col whitespace-nowrap">
-<div class="action-group flex items-center gap-1.5">
-<button onclick="openAssignStudentsModal('${c.course_id}')" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-sm transition flex items-center gap-1 cursor-pointer" title="指定上課學員（含系統帳號與非系統外部學員）">
-<span>👤</span>
-<span>指定學員</span>
-</button>
-<button onclick="openEmailReminderModal('${c.course_id}')" class="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold shadow-sm transition flex items-center gap-1 cursor-pointer" title="發送行前通知">
-<span>✉️</span>
-<span>通知</span>
-</button>
-<button class="action-btn edit" onclick="openCourseModal('edit', '${c.course_id}')" title="編輯課程">✏️</button>
-<button class="action-btn delete" onclick="deleteCourse('${c.course_id}', '${c.course_name}')" title="刪除課程">🗑</button>
+<td class="action-col">
+<div class="action-group">
+<button type="button" onclick="openCourseEnrollments('${c.course_id}')" class="action-btn pay">繳費資訊</button>
+<button type="button" onclick="openCourseAttendance('${c.course_id}')" class="action-btn att">出勤簽到</button>
+<button type="button" onclick="openCourseCertificates('${c.course_id}')" class="action-btn cert">成績證書</button>
+<button type="button" onclick="openFinanceReportModal('${c.course_id}')" class="action-btn fin">財務報表</button>
+<button type="button" onclick="openAssignStudentsModal('${c.course_id}')" class="action-btn assign">指定學員</button>
+<button type="button" onclick="openEmailReminderModal('${c.course_id}')" class="action-btn mail">課程通知</button>
+<button type="button" class="action-btn edit" onclick="openCourseModal('edit', '${c.course_id}')">修改課程</button>
+<button type="button" class="action-btn delete" onclick="deleteCourse('${c.course_id}', '${safeName}')">刪除課程</button>
 </div>
 </td>
 </tr>
@@ -1179,7 +1115,13 @@ payment_status: String(item.payment_status || 'unpaid').trim().toLowerCase(),
 admin_note: item.admin_note !== undefined ? item.admin_note : (item.adminNote !== undefined ? item.adminNote : (item.note !== undefined ? item.note : ''))
 }));
 updateEnrollmentStats();
+const prevCourseFilter = document.getElementById('filterCourseSelect')?.value || 'all';
 populateAllFilters(allEnrollments);
+const fSelect = document.getElementById('filterCourseSelect');
+if (fSelect && prevCourseFilter !== 'all') {
+const exists = Array.from(fSelect.options).some(opt => String(opt.value) === String(prevCourseFilter));
+if (exists) fSelect.value = prevCourseFilter;
+}
 if (activeTab === 'enrollments') renderEnrollmentTable();
 else if (activeTab === 'attendance') {
 updateAttendanceStatsForActiveCourse();
@@ -1240,14 +1182,18 @@ document.getElementById('statCertVerifiedCount').textContent = verified;
 document.getElementById('statCertPendingCount').textContent = pending;
 }
 function populateAllFilters(logs) {
-const set = new Set();
+const map = new Map();
+allCourses.forEach(c => {
+if (c.course_id) map.set(String(c.course_id), c.course_name || `課程 #${c.course_id}`);
+});
 logs.forEach(l => {
-if (l.course_name) set.add(JSON.stringify({ id: l.course_id, name: l.course_name }));
+if (l.course_id && l.course_name && !map.has(String(l.course_id))) {
+map.set(String(l.course_id), l.course_name);
+}
 });
 let html = `<option value="all">所有課程 (${logs.length}筆)</option>`;
-set.forEach(item => {
-const c = JSON.parse(item);
-html += `<option value="${c.id}">${c.name}</option>`;
+map.forEach((name, id) => {
+html += `<option value="${id}">${name}</option>`;
 });
 const fSelect = document.getElementById('filterCourseSelect');
 if (fSelect) fSelect.innerHTML = html;
@@ -1308,7 +1254,7 @@ actionHtml = `
 actionHtml = `
 <div class="flex items-center justify-end gap-1.5 flex-wrap">
 <span class="text-xs font-bold text-rose-600">已退 NT$${item.refund_amount || defaultFee}</span>
-<button onclick="changePaymentStatus('${item.log_id}', 'unpaid')" class="px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 text-[11px] font-bold transition cursor-pointer">
+<button onclick="changePaymentStatus('${item.log_id}', 'unpaid')" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 text-[11px] font-bold transition cursor-pointer">
 重設未繳
 </button>
 </div>
@@ -1463,11 +1409,13 @@ showToast('網路連線異常，請重試', 'error');
 };
 document.body.appendChild(script);
 }
-function openFinanceReportModal() {
+function openFinanceReportModal(courseId = 'all') {
 const courseSelect = document.getElementById('financeCourseFilter');
 if (courseSelect) {
 courseSelect.innerHTML = `<option value="all">全部課程總覽（共 ${allCourses.length} 門）</option>` +
 allCourses.map(c => `<option value="${c.course_id}">${c.course_name} (${c.date ? c.date.split('T')[0] : '未定'})</option>`).join('');
+const hasCourse = courseId && courseId !== 'all' && Array.from(courseSelect.options).some(opt => String(opt.value) === String(courseId));
+courseSelect.value = hasCourse ? String(courseId) : 'all';
 }
 const statusFilter = document.getElementById('financeStatusFilter');
 if (statusFilter) statusFilter.value = 'all';
@@ -1720,7 +1668,7 @@ document.body.appendChild(script);
 function renderAttendanceTable() {
 const tbody = document.getElementById('attendanceTableBody');
 if (!selectedAttendanceCourseId) {
-tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400 font-bold">請先選擇上方課程場次</td></tr>`;
+tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400 font-bold">請從課程清單選擇課程場次</td></tr>`;
 return;
 }
 const keyword = (document.getElementById('txtAttSearch').value || '').toLowerCase();
@@ -1845,7 +1793,7 @@ document.body.appendChild(script);
 function renderCertificateTable() {
 const tbody = document.getElementById('certificateTableBody');
 if (!selectedCertCourseId) {
-tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400 font-bold">請先選擇上方課程場次</td></tr>`;
+tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400 font-bold">請從課程清單選擇課程場次</td></tr>`;
 return;
 }
 const keyword = (document.getElementById('txtCertSearch').value || '').toLowerCase();
@@ -1948,7 +1896,7 @@ document.body.appendChild(script);
 }
 function openCourseModal(mode, courseId = '') {
 document.getElementById('courseModal').classList.remove('hidden');
-document.getElementById('courseModalTitle').textContent = mode === 'create' ? '新增課程' : '編輯課程';
+document.getElementById('courseModalTitle').textContent = mode === 'create' ? '新增課程' : '修改課程';
 if (mode === 'create') {
 document.getElementById('course-form').reset();
 document.getElementById('course_id').value = '';
@@ -2227,7 +2175,7 @@ return;
 }
 
 container.innerHTML = list.slice(0, 60).map(u => {
-const uid = String(u.user_id || '').trim();
+const uid = String(u.user_id).trim();
 const name = String(u.name || u.username || uid).trim();
 const phone = String(u.phone || '').trim();
 const email = String(u.email || '').trim();
