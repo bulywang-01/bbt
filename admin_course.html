@@ -228,6 +228,10 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 </section>
 </div>
 <div id="tabContentEnrollments" class="space-y-6 hidden">
+<div class="bg-blue-50 border border-blue-200 px-5 py-3.5 rounded-2xl">
+<div class="text-xs font-bold text-blue-600">目前檢視中的課程場次（繳費資訊）</div>
+<div id="activeEnrollCourseTitleBanner" class="text-lg font-black text-slate-900 mt-0.5">-</div>
+</div>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
 <div>
@@ -253,9 +257,7 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 </div>
 <section class="filter-card">
 <div class="flex flex-wrap items-center gap-3 w-full">
-<select id="filterCourseSelect" onchange="renderEnrollmentTable()" class="px-3 py-2 text-sm border border-slate-300 rounded-xl bg-white font-bold text-slate-700">
-<option value="all">所有課程</option>
-</select>
+<select id="filterCourseSelect" onchange="onEnrollmentCourseSelectChange()" class="px-3 py-2 text-sm border border-slate-300 rounded-xl bg-white font-bold text-slate-700"></select>
 <select id="filterPaymentStatus" onchange="renderEnrollmentTable()" class="px-3 py-2 text-sm border border-slate-300 rounded-xl bg-white font-bold text-slate-700">
 <option value="all">所有帳務狀態</option>
 <option value="unpaid">待繳費</option>
@@ -287,7 +289,6 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 <input type="checkbox" id="selectAllEnrollments" onchange="toggleAllEnrollments(this)" class="w-4 h-4 accent-blue-600 cursor-pointer">
 </th>
 <th># 紀錄編號 / 時間</th>
-<th>課程名稱</th>
 <th>學員姓名 / 電話</th>
 <th>匯款後五碼</th>
 <th>餐飲需求</th>
@@ -298,7 +299,7 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 </tr>
 </thead>
 <tbody id="enrollmentTableBody">
-<tr><td colspan="10" class="text-center py-12 text-slate-400 font-bold">載入報名資料中...</td></tr>
+<tr><td colspan="9" class="text-center py-12 text-slate-400 font-bold">載入報名資料中...</td></tr>
 </tbody>
 </table>
 </div>
@@ -873,6 +874,7 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 <script>
 let allCourses = [];
 let allEnrollments = [];
+let selectedEnrollmentCourseId = '';
 let selectedAttendanceCourseId = '';
 let selectedCertCourseId = '';
 let activeMailCourse = null;
@@ -940,13 +942,65 @@ loadEnrollmentData(tab);
 }
 }
 function openCourseEnrollments(courseId) {
+selectedEnrollmentCourseId = String(courseId || '');
 switchTab('enrollments');
-const selectEl = document.getElementById('filterCourseSelect');
-if (selectEl) {
-const hasOption = Array.from(selectEl.options).some(opt => String(opt.value) === String(courseId));
-selectEl.value = hasOption ? String(courseId) : 'all';
-}
+syncEnrollmentCourseFilter();
+updateEnrollmentStats();
 renderEnrollmentTable();
+}
+function onEnrollmentCourseSelectChange() {
+const selectEl = document.getElementById('filterCourseSelect');
+if (selectEl && selectEl.value) {
+selectedEnrollmentCourseId = String(selectEl.value);
+}
+updateEnrollmentStats();
+renderEnrollmentTable();
+}
+function syncEnrollmentCourseFilter() {
+const map = new Map();
+allCourses.forEach(c => {
+if (c.course_id !== undefined && c.course_id !== null && String(c.course_id).trim() !== '') {
+map.set(String(c.course_id), c.course_name || `課程 #${c.course_id}`);
+}
+});
+allEnrollments.forEach(l => {
+if (l.course_id !== undefined && l.course_id !== null && String(l.course_id).trim() !== '' && !map.has(String(l.course_id))) {
+map.set(String(l.course_id), l.course_name || `課程 #${l.course_id}`);
+}
+});
+if (!selectedEnrollmentCourseId && map.size > 0) {
+selectedEnrollmentCourseId = String(map.keys().next().value);
+}
+const fSelect = document.getElementById('filterCourseSelect');
+if (fSelect) {
+let html = '';
+map.forEach((name, id) => {
+html += `<option value="${id}">${name}</option>`;
+});
+if (!html) {
+html = `<option value="">尚無課程</option>`;
+}
+fSelect.innerHTML = html;
+if (selectedEnrollmentCourseId && map.has(String(selectedEnrollmentCourseId))) {
+fSelect.value = String(selectedEnrollmentCourseId);
+} else if (fSelect.options.length > 0) {
+selectedEnrollmentCourseId = String(fSelect.options[0].value);
+fSelect.value = selectedEnrollmentCourseId;
+}
+}
+const courseObj = allCourses.find(c => String(c.course_id) === String(selectedEnrollmentCourseId));
+const bannerEl = document.getElementById('activeEnrollCourseTitleBanner');
+if (bannerEl) {
+if (courseObj) {
+const d = courseObj.date ? String(courseObj.date).split('T')[0] : '未定日期';
+bannerEl.textContent = `${courseObj.course_name} (${d})`;
+} else if (selectedEnrollmentCourseId) {
+const fallbackLog = allEnrollments.find(e => String(e.course_id) === String(selectedEnrollmentCourseId));
+bannerEl.textContent = (fallbackLog && fallbackLog.course_name) ? fallbackLog.course_name : `課程 #${selectedEnrollmentCourseId}`;
+} else {
+bannerEl.textContent = '-';
+}
+}
 }
 function openCourseAttendance(courseId) {
 selectedAttendanceCourseId = String(courseId);
@@ -984,6 +1038,9 @@ if (res && (res.result === 'ok' || res.result === 'success')) {
 allCourses = res.data || [];
 updateKpi();
 renderCourseTable();
+syncEnrollmentCourseFilter();
+updateEnrollmentStats();
+renderEnrollmentTable();
 } else {
 showToast((res ? res.message : '載入課程失敗') + '，請重整頁面', 'error');
 }
@@ -1109,19 +1166,17 @@ window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
 if (res && (res.result === 'ok' || res.result === 'success')) {
-allEnrollments = (res.data || []).map(item => ({
+allEnrollments = (res.data || []).map(item => {
+const rawNote = [item.remark, item.admin_note, item.adminNote, item.note]
+.find(v => v !== undefined && v !== null && String(v).trim() !== '');
+return {
 ...item,
 payment_status: String(item.payment_status || 'unpaid').trim().toLowerCase(),
-admin_note: item.admin_note !== undefined ? item.admin_note : (item.adminNote !== undefined ? item.adminNote : (item.note !== undefined ? item.note : ''))
-}));
+admin_note: rawNote !== undefined ? String(rawNote) : ''
+};
+});
+syncEnrollmentCourseFilter();
 updateEnrollmentStats();
-const prevCourseFilter = document.getElementById('filterCourseSelect')?.value || 'all';
-populateAllFilters(allEnrollments);
-const fSelect = document.getElementById('filterCourseSelect');
-if (fSelect && prevCourseFilter !== 'all') {
-const exists = Array.from(fSelect.options).some(opt => String(opt.value) === String(prevCourseFilter));
-if (exists) fSelect.value = prevCourseFilter;
-}
 if (activeTab === 'enrollments') renderEnrollmentTable();
 else if (activeTab === 'attendance') {
 updateAttendanceStatsForActiveCourse();
@@ -1145,7 +1200,9 @@ showToast('網路連線異常，請重整頁面', 'error');
 document.body.appendChild(script);
 }
 function updateEnrollmentStats() {
-const activeList = allEnrollments.filter(i => i.status !== 'cancelled');
+const activeList = allEnrollments.filter(i =>
+String(i.course_id) === String(selectedEnrollmentCourseId) && i.status !== 'cancelled'
+);
 const total = activeList.length;
 const paid = activeList.filter(i => i.payment_status === 'paid').length;
 document.getElementById('statTotalEnroll').textContent = total;
@@ -1181,39 +1238,26 @@ document.getElementById('statScoredCount').textContent = scored;
 document.getElementById('statCertVerifiedCount').textContent = verified;
 document.getElementById('statCertPendingCount').textContent = pending;
 }
-function populateAllFilters(logs) {
-const map = new Map();
-allCourses.forEach(c => {
-if (c.course_id) map.set(String(c.course_id), c.course_name || `課程 #${c.course_id}`);
-});
-logs.forEach(l => {
-if (l.course_id && l.course_name && !map.has(String(l.course_id))) {
-map.set(String(l.course_id), l.course_name);
-}
-});
-let html = `<option value="all">所有課程 (${logs.length}筆)</option>`;
-map.forEach((name, id) => {
-html += `<option value="${id}">${name}</option>`;
-});
-const fSelect = document.getElementById('filterCourseSelect');
-if (fSelect) fSelect.innerHTML = html;
-}
 function renderEnrollmentTable() {
 const tbody = document.getElementById('enrollmentTableBody');
-const cFilter = document.getElementById('filterCourseSelect').value;
+const cFilter = document.getElementById('filterCourseSelect')?.value || selectedEnrollmentCourseId;
 const pFilter = document.getElementById('filterPaymentStatus').value;
 const keyword = (document.getElementById('txtEnrollSearch').value || '').toLowerCase();
 const selectAllEl = document.getElementById('selectAllEnrollments');
 if (selectAllEl) selectAllEl.checked = false;
+if (!cFilter) {
+tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-slate-400 font-bold">請先選擇課程場次</td></tr>`;
+return;
+}
 const filtered = allEnrollments.filter(item => {
-const matchC = cFilter === 'all' || String(item.course_id) === String(cFilter);
+const matchC = String(item.course_id) === String(cFilter);
 const matchP = pFilter === 'all' || String(item.payment_status) === String(pFilter);
-const text = [item.name, item.external_name, item.member_type, item.phone, item.payment_account, item.course_name, item.admin_note].join(' ').toLowerCase();
+const text = [item.name, item.external_name, item.member_type, item.phone, item.payment_account, item.admin_note].join(' ').toLowerCase();
 const matchKw = !keyword || text.includes(keyword);
 return matchC && matchP && matchKw;
 });
 if (!filtered.length) {
-tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-slate-400 font-bold">沒有符合條件的報名資料</td></tr>`;
+tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-slate-400 font-bold">此課程目前沒有符合條件的報名資料</td></tr>`;
 return;
 }
 tbody.innerHTML = filtered.map(item => {
@@ -1275,7 +1319,6 @@ return `
 <div class="font-extrabold text-slate-900">#${item.log_id || '-'}</div>
 <div class="text-slate-400 mt-0.5">${item.created_at || '-'}</div>
 </td>
-<td class="p-4 font-bold text-slate-900">${item.course_name || '-'}</td>
 <td class="p-4">
 <div class="flex items-center gap-1.5 flex-wrap">
 <span class="font-extrabold text-slate-900">${item.name || '未填'}</span>
@@ -2083,11 +2126,11 @@ script.src = `${baseUrl}?${params.toString()}`;
 document.body.appendChild(script);
 }
 function exportEnrollmentsCSV() {
-const cFilter = document.getElementById('filterCourseSelect').value;
+const cFilter = document.getElementById('filterCourseSelect')?.value || selectedEnrollmentCourseId;
 const pFilter = document.getElementById('filterPaymentStatus').value;
 const keyword = (document.getElementById('txtEnrollSearch').value || '').toLowerCase();
 const filtered = allEnrollments.filter(item => {
-const matchC = cFilter === 'all' || String(item.course_id) === String(cFilter);
+const matchC = String(item.course_id) === String(cFilter);
 const matchP = pFilter === 'all' || String(item.payment_status) === String(pFilter);
 const text = [item.name, item.phone, item.payment_account, item.course_name, item.admin_note].join(' ').toLowerCase();
 const matchKw = !keyword || text.includes(keyword);
