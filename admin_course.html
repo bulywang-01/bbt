@@ -37,18 +37,48 @@ body{ margin:0; padding:0; background:#f8fafc; font-family:system-ui,-apple-syst
 .btn-primary:hover{ background:#1d4ed8; }
 .btn-outline{ border:1px solid #cbd5e1; background:#fff; color:#334155; border-radius:12px; padding:9px 16px; font-weight:700; font-size:14px; cursor:pointer; transition:.2s; white-space:nowrap; }
 .btn-outline:hover{ background:#f8fafc; border-color:#94a3b8; }
-.table-panel{ background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 4px 14px rgba(15,23,42,.05); }
-.table-header{ display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:linear-gradient(90deg,#0f172a,#1e3a8a); color:#fff; gap:12px; }
-.table-title{ font-size:17px; font-weight:800; }
+.table-panel{ background:#fff; border:1px solid #e2e8f0; border-radius:18px; overflow:visible; box-shadow:0 4px 14px rgba(15,23,42,.04); }
+.table-header{ display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:#0f172a; border-bottom:1px solid #1e293b; border-radius:18px 18px 0 0; color:#fff; gap:12px; flex-wrap:wrap; }
+.table-title{ font-size:16px; font-weight:800; letter-spacing:0.01em; display:flex; align-items:center; gap:8px; }
 .table-wrapper{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
 .user-table{ width:100%; min-width:850px; border-collapse:collapse; }
 .user-table th{ background:#f8fafc; padding:12px 16px; text-align:left; font-size:13px; color:#475569; font-weight:700; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
 .user-table td{ padding:14px 16px; vertical-align:middle; border-bottom:1px solid #e2e8f0; font-size:14px; }
 .user-table tbody tr:hover{ background:#f8fafc; }
-.role-badge{ display:inline-flex; align-items:center; height:26px; padding:0 10px; border-radius:999px; font-size:12px; font-weight:700; white-space:nowrap; }
-.badge-judge{ background:#dbeafe; color:#1d4ed8; }
-.badge-record{ background:#ede9fe; color:#6d28d9; }
-.badge-general{ background:#f1f5f9; color:#475569; }
+
+/* 簡潔操作圖示對照列（靠右對齊快捷操作） */
+.icon-legend-strip{ display:flex; align-items:center; justify-content:flex-end; gap:6px; flex-wrap:wrap; padding:8px 16px; background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:12px; color:#64748b; }
+.icon-legend-tag{ display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:6px; background:#fff; border:1px solid #e2e8f0; color:#475569; font-weight:700; cursor:pointer; transition:.15s; }
+.icon-legend-tag:hover, .icon-legend-tag.active{ border-color:#93c5fd; background:#eff6ff; color:#1d4ed8; }
+.icon-legend-sep{ color:#cbd5e1; user-select:none; }
+
+/* 風格 C：緊湊高密度儀表板樣式 */
+.desktop-course-view{ display:none; }
+.mobile-course-view{ display:block; }
+@media (min-width: 768px) {
+.desktop-course-view{ display:block; }
+.mobile-course-view{ display:none; }
+}
+.compact-table{ width:100%; min-width:980px; border-collapse:collapse; font-size:12.5px; }
+.compact-table th{ background:#f8fafc; padding:10px 10px; text-align:left; font-size:11px; color:#64748b; font-weight:800; letter-spacing:0.03em; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+.compact-table th.th-right{ text-align:right; }
+.compact-table td{ padding:10px 10px; vertical-align:middle; border-bottom:1px solid #f1f5f9; color:#0f172a; }
+.compact-table tbody tr:last-child td{ border-bottom:none; }
+.compact-table tbody tr:hover{ background:#f8fafc; }
+.c-icon-btn{ position:relative; display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:7px; border:1px solid transparent; color:#64748b; background:transparent; cursor:pointer; transition:all .15s ease; }
+.c-icon-btn:hover{ background:#f1f5f9; color:#0f172a; border-color:#e2e8f0; }
+.c-icon-btn.accent-btn{ color:#2563eb; background:#eff6ff; border-color:#dbeafe; }
+.c-icon-btn.accent-btn:hover{ background:#dbeafe; color:#1d4ed8; }
+.c-icon-btn.delete-btn{ color:#94a3b8; }
+.c-icon-btn.delete-btn:hover{ background:#fef2f2; color:#dc2626; border-color:#fecaca; }
+.c-icon-btn.highlighted{ background:#eff6ff !important; color:#1d4ed8 !important; border-color:#93c5fd !important; box-shadow:0 0 0 2px rgba(59,130,246,0.22); transform:translateY(-1px); }
+.c-icon-btn.delete-btn.highlighted{ background:#fef2f2 !important; color:#dc2626 !important; border-color:#fca5a5 !important; box-shadow:0 0 0 2px rgba(239,68,68,0.2); transform:translateY(-1px); }
+.c-icon-btn[data-tip]:hover::after{ content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#0f172a; color:#fff; font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; white-space:nowrap; z-index:60; pointer-events:none; box-shadow:0 4px 12px rgba(15,23,42,0.2); }
+
+.role-badge{ display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:6px; font-size:11px; font-weight:700; white-space:nowrap; }
+.badge-judge{ background:#eff6ff; color:#1d4ed8; border:1px solid #dbeafe; }
+.badge-record{ background:#f5f3ff; color:#6d28d9; border:1px solid #ede9fe; }
+.badge-general{ background:#f8fafc; color:#475569; border:1px solid #e2e8f0; }
 .modal{ position:fixed; inset:0; background:rgba(15,23,42,.45); display:flex; justify-content:center; align-items:center; z-index:9999; padding:16px; }
 .modal.hidden{ display:none; }
 .modal-dialog{ width:100%; max-width:850px; background:#ffffff; border-radius:18px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,.2); max-height:90vh; display:flex; flex-direction:column; }
@@ -70,17 +100,6 @@ body{ margin:0; padding:0; background:#f8fafc; font-family:system-ui,-apple-syst
 #loadingMask{ position:fixed; inset:0; background:rgba(15,23,42,.25); display:flex; justify-content:center; align-items:center; z-index:20000; }
 #loadingMask.hidden{ display:none; }
 .loading-box{ background:#fff; padding:20px 28px; border-radius:16px; font-weight:700; box-shadow:0 8px 24px rgba(0,0,0,.15); }
-.action-group{ display:grid; grid-template-columns:repeat(4,auto); gap:5px; width:fit-content; }
-.action-btn{ font-size:11px; line-height:1.2; font-weight:800; padding:6px 8px; border-radius:7px; cursor:pointer; transition:.15s; display:inline-flex; align-items:center; justify-content:center; white-space:nowrap; }
-.action-btn:hover{ filter:brightness(0.96); }
-.action-btn.pay{ background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; }
-.action-btn.att{ background:#fffbeb; color:#92400e; border:1px solid #fde68a; }
-.action-btn.cert{ background:#f5f3ff; color:#6d28d9; border:1px solid #ddd6fe; }
-.action-btn.fin{ background:#f0fdfa; color:#0f766e; border:1px solid #99f6e4; }
-.action-btn.assign{ background:#059669; color:#ffffff; border:1px solid #059669; }
-.action-btn.mail{ background:#4f46e5; color:#ffffff; border:1px solid #4f46e5; }
-.action-btn.edit{ background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
-.action-btn.delete{ background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
 button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; filter: grayscale(50%); }
 </style>
 </head>
@@ -202,28 +221,58 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 </section>
 <section class="table-panel">
 <div class="table-header">
-<div class="table-title">📋 課程清單</div>
+<div class="table-title"><i data-lucide="clipboard-list" class="w-4 h-4 text-blue-400"></i><span>課程清單</span></div>
 <div class="flex items-center gap-2 flex-wrap">
-<button class="btn-primary" onclick="openCourseModal('create')">＋ 新增課程</button>
+<button class="btn-primary inline-flex items-center gap-1.5" onclick="openCourseModal('create')"><i data-lucide="plus" class="w-4 h-4"></i><span>新增課程</span></button>
 </div>
 </div>
-<div class="table-wrapper">
-<table class="user-table">
+
+<!-- 精簡圖示對照列（靠右對齊快捷操作） -->
+<div class="icon-legend-strip" id="compactIconLegend">
+<button type="button" data-legend="payment" onclick="toggleLegendLock('payment')" class="icon-legend-tag"><i data-lucide="credit-card" class="w-3.5 h-3.5"></i><span>繳費</span></button>
+<span class="icon-legend-sep">|</span>
+<button type="button" data-legend="attendance" onclick="toggleLegendLock('attendance')" class="icon-legend-tag"><i data-lucide="clipboard-check" class="w-3.5 h-3.5"></i><span>簽到</span></button>
+<span class="icon-legend-sep">|</span>
+<button type="button" data-legend="certificate" onclick="toggleLegendLock('certificate')" class="icon-legend-tag"><i data-lucide="award" class="w-3.5 h-3.5"></i><span>證書</span></button>
+<span class="icon-legend-sep">|</span>
+<button type="button" data-legend="finance" onclick="toggleLegendLock('finance')" class="icon-legend-tag"><i data-lucide="receipt" class="w-3.5 h-3.5"></i><span>財務</span></button>
+<span class="icon-legend-sep">|</span>
+<button type="button" data-legend="assign" onclick="toggleLegendLock('assign')" class="icon-legend-tag"><i data-lucide="user-plus" class="w-3.5 h-3.5"></i><span>指定</span></button>
+<span class="icon-legend-sep">|</span>
+<button type="button" data-legend="mail" onclick="toggleLegendLock('mail')" class="icon-legend-tag"><i data-lucide="mail" class="w-3.5 h-3.5"></i><span>通知</span></button>
+<span class="icon-legend-sep">|</span>
+<button type="button" data-legend="edit" onclick="toggleLegendLock('edit')" class="icon-legend-tag"><i data-lucide="pencil" class="w-3.5 h-3.5"></i><span>修改</span></button>
+<span class="icon-legend-sep">|</span>
+<button type="button" data-legend="delete" onclick="toggleLegendLock('delete')" class="icon-legend-tag"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i><span>刪除</span></button>
+</div>
+
+<!-- 桌機/平板版：風格 C 緊湊高密度表格 -->
+<div class="desktop-course-view table-wrapper">
+<table class="compact-table">
 <thead>
 <tr>
-<th># 編號</th>
-<th>課程名稱 / 類型</th>
-<th>日期與時間</th>
-<th>地點 / 講師</th>
-<th>名額與費用</th>
-<th>報名狀態</th>
-<th>操作</th>
+<th>#</th>
+<th>課程名稱</th>
+<th>類型</th>
+<th>上課日期</th>
+<th>截止日期</th>
+<th>地點</th>
+<th>講師</th>
+<th>費用</th>
+<th>名額</th>
+<th>狀態</th>
+<th class="th-right">快捷操作</th>
 </tr>
 </thead>
 <tbody id="courseTableBody">
-<tr><td colspan="7" class="text-center py-6 text-slate-400">載入課程中...</td></tr>
+<tr><td colspan="11" class="text-center py-6 text-slate-400">載入課程中...</td></tr>
 </tbody>
 </table>
+</div>
+
+<!-- 手機版：獨立卡片式列表 -->
+<div id="courseMobileList" class="mobile-course-view divide-y divide-slate-100">
+<div class="text-center py-8 text-slate-400 font-bold text-sm">載入課程中...</div>
 </div>
 </section>
 </div>
@@ -796,7 +845,6 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 <input type="hidden" id="assign_course_id" value="">
 <input type="hidden" id="assign_default_fee" value="0">
 
-<!-- 區塊一：系統帳號成員 -->
 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
 <div class="font-extrabold text-sm text-slate-800">1. 挑選系統帳號成員</div>
@@ -807,7 +855,6 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 </div>
 </div>
 
-<!-- 區塊二：非系統帳號外部學員（僅限本課程） -->
 <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 space-y-3">
 <div class="flex items-center justify-between gap-2 flex-wrap">
 <div class="font-extrabold text-sm text-amber-950">2. 輸入非系統帳號外部學員（僅限指定此課程，不會建立系統帳號）</div>
@@ -849,7 +896,6 @@ button:disabled, .btn-disabled { opacity: 0.5; cursor: not-allowed !important; f
 </div>
 </div>
 
-<!-- 區塊三：待指派學員清單 -->
 <div class="border border-slate-200 rounded-2xl p-4 space-y-2.5 bg-white">
 <div class="flex items-center justify-between">
 <div class="font-extrabold text-sm text-slate-800">待指派學員清單（<span id="pendingAssignCount">0</span> 人）</div>
@@ -881,8 +927,35 @@ let activeMailCourse = null;
 let validMailRecipients = [];
 let allSystemUsers = [];
 let pendingAssignStudents = [];
+let lockedLegendAction = null;
+
+function refreshIcons() {
+if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+  try { lucide.createIcons(); } catch (e) { console.warn('lucide.createIcons warning:', e); }
+}
+}
+
+function escapeHtmlAttr(str) {
+return String(str ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;');
+}
+
+function toggleLegendLock(actionKey) {
+lockedLegendAction = (lockedLegendAction === actionKey) ? null : actionKey;
+document.querySelectorAll('#compactIconLegend .icon-legend-tag').forEach(chip => {
+chip.classList.toggle('active', chip.dataset.legend === lockedLegendAction);
+});
+document.querySelectorAll('.c-icon-btn').forEach(btn => {
+btn.classList.toggle('highlighted', lockedLegendAction !== null && btn.dataset.action === lockedLegendAction);
+});
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-if (typeof lucide !== 'undefined') lucide.createIcons();
+refreshIcons();
 loadUserInfo();
 loadAllData();
 });
@@ -906,11 +979,14 @@ document.getElementById('sidebar').classList.toggle('-translate-x-full');
 document.getElementById('sidebar-overlay').classList.toggle('hidden');
 }
 function showLoading(msg='處理中...') {
-document.getElementById('loadingText').textContent = msg;
-document.getElementById('loadingMask').classList.remove('hidden');
+const el = document.getElementById('loadingText');
+const mask = document.getElementById('loadingMask');
+if (el) el.textContent = msg;
+if (mask) mask.classList.remove('hidden');
 }
 function hideLoading() {
-document.getElementById('loadingMask').classList.add('hidden');
+const mask = document.getElementById('loadingMask');
+if (mask) mask.classList.add('hidden');
 }
 function showToast(msg, type='success') {
 if (!msg) return;
@@ -959,6 +1035,7 @@ renderEnrollmentTable();
 function syncEnrollmentCourseFilter() {
 const map = new Map();
 allCourses.forEach(c => {
+if (String(c.course_status || '').trim().toLowerCase() === 'deleted') return;
 if (c.course_id !== undefined && c.course_id !== null && String(c.course_id).trim() !== '') {
 map.set(String(c.course_id), c.course_name || `課程 #${c.course_id}`);
 }
@@ -1026,16 +1103,19 @@ function loadAllData() {
 loadCourses();
 loadEnrollmentData('enrollments');
 }
-function loadCourses() {
-showLoading('載入課程資料中...');
+function loadCourses(showMask = true) {
+if (showMask) showLoading('載入課程資料中...');
 const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : (typeof API_URL !== 'undefined' ? API_URL : '');
 const cb = 'jsonp_courses_' + Math.round(100000 * Math.random());
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
 hideLoading();
 if (res && (res.result === 'ok' || res.result === 'success')) {
-allCourses = res.data || [];
+allCourses = (Array.isArray(res.data) ? res.data : []).filter(
+c => String(c.course_status || '').trim().toLowerCase() !== 'deleted'
+);
 updateKpi();
 renderCourseTable();
 syncEnrollmentCourseFilter();
@@ -1045,8 +1125,8 @@ renderEnrollmentTable();
 showToast((res ? res.message : '載入課程失敗') + '，請重整頁面', 'error');
 }
 };
-const script = document.createElement('script');
-script.src = `${baseUrl}?action=getCourses&callback=${cb}`;
+const sep = baseUrl.includes('?') ? '&' : '?';
+script.src = `${baseUrl}${sep}action=getCourses&callback=${cb}&_t=${Date.now()}`;
 script.onerror = function() {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -1056,11 +1136,12 @@ showToast('網路連線異常，請重整頁面', 'error');
 document.body.appendChild(script);
 }
 function updateKpi() {
-const total = allCourses.length;
-const open = allCourses.filter(c => c.course_status === 'open' || !c.course_status).length;
-const judge = allCourses.filter(c => c.course_type === 'judge').length;
-const record = allCourses.filter(c => c.course_type === 'record').length;
-const enrollments = allCourses.reduce((sum, c) => sum + (Number(c.current_enrollment) || 0), 0);
+const activeCourses = allCourses.filter(c => String(c.course_status || '').trim().toLowerCase() !== 'deleted');
+const total = activeCourses.length;
+const open = activeCourses.filter(c => c.course_status === 'open' || !c.course_status).length;
+const judge = activeCourses.filter(c => c.course_type === 'judge').length;
+const record = activeCourses.filter(c => c.course_type === 'record').length;
+const enrollments = activeCourses.reduce((sum, c) => sum + (Number(c.current_enrollment) || 0), 0);
 document.getElementById('kpiTotalCourses').textContent = total;
 document.getElementById('kpiOpenCourses').textContent = open;
 document.getElementById('kpiJudgeCourses').textContent = judge;
@@ -1069,13 +1150,18 @@ document.getElementById('kpiTotalEnrollments').textContent = enrollments;
 }
 function renderCourseTable() {
 const tbody = document.getElementById('courseTableBody');
-const keyword = (document.getElementById('txtSearch').value || '').toLowerCase();
-const filtered = allCourses.filter(c => {
+const mobileList = document.getElementById('courseMobileList');
+if (!tbody) return;
+try {
+const keyword = (document.getElementById('txtSearch')?.value || '').toLowerCase().trim();
+const filtered = (allCourses || []).filter(c => {
+if (String(c.course_status || '').trim().toLowerCase() === 'deleted') return false;
 const match = [c.course_name, c.instructor, c.location].join(' ').toLowerCase();
 return !keyword || match.includes(keyword);
 });
 if (!filtered.length) {
-tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400 font-bold">目前無符合條件的課程</td></tr>`;
+tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-slate-400 font-bold">目前無符合條件的課程</td></tr>`;
+if (mobileList) mobileList.innerHTML = `<div class="text-center py-8 text-slate-400 font-bold text-sm">目前無符合條件的課程</div>`;
 return;
 }
 const todayStr = new Date().toISOString().split('T')[0];
@@ -1101,12 +1187,13 @@ if (y > 2020) return `${y}-${m}-${day}`;
 }
 return str.split(' ')[0] || '';
 };
+
 tbody.innerHTML = filtered.map(c => {
 const typeBadge = c.course_type === 'judge' ? 'badge-judge' : (c.course_type === 'record' ? 'badge-record' : 'badge-general');
 const typeMap = { 'judge': '裁判培訓', 'record': '紀錄培訓', 'general': '通識教育' };
 const typeLabel = typeMap[c.course_type] || c.course_type || '一般課程';
-let rawCertType = String(c.certificate_type || '').trim();
-let rawLevel = String(c.certificate_level || '').trim();
+const rawCertType = String(c.certificate_type || '').trim();
+const rawLevel = String(c.certificate_level || '').trim();
 let certLevel = '';
 if (rawCertType.toLowerCase().includes('general') && rawCertType.toUpperCase().includes('C')) certLevel = 'C';
 if (rawLevel && rawLevel.toLowerCase() !== 'none' && rawLevel.toLowerCase() !== 'null') certLevel = rawLevel;
@@ -1114,54 +1201,117 @@ const formattedLevel = certLevel ? (certLevel.includes('級') ? certLevel : `${c
 const hasValidCert = (formattedLevel !== '');
 const startDate = cleanDate(c.date);
 const endDate = cleanDate(c.signup_end || c.signupEnd || c.end_date);
-const isExpired = endDate && todayStr > endDate;
+const isExpired = Boolean(endDate && todayStr > endDate);
 const statusText = isExpired ? '已截止' : (c.course_status === 'closed' ? '已關閉' : (c.course_status === 'finished' ? '已結束' : '開放報名'));
-let statusClass = 'bg-emerald-100 text-emerald-800';
-if (isExpired || c.course_status === 'closed') statusClass = 'bg-rose-100 text-rose-800';
-else if (c.course_status === 'finished') statusClass = 'bg-slate-100 text-slate-600';
-const safeName = String(c.course_name || '').replace(/'/g, "\\'");
+let statusClass = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+if (isExpired || c.course_status === 'closed') statusClass = 'bg-rose-50 text-rose-700 border border-rose-200';
+else if (c.course_status === 'finished') statusClass = 'bg-slate-100 text-slate-600 border border-slate-200';
+const safeJsName = String(c.course_name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+const safeId = escapeHtmlAttr(c.course_id || '');
+const safeTitle = escapeHtmlAttr(c.course_name || '-');
+const safeLocation = escapeHtmlAttr(c.location || '實體/線上');
+const safeInstructor = escapeHtmlAttr(c.instructor || '未指定');
 return `
 <tr>
-<td class="font-bold text-slate-600 whitespace-nowrap">#${c.course_id || '-'}</td>
-<td class="min-w-[180px]">
-<div class="font-extrabold text-slate-900 text-base">${c.course_name || '-'}</div>
-<div class="flex flex-wrap items-center gap-1.5 mt-1">
-<span class="role-badge ${typeBadge}">${typeLabel}</span>
-${hasValidCert ? `<span class="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-bold whitespace-nowrap">證照：裁判 ${formattedLevel}</span>` : ''}
-</div>
+<td class="font-mono text-xs font-bold text-slate-400 whitespace-nowrap">#${safeId || '-'}</td>
+<td class="max-w-[220px]">
+<div class="font-extrabold text-slate-900 text-[13px] truncate" title="${safeTitle}">${safeTitle}</div>
+${hasValidCert ? `<div class="text-[11px] text-slate-500 mt-0.5 truncate">證照：裁判 ${escapeHtmlAttr(formattedLevel)}</div>` : ''}
 </td>
-<td class="text-xs text-slate-700 whitespace-nowrap">
-<div class="font-bold">📅 上課: ${startDate || '未定'}</div>
-<div class="text-rose-600 font-bold mt-0.5">⏳ 截止: ${endDate || '未設定'}</div>
-</td>
-<td class="text-xs text-slate-700 min-w-[140px]">
-<div class="font-bold">📍 ${c.location || '實體/線上'}</div>
-<div class="text-slate-500 mt-0.5">👨‍🏫 ${c.instructor || '未指定'}</div>
-</td>
-<td class="text-xs text-slate-700 whitespace-nowrap">
-<div class="font-bold">💰 ${c.fee == 0 ? '免費' : 'NT$ ' + c.fee}</div>
-<div class="text-slate-500 mt-0.5">👥 已報名 ${c.current_enrollment || 0} / 正取 ${c.capacity || 30}</div>
-</td>
-<td class="whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-xs font-extrabold ${statusClass}">${statusText}</span></td>
-<td class="action-col">
-<div class="action-group">
-<button type="button" onclick="openCourseEnrollments('${c.course_id}')" class="action-btn pay">繳費資訊</button>
-<button type="button" onclick="openCourseAttendance('${c.course_id}')" class="action-btn att">出勤簽到</button>
-<button type="button" onclick="openCourseCertificates('${c.course_id}')" class="action-btn cert">成績證書</button>
-<button type="button" onclick="openFinanceReportModal('${c.course_id}')" class="action-btn fin">財務報表</button>
-<button type="button" onclick="openAssignStudentsModal('${c.course_id}')" class="action-btn assign">指定學員</button>
-<button type="button" onclick="openEmailReminderModal('${c.course_id}')" class="action-btn mail">課程通知</button>
-<button type="button" class="action-btn edit" onclick="openCourseModal('edit', '${c.course_id}')">修改課程</button>
-<button type="button" class="action-btn delete" onclick="deleteCourse('${c.course_id}', '${safeName}')">刪除課程</button>
+<td class="whitespace-nowrap"><span class="role-badge ${typeBadge}">${escapeHtmlAttr(typeLabel)}</span></td>
+<td class="font-mono text-xs font-semibold text-slate-700 whitespace-nowrap">${startDate || '未定'}</td>
+<td class="font-mono text-xs whitespace-nowrap ${isExpired ? 'text-rose-600 font-bold' : 'text-slate-500'}">${endDate || '未設定'}</td>
+<td class="text-xs text-slate-700 max-w-[165px] truncate" title="${safeLocation}">${safeLocation}</td>
+<td class="text-xs text-slate-700 whitespace-nowrap">${safeInstructor}</td>
+<td class="font-bold text-xs text-slate-900 whitespace-nowrap">${Number(c.fee) === 0 ? '免費' : 'NT$ ' + Number(c.fee).toLocaleString()}</td>
+<td class="font-mono text-xs text-slate-700 whitespace-nowrap">${Number(c.current_enrollment) || 0}/${Number(c.capacity) || 30}</td>
+<td class="whitespace-nowrap"><span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${statusClass}">${statusText}</span></td>
+<td class="text-right whitespace-nowrap">
+<div class="inline-flex items-center gap-0.5">
+<!-- 繳費 -->
+<button type="button" data-action="payment" data-tip="繳費" aria-label="繳費" onclick="openCourseEnrollments('${c.course_id}')" class="c-icon-btn"><i data-lucide="credit-card" class="w-3.5 h-3.5"></i></button>
+<!-- 簽到 -->
+<button type="button" data-action="attendance" data-tip="簽到" aria-label="簽到" onclick="openCourseAttendance('${c.course_id}')" class="c-icon-btn"><i data-lucide="clipboard-check" class="w-3.5 h-3.5"></i></button>
+<!-- 證書 -->
+<button type="button" data-action="certificate" data-tip="證書" aria-label="證書" onclick="openCourseCertificates('${c.course_id}')" class="c-icon-btn"><i data-lucide="award" class="w-3.5 h-3.5"></i></button>
+<!-- 財務 -->
+<button type="button" data-action="finance" data-tip="財務" aria-label="財務" onclick="openFinanceReportModal('${c.course_id}')" class="c-icon-btn"><i data-lucide="receipt" class="w-3.5 h-3.5"></i></button>
+<!-- 指定 -->
+<button type="button" data-action="assign" data-tip="指定" aria-label="指定" onclick="openAssignStudentsModal('${c.course_id}')" class="c-icon-btn accent-btn"><i data-lucide="user-plus" class="w-3.5 h-3.5"></i></button>
+<!-- 通知 -->
+<button type="button" data-action="mail" data-tip="通知" aria-label="通知" onclick="openEmailReminderModal('${c.course_id}')" class="c-icon-btn"><i data-lucide="mail" class="w-3.5 h-3.5"></i></button>
+<!-- 修改 -->
+<button type="button" data-action="edit" data-tip="修改" aria-label="修改" onclick="openCourseModal('edit', '${c.course_id}')" class="c-icon-btn"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+<!-- 刪除 -->
+<button type="button" data-action="delete" data-tip="刪除" aria-label="刪除" onclick="deleteCourse('${c.course_id}', '${safeJsName}')" class="c-icon-btn delete-btn"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
 </div>
 </td>
 </tr>
 `;
 }).join('');
+
+if (mobileList) {
+mobileList.innerHTML = filtered.map(c => {
+const typeBadge = c.course_type === 'judge' ? 'badge-judge' : (c.course_type === 'record' ? 'badge-record' : 'badge-general');
+const typeMap = { 'judge': '裁判培訓', 'record': '紀錄培訓', 'general': '通識教育' };
+const typeLabel = typeMap[c.course_type] || c.course_type || '一般課程';
+const startDate = cleanDate(c.date);
+const endDate = cleanDate(c.signup_end || c.signupEnd || c.end_date);
+const isExpired = Boolean(endDate && todayStr > endDate);
+const statusText = isExpired ? '已截止' : (c.course_status === 'closed' ? '已關閉' : (c.course_status === 'finished' ? '已結束' : '開放報名'));
+let statusClass = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+if (isExpired || c.course_status === 'closed') statusClass = 'bg-rose-50 text-rose-700 border border-rose-200';
+else if (c.course_status === 'finished') statusClass = 'bg-slate-100 text-slate-600 border border-slate-200';
+const safeJsName = String(c.course_name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+return `
+<div class="p-4 space-y-3 bg-white">
+<div class="flex items-start justify-between gap-2">
+<div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="font-mono text-xs font-bold text-slate-400">#${escapeHtmlAttr(c.course_id || '-')}</span>
+<span class="role-badge ${typeBadge}">${escapeHtmlAttr(typeLabel)}</span>
+</div>
+<div class="font-extrabold text-slate-900 text-base mt-1">${escapeHtmlAttr(c.course_name || '-')}</div>
+</div>
+<span class="px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 ${statusClass}">${statusText}</span>
+</div>
+<div class="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
+<div><span class="text-slate-400">上課：</span><span class="font-semibold text-slate-800">${startDate || '未定'}</span></div>
+<div><span class="text-slate-400">截止：</span><span class="font-semibold ${isExpired ? 'text-rose-600' : 'text-slate-800'}">${endDate || '未設定'}</span></div>
+<div class="col-span-2"><span class="text-slate-400">地點：</span><span class="font-semibold text-slate-800">${escapeHtmlAttr(c.location || '實體/線上')}</span></div>
+<div><span class="text-slate-400">講師：</span><span class="font-semibold text-slate-800">${escapeHtmlAttr(c.instructor || '未指定')}</span></div>
+<div><span class="text-slate-400">名額/費用：</span><span class="font-bold text-slate-900">${Number(c.current_enrollment) || 0}/${Number(c.capacity) || 30}・${Number(c.fee) === 0 ? '免費' : 'NT$' + Number(c.fee).toLocaleString()}</span></div>
+</div>
+<div class="flex flex-wrap gap-1.5 pt-1">
+<button type="button" onclick="openCourseEnrollments('${c.course_id}')" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700">繳費</button>
+<button type="button" onclick="openCourseAttendance('${c.course_id}')" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700">簽到</button>
+<button type="button" onclick="openCourseCertificates('${c.course_id}')" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700">證書</button>
+<button type="button" onclick="openFinanceReportModal('${c.course_id}')" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700">財務</button>
+<button type="button" onclick="openAssignStudentsModal('${c.course_id}')" class="px-2.5 py-1.5 rounded-lg bg-blue-50 text-xs font-bold text-blue-700">指定</button>
+<button type="button" onclick="openEmailReminderModal('${c.course_id}')" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700">通知</button>
+<button type="button" onclick="openCourseModal('edit', '${c.course_id}')" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700">修改</button>
+<button type="button" onclick="deleteCourse('${c.course_id}', '${safeJsName}')" class="px-2.5 py-1.5 rounded-lg border border-rose-200 bg-rose-50 text-xs font-bold text-rose-600">刪除</button>
+</div>
+</div>
+`;
+}).join('');
+}
+
+refreshIcons();
+if (lockedLegendAction) {
+document.querySelectorAll(`.c-icon-btn[data-action="${lockedLegendAction}"]`).forEach(btn => {
+btn.classList.add('highlighted');
+});
+}
+} catch (err) {
+console.error('renderCourseTable error:', err);
+tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-rose-600 font-bold">課程列表渲染發生錯誤，請查看 Console</td></tr>`;
+}
 }
 function loadEnrollmentData(activeTab = 'enrollments') {
 const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : (typeof API_URL !== 'undefined' ? API_URL : '');
 const cb = 'jsonp_enroll_logs_' + Math.round(100000 * Math.random());
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -1190,7 +1340,6 @@ renderCertificateTable();
 showToast((res ? res.message : '無法取得報名紀錄') + '，請重整頁面', 'error');
 }
 };
-const script = document.createElement('script');
 script.src = `${baseUrl}?action=getTrainingLog&callback=${cb}`;
 script.onerror = function() {
 delete window[cb];
@@ -1310,7 +1459,7 @@ actionHtml = `
 </button>
 `;
 }
-const safeNote = String(item.admin_note || '').replace(/"/g, '&quot;');
+const safeNote = escapeHtmlAttr(item.admin_note || '');
 const isExternalStudent = (String(item.member_type || '').toLowerCase() === 'external') || !!item.is_external;
 return `
 <tr class="hover:bg-slate-50 transition">
@@ -1367,6 +1516,7 @@ payment_amount: amount,
 callback: cb,
 _t: Date.now()
 });
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -1379,7 +1529,6 @@ loadEnrollmentData('enrollments');
 showToast((res ? res.message : '更新失敗') + '，請重整頁面', 'error');
 }
 };
-const script = document.createElement('script');
 script.src = `${baseUrl}?${params.toString()}`;
 script.onerror = function() {
 delete window[cb];
@@ -1419,6 +1568,7 @@ cancel_seat: cancelSeat,
 callback: cb,
 _t: Date.now()
 });
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -1442,7 +1592,6 @@ loadEnrollmentData('enrollments');
 showToast(res ? res.message : '更新失敗', 'error');
 }
 };
-const script = document.createElement('script');
 script.src = `${baseUrl}?${params.toString()}`;
 script.onerror = function() {
 delete window[cb];
@@ -1687,6 +1836,7 @@ body: body,
 recipients: JSON.stringify(validMailRecipients),
 callback: cb
 });
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -1698,7 +1848,6 @@ closeModal('emailReminderModal');
 showToast(res ? res.message : '發送失敗，請檢查後端設定', 'error');
 }
 };
-const script = document.createElement('script');
 script.src = `${baseUrl}?${params.toString()}`;
 script.onerror = function() {
 delete window[cb];
@@ -1794,6 +1943,7 @@ type: actionType,
 callback: cb,
 _t: Date.now()
 });
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -1822,7 +1972,6 @@ renderAttendanceTable();
 showToast((res && res.message ? res.message : `${actionName}失敗`) + '，請重新整理頁面', 'error');
 }
 };
-const script = document.createElement('script');
 script.src = `${baseUrl}?${params.toString()}`;
 script.onerror = function() {
 delete window[cb];
@@ -1907,6 +2056,7 @@ certificate_verified: certVerified,
 callback: cb,
 _t: Date.now()
 });
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -1926,7 +2076,6 @@ renderCertificateTable();
 showToast((res ? res.message : '更新失敗') + '，請重整頁面', 'error');
 }
 };
-const script = document.createElement('script');
 script.src = `${baseUrl}?${params.toString()}`;
 script.onerror = function() {
 delete window[cb];
@@ -2005,6 +2154,7 @@ remark: document.getElementById('remark').value
 const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : (typeof API_URL !== 'undefined' ? API_URL : '');
 const cb = 'jsonp_save_course_' + Math.round(100000 * Math.random());
 const params = new URLSearchParams({ action: 'saveCourse', callback: cb, ...payload });
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -2017,7 +2167,6 @@ loadCourses();
 showToast((res ? res.message : '儲存失敗') + '，請重整頁面', 'error');
 }
 };
-const script = document.createElement('script');
 script.src = `${baseUrl}?${params.toString()}`;
 script.onerror = function() {
 delete window[cb];
@@ -2032,19 +2181,24 @@ if (!confirm(`確定要刪除課程「${courseName}」嗎？`)) return;
 showLoading('刪除課程...');
 const baseUrl = typeof API_BASE !== 'undefined' ? API_BASE : (typeof API_URL !== 'undefined' ? API_URL : '');
 const cb = 'jsonp_del_course_' + Math.round(100000 * Math.random());
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
 hideLoading();
 if (res && (res.result === 'ok' || res.result === 'success')) {
+allCourses = allCourses.filter(c => String(c.course_id) !== String(courseId));
+updateKpi();
+renderCourseTable();
+syncEnrollmentCourseFilter();
 showToast('課程已刪除', 'success');
-loadCourses();
+loadCourses(false);
 } else {
 showToast((res ? res.message : '刪除失敗') + '，請重整頁面', 'error');
 }
 };
-const script = document.createElement('script');
-script.src = `${baseUrl}?action=deleteCourse&course_id=${courseId}&callback=${cb}`;
+const sep = baseUrl.includes('?') ? '&' : '?';
+script.src = `${baseUrl}${sep}action=deleteCourse&course_id=${encodeURIComponent(courseId)}&callback=${cb}&_t=${Date.now()}`;
 script.onerror = function() {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -2079,6 +2233,7 @@ items: JSON.stringify(payloadList),
 callback: cb,
 _t: Date.now()
 });
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -2090,7 +2245,6 @@ loadEnrollmentData('enrollments');
 showToast(res ? res.message : '批次更新失敗', 'error');
 }
 };
-const script = document.createElement('script');
 script.src = `${baseUrl}?${params.toString()}`;
 script.onerror = function() {
 delete window[cb];
@@ -2110,6 +2264,7 @@ admin_note: noteText.trim(),
 callback: cb,
 _t: Date.now()
 });
+const script = document.createElement('script');
 window[cb] = function(res) {
 delete window[cb];
 if (script.parentNode) script.parentNode.removeChild(script);
@@ -2121,7 +2276,6 @@ if (target) target.admin_note = noteText.trim();
 showToast(res ? res.message : '備註儲存失敗', 'error');
 }
 };
-const script = document.createElement('script');
 script.src = `${baseUrl}?${params.toString()}`;
 document.body.appendChild(script);
 }
