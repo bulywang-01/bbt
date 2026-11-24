@@ -291,7 +291,8 @@ function loadDashboard(){
           if (String(item.user_id) !== uid) return;
           const isRecord = String(item.role || '').toUpperCase().includes('REC');
           isMyGame = true;
-          if ((item.status === 'completed' || item.status === 'late') && isThisYear){
+          const st = normalizeDutyStatus_(item.status);
+          if ((st === 'completed' || st === 'late') && isThisYear){
             if (isRecord) hasRecordDone = true;
             else hasJudgeDone = true;
           }
@@ -772,19 +773,18 @@ function calcTrainingHoursFromLogs_(targetUid, logs, courses, targetYear){
     const attStatus = String(r.attendance_status || '').trim().toLowerCase();
     const certVer = String(r.certificate_verified || '').trim().toLowerCase();
     const checkinTime = String(r.checkin_time || '').trim();
-    const checkoutTime = String(r.checkout_time || '').trim();
 
     const isRejected =
       ['cancelled', 'canceled', '已取消', '取消'].includes(status) ||
-      ['absent', '缺席'].includes(attStatus) ||
-      ['rejected', 'incomplete', '未通過', '不通過'].includes(certVer);
+      ['absent', 'no_show', '缺席', '未到'].includes(attStatus) ||
+      ['rejected', 'incomplete', 'false', 'n', 'no', '未通過', '不通過'].includes(certVer);
 
     const isCompleted =
       !isRejected && (
-        ['completed', 'attended', 'present', '已完成', '已出席', '出席'].includes(attStatus) ||
-        ['completed', 'attended', '已完成', '已出席'].includes(status) ||
-        ['completed', 'verified', '已核發', '已通過', '通過'].includes(certVer) ||
-        (checkinTime !== '' && checkoutTime !== '')
+        ['completed', 'attended', 'present', 'y', 'yes', 'true', '1', '已完成', '已出席', '出席', '完訓'].includes(attStatus) ||
+        ['completed', 'attended', 'confirmed', 'approved', 'y', 'yes', 'true', '1', '已完成', '已出席', '已確認', '完訓'].includes(status) ||
+        ['completed', 'verified', 'y', 'yes', 'true', '1', '已核發', '已通過', '通過'].includes(certVer) ||
+        checkinTime !== ''
       );
 
     if (!isCompleted) return;
@@ -853,19 +853,28 @@ function openUserDetail(userId){
         if (!yearlyMap[year]){
           yearlyMap[year] = { completed:0, late:0, no_show:0 };
         }
-        if (item.status === 'completed') yearlyMap[year].completed++;
-        if (item.status === 'late') yearlyMap[year].late++;
-        if (item.status === 'no_show') yearlyMap[year].no_show++;
+        const st = normalizeDutyStatus_(item.status);
+        if (st === 'completed') yearlyMap[year].completed++;
+        if (st === 'late') yearlyMap[year].late++;
+        if (st === 'no_show') yearlyMap[year].no_show++;
 
-        if (item.status === 'completed') career_completed++;
-        if (item.status === 'late') career_late++;
-        if (item.status === 'no_show') career_no_show++;
+        if (st === 'completed') career_completed++;
+        if (st === 'late') career_late++;
+        if (st === 'no_show') career_no_show++;
 
-        if (item.status !== 'completed') return;
+        if (st !== 'completed') return;
 
         const role = mapRole(item.role);
         roleMap[role] = (roleMap[role] || 0) + 1;
       });
+    });
+  }
+
+  // 若 allAssignments 未帶出 roleMap，從 p.role_count 補齊
+  if (Object.keys(roleMap).length === 0 && p.role_count && typeof p.role_count === 'object') {
+    Object.entries(p.role_count).forEach(([rKey, cnt]) => {
+      const rName = mapRole(rKey);
+      roleMap[rName] = (roleMap[rName] || 0) + (Number(cnt) || 0);
     });
   }
 
@@ -966,9 +975,9 @@ function openUserDetail(userId){
           `}
           <tr style="font-weight:700;">
             <td>生涯</td>
-            <td>${career_completed || completed}</td>
-            <td>${career_late || late}</td>
-            <td>${career_no_show || no_show}</td>
+            <td>${career_completed || p.career_completed || completed}</td>
+            <td>${career_late || p.career_late || late}</td>
+            <td>${career_no_show || p.career_no_show || no_show}</td>
           </tr>
         </table>
       </div>
