@@ -823,47 +823,42 @@ function normalizeDutyStatus_(raw) {
 
 function openUserDetail(userId){
   const all = window._yearData || [];
-  const targetUid = String(userId || session.user_id || '').trim().toLowerCase();
-  const p = all.find(x =>
-    String(x.user_id || '').trim().toLowerCase() === targetUid ||
-    String(x.id || '').trim().toLowerCase() === targetUid
-  ) || {};
+  const p = all.find(x => String(x.user_id) === String(userId) || String(x.id) === String(userId)) || {};
 
   const modal = document.getElementById('userModal');
   if (!modal) return;
   modal.style.display = 'flex';
 
+  const total = Number(p.attendance ?? p.total_games ?? 0);
+  const completed = Number(p.completed ?? p.completed_games ?? 0);
+  const late = Number(p.late ?? 0);
+  const no_show = Number(p.no_show ?? 0);
+
   let career_completed = 0;
   let career_late = 0;
   let career_no_show = 0;
-  let assignmentsCount = 0;
 
   const roleMap = {};
   const yearlyMap = {};
 
   if (window._yearRaw?.allAssignments) {
-    window._yearRaw.allAssignments.forEach(g => {
-      (g.list || []).forEach(item => {
-        const itemUid = String(item.user_id || item.uid || '').trim().toLowerCase();
-        if (!itemUid || itemUid !== targetUid) return;
+    window._yearRaw.allAssignments.forEach(g=>{
+      (g.list || []).forEach(item=>{
+        if (String(item.user_id) !== String(userId)) return;
 
-        const st = normalizeDutyStatus_(item.status || item.attendance_status);
-        if (!['completed', 'late', 'no_show'].includes(st)) return;
-
-        assignmentsCount++;
-        const year = String(g.date || g.game_date || new Date().getFullYear()).substring(0, 4);
-        if (!yearlyMap[year]) {
-          yearlyMap[year] = { completed: 0, late: 0, no_show: 0 };
+        const year = String(g.date || new Date().getFullYear()).substring(0,4);
+        if (!yearlyMap[year]){
+          yearlyMap[year] = { completed:0, late:0, no_show:0 };
         }
-        if (st === 'completed') yearlyMap[year].completed++;
-        if (st === 'late') yearlyMap[year].late++;
-        if (st === 'no_show') yearlyMap[year].no_show++;
+        if (item.status === 'completed') yearlyMap[year].completed++;
+        if (item.status === 'late') yearlyMap[year].late++;
+        if (item.status === 'no_show') yearlyMap[year].no_show++;
 
-        if (st === 'completed') career_completed++;
-        if (st === 'late') career_late++;
-        if (st === 'no_show') career_no_show++;
+        if (item.status === 'completed') career_completed++;
+        if (item.status === 'late') career_late++;
+        if (item.status === 'no_show') career_no_show++;
 
-        if (st !== 'completed') return;
+        if (item.status !== 'completed') return;
 
         const role = mapRole(item.role);
         roleMap[role] = (roleMap[role] || 0) + 1;
@@ -873,20 +868,10 @@ function openUserDetail(userId){
 
   const currentYear = new Date().getFullYear();
   const currentYearStr = String(currentYear);
-  const curYearStat = yearlyMap[currentYearStr] || { completed: 0, late: 0, no_show: 0 };
-
-  const total = Number(p.attendance ?? p.total_games ?? assignmentsCount ?? 0) || 0;
-  const completed = Number(p.completed ?? p.completed_games ?? curYearStat.completed ?? 0) || 0;
-  const late = Number(p.late ?? curYearStat.late ?? 0) || 0;
-  const no_show = Number(p.no_show ?? curYearStat.no_show ?? 0) || 0;
-
-  const finalCareerCompleted = career_completed || Number(p.career_completed ?? completed) || 0;
-  const finalCareerLate = career_late || Number(p.career_late ?? late) || 0;
-  const finalCareerNoShow = career_no_show || Number(p.career_no_show ?? no_show) || 0;
-
   const trainingHoursYear = Number(p.training_hours_year ?? p.course_hours_year ?? p.year_hours ?? 0) || 0;
   const trainingHoursTotal = Number(p.training_hours_total ?? p.course_hours_total ?? p.total_hours ?? 0) || 0;
 
+  // ✅ 證照解析與過濾邏輯
   const dbLevel = p.level || p.user_level || session.level || 'N,N';
   let parts = String(dbLevel).split(/[\/／,，]/);
   let judgeLv = parts[0] ? parts[0].trim().toUpperCase() : 'N';
@@ -978,9 +963,9 @@ function openUserDetail(userId){
           `}
           <tr style="font-weight:700;">
             <td>生涯</td>
-            <td>${finalCareerCompleted}</td>
-            <td>${finalCareerLate}</td>
-            <td>${finalCareerNoShow}</td>
+            <td>${career_completed || completed}</td>
+            <td>${career_late || late}</td>
+            <td>${career_no_show || no_show}</td>
           </tr>
         </table>
       </div>
@@ -997,13 +982,13 @@ function openUserDetail(userId){
   `;
   drawRoleChart(roleMap);
 
-  callApi({ action: 'getTrainingLog', user_id: targetUid }, logRes => {
+  callApi({ action: 'getTrainingLog', user_id: userId }, logRes => {
     const logs = logRes?.data || logRes?.logs || logRes?.enrollments || (Array.isArray(logRes) ? logRes : []);
     if (!Array.isArray(logs) || logs.length === 0) return;
 
     callApi({ action: 'getCourses' }, courseRes => {
       const courses = courseRes?.courses || courseRes?.data || (Array.isArray(courseRes) ? courseRes : []);
-      const { yearHours, totalHours } = calcTrainingHoursFromLogs_(targetUid, logs, courses, currentYear);
+      const { yearHours, totalHours } = calcTrainingHoursFromLogs_(userId, logs, courses, currentYear);
 
       const finalYear = Math.max(trainingHoursYear, yearHours);
       const finalTotal = Math.max(trainingHoursTotal, totalHours);
