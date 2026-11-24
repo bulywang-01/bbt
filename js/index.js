@@ -665,10 +665,13 @@ function renderLoading(target){
  * ✅ 個人數據分析模組（以 Users.level 欄位直接呈現證照：左裁判右紀錄）
  *********************************************************/
 function loadHomeUserAnalysis(){
+  const targetYear = new Date().getFullYear();
+  const targetUid = String(session.user_id || '').trim();
+
   callApi({
     action:'getYearlyExperience',
-    year: new Date().getFullYear(),
-    user_id: session.user_id
+    year: targetYear,
+    user_id: targetUid
   }, res=>{
     if (!res || res.result !== 'ok') {
       const rateEl = document.getElementById('stat-rate');
@@ -677,14 +680,28 @@ function loadHomeUserAnalysis(){
     }
 
     const rawData = res.data || res;
-    let judgeList = rawData.judge || rawData.judges || (Array.isArray(rawData) ? rawData : []);
-    let recordList = rawData.record || rawData.records || [];
-    
-    if (!Array.isArray(judgeList) && rawData.user_id) judgeList = [rawData];
+    let judgeList = Array.isArray(rawData.judge) ? rawData.judge : (Array.isArray(rawData.judges) ? rawData.judges : []);
+    let recordList = Array.isArray(rawData.record) ? rawData.record : (Array.isArray(rawData.records) ? rawData.records : []);
+
+    if (Array.isArray(rawData) && judgeList.length === 0 && recordList.length === 0) {
+      judgeList = rawData;
+    }
 
     const all = [...judgeList, ...recordList];
-    const targetUid = String(session.user_id);
-    const me = all.find(x => String(x.user_id) === targetUid || String(x.id) === targetUid) || rawData;
+    const matched = all.find(x => String(x.user_id || '').trim() === targetUid || String(x.id || '').trim() === targetUid);
+    const fallbackObj = (rawData && !Array.isArray(rawData) && rawData.user_id) ? rawData : {};
+    const me = Object.assign(
+      {
+        user_id: targetUid,
+        name: session.name || '',
+        level: session.level || 'N,N',
+        league_level: session.league_level || 'N',
+        training_hours_year: 0,
+        training_hours_total: 0
+      },
+      fallbackObj,
+      matched || {}
+    );
 
     callApi({action:'getAssignments'}, res2=>{
       window._yearRaw = {
@@ -692,7 +709,7 @@ function loadHomeUserAnalysis(){
         record: recordList,
         allAssignments: res2?.data || res2?.assignments || []
       };
-      window._yearData = all.length ? all : [me];
+      window._yearData = matched ? all : [me, ...all];
       renderHomeUserAnalysis(me);
     });
   });
@@ -725,10 +742,75 @@ function openFullAnalysis(userId){
   openUserDetail(userId);
 }
 
+function calcTrainingHoursFromLogs_(targetUid, logs, courses, targetYear){
+  const courseMap = {};
+  (courses || []).forEach(c => {
+    const cid = String(c.course_id ?? c.id ?? c.courseId ?? '').trim();
+    if (!cid) return;
+    const rawHours = c.training_hours ?? c.certificate_hours ?? c.hours ?? c.course_hours ?? 0;
+    const hours = Number(rawHours) || 0;
+    const rawDate = c.date || c.course_date || c.start_date || '';
+    const dObj = rawDate ? new Date(String(rawDate).replace(/-/g, '/')) : null;
+    courseMap[cid] = {
+      hours,
+      date: (dObj && !isNaN(dObj.getTime())) ? dObj : null
+    };
+  });
+
+  let yearHours = 0;
+  let totalHours = 0;
+  const cleanTargetUid = String(targetUid || '').trim();
+
+  (logs || []).forEach(r => {
+    const uid = String(r.user_id ?? r.uid ?? r.userId ?? '').trim();
+    if (cleanTargetUid && uid && uid !== cleanTargetUid) return;
+
+    const status = String(r.status || '').trim().toLowerCase();
+    const attStatus = String(r.attendance_status || '').trim().toLowerCase();
+    const certVer = String(r.certificate_verified || '').trim().toLowerCase();
+    const checkinTime = String(r.checkin_time || '').trim();
+    const checkoutTime = String(r.checkout_time || '').trim();
+
+    const isRejected =
+      ['cancelled', 'canceled', '已取消', '取消'].includes(status) ||
+      ['absent', '缺席'].includes(attStatus) ||
+      ['rejected', 'incomplete', '未通過', '不通過'].includes(certVer);
+
+    const isCompleted =
+      !isRejected && (
+        ['completed', 'attended', 'present', '已完成', '已出席', '出席'].includes(attStatus) ||
+        ['completed', 'attended', '已完成', '已出席'].includes(status) ||
+        ['completed', 'verified', '已核發', '已通過', '通過'].includes(certVer) ||
+        (checkinTime !== '' && checkoutTime !== '')
+      );
+
+    if (!isCompleted) return;
+
+    const cid = String(r.course_id ?? r.cid ?? r.courseId ?? '').trim();
+    const cInfo = courseMap[cid] || { hours: 0, date: null };
+    const rawRowHours = r.training_hours ?? r.certificate_hours ?? r.hours ?? 0;
+    const hours = Number(cInfo.hours || rawRowHours || 0) || 0;
+    if (hours <= 0) return;
+
+    totalHours += hours;
+
+    const rawLogDate = r.date || r.course_date || r.certificate_verified_date || r.created_at || '';
+    const logDateObj = rawLogDate ? new Date(String(rawLogDate).replace(/-/g, '/')) : null;
+    const validLogDate = (logDateObj && !isNaN(logDateObj.getTime())) ? logDateObj : null;
+    const refDate = cInfo.date || validLogDate;
+
+    if (!refDate || refDate.getFullYear() === Number(targetYear)) {
+      yearHours += hours;
+    }
+  });
+
+  return { yearHours, totalHours };
+}
+
 function openUserDetail(userId){
   const all = window._yearData || [];
-  const targetUid = String(userId || session.user_id);
-  const p = all.find(x => String(x.user_id) === targetUid || String(x.id) === targetUid) || {};
+  const targetUid = String(userId || session.user_id || '').trim();
+  const p = all.find(x => String(x.user_id || '').trim() === targetUid || String(x.id || '').trim() === targetUid) || {};
 
   const modal = document.getElementById('userModal');
   if (!modal) return;
@@ -749,7 +831,7 @@ function openUserDetail(userId){
   if (window._yearRaw?.allAssignments) {
     window._yearRaw.allAssignments.forEach(g=>{
       (g.list || []).forEach(item=>{
-        if (String(item.user_id) !== targetUid) return;
+        if (String(item.user_id || '').trim() !== targetUid) return;
 
         const year = String(g.date || new Date().getFullYear()).substring(0,4);
         if (!yearlyMap[year]){
@@ -771,9 +853,10 @@ function openUserDetail(userId){
     });
   }
 
-  const currentYearStr = String(new Date().getFullYear());
-  const trainingHoursYear = Number(p.training_hours_year ?? p.course_hours_year ?? p.year_hours ?? 0); 
-  const trainingHoursTotal = Number(p.training_hours_total ?? p.course_hours_total ?? p.total_hours ?? 0);
+  const currentYear = new Date().getFullYear();
+  const currentYearStr = String(currentYear);
+  const trainingHoursYear = Number(p.training_hours_year ?? p.course_hours_year ?? p.year_hours ?? 0) || 0;
+  const trainingHoursTotal = Number(p.training_hours_total ?? p.course_hours_total ?? p.total_hours ?? 0) || 0;
   
   // ✅ 證照解析與過濾邏輯
   const dbLevel = p.level || p.user_level || session.level || 'N,N';
@@ -839,11 +922,11 @@ function openUserDetail(userId){
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center;">
             <div style="font-size:11px; color:#64748b; font-weight:700;">📅 ${currentYearStr} 年度完訓時數</div>
-            <div style="font-size:20px; font-weight:900; color:#1e3a8a; margin-top:2px;">${trainingHoursYear} <span style="font-size:12px; font-weight:normal;">小時</span></div>
+            <div id="user-training-hours-year" style="font-size:20px; font-weight:900; color:#1e3a8a; margin-top:2px;">${trainingHoursYear} <span style="font-size:12px; font-weight:normal;">小時</span></div>
           </div>
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center;">
             <div style="font-size:11px; color:#64748b; font-weight:700;">📚 生涯累計完訓時數</div>
-            <div style="font-size:20px; font-weight:900; color:#16a34a; margin-top:2px;">${trainingHoursTotal} <span style="font-size:12px; font-weight:normal;">小時</span></div>
+            <div id="user-training-hours-total" style="font-size:20px; font-weight:900; color:#16a34a; margin-top:2px;">${trainingHoursTotal} <span style="font-size:12px; font-weight:normal;">小時</span></div>
           </div>
         </div>
       </div>
@@ -888,6 +971,28 @@ function openUserDetail(userId){
     </div>
   `;
   drawRoleChart(roleMap);
+
+  // ✅ 前端直接向 getTrainingLog & getCourses 核對並補齊完訓時數（即使後端統計未回傳時數也能正確顯示）
+  callApi({ action: 'getTrainingLog', user_id: targetUid }, logRes => {
+    const logs = logRes?.data || logRes?.logs || logRes?.enrollments || (Array.isArray(logRes) ? logRes : []);
+    if (!Array.isArray(logs) || logs.length === 0) return;
+
+    callApi({ action: 'getCourses' }, courseRes => {
+      const courses = courseRes?.courses || courseRes?.data || (Array.isArray(courseRes) ? courseRes : []);
+      const { yearHours, totalHours } = calcTrainingHoursFromLogs_(targetUid, logs, courses, currentYear);
+
+      const finalYear = Math.max(trainingHoursYear, yearHours);
+      const finalTotal = Math.max(trainingHoursTotal, totalHours);
+
+      p.training_hours_year = finalYear;
+      p.training_hours_total = finalTotal;
+
+      const yrEl = document.getElementById('user-training-hours-year');
+      const totEl = document.getElementById('user-training-hours-total');
+      if (yrEl) yrEl.innerHTML = `${finalYear} <span style="font-size:12px; font-weight:normal;">小時</span>`;
+      if (totEl) totEl.innerHTML = `${finalTotal} <span style="font-size:12px; font-weight:normal;">小時</span>`;
+    });
+  });
 }
 
 // 繪製圓餅圖並動態產生右側清晰圖例（Legend）
