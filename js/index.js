@@ -788,6 +788,12 @@ function openUserDetail(userId) {
 
   const courseCountYear = Number(p.course_count_year || 0);
   const courseCountTotal = Number(p.course_count_total || 0);
+  const hoursYear = Number(
+    p.training_hours_year ?? p.course_hours_year ?? p.hours_year ?? 0
+  );
+  const hoursTotal = Number(
+    p.training_hours_total ?? p.course_hours_total ?? p.hours_total ?? 0
+  );
   const latestCourse = p.latest_course || '-';
 
   const experienceValue = Number(
@@ -821,7 +827,7 @@ function openUserDetail(userId) {
           border:1px solid #bfdbfe;
           font-size:11px;
           font-weight:800;
-          padding:4px 10px;
+          padding:5px 10px;
           border-radius:6px;
           display:inline-block;
         ">
@@ -831,144 +837,180 @@ function openUserDetail(userId) {
     `;
   }
 
+  const scoreCardStyle = `
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+    padding:10px 8px;
+    text-align:center;
+  `;
+
   document.getElementById('userContent').innerHTML = `
-    <div style="padding:12px;">
+    <div style="padding:12px; display:flex; flex-direction:column; gap:14px;">
+      <!-- 1. 個人基本資料與證照 -->
       <div style="
-        margin-bottom:12px;
         display:flex;
         justify-content:space-between;
         align-items:flex-start;
+        gap:10px;
+        padding-bottom:10px;
+        border-bottom:1px solid #e2e8f0;
       ">
         <div>
-          <div style="
-            font-size:22px;
-            font-weight:900;
-            color:#0f172a;
-          ">
+          <div style="font-size:22px; font-weight:900; color:#0f172a; line-height:1.2;">
             ${p.name || session.name}
           </div>
-          <div style="
-            color:#64748b;
-            font-size:13px;
-            margin-top:2px;
-          ">
+          <div style="color:#64748b; font-size:13px; margin-top:4px; font-weight:600;">
             聯盟等級：${renderLevel(p.league_level || session.league_level || 'N')}
           </div>
         </div>
         ${licenseHtml}
       </div>
 
+      <!-- 2. 綜合評分與排位 -->
       <div style="
         display:grid;
-        grid-template-columns:repeat(4,1fr);
+        grid-template-columns:repeat(3, 1fr);
         gap:8px;
-        margin-bottom:14px;
       ">
-        <div class="user-kpi">
-          <div>經驗值</div>
-          <div style="font-size:18px;font-weight:900;color:#1e3a8a;">
+        <div class="user-kpi" style="${scoreCardStyle}">
+          <div style="font-size:12px; color:#64748b; font-weight:700;">經驗值</div>
+          <div style="font-size:18px; font-weight:900; color:#1e3a8a; margin-top:3px;">
             ${fmt(experienceValue)}
           </div>
         </div>
-        <div class="user-kpi">
-          <div>參與度</div>
-          <div style="font-size:18px;font-weight:900;color:#2563eb;">
-            ${fmt(total)}
-          </div>
-        </div>
-        <div class="user-kpi">
-          <div>出勤品質</div>
-          <div style="font-size:18px;font-weight:900;color:#16a34a;">
+        <div class="user-kpi" style="${scoreCardStyle}">
+          <div style="font-size:12px; color:#64748b; font-weight:700;">出勤品質</div>
+          <div style="font-size:18px; font-weight:900; color:#16a34a; margin-top:3px;">
             ${fmt(quality)}
           </div>
         </div>
-        <div class="user-kpi">
-          <div>排位分數</div>
-          <div style="font-size:18px;font-weight:900;color:#9333ea;">
+        <div class="user-kpi" style="${scoreCardStyle}">
+          <div style="font-size:12px; color:#64748b; font-weight:700;">排位分數</div>
+          <div style="font-size:18px; font-weight:900; color:#9333ea; margin-top:3px;">
             ${fmt(finalScore)}
           </div>
         </div>
       </div>
 
-      <div style="margin-top:10px;">
+      <!-- 3. 賽事出勤總覽（出勤明細 + 角色分佈整合） -->
+      <div style="
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        border-radius:10px;
+        padding:12px;
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+      ">
         <div style="
-          font-weight:700;
-          margin-bottom:8px;
-          font-size:14px;
-          color:#1e293b;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:8px;
         ">
-          📚 課程統計
+          <div style="font-weight:800; font-size:14px; color:#1e293b;">
+            ⚾ 賽事出勤總覽
+          </div>
+          <div style="
+            background:#eff6ff;
+            color:#1d4ed8;
+            border:1px solid #bfdbfe;
+            border-radius:999px;
+            padding:3px 10px;
+            font-size:12px;
+            font-weight:800;
+          ">
+            參與度：${fmt(total)} 場
+          </div>
+        </div>
+
+        <div style="
+          background:#ffffff;
+          border:1px solid #e2e8f0;
+          border-radius:8px;
+          padding:6px 8px;
+        ">
+          <table class="table-compact" style="width:100%; margin:0;">
+            <tr>
+              <th>年度</th>
+              <th>完成</th>
+              <th>遲到</th>
+              <th>缺席</th>
+            </tr>
+            <tr>
+              <td>${currentYearStr}</td>
+              <td>${completed}</td>
+              <td>${late}</td>
+              <td>${no_show}</td>
+            </tr>
+            <tr style="font-weight:700;">
+              <td>生涯</td>
+              <td>${career_completed}</td>
+              <td>${career_late}</td>
+              <td>${career_no_show}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="
+          display:flex;
+          align-items:center;
+          gap:18px;
+          flex-wrap:wrap;
+          justify-content:center;
+          background:#ffffff;
+          border:1px solid #e2e8f0;
+          border-radius:8px;
+          padding:12px;
+        ">
+          <canvas id="roleChart" width="170" height="170"></canvas>
+          <div
+            id="roleChartLegend"
+            style="
+              display:flex;
+              flex-direction:column;
+              gap:6px;
+              font-size:12px;
+              flex:1;
+              min-width:140px;
+            "
+          ></div>
+        </div>
+      </div>
+
+      <!-- 4. 課程培訓統計 -->
+      <div style="
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        border-radius:10px;
+        padding:12px;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+      ">
+        <div style="font-weight:800; font-size:14px; color:#1e293b;">
+          📚 課程培訓統計
         </div>
         <div style="
           display:grid;
           grid-template-columns:1fr 1fr;
-          gap:8px;
+          gap:10px;
         ">
-          ${cardMini('年度課程', courseCountYear)}
-          ${cardMini('生涯課程', courseCountTotal)}
+          ${cardMini('年度課程', `${courseCountYear} 門`, `時數：${fmt(hoursYear)} 小時`)}
+          ${cardMini('生涯課程', `${courseCountTotal} 門`, `時數：${fmt(hoursTotal)} 小時`)}
         </div>
         <div style="
-          margin-top:8px;
-          padding:10px;
+          padding:10px 12px;
           border-radius:8px;
           border:1px solid #e2e8f0;
-          background:#f8fafc;
+          background:#ffffff;
         ">
-          <div style="color:#64748b; font-size:12px;">最近完成課程</div>
-          <div style="margin-top:4px; font-weight:700; color:#0f172a;">
+          <div style="color:#64748b; font-size:12px; font-weight:600;">最近完成課程</div>
+          <div style="margin-top:3px; font-weight:800; color:#0f172a; font-size:13.5px;">
             ${latestCourse}
           </div>
         </div>
-      </div>
-
-      <hr style="margin:14px 0;">
-
-      <table class="table-compact">
-        <tr>
-          <th>年度</th>
-          <th>完成</th>
-          <th>遲到</th>
-          <th>缺席</th>
-        </tr>
-        <tr>
-          <td>${currentYearStr}</td>
-          <td>${completed}</td>
-          <td>${late}</td>
-          <td>${no_show}</td>
-        </tr>
-        <tr style="font-weight:700;">
-          <td>生涯</td>
-          <td>${career_completed}</td>
-          <td>${career_late}</td>
-          <td>${career_no_show}</td>
-        </tr>
-      </table>
-
-      <hr style="margin:14px 0;">
-
-      <div style="
-        display:flex;
-        align-items:center;
-        gap:20px;
-        flex-wrap:wrap;
-        justify-content:center;
-        background:#f8fafc;
-        border:1px solid #e2e8f0;
-        border-radius:8px;
-        padding:12px;
-      ">
-        <canvas id="roleChart" width="180" height="180"></canvas>
-        <div
-          id="roleChartLegend"
-          style="
-            display:flex;
-            flex-direction:column;
-            gap:6px;
-            font-size:12px;
-            flex:1;
-            min-width:140px;
-          "
-        ></div>
       </div>
     </div>
   `;
@@ -976,6 +1018,22 @@ function openUserDetail(userId) {
   if (typeof drawRoleChart === 'function') {
     drawRoleChart(roleMap);
   }
+}
+
+function cardMini(label, value, subText = '') {
+  return `
+    <div class="card-mini" style="
+      background:#ffffff;
+      border:1px solid #e2e8f0;
+      border-radius:8px;
+      padding:10px 12px;
+      text-align:center;
+    ">
+      <div class="mini-title" style="font-size:12px; color:#64748b; font-weight:700;">${label}</div>
+      <div class="mini-value" style="font-size:17px; font-weight:900; color:#0f172a; margin-top:3px;">${value}</div>
+      ${subText ? `<div style="margin-top:4px; font-size:12px; font-weight:700; color:#2563eb;">${subText}</div>` : ''}
+    </div>
+  `;
 }
 
 function renderLevel(lv) {
@@ -1006,15 +1064,6 @@ function mapRole(role) {
     REC_TRAINEE: '實習紀錄員'
   };
   return m[role] || role;
-}
-
-function cardMini(label, value) {
-  return `
-    <div class="card-mini">
-      <div class="mini-title">${label}</div>
-      <div class="mini-value">${value}</div>
-    </div>
-  `;
 }
 
 function drawRoleChart(data) {
