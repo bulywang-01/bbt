@@ -807,45 +807,63 @@ function calcTrainingHoursFromLogs_(targetUid, logs, courses, targetYear){
   return { yearHours, totalHours };
 }
 
+function normalizeDutyStatus_(raw) {
+  const s = String(raw || '').trim().toLowerCase();
+  if (['completed', 'done', 'finish', 'finished', 'attended', 'present', '完成', '已完成', '已出席', '出席'].includes(s)) {
+    return 'completed';
+  }
+  if (['late', 'tardy', '遲到'].includes(s)) {
+    return 'late';
+  }
+  if (['no_show', 'noshow', 'absent', '缺席', '未到'].includes(s)) {
+    return 'no_show';
+  }
+  return s;
+}
+
 function openUserDetail(userId){
   const all = window._yearData || [];
-  const targetUid = String(userId || session.user_id || '').trim();
-  const p = all.find(x => String(x.user_id || '').trim() === targetUid || String(x.id || '').trim() === targetUid) || {};
+  const targetUid = String(userId || session.user_id || '').trim().toLowerCase();
+  const p = all.find(x =>
+    String(x.user_id || '').trim().toLowerCase() === targetUid ||
+    String(x.id || '').trim().toLowerCase() === targetUid
+  ) || {};
 
   const modal = document.getElementById('userModal');
   if (!modal) return;
   modal.style.display = 'flex';
 
-  const total = Number(p.attendance ?? p.total_games ?? 0);
-  const completed = Number(p.completed ?? p.completed_games ?? 0);
-  const late = Number(p.late ?? 0);
-  const no_show = Number(p.no_show ?? 0);
-
   let career_completed = 0;
   let career_late = 0;
   let career_no_show = 0;
+  let assignmentsCount = 0;
 
   const roleMap = {};
   const yearlyMap = {};
 
   if (window._yearRaw?.allAssignments) {
-    window._yearRaw.allAssignments.forEach(g=>{
-      (g.list || []).forEach(item=>{
-        if (String(item.user_id || '').trim() !== targetUid) return;
+    window._yearRaw.allAssignments.forEach(g => {
+      (g.list || []).forEach(item => {
+        const itemUid = String(item.user_id || item.uid || '').trim().toLowerCase();
+        if (!itemUid || itemUid !== targetUid) return;
 
-        const year = String(g.date || new Date().getFullYear()).substring(0,4);
-        if (!yearlyMap[year]){
-          yearlyMap[year] = { completed:0, late:0, no_show:0 };
+        const st = normalizeDutyStatus_(item.status || item.attendance_status);
+        if (!['completed', 'late', 'no_show'].includes(st)) return;
+
+        assignmentsCount++;
+        const year = String(g.date || g.game_date || new Date().getFullYear()).substring(0, 4);
+        if (!yearlyMap[year]) {
+          yearlyMap[year] = { completed: 0, late: 0, no_show: 0 };
         }
-        if (item.status === 'completed') yearlyMap[year].completed++;
-        if (item.status === 'late') yearlyMap[year].late++;
-        if (item.status === 'no_show') yearlyMap[year].no_show++;
+        if (st === 'completed') yearlyMap[year].completed++;
+        if (st === 'late') yearlyMap[year].late++;
+        if (st === 'no_show') yearlyMap[year].no_show++;
 
-        if (item.status === 'completed') career_completed++;
-        if (item.status === 'late') career_late++;
-        if (item.status === 'no_show') career_no_show++;
+        if (st === 'completed') career_completed++;
+        if (st === 'late') career_late++;
+        if (st === 'no_show') career_no_show++;
 
-        if (item.status !== 'completed') return;
+        if (st !== 'completed') return;
 
         const role = mapRole(item.role);
         roleMap[role] = (roleMap[role] || 0) + 1;
@@ -855,10 +873,20 @@ function openUserDetail(userId){
 
   const currentYear = new Date().getFullYear();
   const currentYearStr = String(currentYear);
+  const curYearStat = yearlyMap[currentYearStr] || { completed: 0, late: 0, no_show: 0 };
+
+  const total = Number(p.attendance ?? p.total_games ?? assignmentsCount ?? 0) || 0;
+  const completed = Number(p.completed ?? p.completed_games ?? curYearStat.completed ?? 0) || 0;
+  const late = Number(p.late ?? curYearStat.late ?? 0) || 0;
+  const no_show = Number(p.no_show ?? curYearStat.no_show ?? 0) || 0;
+
+  const finalCareerCompleted = career_completed || Number(p.career_completed ?? completed) || 0;
+  const finalCareerLate = career_late || Number(p.career_late ?? late) || 0;
+  const finalCareerNoShow = career_no_show || Number(p.career_no_show ?? no_show) || 0;
+
   const trainingHoursYear = Number(p.training_hours_year ?? p.course_hours_year ?? p.year_hours ?? 0) || 0;
   const trainingHoursTotal = Number(p.training_hours_total ?? p.course_hours_total ?? p.total_hours ?? 0) || 0;
-  
-  // ✅ 證照解析與過濾邏輯
+
   const dbLevel = p.level || p.user_level || session.level || 'N,N';
   let parts = String(dbLevel).split(/[\/／,，]/);
   let judgeLv = parts[0] ? parts[0].trim().toUpperCase() : 'N';
@@ -872,7 +900,6 @@ function openUserDetail(userId){
     validCerts.push(`${recordLv}級紀錄`);
   }
 
-  // ✅ 如果有證照就組合（改用空白間隔）；若完全沒有則不呈現該 HTML 區塊
   let licenseHtml = '';
   if (validCerts.length > 0) {
     licenseHtml = `
@@ -894,7 +921,6 @@ function openUserDetail(userId){
         ${licenseHtml}
       </div>
 
-      <!-- 4 個精緻數據卡片 -->
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px;">
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 8px; text-align:center;">
           <div style="font-size:11px; color:#64748b; font-weight:700;">經驗值</div>
@@ -916,7 +942,6 @@ function openUserDetail(userId){
 
       <hr style="margin:14px 0; border:0; border-top:1px solid #e2e8f0;">
 
-      <!-- 🎓 培訓課程與完訓時數 -->
       <div>
         <div style="font-weight:700; margin-bottom:8px; font-size:14px; color:#1e293b;">🎓 培訓課程與完訓時數</div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
@@ -953,9 +978,9 @@ function openUserDetail(userId){
           `}
           <tr style="font-weight:700;">
             <td>生涯</td>
-            <td>${career_completed || completed}</td>
-            <td>${career_late || late}</td>
-            <td>${career_no_show || no_show}</td>
+            <td>${finalCareerCompleted}</td>
+            <td>${finalCareerLate}</td>
+            <td>${finalCareerNoShow}</td>
           </tr>
         </table>
       </div>
@@ -972,7 +997,6 @@ function openUserDetail(userId){
   `;
   drawRoleChart(roleMap);
 
-  // ✅ 前端直接向 getTrainingLog & getCourses 核對並補齊完訓時數（即使後端統計未回傳時數也能正確顯示）
   callApi({ action: 'getTrainingLog', user_id: targetUid }, logRes => {
     const logs = logRes?.data || logRes?.logs || logRes?.enrollments || (Array.isArray(logRes) ? logRes : []);
     if (!Array.isArray(logs) || logs.length === 0) return;
