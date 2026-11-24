@@ -504,7 +504,7 @@ function openMySchedule(){
     monday.setDate(now.getDate() - (day - 1));
     monday.setHours(0,0,0,0);
     const sunday = new Date(monday);
-    sunday.setDate(sunday.getDate() + 6);
+    sunday.setDate(monday.getDate() + 6);
     sunday.setHours(23,59,59,999);
 
     list.innerHTML = myGames.map(g => {
@@ -562,7 +562,7 @@ function openWeeklySchedule(){
     monday.setDate(now.getDate() - (day - 1));
     monday.setHours(0,0,0,0);
     const sunday = new Date(monday);
-    sunday.setDate(sunday.getDate() + 6);
+    sunday.setDate(monday.getDate() + 6);
     sunday.setHours(23,59,59,999);
 
     const weekGames = games.filter(g => {
@@ -683,21 +683,27 @@ function renderLoading(target){
 
 /*********************************************************
  * ✅ 個人數據分析模組（以 Users.level 欄位直接呈現證照：左裁判右紀錄）
- * 用途：取得使用者年度與生涯出勤／經驗值／完訓時數資料，
- *       並在彈窗呈現詳細數據、年度／生涯出勤表與角色甜甜圈圖。
+ * 用途：取得後端年度統計資料，於首頁呈現出勤率與「查看完整分析」，
+ *       並於彈窗顯示經驗值、參與度、出勤品質、排位分數、完訓時數與角色分布。
  *********************************************************/
 
-/** 載入首頁個人數據分析資料與原始指派快取 */
+/** 載入個人數據分析資料並快取至 window._yearData / window._yearRaw */
 function loadHomeUserAnalysis(){
   const targetYear = new Date().getFullYear();
   const targetUid = String(session.user_id || '').trim();
 
   callApi({
-    action:'getYearlyExperience',
+    action: 'getYearlyExperience',
     year: targetYear,
     user_id: targetUid
-  }, res=>{
-    const rawData = res?.data || res;
+  }, res => {
+    if (!res || res.result !== 'ok') {
+      const rateEl = document.getElementById('stat-rate');
+      if (rateEl) rateEl.textContent = '0%';
+      return;
+    }
+
+    const rawData = res.data || res;
     let judgeList = Array.isArray(rawData?.judge) ? rawData.judge : (Array.isArray(rawData?.judges) ? rawData.judges : []);
     let recordList = Array.isArray(rawData?.record) ? rawData.record : (Array.isArray(rawData?.records) ? rawData.records : []);
 
@@ -718,18 +724,6 @@ function loadHomeUserAnalysis(){
         name: session.name || '',
         level: session.level || 'N,N',
         league_level: session.league_level || 'N',
-        attendance: 0,
-        completed: 0,
-        late: 0,
-        no_show: 0,
-        score_total: 0,
-        quality: 100,
-        final_score: 0,
-        career_total: 0,
-        career_completed: 0,
-        career_late: 0,
-        career_no_show: 0,
-        role_count: {},
         training_hours_year: 0,
         training_hours_total: 0
       },
@@ -737,66 +731,12 @@ function loadHomeUserAnalysis(){
       matched || {}
     );
 
-    callApi({action:'getAssignments'}, res2=>{
-      const allAssignments = Array.isArray(res2?.data || res2?.assignments)
-        ? (res2?.data || res2?.assignments)
-        : [];
-
+    callApi({ action: 'getAssignments' }, res2 => {
       window._yearRaw = {
         judge: judgeList,
         record: recordList,
-        allAssignments: allAssignments
+        allAssignments: res2?.data || res2?.assignments || []
       };
-
-      // 若後端年度／生涯統計為 0 但 allAssignments 有紀錄，自動從 allAssignments 補齊
-      if (allAssignments.length > 0 && targetUid) {
-        let yTot = 0, yComp = 0, yLate = 0, yNoShow = 0;
-        let cTot = 0, cComp = 0, cLate = 0, cNoShow = 0;
-        const rMap = {};
-
-        allAssignments.forEach(g => {
-          const found = (g.list || []).find(item => String(item.user_id || '').trim() === targetUid);
-          if (!found) return;
-
-          const st = normalizeDutyStatus_(found.status);
-          if (!st || st === 'scheduled' || st === 'ignore' || st === 'hold') return;
-
-          const yrStr = String(g.date || '').trim().substring(0, 4);
-          const isCurYear = yrStr === String(targetYear);
-
-          cTot++;
-          if (st === 'completed') cComp++;
-          if (st === 'late') cLate++;
-          if (st === 'no_show') cNoShow++;
-
-          if (isCurYear) {
-            yTot++;
-            if (st === 'completed') yComp++;
-            if (st === 'late') yLate++;
-            if (st === 'no_show') yNoShow++;
-          }
-
-          if (st === 'completed') {
-            const roleLabel = mapRole(found.role);
-            rMap[roleLabel] = (rMap[roleLabel] || 0) + 1;
-          }
-        });
-
-        if (Number(me.attendance || 0) === 0 && yTot > 0) me.attendance = yTot;
-        if (Number(me.completed || 0) === 0 && yComp > 0) me.completed = yComp;
-        if (Number(me.late || 0) === 0 && yLate > 0) me.late = yLate;
-        if (Number(me.no_show || 0) === 0 && yNoShow > 0) me.no_show = yNoShow;
-
-        if (Number(me.career_total || 0) === 0 && cTot > 0) me.career_total = cTot;
-        if (Number(me.career_completed || 0) === 0 && cComp > 0) me.career_completed = cComp;
-        if (Number(me.career_late || 0) === 0 && cLate > 0) me.career_late = cLate;
-        if (Number(me.career_no_show || 0) === 0 && cNoShow > 0) me.career_no_show = cNoShow;
-
-        if (!me.role_count || Object.keys(me.role_count).length === 0) {
-          me.role_count = rMap;
-        }
-      }
-
       window._yearData = matched ? all : [me, ...all];
       renderHomeUserAnalysis(me);
     });
@@ -934,70 +874,17 @@ function openUserDetail(userId){
   const currentYear = new Date().getFullYear();
   const currentYearStr = String(currentYear);
 
-  let total = Number(p.attendance ?? p.total_games ?? 0);
-  let completed = Number(p.completed ?? p.completed_games ?? 0);
-  let late = Number(p.late ?? 0);
-  let no_show = Number(p.no_show ?? 0);
+  const total = Number(p.attendance ?? p.total_games ?? 0);
+  const completed = Number(p.completed ?? p.completed_games ?? 0);
+  const late = Number(p.late ?? 0);
+  const no_show = Number(p.no_show ?? 0);
 
-  let career_completed = Number(p.career_completed ?? 0);
-  let career_late = Number(p.career_late ?? 0);
-  let career_no_show = Number(p.career_no_show ?? 0);
+  const career_completed = Number(p.career_completed ?? completed);
+  const career_late = Number(p.career_late ?? late);
+  const career_no_show = Number(p.career_no_show ?? no_show);
 
   const roleMap = {};
-  const yearlyMap = {};
-
-  if (window._yearRaw?.allAssignments) {
-    let aggCompleted = 0;
-    let aggLate = 0;
-    let aggNoShow = 0;
-    let aggTotal = 0;
-
-    window._yearRaw.allAssignments.forEach(g=>{
-      (g.list || []).forEach(item=>{
-        if (String(item.user_id || '').trim() !== cleanUid) return;
-
-        const st = normalizeDutyStatus_(item.status);
-        if (!st || st === 'scheduled' || st === 'ignore' || st === 'hold') return;
-
-        const rawYearStr = String(g.date || '').trim().substring(0,4);
-        const year = /^\d{4}$/.test(rawYearStr) ? rawYearStr : currentYearStr;
-
-        if (!yearlyMap[year]){
-          yearlyMap[year] = { completed:0, late:0, no_show:0 };
-        }
-        if (st === 'completed') yearlyMap[year].completed++;
-        if (st === 'late') yearlyMap[year].late++;
-        if (st === 'no_show') yearlyMap[year].no_show++;
-
-        aggTotal++;
-        if (st === 'completed') aggCompleted++;
-        if (st === 'late') aggLate++;
-        if (st === 'no_show') aggNoShow++;
-
-        if (st !== 'completed') return;
-
-        const role = mapRole(item.role);
-        roleMap[role] = (roleMap[role] || 0) + 1;
-      });
-    });
-
-    if (aggTotal > 0) {
-      career_completed = Math.max(career_completed, aggCompleted);
-      career_late = Math.max(career_late, aggLate);
-      career_no_show = Math.max(career_no_show, aggNoShow);
-
-      if (yearlyMap[currentYearStr]) {
-        if (completed === 0 && yearlyMap[currentYearStr].completed > 0) completed = yearlyMap[currentYearStr].completed;
-        if (late === 0 && yearlyMap[currentYearStr].late > 0) late = yearlyMap[currentYearStr].late;
-        if (no_show === 0 && yearlyMap[currentYearStr].no_show > 0) no_show = yearlyMap[currentYearStr].no_show;
-        const ySum = yearlyMap[currentYearStr].completed + yearlyMap[currentYearStr].late + yearlyMap[currentYearStr].no_show;
-        if (total === 0 && ySum > 0) total = ySum;
-      }
-    }
-  }
-
-  // 若 allAssignments 未帶出 roleMap，從 p.role_count 補齊
-  if (Object.keys(roleMap).length === 0 && p.role_count && typeof p.role_count === 'object') {
+  if (p.role_count && typeof p.role_count === 'object') {
     Object.entries(p.role_count).forEach(([rKey, cnt]) => {
       const numCnt = Number(cnt) || 0;
       if (numCnt <= 0) return;
@@ -1034,11 +921,6 @@ function openUserDetail(userId){
     `;
   }
 
-  const finalCareerCompleted = career_completed || completed;
-  const finalCareerLate = career_late || late;
-  const finalCareerNoShow = career_no_show || no_show;
-  const partVal = total > 0 ? total : (completed + late + no_show);
-
   document.getElementById('userContent').innerHTML = `
     <div style="padding:12px;">
       <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:flex-start;">
@@ -1056,7 +938,7 @@ function openUserDetail(userId){
         </div>
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 8px; text-align:center;">
           <div style="font-size:11px; color:#64748b; font-weight:700;">參與度</div>
-          <div style="font-size:18px; font-weight:900; color:#2563eb; margin-top:2px;">${partVal}</div>
+          <div style="font-size:18px; font-weight:900; color:#2563eb; margin-top:2px;">${total}</div>
         </div>
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 8px; text-align:center;">
           <div style="font-size:11px; color:#64748b; font-weight:700;">出勤品質</div>
@@ -1089,26 +971,17 @@ function openUserDetail(userId){
         <div style="font-weight:700; margin-bottom:6px; font-size:14px; color:#1e293b;">📊 出勤概況</div>
         <table class="table-compact">
           <tr><th>年度</th><th>完成</th><th>遲到</th><th>缺席</th></tr>
-          ${Object.keys(yearlyMap).length > 0 ? Object.keys(yearlyMap).sort((a,b)=>b-a).map(year => `
-            <tr>
-              <td>${year}</td>
-              <td>${yearlyMap[year].completed}</td>
-              <td>${yearlyMap[year].late}</td>
-              <td>${yearlyMap[year].no_show}</td>
-            </tr>
-          `).join('') : `
-            <tr>
-              <td>${currentYearStr}</td>
-              <td>${completed}</td>
-              <td>${late}</td>
-              <td>${no_show}</td>
-            </tr>
-          `}
+          <tr>
+            <td>${currentYearStr}</td>
+            <td>${completed}</td>
+            <td>${late}</td>
+            <td>${no_show}</td>
+          </tr>
           <tr style="font-weight:700;">
             <td>生涯</td>
-            <td>${finalCareerCompleted}</td>
-            <td>${finalCareerLate}</td>
-            <td>${finalCareerNoShow}</td>
+            <td>${career_completed}</td>
+            <td>${career_late}</td>
+            <td>${career_no_show}</td>
           </tr>
         </table>
       </div>
