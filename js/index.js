@@ -760,10 +760,13 @@ function calcTrainingHoursFromLogs_(targetUid, logs, courses, targetYear){
   let yearHours = 0;
   let totalHours = 0;
   const cleanTargetUid = String(targetUid || '').trim();
+  const cleanTargetName = String(session?.name || '').trim();
 
   (logs || []).forEach(r => {
     const uid = String(r.user_id ?? r.uid ?? r.userId ?? '').trim();
-    if (cleanTargetUid && uid && uid !== cleanTargetUid) return;
+    const uName = String(r.name ?? r.external_name ?? '').trim();
+    const isUserMatch = (cleanTargetUid && uid === cleanTargetUid) || (!uid && cleanTargetName && uName === cleanTargetName);
+    if (!isUserMatch) return;
 
     const status = String(r.status || '').trim().toLowerCase();
     const attStatus = String(r.attendance_status || '').trim().toLowerCase();
