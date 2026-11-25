@@ -1,7 +1,8 @@
 /*********************************************************
- * ✅ Index Page（最終完整整合版：Users.level 證照直接對應）
+ * ✅ Index Page（最終完整整合版：含個人資料與證照等級自助維護）
  * 用途：首頁主控制腳本，負責登入驗證、儀表板統計、
- *       本週班表與提醒、個人數據分析、課程與系統公告顯示／管理。
+ *       本週班表與提醒、個人數據分析、個人資料維護、
+ *       課程與系統公告顯示／管理。
  *********************************************************/
 
 let session = null;
@@ -27,6 +28,190 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHomeCourses();
   loadHomeAnnouncements();
 });
+
+/*********************************************************
+ * 👤 個人資料自助維護模組（支援裁判／紀錄證照等級修改）
+ *********************************************************/
+function parseCertLevels_(rawLevel) {
+  const parts = String(rawLevel || 'N,N').split(/[\/／,，]/);
+  const validSet = new Set(['A', 'B', 'C', 'N']);
+  const jRaw = parts[0] ? parts[0].trim().toUpperCase() : 'N';
+  const rRaw = parts[1] ? parts[1].trim().toUpperCase() : 'N';
+  return {
+    judge: validSet.has(jRaw) ? jRaw : 'N',
+    record: validSet.has(rRaw) ? rRaw : 'N'
+  };
+}
+
+function formatRoleDisplayText_(rawRole) {
+  const map = {
+    admin: '管理員',
+    chief_judge: '裁判長',
+    record_chief: '紀錄長',
+    judge: '裁判員',
+    record: '紀錄員'
+  };
+  return String(rawRole || '')
+    .split(',')
+    .map(r => map[r.trim()] || r.trim())
+    .filter(Boolean)
+    .join('、') || '-';
+}
+
+// 開啟個人資料設定彈窗並載入最新資料
+function openProfileModal() {
+  const overlay = document.getElementById('profile-overlay');
+  const loadingEl = document.getElementById('profile-loading');
+  const formEl = document.getElementById('profile-form');
+  const msgEl = document.getElementById('pf-msg');
+
+  if (!overlay || !session) return;
+
+  overlay.style.display = 'flex';
+  if (loadingEl) loadingEl.style.display = 'block';
+  if (formEl) formEl.style.display = 'none';
+  if (msgEl) {
+    msgEl.style.display = 'none';
+    msgEl.textContent = '';
+  }
+
+  callApi({
+    action: 'getUserProfile',
+    user_id: session.user_id
+  }, res => {
+    if (loadingEl) loadingEl.style.display = 'none';
+    if (formEl) formEl.style.display = 'block';
+
+    const u = (res && res.result === 'ok' && res.user) ? res.user : session;
+
+    document.getElementById('pf-username-display').textContent = u.username || session.username || session.user_id || '-';
+    // document.getElementById('pf-league-display').textContent = (u.league_level || session.league_level || 'N') + ' 級';
+    document.getElementById('pf-role-display').textContent = formatRoleDisplayText_(u.role || session.role);
+
+    document.getElementById('pf-name').value = u.name || '';
+    document.getElementById('pf-phone').value = u.phone || '';
+    document.getElementById('pf-email').value = u.email || '';
+    document.getElementById('pf-note').value = u.note || '';
+    document.getElementById('pf-team').value = u.team || '';
+    document.getElementById('pf-password').value = '';
+    document.getElementById('pf-password-confirm').value = '';
+    const team = (document.getElementById('pf-team')?.value || '').trim();
+
+    const certs = parseCertLevels_(u.level || session.level);
+    document.getElementById('pf-judge-level').value = certs.judge;
+    document.getElementById('pf-record-level').value = certs.record;
+
+    const teamListEl = document.getElementById('pf-team-options');
+    if (teamListEl && Array.isArray(res?.teams)) {
+      teamListEl.innerHTML = res.teams
+        .filter(Boolean)
+        .map(t => `<option value="${String(t).replace(/"/g, '&quot;')}"></option>`)
+        .join('');
+    }
+  });
+}
+
+// 送出個人資料更新
+function submitProfileForm(event) {
+  event.preventDefault();
+  if (!session) return;
+
+  const msgEl = document.getElementById('pf-msg');
+  const saveBtn = document.getElementById('pf-save-btn');
+
+  const showPfMsg = (text, isErr = false) => {
+    if (!msgEl) return;
+    msgEl.style.display = 'block';
+    msgEl.style.color = isErr ? '#dc2626' : '#16a34a';
+    msgEl.textContent = text;
+  };
+
+  const name = document.getElementById('pf-name').value.trim();
+  const phone = document.getElementById('pf-phone').value.trim();
+  const judgeLevel = document.getElementById('pf-judge-level').value || 'N';
+  const recordLevel = document.getElementById('pf-record-level').value || 'N';
+  const combinedLevel = `${judgeLevel},${recordLevel}`;
+  const email = document.getElementById('pf-email').value.trim();
+  const note = document.getElementById('pf-note').value.trim();
+  const team = document.getElementById('pf-team').value.trim();
+  const password = document.getElementById('pf-password').value;
+  const passwordConfirm = document.getElementById('pf-password-confirm').value;
+
+  if (!name) {
+    showPfMsg('⚠️ 中文姓名為必填欄位', true);
+    return;
+  }
+
+  if (password || passwordConfirm) {
+    if (password.length < 4) {
+      showPfMsg('⚠️ 新密碼長度至少需 4 個字元', true);
+      return;
+    }
+    if (password !== passwordConfirm) {
+      showPfMsg('⚠️ 兩次輸入的新密碼不一致', true);
+      return;
+    }
+  }
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = '儲存中...';
+  msgEl.style.display = 'none';
+
+  callApi({
+    action: 'updateUserProfile',
+    user_id: session.user_id,
+    name: name,
+    phone: phone,
+    level: combinedLevel,
+    email: email,
+    note: note,
+    team: team,
+    password: password
+  }, res => {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '💾 儲存個人資料';
+
+    if (!res || res.result !== 'ok') {
+      showPfMsg('❌ 儲存失敗：' + (res?.message || '請稍後再試'), true);
+      return;
+    }
+
+    // 同步更新本地 session 快取與畫面顯示
+    session.name = name;
+    session.phone = phone;
+    session.level = combinedLevel;
+    session.email = email;
+    session.note = note;
+    session.team = team;
+
+    try {
+      const rawSaved = localStorage.getItem('session_user');
+      if (rawSaved) {
+        const parsed = JSON.parse(rawSaved);
+        Object.assign(parsed, { name, phone, level: combinedLevel, email, note, team });
+        localStorage.setItem('session_user', JSON.stringify(parsed));
+      }
+    } catch (_) {}
+
+    renderWelcome();
+    const headerNameEl = document.getElementById('header-username');
+    if (headerNameEl) headerNameEl.textContent = name;
+
+    // 同步更新記憶體中的個人數據分析快取，確保開啟個人數據分析時顯示最新證照
+    if (Array.isArray(window._yearData)) {
+      const uid = String(session.user_id || '').trim();
+      const target = window._yearData.find(x => String(x.user_id ?? x.id ?? '').trim() === uid);
+      if (target) {
+        target.name = name;
+        target.level = combinedLevel;
+      }
+    }
+
+    document.getElementById('pf-password').value = '';
+    document.getElementById('pf-password-confirm').value = '';
+    showPfMsg('✅ 個人資料與證照等級已更新完成！', false);
+  });
+}
 
 /*********************************************************
  * ✅ 首頁載入聯盟開課資訊
@@ -113,7 +298,7 @@ function renderWelcome() {
   if (roleEl) {
     roleEl.textContent = (session.role || '')
       .split(',')
-      .map(r => roleMap[r])
+      .map(r => roleMap[r.trim()])
       .filter(Boolean)
       .join('／') || '裁判員／紀錄員';
   }
@@ -804,7 +989,7 @@ function openUserDetail(userId) {
   const finalScore = Number(p.final_score ?? p.score_total ?? 0);
   const quality = Number(p.quality ?? 100);
 
-  const dbLevel = p.level || p.user_level || session.level || 'N,N';
+  const dbLevel = session.level || p.level || p.user_level || 'N,N';
   const parts = String(dbLevel).split(/[\/／,，]/);
   const judgeLv = parts[0] ? parts[0].trim().toUpperCase() : 'N';
   const recordLv = parts[1] ? parts[1].trim().toUpperCase() : 'N';
@@ -847,7 +1032,6 @@ function openUserDetail(userId) {
 
   document.getElementById('userContent').innerHTML = `
     <div style="padding:12px; display:flex; flex-direction:column; gap:14px;">
-      <!-- 1. 個人基本資料與證照 -->
       <div style="
         display:flex;
         justify-content:space-between;
@@ -867,7 +1051,6 @@ function openUserDetail(userId) {
         ${licenseHtml}
       </div>
 
-      <!-- 2. 綜合評分與排位 -->
       <div style="
         display:grid;
         grid-template-columns:repeat(3, 1fr);
@@ -893,7 +1076,6 @@ function openUserDetail(userId) {
         </div>
       </div>
 
-      <!-- 3. 賽事出勤總覽（出勤明細 + 角色分佈整合） -->
       <div style="
         background:#f8fafc;
         border:1px solid #e2e8f0;
@@ -979,7 +1161,6 @@ function openUserDetail(userId) {
         </div>
       </div>
 
-      <!-- 4. 課程培訓統計 -->
       <div style="
         background:#f8fafc;
         border:1px solid #e2e8f0;
@@ -1089,14 +1270,7 @@ function drawRoleChart(data) {
     return;
   }
 
-  const colors = [
-    '#2563eb',
-    '#16a34a',
-    '#ea580c',
-    '#9333ea',
-    '#dc2626',
-    '#0891b2'
-  ];
+  const colors = ['#2563eb', '#16a34a', '#ea580c', '#9333ea', '#dc2626', '#0891b2'];
 
   let start = 0;
   values.forEach((v, i) => {
@@ -1185,15 +1359,10 @@ function loadHomeAnnouncements() {
   const adminBtn = document.getElementById('open-cms-btn');
 
   if (adminBtn) {
-    if (checkAdminPermission()) {
-      adminBtn.style.display = 'inline-block';
-    } else {
-      adminBtn.style.display = 'none';
-    }
+    adminBtn.style.display = checkAdminPermission() ? 'inline-block' : 'none';
   }
 
   if (!container) return;
-
   container.innerHTML = `<div style="color: #64748b; font-size: 13px; padding: 8px;">⏳ 公告資料載入中...</div>`;
 
   try {
@@ -1202,7 +1371,6 @@ function loadHomeAnnouncements() {
         container.innerHTML = `<div style="color: #dc2626; font-size: 13px; padding: 8px;">⚠️ 錯誤：後端回傳空白 (null)</div>`;
         return;
       }
-
       if (res.result !== 'ok') {
         container.innerHTML = `<div style="color: #dc2626; font-size: 13px; padding: 8px;">⚠️ 後端回傳錯誤：${res.message || '未知錯誤'}</div>`;
         return;
