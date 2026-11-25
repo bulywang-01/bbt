@@ -23,9 +23,9 @@
       color: #0f172a;
       letter-spacing: 0.2px;
     }
-    
+
     .main { max-width: 1200px; margin: 0 auto; padding: 20px; }
-    
+
     .panel {
       background: #ffffff;
       border: 1px solid #cbd5e1;
@@ -67,7 +67,7 @@
       padding: 14px 18px !important;
       margin-bottom: 14px !important;
     }
-    
+
     .stats-grid-4 {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -90,7 +90,7 @@
       font-family: inherit;
     }
     .stat-card:hover { border-color: #94a3b8; }
-    
+
     .stat-title { font-size: 11px; font-weight: 700; color: #475569; white-space: nowrap; font-family: inherit; }
     .stat-val-row { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; flex-wrap: wrap; }
     .stat-value { font-size: 22px; font-weight: 900; color: #1e3a8a; line-height: 1.1; font-family: inherit; }
@@ -165,6 +165,25 @@
     .pill-emerald-action { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
 
     /* 個人資料表單樣式 */
+    .profile-photo-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .profile-photo-preview {
+      width: 68px;
+      height: 68px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 2px solid #cbd5e1;
+      background: #e2e8f0;
+      flex-shrink: 0;
+    }
     .profile-form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -628,7 +647,7 @@
         .then(html => {
           document.getElementById('header-container').innerHTML = html;
           const session = (typeof getSession === 'function') ? getSession() : null;
-          
+
           document.body.classList.remove('role-admin','role-judge','role-record');
           if (session && session.role) {
             const roles = session.role.split(',').map(r => r.trim());
@@ -673,24 +692,24 @@
     function beautifyWeeklySchedule() {
       const container = document.getElementById('weeklyContent');
       if (!container) return;
-      
+
       let text = container.innerText || container.textContent;
       if (!text || text.trim() === '' || text.includes('載入中') || container.dataset.beautified === 'true') return;
-      
+
       let lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
       if (lines.length === 0) return;
-      
+
       let outputHtml = '<div class="league-schedule-wrapper">';
       let currentVenue = null;
       let currentMatch = null;
-      
+
       let pushMatch = () => {
         if (currentMatch && currentVenue) {
           currentVenue.matches.push(currentMatch);
           currentMatch = null;
         }
       };
-      
+
       let pushVenue = () => {
         if (currentVenue) {
           pushMatch();
@@ -698,23 +717,23 @@
           currentVenue = null;
         }
       };
-      
+
       lines.forEach(line => {
         if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(line)) {
           if (currentVenue) pushVenue();
           outputHtml += `<div class="sch-date-header">📅 ${line}</div>`;
-        } 
+        }
         else if (line.includes('場') || line.includes('大學') || line.includes('綜合') || line.includes('球場') || line.includes('📍')) {
           if (currentVenue) pushVenue();
           currentVenue = { venueName: line.replace('📍', '').trim(), matches: [] };
-        } 
+        }
         else if (/^\d{2}:\d{2}/.test(line) && line.length < 25 && !line.includes('：')) {
           if (currentMatch) pushMatch();
           currentMatch = { timeCode: line, teams: '', roles: {} };
-        } 
+        }
         else if ((line.includes('VS') || line.includes('ＶＳ') || line.includes('vs')) && currentMatch && !currentMatch.teams) {
           currentMatch.teams = line.replace(/\s*(VS|ＶＳ|vs)\s*/g, ' VS ');
-        } 
+        }
         else if (line.includes('：') || line.includes(':')) {
           if (!currentMatch) {
             currentMatch = { timeCode: '賽事', teams: '', roles: {} };
@@ -723,19 +742,19 @@
           let title = parts[0] ? parts[0].trim() : '';
           let name = parts[1] ? parts[1].trim() : '－';
           currentMatch.roles[title] = name;
-        } 
+        }
         else {
           if (currentMatch && !currentMatch.teams) {
             currentMatch.teams = line.replace(/\s*(VS|ＶＳ|vs)\s*/g, ' VS ');
           }
         }
       });
-      
+
       if (currentMatch) pushMatch();
       if (currentVenue) {
         outputHtml += renderVenueCard(currentVenue);
       }
-      
+
       outputHtml += '</div>';
       container.dataset.beautified = 'true';
       container.innerHTML = outputHtml;
@@ -745,7 +764,7 @@
       let matchesHtml = venue.matches.map(m => {
         let refBoxes = [];
         let recBoxes = [];
-        
+
         Object.keys(m.roles).forEach(key => {
           let name = m.roles[key] || '－';
           let isAssigned = (name !== '－' && name !== '-' && name !== '');
@@ -756,7 +775,7 @@
               <span class="sch-role-name">${isAssigned ? name : '尚缺人力'}</span>
             </div>
           `;
-          
+
           if (key.includes('主審') || key.includes('一壘') || key.includes('二壘') || key.includes('三壘') || key.includes('審') || key.includes('裁判')) {
             refBoxes.push(boxHtml);
           } else {
@@ -793,19 +812,19 @@
     function beautifyMySchedule() {
       const container = document.getElementById('my-schedule-list');
       if (!container) return;
-      
+
       let text = container.innerText || container.textContent;
       if (!text || text.trim() === '' || text.includes('載入中') || container.dataset.beautified === 'true') return;
-      
+
       let lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
       if (lines.length === 0) return;
 
       let outputHtml = '';
-      
+
       for (let i = 0; i < lines.length; i += 2) {
         let line1 = lines[i] || '';
         let line2 = lines[i + 1] || '';
-        
+
         if (!line2 && (line1.includes('VS') || line1.includes('組') || line1.includes('球場'))) {
           line2 = line1;
           line1 = '';
@@ -818,10 +837,10 @@
         let datePart = parts[0] || '';
         let timePart = parts[1] || '';
         let venueRolePart = parts.slice(2).join(' ') || '';
-        
+
         let role = '';
         let venue = venueRolePart;
-        
+
         const rolesList = ['見習紀錄員', '影像紀錄員', '一壘審', '二壘審', '三壘審', '主審', '紀錄員', '記錄員', '影像紀錄', '裁判'];
         for (let r of rolesList) {
           if (venueRolePart.includes(r)) {
@@ -931,7 +950,7 @@
 
   <div class="main">
     <div id="content"></div>
-    
+
     <!-- 1️⃣ 歡迎與核心儀表板 -->
     <div class="panel welcome-box">
       <div style="display: flex; flex-direction: column; gap: 6px; text-align: left; margin-bottom: 12px;">
@@ -980,7 +999,6 @@
 
     <!-- 2️⃣ 雙欄並排：聯盟開課資訊 ＋ 最新公告 -->
     <div class="dashboard-mid-grid">
-      <!-- 左欄：聯盟開課資訊 -->
       <div class="panel" style="background: #f8fafc; border-color: #cbd5e1;">
         <div class="section-header">
           <h3>🎓 聯盟開課資訊</h3>
@@ -991,7 +1009,6 @@
         </div>
       </div>
 
-      <!-- 右欄：最新公告 -->
       <div class="panel">
         <div class="section-header">
           <h3>📢 最新公告</h3>
@@ -1051,7 +1068,7 @@
         </a>
       </div>
     </div>
-  
+
     <!-- 4️⃣ 系統資訊中心 -->
     <div class="panel">
       <div class="section-header" style="margin-bottom: 8px;">
@@ -1065,7 +1082,7 @@
         <button id="open-user-guide" class="pill pill-blue">📖 使用教學</button>
       </div>
     </div>
-    
+
     <footer class="footer">
       <div class="title">⚾ BBT 軟式棒球聯盟出勤管理系統</div>
       <div>Version 2.2 ｜ Updated 115/07/01 ｜ Design & Development by bulywang</div>
@@ -1089,12 +1106,34 @@
             </div>
             <div class="profile-ro-item">
               <span></span>
-              <!-- <strong id="pf-league-display">-</strong> -->
               <strong></strong>
             </div>
             <div class="profile-ro-item">
               <span>系統職務</span>
               <strong id="pf-role-display">-</strong>
+            </div>
+          </div>
+
+          <!-- 個人照片上傳區（比照球隊管理存入 BBT_img） -->
+          <div class="profile-photo-box">
+            <img
+              id="pf-photo-preview"
+              src=""
+              alt="個人照片預覽"
+              class="profile-photo-preview"
+            />
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:12px; font-weight:800; color:#334155; margin-bottom:4px;">📷 個人照片</div>
+              <input
+                type="file"
+                id="pf-photo-file"
+                accept="image/jpeg,image/png,image/webp"
+                onchange="handleProfilePhotoChange(event)"
+                style="font-size:12px; max-width:100%;"
+              />
+              <div style="font-size:11px; color:#64748b; margin-top:4px;">
+                支援 JPG / PNG / WebP，自動壓縮後存入 Google Drive（BBT_img）
+              </div>
             </div>
           </div>
 
@@ -1195,7 +1234,6 @@
       </div>
     </div>
 
-    <!-- 裁判守則 Overlay -->
     <div id="rules-overlay" class="overlay">
       <div class="overlay-box">
         <h2>🧑‍⚖️ BBT 聯盟例行賽｜裁判守則</h2>
@@ -1228,7 +1266,6 @@
       </div>
     </div>
 
-    <!-- 紀錄員守則 Overlay -->
     <div id="record-rules-overlay" class="overlay">
       <div class="overlay-box">
         <h2>📝 BBT 聯盟例行賽｜紀錄員守則</h2>
@@ -1268,7 +1305,6 @@
       </div>
     </div>
 
-    <!-- 聯盟賽制 Overlay -->
     <div id="league-overlay" class="overlay" style="display:none;">
       <div class="overlay-box">
         <h2>📘 BBT 賽制規定 Rules</h2>
@@ -1313,7 +1349,6 @@
       </div>
     </div>
 
-    <!-- ℹ️ 系統功能說明 -->
     <div id="system-guide-overlay" class="overlay">
       <div class="overlay-box system-guide-box">
         <h2>ℹ️ BBT 出勤管理系統功能說明</h2>
@@ -1355,7 +1390,6 @@
       </div>
     </div>
 
-    <!-- 📜 系統開發日誌 -->
     <div id="system-history-overlay" class="overlay">
       <div class="overlay-box system-guide-box">
         <h2>📜 BBT 出勤管理系統開發日誌</h2>
@@ -1443,7 +1477,6 @@
       </div>
     </div>
 
-    <!-- 📊 數據分析說明 -->
     <div id="analysis-guide-overlay" class="overlay">
       <div class="overlay-box system-guide-box">
         <h2>📊 數據分析說明</h2>
@@ -1495,7 +1528,6 @@
       </div>
     </div>
 
-    <!-- 📖 使用教學 -->
     <div id="user-guide-overlay" class="overlay">
       <div class="overlay-box system-guide-box">
         <h2>📖 BBT 出勤系統使用教學</h2>
