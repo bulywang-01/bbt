@@ -11,9 +11,9 @@ let _pendingProfilePhoto = null; // { base64, mimeType, fileName }
 const DEFAULT_PROFILE_PHOTO_SVG =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="68" height="68">' +
+    '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140">' +
       '<rect width="100%" height="100%" fill="#e2e8f0"/>' +
-      '<text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-size="11" font-family="sans-serif">無照片</text>' +
+      '<text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle" fill="#64748b" font-size="14" font-family="sans-serif">尚未上傳照片</text>' +
     '</svg>'
   );
 
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderWelcome();
+  renderHomeProfilePhoto_(session.photo_url || '');
   bindButtons();
   loadDashboard();
   loadWeeklyReminder();
@@ -86,9 +87,19 @@ function resolveDrivePhotoUrl_(rawUrl) {
   if (s.startsWith('data:image/')) return s;
   const fileId = extractDriveFileId_(s);
   if (fileId && s.includes('drive.google.com')) {
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w300`;
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
   }
   return s;
+}
+
+function renderHomeProfilePhoto_(rawUrl) {
+  const imgEl = document.getElementById('home-user-photo');
+  if (!imgEl) return;
+  imgEl.onerror = () => {
+    imgEl.onerror = null;
+    imgEl.src = DEFAULT_PROFILE_PHOTO_SVG;
+  };
+  imgEl.src = resolveDrivePhotoUrl_(rawUrl);
 }
 
 function setProfilePhotoPreview_(rawUrl) {
@@ -180,6 +191,7 @@ function openProfileModal() {
     if (formEl) formEl.style.display = 'block';
 
     const u = (res && res.result === 'ok' && res.user) ? res.user : session;
+    const activePhoto = u.photo_url || session.photo_url || '';
 
     document.getElementById('pf-username-display').textContent = u.username || session.username || session.user_id || '-';
     document.getElementById('pf-role-display').textContent = formatRoleDisplayText_(u.role || session.role);
@@ -196,7 +208,11 @@ function openProfileModal() {
     document.getElementById('pf-judge-level').value = certs.judge;
     document.getElementById('pf-record-level').value = certs.record;
 
-    setProfilePhotoPreview_(u.photo_url || session.photo_url || '');
+    if (activePhoto) {
+      session.photo_url = activePhoto;
+      renderHomeProfilePhoto_(activePhoto);
+    }
+    setProfilePhotoPreview_(activePhoto);
 
     const teamListEl = document.getElementById('pf-team-options');
     if (teamListEl && Array.isArray(res?.teams)) {
@@ -374,6 +390,7 @@ function submitProfileForm(event) {
     } catch (_) {}
 
     renderWelcome();
+    renderHomeProfilePhoto_(updatedPhotoUrl || session.photo_url || '');
     const headerNameEl = document.getElementById('header-username');
     if (headerNameEl) headerNameEl.textContent = name;
 
@@ -1068,6 +1085,12 @@ function loadHomeUserAnalysis() {
 
     if (!me) {
       me = createFallbackPersonalStats_(targetUid);
+    }
+
+    const photoFromStats = me?.photo_url || res?.debugUser?.photo_url || session?.photo_url || '';
+    if (photoFromStats) {
+      session.photo_url = photoFromStats;
+      renderHomeProfilePhoto_(photoFromStats);
     }
 
     window._yearData = all.length ? all : [me];
