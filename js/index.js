@@ -1,5 +1,5 @@
 /*********************************************************
- * ✅ Index Page（最終完整整合版：含個人資料、照片上傳與證照等級自助維護）
+ * ✅ Index Page（最終完整整合版：含首頁即時照片同步、個人資料與證照等級自助維護）
  * 用途：首頁主控制腳本，負責登入驗證、儀表板統計、
  *       本週班表與提醒、個人數據分析、個人資料與照片維護、
  *       課程與系統公告顯示／管理。
@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderWelcome();
   renderHomeProfilePhoto_(session.photo_url || '');
+  syncHomeProfileOnLoad_();
   bindButtons();
   loadDashboard();
   loadWeeklyReminder();
@@ -41,8 +42,53 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /*********************************************************
- * 👤 個人資料自助維護模組（支援照片上傳至 Drive BBT_img、母隊與證照等級修改）
+ * 👤 個人資料自助維護模組（支援首頁即時同步、照片上傳至 Drive BBT_img、母隊與證照等級修改）
  *********************************************************/
+function persistSessionPhotoAndProfile_(userObj) {
+  if (!userObj || !session) return;
+  const latestPhoto = String(userObj.photo_url || '').trim();
+
+  if (userObj.name) session.name = userObj.name;
+  if (userObj.phone !== undefined) session.phone = userObj.phone;
+  if (userObj.level) session.level = userObj.level;
+  if (userObj.email !== undefined) session.email = userObj.email;
+  if (userObj.note !== undefined) session.note = userObj.note;
+  if (userObj.team !== undefined) session.team = userObj.team;
+  if (latestPhoto) session.photo_url = latestPhoto;
+
+  try {
+    const rawSaved = localStorage.getItem('session_user');
+    if (rawSaved) {
+      const parsed = JSON.parse(rawSaved);
+      Object.assign(parsed, {
+        ...(userObj.name ? { name: userObj.name } : {}),
+        ...(userObj.phone !== undefined ? { phone: userObj.phone } : {}),
+        ...(userObj.level ? { level: userObj.level } : {}),
+        ...(userObj.email !== undefined ? { email: userObj.email } : {}),
+        ...(userObj.note !== undefined ? { note: userObj.note } : {}),
+        ...(userObj.team !== undefined ? { team: userObj.team } : {}),
+        ...(latestPhoto ? { photo_url: latestPhoto } : {})
+      });
+      localStorage.setItem('session_user', JSON.stringify(parsed));
+    }
+  } catch (_) {}
+
+  renderWelcome();
+  renderHomeProfilePhoto_(latestPhoto || session.photo_url || '');
+}
+
+function syncHomeProfileOnLoad_() {
+  if (!session || !session.user_id) return;
+  callApi({
+    action: 'getUserProfile',
+    user_id: session.user_id
+  }, res => {
+    if (res && res.result === 'ok' && res.user) {
+      persistSessionPhotoAndProfile_(res.user);
+    }
+  });
+}
+
 function parseCertLevels_(rawLevel) {
   const parts = String(rawLevel || 'N,N').split(/[\/／,，]/);
   const validSet = new Set(['A', 'B', 'C', 'N']);
@@ -208,10 +254,7 @@ function openProfileModal() {
     document.getElementById('pf-judge-level').value = certs.judge;
     document.getElementById('pf-record-level').value = certs.record;
 
-    if (activePhoto) {
-      session.photo_url = activePhoto;
-      renderHomeProfilePhoto_(activePhoto);
-    }
+    persistSessionPhotoAndProfile_(u);
     setProfilePhotoPreview_(activePhoto);
 
     const teamListEl = document.getElementById('pf-team-options');
@@ -364,33 +407,16 @@ function submitProfileForm(event) {
       session.photo_url ||
       '';
 
-    session.name = name;
-    session.phone = phone;
-    session.level = combinedLevel;
-    session.email = email;
-    session.note = note;
-    session.team = team;
-    if (updatedPhotoUrl) session.photo_url = updatedPhotoUrl;
+    persistSessionPhotoAndProfile_({
+      name,
+      phone,
+      level: combinedLevel,
+      email,
+      note,
+      team,
+      ...(updatedPhotoUrl ? { photo_url: updatedPhotoUrl } : {})
+    });
 
-    try {
-      const rawSaved = localStorage.getItem('session_user');
-      if (rawSaved) {
-        const parsed = JSON.parse(rawSaved);
-        Object.assign(parsed, {
-          name,
-          phone,
-          level: combinedLevel,
-          email,
-          note,
-          team,
-          ...(updatedPhotoUrl ? { photo_url: updatedPhotoUrl } : {})
-        });
-        localStorage.setItem('session_user', JSON.stringify(parsed));
-      }
-    } catch (_) {}
-
-    renderWelcome();
-    renderHomeProfilePhoto_(updatedPhotoUrl || session.photo_url || '');
     const headerNameEl = document.getElementById('header-username');
     if (headerNameEl) headerNameEl.textContent = name;
 
