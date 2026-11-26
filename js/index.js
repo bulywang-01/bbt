@@ -1,5 +1,5 @@
 /*********************************************************
- * ✅ Index Page（最終完整整合版：含首頁即時照片同步、個人資料與證照等級自助維護）
+ * ✅ Index Page（最終完整整合版：含多欄位相容照片同步、個人資料與證照等級自助維護）
  * 用途：首頁主控制腳本，負責登入驗證、儀表板統計、
  *       本週班表與提醒、個人數據分析、個人資料與照片維護、
  *       課程與系統公告顯示／管理。
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   renderWelcome();
-  renderHomeProfilePhoto_(session.photo_url || '');
+  renderHomeProfilePhoto_(extractPhotoFromAny_(session));
   syncHomeProfileOnLoad_();
   bindButtons();
   loadDashboard();
@@ -42,11 +42,71 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /*********************************************************
- * 👤 個人資料自助維護模組（支援首頁即時同步、照片上傳至 Drive BBT_img、母隊與證照等級修改）
+ * 👤 個人資料自助維護模組（支援多欄位相容、照片上傳至 Drive BBT_img、母隊與證照等級修改）
  *********************************************************/
+function extractPhotoFromAny_(obj) {
+  if (!obj || typeof obj !== 'object') return '';
+  const candidates = [
+    obj.photo_url,
+    obj.photoUrl,
+    obj.photo,
+    obj.avatar_url,
+    obj.avatarUrl,
+    obj.avatar,
+    obj.img_url,
+    obj.imgUrl,
+    obj.image,
+    obj.picture,
+    obj.user?.photo_url,
+    obj.user?.photo,
+    obj.user?.avatar_url,
+    obj.user?.avatar,
+    obj.data?.photo_url,
+    obj.data?.photo,
+    obj.data?.avatar_url,
+    obj.data?.avatar,
+    obj.profile?.photo_url,
+    obj.profile?.photo
+  ];
+  for (const val of candidates) {
+    if (typeof val === 'string' && val.trim()) {
+      return val.trim();
+    }
+  }
+  return '';
+}
+
+function extractUserPayloadFromResponse_(res) {
+  if (!res || typeof res !== 'object') return null;
+  if (res.user && typeof res.user === 'object') return res.user;
+  if (res.profile && typeof res.profile === 'object') return res.profile;
+  if (res.data && typeof res.data === 'object' && !Array.isArray(res.data)) {
+    return res.data.user && typeof res.data.user === 'object' ? res.data.user : res.data;
+  }
+  return res;
+}
+
+function updateStoredSessionKeys_(patchObj) {
+  const possibleKeys = ['session_user', 'user', 'bbt_session', 'auth_user', 'currentUser', 'loginUser'];
+  possibleKeys.forEach(k => {
+    try {
+      const raw = localStorage.getItem(k);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.user && typeof parsed.user === 'object') {
+          Object.assign(parsed.user, patchObj);
+        }
+        Object.assign(parsed, patchObj);
+        localStorage.setItem(k, JSON.stringify(parsed));
+      }
+    } catch (_) {}
+  });
+}
+
 function persistSessionPhotoAndProfile_(userObj) {
   if (!userObj || !session) return;
-  const latestPhoto = String(userObj.photo_url || '').trim();
+  const latestPhoto = extractPhotoFromAny_(userObj);
 
   if (userObj.name) session.name = userObj.name;
   if (userObj.phone !== undefined) session.phone = userObj.phone;
@@ -54,27 +114,24 @@ function persistSessionPhotoAndProfile_(userObj) {
   if (userObj.email !== undefined) session.email = userObj.email;
   if (userObj.note !== undefined) session.note = userObj.note;
   if (userObj.team !== undefined) session.team = userObj.team;
-  if (latestPhoto) session.photo_url = latestPhoto;
+  if (latestPhoto) {
+    session.photo_url = latestPhoto;
+    session.photo = latestPhoto;
+  }
 
-  try {
-    const rawSaved = localStorage.getItem('session_user');
-    if (rawSaved) {
-      const parsed = JSON.parse(rawSaved);
-      Object.assign(parsed, {
-        ...(userObj.name ? { name: userObj.name } : {}),
-        ...(userObj.phone !== undefined ? { phone: userObj.phone } : {}),
-        ...(userObj.level ? { level: userObj.level } : {}),
-        ...(userObj.email !== undefined ? { email: userObj.email } : {}),
-        ...(userObj.note !== undefined ? { note: userObj.note } : {}),
-        ...(userObj.team !== undefined ? { team: userObj.team } : {}),
-        ...(latestPhoto ? { photo_url: latestPhoto } : {})
-      });
-      localStorage.setItem('session_user', JSON.stringify(parsed));
-    }
-  } catch (_) {}
+  const patch = {
+    ...(userObj.name ? { name: userObj.name } : {}),
+    ...(userObj.phone !== undefined ? { phone: userObj.phone } : {}),
+    ...(userObj.level ? { level: userObj.level } : {}),
+    ...(userObj.email !== undefined ? { email: userObj.email } : {}),
+    ...(userObj.note !== undefined ? { note: userObj.note } : {}),
+    ...(userObj.team !== undefined ? { team: userObj.team } : {}),
+    ...(latestPhoto ? { photo_url: latestPhoto, photo: latestPhoto } : {})
+  };
 
+  updateStoredSessionKeys_(patch);
   renderWelcome();
-  renderHomeProfilePhoto_(latestPhoto || session.photo_url || '');
+  renderHomeProfilePhoto_(latestPhoto || extractPhotoFromAny_(session));
 }
 
 function syncHomeProfileOnLoad_() {
@@ -83,8 +140,11 @@ function syncHomeProfileOnLoad_() {
     action: 'getUserProfile',
     user_id: session.user_id
   }, res => {
-    if (res && res.result === 'ok' && res.user) {
-      persistSessionPhotoAndProfile_(res.user);
+    if (!res) return;
+    const u = extractUserPayloadFromResponse_(res);
+    const photo = extractPhotoFromAny_(res) || extractPhotoFromAny_(u);
+    if (u || photo) {
+      persistSessionPhotoAndProfile_(Object.assign({}, u || {}, photo ? { photo_url: photo } : {}));
     }
   });
 }
@@ -141,11 +201,12 @@ function resolveDrivePhotoUrl_(rawUrl) {
 function renderHomeProfilePhoto_(rawUrl) {
   const imgEl = document.getElementById('home-user-photo');
   if (!imgEl) return;
+  const finalSrc = resolveDrivePhotoUrl_(rawUrl);
   imgEl.onerror = () => {
     imgEl.onerror = null;
     imgEl.src = DEFAULT_PROFILE_PHOTO_SVG;
   };
-  imgEl.src = resolveDrivePhotoUrl_(rawUrl);
+  imgEl.src = finalSrc;
 }
 
 function setProfilePhotoPreview_(rawUrl) {
@@ -236,8 +297,9 @@ function openProfileModal() {
     if (loadingEl) loadingEl.style.display = 'none';
     if (formEl) formEl.style.display = 'block';
 
-    const u = (res && res.result === 'ok' && res.user) ? res.user : session;
-    const activePhoto = u.photo_url || session.photo_url || '';
+    const extracted = extractUserPayloadFromResponse_(res);
+    const u = (res && res.result === 'ok' && extracted) ? extracted : (extracted || session);
+    const activePhoto = extractPhotoFromAny_(res) || extractPhotoFromAny_(u) || extractPhotoFromAny_(session);
 
     document.getElementById('pf-username-display').textContent = u.username || session.username || session.user_id || '-';
     document.getElementById('pf-role-display').textContent = formatRoleDisplayText_(u.role || session.role);
@@ -254,7 +316,7 @@ function openProfileModal() {
     document.getElementById('pf-judge-level').value = certs.judge;
     document.getElementById('pf-record-level').value = certs.record;
 
-    persistSessionPhotoAndProfile_(u);
+    persistSessionPhotoAndProfile_(Object.assign({}, u, activePhoto ? { photo_url: activePhoto } : {}));
     setProfilePhotoPreview_(activePhoto);
 
     const teamListEl = document.getElementById('pf-team-options');
@@ -319,8 +381,10 @@ function postProfileViaHiddenForm_(payload, onDone) {
       action: 'getUserProfile',
       user_id: payload.user_id
     }, latest => {
-      if (latest && latest.result === 'ok' && latest.user) {
-        onDone({ result: 'ok', user: latest.user, photo_url: latest.user.photo_url });
+      const u = extractUserPayloadFromResponse_(latest);
+      const photo = extractPhotoFromAny_(latest) || extractPhotoFromAny_(u);
+      if (u || photo) {
+        onDone({ result: 'ok', user: u, photo_url: photo });
       } else {
         onDone({ result: 'error', message: '上傳逾時或網路異常，請重新整理確認' });
       }
@@ -402,9 +466,8 @@ function submitProfileForm(event) {
     }
 
     const updatedPhotoUrl =
-      res.user?.photo_url ||
-      res.photo_url ||
-      session.photo_url ||
+      extractPhotoFromAny_(res) ||
+      extractPhotoFromAny_(session) ||
       '';
 
     persistSessionPhotoAndProfile_({
@@ -1113,10 +1176,9 @@ function loadHomeUserAnalysis() {
       me = createFallbackPersonalStats_(targetUid);
     }
 
-    const photoFromStats = me?.photo_url || res?.debugUser?.photo_url || session?.photo_url || '';
+    const photoFromStats = extractPhotoFromAny_(me) || extractPhotoFromAny_(res?.debugUser) || extractPhotoFromAny_(session);
     if (photoFromStats) {
-      session.photo_url = photoFromStats;
-      renderHomeProfilePhoto_(photoFromStats);
+      persistSessionPhotoAndProfile_({ photo_url: photoFromStats });
     }
 
     window._yearData = all.length ? all : [me];
