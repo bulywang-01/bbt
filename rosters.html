@@ -170,13 +170,13 @@
   <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-7 flex-1 space-y-10">
 
     <!-- 載入中狀態 -->
-    <div id="loadingState" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
+    <div id="loadingState" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 h-24 sm:h-28 animate-pulse"></div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 h-24 sm:h-28 animate-pulse"></div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 h-24 sm:h-28 animate-pulse"></div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 h-24 sm:h-28 animate-pulse"></div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 h-24 sm:h-28 animate-pulse"></div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 h-24 sm:h-28 animate-pulse"></div>
     </div>
 
     <!-- 錯誤 / 空資料狀態 -->
@@ -201,7 +201,7 @@
           <span id="judgeBadgeCount" class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0f2342]/10 text-[#0f2342]">0 人</span>
         </div>
       </div>
-      <div id="judgeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <div id="judgeGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
     </section>
 
     <!-- 紀錄組區塊 -->
@@ -213,7 +213,7 @@
           <span id="recordBadgeCount" class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#162f56]/10 text-[#162f56]">0 人</span>
         </div>
       </div>
-      <div id="recordGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <div id="recordGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
     </section>
 
     <!-- 外聘裁判名單區塊 -->
@@ -225,7 +225,7 @@
           <span id="guestBadgeCount" class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#d92638]/10 text-[#d92638]">0 人</span>
         </div>
       </div>
-      <div id="guestGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <div id="guestGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
     </section>
 
   </main>
@@ -516,7 +516,7 @@
       return items;
     }
 
-    // 渲染每行固定對齊的橫向卡片（groupType: 'judge' | 'record' | 'guest'）
+    // 渲染每行固定對齊的卡片（手機一列 2 位，桌機一列 3 位）
     function buildPersonCard(person, groupType, index) {
       const cardKey = `${groupType}_${index}_${String(person.user_id || person.name)}`;
       cardRegistry.set(cardKey, { person, groupType });
@@ -530,18 +530,18 @@
 
       const roleRowHtml = roleTags.length > 0
         ? roleTags.map(tag =>
-            `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#0f2342]/8 text-[#0f2342] leading-4">${escapeHtml(tag)}</span>`
+            `<span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-semibold bg-[#0f2342]/8 text-[#0f2342] leading-4">${escapeHtml(tag)}</span>`
           ).join('')
         : `<span class="inline-block h-5"></span>`;
 
       const certRowHtml = certItems.length > 0
         ? certItems.map(item =>
-            `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border leading-4 ${getLevelBadgeClass(item.grade)}">${escapeHtml(item.label)}</span>`
+            `<span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold border leading-4 ${getLevelBadgeClass(item.grade)}">${escapeHtml(item.label)}</span>`
           ).join('')
         : `<span class="inline-block h-5"></span>`;
 
       const jerseyHtml = jerseyNo
-        ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-extrabold tracking-wide bg-[#0f2342] text-white shrink-0">#${escapeHtml(jerseyNo)}</span>`
+        ? `<span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-extrabold tracking-wide bg-[#0f2342] text-white shrink-0">#${escapeHtml(jerseyNo)}</span>`
         : '';
 
       const avatarHtml = thumbUrl
@@ -550,21 +550,21 @@
              alt="${escapeHtml(displayName)}"
              loading="lazy"
              onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
-             class="w-16 h-20 rounded-xl object-cover object-top border border-slate-200 bg-slate-100"
+             class="w-12 h-16 sm:w-16 sm:h-20 rounded-xl object-cover object-top border border-slate-200 bg-slate-100"
            />
-           <div class="hidden w-16 h-20 rounded-xl bg-[#0f2342] text-white font-extrabold text-xl flex items-center justify-center select-none">
+           <div class="hidden w-12 h-16 sm:w-16 sm:h-20 rounded-xl bg-[#0f2342] text-white font-extrabold text-lg sm:text-xl flex items-center justify-center select-none">
              ${initialChar}
            </div>`
-        : `<div class="w-16 h-20 rounded-xl bg-[#0f2342] text-white font-extrabold text-xl flex items-center justify-center select-none">
+        : `<div class="w-12 h-16 sm:w-16 sm:h-20 rounded-xl bg-[#0f2342] text-white font-extrabold text-lg sm:text-xl flex items-center justify-center select-none">
              ${initialChar}
            </div>`;
 
       return `
-        <article class="roster-card group bg-white rounded-2xl border border-slate-200/90 p-4 flex items-center gap-4">
+        <article class="roster-card group bg-white rounded-2xl border border-slate-200/90 p-2.5 sm:p-4 flex items-center gap-2.5 sm:gap-4 min-w-0">
           <button
             type="button"
             onclick="openPhotoLightbox('${escapeHtml(cardKey)}')"
-            class="photo-trigger relative w-16 h-20 rounded-xl overflow-hidden shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0f2342]"
+            class="photo-trigger relative w-12 h-16 sm:w-16 sm:h-20 rounded-xl overflow-hidden shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0f2342]"
             title="點擊放大檢視 ${escapeHtml(displayName)}"
           >
             ${avatarHtml}
@@ -573,20 +573,20 @@
             </div>
           </button>
 
-          <div class="min-w-0 flex-1 flex flex-col justify-between gap-1.5">
+          <div class="min-w-0 flex-1 flex flex-col justify-between gap-1 sm:gap-1.5">
             <!-- 第 1 行：姓名 + 背號 -->
-            <div class="flex items-center justify-between gap-2 min-h-[24px]">
-              <h3 class="font-bold text-base text-[#0f2342] truncate leading-6">${escapeHtml(displayName)}</h3>
+            <div class="flex items-center justify-between gap-1.5 min-h-[22px] sm:min-h-[24px]">
+              <h3 class="font-bold text-sm sm:text-base text-[#0f2342] truncate leading-5 sm:leading-6">${escapeHtml(displayName)}</h3>
               ${jerseyHtml}
             </div>
 
             <!-- 第 2 行：職務標籤（無則空行對齊） -->
-            <div class="flex flex-wrap items-center gap-1.5 min-h-[20px]">
+            <div class="flex flex-wrap items-center gap-1 sm:gap-1.5 min-h-[20px]">
               ${roleRowHtml}
             </div>
 
             <!-- 第 3 行：證照等級（無則空行對齊） -->
-            <div class="flex flex-wrap items-center gap-1.5 min-h-[20px]">
+            <div class="flex flex-wrap items-center gap-1 sm:gap-1.5 min-h-[20px]">
               ${certRowHtml}
             </div>
           </div>
