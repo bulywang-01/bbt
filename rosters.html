@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>裁判組與紀錄組名單 | BBTLS 籃球聯盟</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/config.js"></script>
+  <style>
+    :root {
+      --navy-dark: #0f2342;
+      --navy-mid: #162f56;
+      --crimson: #d92638;
+      --crimson-dark: #b51c2c;
+    }
+    body {
+      background-color: #f3f6fa;
+      color: #1e293b;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+    .hero-bg {
+      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-mid) 65%, #1d3e6e 100%);
+    }
+    .roster-card {
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .roster-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -8px rgba(15, 35, 66, 0.14);
+      border-color: #cbd5e1;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- 頂部導覽列 -->
+  <header class="bg-[#0f2342] text-white border-b border-white/10 sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-[#d92638] text-white font-black text-sm tracking-wider shrink-0">
+          BBT
+        </span>
+        <div class="truncate">
+          <p class="font-bold text-sm sm:text-base tracking-wide truncate">BBTLS 裁判組與紀錄組名冊</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <button
+          id="btnRefresh"
+          type="button"
+          onclick="fetchStaffFromBackend()"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+          title="重新同步後端 Users 名單"
+        >
+          <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span class="hidden sm:inline">重新同步</span>
+        </button>
+
+        <a
+          href="https://bbtls.com/"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#d92638] hover:bg-[#b51c2c] text-white transition shadow-sm"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span>回 BBTLS 首頁</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 英雄區塊 -->
+  <section class="hero-bg text-white border-b border-[#0f2342]/10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-11">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-medium text-blue-100 mb-3">
+            <span class="w-2 h-2 rounded-full bg-[#ff4d5e]"></span>
+            <span>OFFICIAL OFFICIATING &amp; SCORING ROSTER</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3">
+            裁判組與紀錄組名單
+          </h1>
+          <p class="text-sm sm:text-base text-slate-200 leading-relaxed">
+            公正吹判與精準記錄是每一場精彩賽事的基石。本頁即時同步系統人員名冊，呈現聯盟裁判組與紀錄組執法陣容、背號與合格證照資訊。
+          </p>
+        </div>
+
+        <!-- 即時統計摘要 -->
+        <div class="grid grid-cols-2 gap-3 shrink-0">
+          <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl px-4 py-3 min-w-[124px]">
+            <div class="text-xs text-blue-200">裁判組人數</div>
+            <div id="statJudgeCount" class="text-2xl font-extrabold text-white mt-0.5">-</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl px-4 py-3 min-w-[124px]">
+            <div class="text-xs text-blue-200">紀錄組人數</div>
+            <div id="statRecordCount" class="text-2xl font-extrabold text-white mt-0.5">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 篩選與搜尋列 -->
+  <section class="max-w-6xl w-full mx-auto px-4 sm:px-6 -mt-5 relative z-20">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-3.5 sm:p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3.5">
+      <!-- 分組頁籤 -->
+      <div class="inline-flex bg-slate-100 p-1 rounded-xl self-start">
+        <button
+          type="button"
+          data-tab="all"
+          onclick="setActiveTab('all')"
+          class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer bg-[#0f2342] text-white shadow-xs"
+        >
+          全部名單
+        </button>
+        <button
+          type="button"
+          data-tab="judge"
+          onclick="setActiveTab('judge')"
+          class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-600 hover:text-[#0f2342]"
+        >
+          裁判組
+        </button>
+        <button
+          type="button"
+          data-tab="record"
+          onclick="setActiveTab('record')"
+          class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-600 hover:text-[#0f2342]"
+        >
+          紀錄組
+        </button>
+      </div>
+
+      <!-- 搜尋與特聘篩選 -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1 lg:max-w-md justify-end">
+        <div class="relative flex-1">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+          </svg>
+          <input
+            id="searchInput"
+            type="text"
+            oninput="renderAll()"
+            placeholder="搜尋姓名或背號..."
+            class="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-[#0f2342] focus:ring-2 focus:ring-[#0f2342]/10 bg-slate-50/60 focus:bg-white transition"
+          />
+        </div>
+
+        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50/60 text-xs sm:text-sm text-slate-700 cursor-pointer select-none hover:bg-slate-100/70 transition">
+          <input
+            id="guestOnlyToggle"
+            type="checkbox"
+            onchange="renderAll()"
+            class="rounded border-slate-300 text-[#d92638] focus:ring-[#d92638]"
+          />
+          <span>僅顯示特聘（聘）</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 低干擾資料來源狀態列 -->
+    <div id="syncStatusBar" class="mt-2.5 px-1 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+      <div id="syncStatusText" class="flex items-center gap-1.5">
+        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+        <span>正在從後端 Users 讀取名單...</span>
+      </div>
+      <div id="lastSyncedTime" class="text-slate-400"></div>
+    </div>
+  </section>
+
+  <!-- 主要名單內容區 -->
+  <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-7 flex-1 space-y-10">
+
+    <!-- 載入中狀態 -->
+    <div id="loadingState" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 h-28 animate-pulse"></div>
+    </div>
+
+    <!-- 錯誤 / 空資料狀態 -->
+    <div id="messageState" class="hidden bg-white rounded-2xl border border-slate-200 p-8 text-center">
+      <p id="messageTitle" class="text-base font-bold text-[#0f2342] mb-1.5"></p>
+      <p id="messageDesc" class="text-sm text-slate-500 mb-4"></p>
+      <button
+        type="button"
+        onclick="fetchStaffFromBackend()"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-[#0f2342] hover:bg-[#162f56] text-white transition cursor-pointer"
+      >
+        重新載入
+      </button>
+    </div>
+
+    <!-- 裁判組區塊 -->
+    <section id="judgeSection" class="hidden">
+      <div class="flex items-center justify-between border-b-2 border-[#0f2342] pb-2.5 mb-5">
+        <div class="flex items-center gap-2.5">
+          <span class="w-1.5 h-6 rounded-full bg-[#d92638]"></span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-[#0f2342] tracking-tight">裁判組</h2>
+          <span id="judgeBadgeCount" class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0f2342]/10 text-[#0f2342]">0 人</span>
+        </div>
+      </div>
+      <div id="judgeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- 紀錄組區塊 -->
+    <section id="recordSection" class="hidden">
+      <div class="flex items-center justify-between border-b-2 border-[#162f56] pb-2.5 mb-5">
+        <div class="flex items-center gap-2.5">
+          <span class="w-1.5 h-6 rounded-full bg-[#0f2342]"></span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-[#0f2342] tracking-tight">紀錄組</h2>
+          <span id="recordBadgeCount" class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#162f56]/10 text-[#162f56]">0 人</span>
+        </div>
+      </div>
+      <div id="recordGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+  </main>
+
+  <!-- 頁尾 -->
+  <footer class="bg-[#0f2342] text-slate-300 border-t border-white/10 mt-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm">
+      <div>
+        <span class="font-bold text-white">BBTLS</span> · 裁判組與紀錄組官方名冊
+      </div>
+      <a
+        href="https://bbtls.com/"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold bg-[#d92638] hover:bg-[#b51c2c] text-white transition"
+      >
+        <span>回 BBTLS 首頁</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    let allStaff = [];
+    let activeTab = 'all';
+
+    // 轉換 Google Drive 分享連結為縮圖直連網址
+    function toDirectPhotoUrl(rawUrl) {
+      const url = String(rawUrl || '').trim();
+      if (!url) return '';
+
+      // 匹配 /d/FILE_ID 或 id=FILE_ID
+      const dMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (dMatch && dMatch[1]) {
+        return `https://drive.google.com/thumbnail?id=${dMatch[1]}&sz=w600`;
+      }
+
+      const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (idMatch && idMatch[1]) {
+        return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w600`;
+      }
+
+      return url;
+    }
+
+    // 解析 role 欄位（支援逗號分隔與多職務）
+    function parseRoles(roleStr) {
+      const tokens = String(roleStr || '')
+        .toLowerCase()
+        .split(/[,，\s]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const isChiefJudge = tokens.includes('chief_judge');
+      const isJudge = tokens.includes('judge') || isChiefJudge;
+      const isRecordChief = tokens.includes('record_chief');
+      const isRecord = tokens.includes('record') || isRecordChief;
+
+      return { isJudge, isChiefJudge, isRecord, isRecordChief };
+    }
+
+    // 解析 level 欄位（格式預期為「裁判證,紀錄證」，例如 'C,N'、'A,B'、'N,N'）
+    function parseLevels(levelStr) {
+      const parts = String(levelStr || '')
+        .split(/[,，]/)
+        .map(s => s.trim().toUpperCase());
+
+      const rawReferee = parts[0] || '';
+      const rawScorer = parts[1] || '';
+
+      const validGrades = ['A', 'B', 'C'];
+      const refereeLevel = validGrades.includes(rawReferee) ? rawReferee : '';
+      const scorerLevel = validGrades.includes(rawScorer) ? rawScorer : '';
+
+      return { refereeLevel, scorerLevel };
+    }
+
+    // 證照徽章樣式
+    function getLevelBadgeClass(grade) {
+      switch (grade) {
+        case 'A':
+          return 'bg-rose-50 text-[#d92638] border-rose-200';
+        case 'B':
+          return 'bg-blue-50 text-[#0f2342] border-blue-200';
+        case 'C':
+          return 'bg-slate-100 text-slate-700 border-slate-200';
+        default:
+          return 'bg-slate-50 text-slate-600 border-slate-200';
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function setActiveTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const isCurrent = btn.dataset.tab === tab;
+        btn.className = isCurrent
+          ? 'tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer bg-[#0f2342] text-white shadow-xs'
+          : 'tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-600 hover:text-[#0f2342]';
+      });
+      renderAll();
+    }
+
+    function updateSyncStatus(state, text, timeStr = '') {
+      const statusEl = document.getElementById('syncStatusText');
+      const timeEl = document.getElementById('lastSyncedTime');
+
+      let dotClass = 'bg-emerald-500';
+      if (state === 'loading') dotClass = 'bg-amber-400 animate-pulse';
+      if (state === 'error') dotClass = 'bg-[#d92638]';
+
+      statusEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full ${dotClass}"></span><span>${escapeHtml(text)}</span>`;
+      if (timeStr) {
+        timeEl.textContent = `更新時間：${timeStr}`;
+      }
+    }
+
+    // 透過 config.js 的 callApi 從後端 Users 讀取公開名冊
+    function fetchStaffFromBackend() {
+      const loadingEl = document.getElementById('loadingState');
+      const messageEl = document.getElementById('messageState');
+      const judgeSec = document.getElementById('judgeSection');
+      const recordSec = document.getElementById('recordSection');
+      const refreshIcon = document.getElementById('refreshIcon');
+
+      loadingEl.classList.remove('hidden');
+      messageEl.classList.add('hidden');
+      judgeSec.classList.add('hidden');
+      recordSec.classList.add('hidden');
+      refreshIcon.classList.add('animate-spin');
+
+      updateSyncStatus('loading', '正在從後端 Users 讀取名單...');
+
+      if (typeof callApi !== 'function') {
+        loadingEl.classList.add('hidden');
+        refreshIcon.classList.remove('animate-spin');
+        updateSyncStatus('error', '找不到 config.js 的 callApi 函式');
+        showMessage('無法初始化 API 連線', '請確認 config.js 已正確載入且包含 callApi 函式。');
+        return;
+      }
+
+      callApi({ action: 'getPublicStaffList' }, function (res) {
+        loadingEl.classList.add('hidden');
+        refreshIcon.classList.remove('animate-spin');
+
+        if (!res || res.result === 'error' || !Array.isArray(res.staff)) {
+          const errMsg = (res && res.message) ? res.message : '後端未回傳有效名單或連線逾時';
+          updateSyncStatus('error', `同步失敗：${errMsg}`);
+          showMessage('無法讀取後端 Users 名單', `${errMsg}。請確認 GAS 已部署新版本並開放公開讀取。`);
+          return;
+        }
+
+        allStaff = res.staff.filter(item => {
+          const name = String(item.name || '').trim();
+          const role = String(item.role || '').trim().toLowerCase();
+          if (!name) return false;
+          if (role === 'admin') return false;
+          const roles = parseRoles(role);
+          return roles.isJudge || roles.isRecord;
+        });
+
+        const nowStr = new Date().toLocaleTimeString('zh-Hant', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        updateSyncStatus('ok', `已同步後端 Users（共 ${allStaff.length} 位人員）`, nowStr);
+
+        renderAll();
+      });
+    }
+
+    function showMessage(title, desc) {
+      document.getElementById('messageTitle').textContent = title;
+      document.getElementById('messageDesc').textContent = desc;
+      document.getElementById('messageState').classList.remove('hidden');
+    }
+
+    // 渲染單張人員卡片（groupType: 'judge' | 'record'）
+    function buildPersonCard(person, groupType) {
+      const roles = parseRoles(person.role);
+      const levels = parseLevels(person.level);
+      const jerseyNo = String(person.note ?? '').trim();
+      const photoSrc = toDirectPhotoUrl(person.photo_url);
+      const initialChar = escapeHtml(String(person.name || '?').replace(/^\(聘\)\s*/, '').charAt(0) || '?');
+
+      // 職務標籤（若有雙重職務或組長/裁判長角色則標示）
+      const roleTags = [];
+      if (groupType === 'judge') {
+        if (roles.isChiefJudge) roleTags.push('裁判長');
+        if (roles.isRecord) roleTags.push('兼紀錄組');
+      } else {
+        if (roles.isRecordChief) roleTags.push('紀錄組長');
+        if (roles.isJudge) roleTags.push('兼裁判組');
+      }
+
+      // 證照徽章（裁判證／紀錄證若無或為 N 則不呈現）
+      const badgesHtml = [];
+      if (levels.refereeLevel) {
+        badgesHtml.push(
+          `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border ${getLevelBadgeClass(levels.refereeLevel)}">裁判 ${escapeHtml(levels.refereeLevel)} 級</span>`
+        );
+      }
+      if (levels.scorerLevel) {
+        badgesHtml.push(
+          `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border ${getLevelBadgeClass(levels.scorerLevel)}">紀錄 ${escapeHtml(levels.scorerLevel)} 級</span>`
+        );
+      }
+
+      const roleTagsHtml = roleTags.map(tag =>
+        `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#0f2342]/8 text-[#0f2342]">${escapeHtml(tag)}</span>`
+      ).join('');
+
+      const jerseyHtml = jerseyNo
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-extrabold tracking-wide bg-[#0f2342] text-white shrink-0">#${escapeHtml(jerseyNo)}</span>`
+        : '';
+
+      const avatarHtml = photoSrc
+        ? `<img
+             src="${escapeHtml(photoSrc)}"
+             alt="${escapeHtml(person.name)}"
+             loading="lazy"
+             onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
+             class="w-16 h-16 rounded-xl object-cover border border-slate-200 bg-slate-100 shrink-0"
+           />
+           <div class="hidden w-16 h-16 rounded-xl bg-gradient-to-br from-[#0f2342] to-[#1e3f73] text-white font-extrabold text-xl flex items-center justify-center shrink-0">
+             ${initialChar}
+           </div>`
+        : `<div class="w-16 h-16 rounded-xl bg-gradient-to-br from-[#0f2342] to-[#1e3f73] text-white font-extrabold text-xl flex items-center justify-center shrink-0">
+             ${initialChar}
+           </div>`;
+
+      return `
+        <article class="roster-card bg-white rounded-2xl border border-slate-200/90 p-4 flex items-center gap-4">
+          ${avatarHtml}
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="font-bold text-base text-[#0f2342] truncate">${escapeHtml(person.name)}</h3>
+              ${jerseyHtml}
+            </div>
+
+            ${roleTagsHtml ? `<div class="flex flex-wrap gap-1.5 mt-1.5">${roleTagsHtml}</div>` : ''}
+
+            ${badgesHtml.length > 0
+              ? `<div class="flex flex-wrap gap-1.5 mt-2">${badgesHtml.join('')}</div>`
+              : ''}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderAll() {
+      const keyword = String(document.getElementById('searchInput').value || '').trim().toLowerCase();
+      const guestOnly = document.getElementById('guestOnlyToggle').checked;
+
+      const filtered = allStaff.filter(p => {
+        const name = String(p.name || '').trim();
+        const note = String(p.note ?? '').trim();
+
+        if (guestOnly && !name.includes('(聘)') && !name.includes('（聘）') && !name.includes('聘')) {
+          return false;
+        }
+
+        if (keyword) {
+          const matchName = name.toLowerCase().includes(keyword);
+          const matchNo = note.toLowerCase().includes(keyword);
+          if (!matchName && !matchNo) return false;
+        }
+
+        return true;
+      });
+
+      const judges = filtered.filter(p => parseRoles(p.role).isJudge);
+      const records = filtered.filter(p => parseRoles(p.role).isRecord);
+
+      // 頂部總數以全體後端名單為準
+      const totalJudges = allStaff.filter(p => parseRoles(p.role).isJudge).length;
+      const totalRecords = allStaff.filter(p => parseRoles(p.role).isRecord).length;
+      document.getElementById('statJudgeCount').textContent = `${totalJudges} 人`;
+      document.getElementById('statRecordCount').textContent = `${totalRecords} 人`;
+      document.getElementById('judgeBadgeCount').textContent = `${judges.length} 人`;
+      document.getElementById('recordBadgeCount').textContent = `${records.length} 人`;
+
+      const judgeSection = document.getElementById('judgeSection');
+      const recordSection = document.getElementById('recordSection');
+      const judgeGrid = document.getElementById('judgeGrid');
+      const recordGrid = document.getElementById('recordGrid');
+      const messageEl = document.getElementById('messageState');
+
+      const showJudge = activeTab === 'all' || activeTab === 'judge';
+      const showRecord = activeTab === 'all' || activeTab === 'record';
+
+      judgeGrid.innerHTML = judges.map(p => buildPersonCard(p, 'judge')).join('');
+      recordGrid.innerHTML = records.map(p => buildPersonCard(p, 'record')).join('');
+
+      judgeSection.classList.toggle('hidden', !showJudge || judges.length === 0);
+      recordSection.classList.toggle('hidden', !showRecord || records.length === 0);
+
+      const hasAnyVisible = (showJudge && judges.length > 0) || (showRecord && records.length > 0);
+      if (!hasAnyVisible && allStaff.length > 0) {
+        showMessage('找不到符合條件的人員', '請嘗試清除搜尋關鍵字或取消「僅顯示特聘（聘）」篩選。');
+      } else if (allStaff.length === 0) {
+        showMessage('目前後端 Users 沒有裁判組或紀錄組資料', '請確認 Users 工作表中 role 欄位包含 judge 或 record 且 active 為啟用狀態。');
+      } else {
+        messageEl.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchStaffFromBackend);
+  </script>
+</body>
+</html>
