@@ -58,7 +58,7 @@
           BBT
         </span>
         <div class="truncate">
-          <p class="font-bold text-sm sm:text-base tracking-wide truncate">BBT軟式棒球聯盟 · 裁判組與紀錄組名冊</p>
+          <p class="font-bold text-sm sm:text-base tracking-wide truncate">BBT軟式棒球聯盟</p>
         </div>
       </div>
 
@@ -412,8 +412,14 @@
       return { refereeLevel, scorerLevel };
     }
 
-    // 證照徽章樣式
-    function getLevelBadgeClass(grade) {
+    // 證照徽章樣式：裁判 B 級使用翠綠，紀錄 B 級使用琥珀橘，與 A 級緋紅、C 級灰藍區分
+    function getLevelBadgeClass(grade, certType = 'referee') {
+      if (certType === 'referee' && grade === 'B') {
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      }
+      if (certType === 'scorer' && grade === 'B') {
+        return 'bg-amber-50 text-amber-800 border-amber-200';
+      }
       switch (grade) {
         case 'A':
           return 'bg-rose-50 text-[#d92638] border-rose-200';
@@ -561,10 +567,10 @@
       const levels = parseLevels(person.level);
       const items = [];
       if (levels.refereeLevel) {
-        items.push({ label: `裁判 ${levels.refereeLevel} 級`, grade: levels.refereeLevel });
+        items.push({ label: `裁判 ${levels.refereeLevel} 級`, grade: levels.refereeLevel, certType: 'referee' });
       }
       if (levels.scorerLevel) {
-        items.push({ label: `紀錄 ${levels.scorerLevel} 級`, grade: levels.scorerLevel });
+        items.push({ label: `紀錄 ${levels.scorerLevel} 級`, grade: levels.scorerLevel, certType: 'scorer' });
       }
       return items;
     }
@@ -588,7 +594,7 @@
 
       const certRowHtml = certItems.length > 0
         ? certItems.map(item =>
-            `<span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold border leading-4 ${getLevelBadgeClass(item.grade)}">${escapeHtml(item.label)}</span>`
+            `<span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold border leading-4 ${getLevelBadgeClass(item.grade, item.certType)}">${escapeHtml(item.label)}</span>`
           ).join('')
         : `<span class="inline-block h-5"></span>`;
 
@@ -697,7 +703,7 @@
       roleTagsEl.innerHTML = roleTags.map(tag => renderRoleTagBadge(tag, 'lightbox')).join('');
 
       badgesEl.innerHTML = certItems.map(item =>
-        `<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold border ${getLevelBadgeClass(item.grade)}">${escapeHtml(item.label)}</span>`
+        `<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold border ${getLevelBadgeClass(item.grade, item.certType)}">${escapeHtml(item.label)}</span>`
       ).join('');
 
       fallbackEl.textContent = initialChar;
