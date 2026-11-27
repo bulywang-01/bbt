@@ -79,7 +79,7 @@
             裁判組與紀錄組名單
           </h1>
           <p class="text-sm sm:text-base text-slate-200 leading-relaxed">
-            公正吹判與精準記錄是每一場精彩賽事的基石。本頁即時同步BBT軟式棒球聯盟人員名冊，呈現裁判組、紀錄組與特聘裁判執法陣容、背號與合格證照資訊；點擊照片可放大檢視。
+            公正吹判與精準記錄是每一場精彩賽事的基石。本頁即時同步BBT軟式棒球聯盟人員名冊，呈現裁判組、紀錄組執法陣容、背號與合格證照資訊；點擊照片可放大檢視。
           </p>
         </div>
 
@@ -94,7 +94,7 @@
             <div id="statRecordCount" class="text-xl sm:text-2xl font-extrabold text-white mt-0.5">-</div>
           </div>
           <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl px-3.5 py-3 min-w-[104px]">
-            <div class="text-xs text-blue-200">特聘裁判</div>
+            <div class="text-xs text-blue-200">外聘裁判</div>
             <div id="statGuestCount" class="text-xl sm:text-2xl font-extrabold text-white mt-0.5">-</div>
           </div>
         </div>
@@ -137,7 +137,7 @@
           onclick="setActiveTab('guest')"
           class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-600 hover:text-[#0f2342]"
         >
-          特聘裁判名單
+          外聘裁判名單
         </button>
       </div>
 
@@ -216,12 +216,12 @@
       <div id="recordGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
 
-    <!-- 特聘裁判名單區塊 -->
+    <!-- 外聘裁判名單區塊 -->
     <section id="guestSection" class="hidden">
       <div class="flex items-center justify-between border-b-2 border-[#d92638] pb-2.5 mb-5">
         <div class="flex items-center gap-2.5">
           <span class="w-1.5 h-6 rounded-full bg-[#d92638]"></span>
-          <h2 class="text-xl sm:text-2xl font-extrabold text-[#0f2342] tracking-tight">特聘裁判名單</h2>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-[#0f2342] tracking-tight">外聘裁判名單</h2>
           <span id="guestBadgeCount" class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#d92638]/10 text-[#d92638]">0 人</span>
         </div>
       </div>
@@ -316,7 +316,7 @@
       return url;
     }
 
-    // 判斷是否為特聘人員（名稱含 (聘) 或 （聘））
+    // 判斷是否為外聘人員（名稱含 (聘) 或 （聘））
     function isGuestStaff(name) {
       return /[\(（]\s*聘\s*[\)）]/.test(String(name || ''));
     }
@@ -488,7 +488,7 @@
       document.getElementById('messageState').classList.remove('hidden');
     }
 
-    // 第 2 行：職務標籤（特聘裁判名單不顯示額外職務標籤，維持固定空行對齊）
+    // 第 2 行：職務標籤（外聘裁判名單不顯示額外職務標籤，維持固定空行對齊）
     function getRoleTags(person, groupType) {
       if (groupType === 'guest') return [];
       const roles = parseRoles(person.role);
@@ -681,7 +681,7 @@
 
       const keyword = String(document.getElementById('searchInput').value || '').trim().toLowerCase();
 
-      // 拆出特聘人員（名稱含 (聘) 或 （聘））與一般組別名單
+      // 拆出外聘人員（名稱含 (聘) 或 （聘））與一般組別名單
       const guestAll = allStaff.filter(p => isGuestStaff(p.name));
       const regularAll = allStaff.filter(p => !isGuestStaff(p.name));
 
