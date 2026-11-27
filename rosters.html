@@ -29,6 +29,14 @@
       box-shadow: 0 12px 24px -8px rgba(15, 35, 66, 0.14);
       border-color: #cbd5e1;
     }
+    .roster-card-chief {
+      border-color: rgba(217, 38, 56, 0.35);
+      background: linear-gradient(180deg, #fffafa 0%, #ffffff 42%);
+    }
+    .roster-card-chief:hover {
+      border-color: rgba(217, 38, 56, 0.65);
+      box-shadow: 0 14px 28px -8px rgba(217, 38, 56, 0.16);
+    }
     .photo-trigger:hover .photo-zoom-hint {
       opacity: 1;
     }
@@ -79,23 +87,19 @@
             裁判組與紀錄組名單
           </h1>
           <p class="text-sm sm:text-base text-slate-200 leading-relaxed">
-            公正吹判與精準記錄是每一場精彩賽事的基石。本頁即時同步BBT軟式棒球聯盟人員名冊，呈現裁判組、紀錄組執法陣容、背號與合格證照資訊；點擊照片可放大檢視。
+            公正吹判與精準記錄是每一場精彩賽事的基石。本頁即時同步BBT軟式棒球聯盟人員名冊，呈現裁判組與紀錄組執法陣容、背號與合格證照資訊；點擊照片可放大檢視。
           </p>
         </div>
 
         <!-- 即時統計摘要 -->
-        <div class="grid grid-cols-3 gap-2.5 sm:gap-3 shrink-0">
-          <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl px-3.5 py-3 min-w-[104px]">
-            <div class="text-xs text-blue-200">裁判組人數</div>
+        <div class="grid grid-cols-2 gap-3 shrink-0">
+          <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl px-4 py-3 min-w-[124px]">
+            <div class="text-xs text-blue-200">裁判組總人數</div>
             <div id="statJudgeCount" class="text-xl sm:text-2xl font-extrabold text-white mt-0.5">-</div>
           </div>
-          <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl px-3.5 py-3 min-w-[104px]">
-            <div class="text-xs text-blue-200">紀錄組人數</div>
+          <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl px-4 py-3 min-w-[124px]">
+            <div class="text-xs text-blue-200">紀錄組總人數</div>
             <div id="statRecordCount" class="text-xl sm:text-2xl font-extrabold text-white mt-0.5">-</div>
-          </div>
-          <div class="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl px-3.5 py-3 min-w-[104px]">
-            <div class="text-xs text-blue-200">外聘裁判</div>
-            <div id="statGuestCount" class="text-xl sm:text-2xl font-extrabold text-white mt-0.5">-</div>
           </div>
         </div>
       </div>
@@ -131,14 +135,6 @@
         >
           紀錄組
         </button>
-        <button
-          type="button"
-          data-tab="guest"
-          onclick="setActiveTab('guest')"
-          class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-600 hover:text-[#0f2342]"
-        >
-          外聘裁判名單
-        </button>
       </div>
 
       <!-- 搜尋框 -->
@@ -157,7 +153,7 @@
     </div>
 
     <!-- 低干擾資料來源狀態列 -->
-    <div id="syncStatusBar" class="mt-2.5 px-1 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+    <div id="syncStatusBar" class="mt-2 px-1 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
       <div id="syncStatusText" class="flex items-center gap-1.5">
         <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
         <span>正在從後端 Users 讀取名單...</span>
@@ -167,7 +163,7 @@
   </section>
 
   <!-- 主要名單內容區 -->
-  <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-7 flex-1 space-y-10">
+  <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 pt-2 pb-8 flex-1 space-y-8">
 
     <!-- 載入中狀態 -->
     <div id="loadingState" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -192,40 +188,76 @@
       </button>
     </div>
 
-    <!-- 裁判組區塊 -->
-    <section id="judgeSection" class="hidden">
-      <div class="flex items-center justify-between border-b-2 border-[#0f2342] pb-2.5 mb-5">
+    <!-- 裁判組大區塊 -->
+    <section id="judgeSection" class="hidden space-y-5">
+      <div class="flex items-center justify-between border-b-2 border-[#0f2342] pb-2">
         <div class="flex items-center gap-2.5">
           <span class="w-1.5 h-6 rounded-full bg-[#d92638]"></span>
           <h2 class="text-xl sm:text-2xl font-extrabold text-[#0f2342] tracking-tight">裁判組</h2>
           <span id="judgeBadgeCount" class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0f2342]/10 text-[#0f2342]">0 人</span>
         </div>
       </div>
-      <div id="judgeGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
+
+      <!-- 裁判長 -->
+      <div id="chiefJudgeSub" class="hidden space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#d92638]"></span>
+          <h3 class="text-base sm:text-lg font-bold text-[#0f2342]">裁判長</h3>
+          <span id="chiefJudgeCount" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-[#d92638] border border-rose-200">0 人</span>
+        </div>
+        <div id="chiefJudgeGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
+      </div>
+
+      <!-- 裁判員 -->
+      <div id="judgeMemberSub" class="hidden space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#0f2342]"></span>
+          <h3 class="text-base sm:text-lg font-bold text-[#0f2342]">裁判員</h3>
+          <span id="judgeMemberCount" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">0 人</span>
+        </div>
+        <div id="judgeMemberGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
+      </div>
+
+      <!-- 外聘裁判員 -->
+      <div id="guestJudgeSub" class="hidden space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#1d3e6e]"></span>
+          <h3 class="text-base sm:text-lg font-bold text-[#0f2342]">外聘裁判員</h3>
+          <span id="guestJudgeCount" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-[#162f56] border border-blue-200">0 人</span>
+        </div>
+        <div id="guestJudgeGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
+      </div>
     </section>
 
-    <!-- 紀錄組區塊 -->
-    <section id="recordSection" class="hidden">
-      <div class="flex items-center justify-between border-b-2 border-[#162f56] pb-2.5 mb-5">
+    <!-- 紀錄組大區塊 -->
+    <section id="recordSection" class="hidden space-y-5">
+      <div class="flex items-center justify-between border-b-2 border-[#162f56] pb-2">
         <div class="flex items-center gap-2.5">
           <span class="w-1.5 h-6 rounded-full bg-[#0f2342]"></span>
           <h2 class="text-xl sm:text-2xl font-extrabold text-[#0f2342] tracking-tight">紀錄組</h2>
           <span id="recordBadgeCount" class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#162f56]/10 text-[#162f56]">0 人</span>
         </div>
       </div>
-      <div id="recordGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
-    </section>
 
-    <!-- 外聘裁判名單區塊 -->
-    <section id="guestSection" class="hidden">
-      <div class="flex items-center justify-between border-b-2 border-[#d92638] pb-2.5 mb-5">
-        <div class="flex items-center gap-2.5">
-          <span class="w-1.5 h-6 rounded-full bg-[#d92638]"></span>
-          <h2 class="text-xl sm:text-2xl font-extrabold text-[#0f2342] tracking-tight">外聘裁判名單</h2>
-          <span id="guestBadgeCount" class="ml-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#d92638]/10 text-[#d92638]">0 人</span>
+      <!-- 紀錄長 -->
+      <div id="chiefRecordSub" class="hidden space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#d92638]"></span>
+          <h3 class="text-base sm:text-lg font-bold text-[#0f2342]">紀錄長</h3>
+          <span id="chiefRecordCount" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-[#d92638] border border-rose-200">0 人</span>
         </div>
+        <div id="chiefRecordGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
       </div>
-      <div id="guestGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
+
+      <!-- 紀錄員 -->
+      <div id="recordMemberSub" class="hidden space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#0f2342]"></span>
+          <h3 class="text-base sm:text-lg font-bold text-[#0f2342]">紀錄員</h3>
+          <span id="recordMemberCount" class="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">0 人</span>
+        </div>
+        <div id="recordMemberGrid" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
+      </div>
     </section>
 
   </main>
@@ -358,7 +390,7 @@
 
       const isChiefJudge = tokens.includes('chief_judge');
       const isJudge = tokens.includes('judge') || isChiefJudge;
-      const isRecordChief = tokens.includes('record_chief');
+      const isRecordChief = tokens.includes('record_chief') || tokens.includes('chief_record');
       const isRecord = tokens.includes('record') || isRecordChief;
 
       return { isJudge, isChiefJudge, isRecord, isRecordChief };
@@ -434,13 +466,11 @@
       const messageEl = document.getElementById('messageState');
       const judgeSec = document.getElementById('judgeSection');
       const recordSec = document.getElementById('recordSection');
-      const guestSec = document.getElementById('guestSection');
 
       loadingEl.classList.remove('hidden');
       messageEl.classList.add('hidden');
       judgeSec.classList.add('hidden');
       recordSec.classList.add('hidden');
-      guestSec.classList.add('hidden');
 
       updateSyncStatus('loading', '正在從後端 Users 讀取名單...');
 
@@ -488,19 +518,42 @@
       document.getElementById('messageState').classList.remove('hidden');
     }
 
-    // 第 2 行：職務標籤（外聘裁判名單不顯示額外職務標籤，維持固定空行對齊）
-    function getRoleTags(person, groupType) {
-      if (groupType === 'guest') return [];
+    // 第 2 行：幹部專屬徽章 + 跨組兼任標籤
+    function getRoleTags(person, subGroup) {
       const roles = parseRoles(person.role);
       const tags = [];
-      if (groupType === 'judge') {
-        if (roles.isChiefJudge) tags.push('裁判長');
-        if (roles.isRecord) tags.push('兼紀錄組');
-      } else if (groupType === 'record') {
-        if (roles.isRecordChief) tags.push('紀錄組長');
-        if (roles.isJudge) tags.push('兼裁判組');
+
+      if (subGroup === 'chief_judge') {
+        tags.push({ label: '裁判長', isChief: true });
+        if (roles.isRecord) tags.push({ label: '兼紀錄組', isChief: false });
+      } else if (subGroup === 'judge_member') {
+        if (roles.isRecord) tags.push({ label: '兼紀錄組', isChief: false });
+      } else if (subGroup === 'chief_record') {
+        tags.push({ label: '紀錄長', isChief: true });
+        if (roles.isJudge) tags.push({ label: '兼裁判組', isChief: false });
+      } else if (subGroup === 'record_member') {
+        if (roles.isJudge) tags.push({ label: '兼裁判組', isChief: false });
       }
+
       return tags;
+    }
+
+    // 渲染單一職務標籤 HTML（幹部專屬徽章使用較大字級 + 緋紅底 + 星章）
+    function renderRoleTagBadge(tag, size = 'card') {
+      if (tag.isChief) {
+        const chiefClass = size === 'lightbox'
+          ? 'px-3 py-1 text-sm leading-5'
+          : 'px-2.5 py-0.5 text-xs sm:text-sm leading-5';
+        const starClass = size === 'lightbox' ? 'w-4 h-4' : 'w-3.5 h-3.5';
+        return `<span class="inline-flex items-center gap-1 ${chiefClass} rounded-md font-extrabold bg-[#d92638] text-white shadow-xs">
+          <svg class="${starClass} text-amber-300 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+          <span>${escapeHtml(tag.label)}</span>
+        </span>`;
+      }
+      const paddingClass = size === 'lightbox' ? 'px-2.5 py-0.5 text-xs' : 'px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] leading-4';
+      return `<span class="inline-flex items-center ${paddingClass} rounded-md font-semibold bg-[#0f2342]/8 text-[#0f2342]">${escapeHtml(tag.label)}</span>`;
     }
 
     // 第 3 行：證照標籤（無證照或為 N 則不回傳，保留固定空行對齊）
@@ -517,21 +570,20 @@
     }
 
     // 渲染每行固定對齊的卡片（手機一列 2 位，桌機一列 3 位）
-    function buildPersonCard(person, groupType, index) {
-      const cardKey = `${groupType}_${index}_${String(person.user_id || person.name)}`;
-      cardRegistry.set(cardKey, { person, groupType });
+    function buildPersonCard(person, subGroup, index) {
+      const cardKey = `${subGroup}_${index}_${String(person.user_id || person.name)}`;
+      cardRegistry.set(cardKey, { person, subGroup });
 
+      const isChiefCard = subGroup === 'chief_judge' || subGroup === 'chief_record';
       const displayName = getDisplayName(person.name);
       const jerseyNo = String(person.note ?? '').trim();
       const thumbUrl = toDirectPhotoUrl(person.photo_url, 600);
       const initialChar = escapeHtml(displayName.charAt(0) || '?');
-      const roleTags = getRoleTags(person, groupType);
+      const roleTags = getRoleTags(person, subGroup);
       const certItems = getCertificateItems(person);
 
       const roleRowHtml = roleTags.length > 0
-        ? roleTags.map(tag =>
-            `<span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-semibold bg-[#0f2342]/8 text-[#0f2342] leading-4">${escapeHtml(tag)}</span>`
-          ).join('')
+        ? roleTags.map(tag => renderRoleTagBadge(tag, 'card')).join('')
         : `<span class="inline-block h-5"></span>`;
 
       const certRowHtml = certItems.length > 0
@@ -541,8 +593,16 @@
         : `<span class="inline-block h-5"></span>`;
 
       const jerseyHtml = jerseyNo
-        ? `<span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-extrabold tracking-wide bg-[#0f2342] text-white shrink-0">#${escapeHtml(jerseyNo)}</span>`
+        ? `<span class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-extrabold tracking-wide ${isChiefCard ? 'bg-[#d92638]' : 'bg-[#0f2342]'} text-white shrink-0">#${escapeHtml(jerseyNo)}</span>`
         : '';
+
+      const avatarBorderClass = isChiefCard
+        ? 'border-2 border-[#d92638]/55'
+        : 'border border-slate-200';
+
+      const fallbackBgClass = isChiefCard
+        ? 'bg-gradient-to-br from-[#0f2342] to-[#8f1826]'
+        : 'bg-[#0f2342]';
 
       const avatarHtml = thumbUrl
         ? `<img
@@ -550,17 +610,26 @@
              alt="${escapeHtml(displayName)}"
              loading="lazy"
              onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
-             class="w-12 h-16 sm:w-16 sm:h-20 rounded-xl object-cover object-top border border-slate-200 bg-slate-100"
+             class="w-12 h-16 sm:w-16 sm:h-20 rounded-xl object-cover object-top ${avatarBorderClass} bg-slate-100"
            />
-           <div class="hidden w-12 h-16 sm:w-16 sm:h-20 rounded-xl bg-[#0f2342] text-white font-extrabold text-lg sm:text-xl flex items-center justify-center select-none">
+           <div class="hidden w-12 h-16 sm:w-16 sm:h-20 rounded-xl ${fallbackBgClass} text-white font-extrabold text-lg sm:text-xl flex items-center justify-center select-none">
              ${initialChar}
            </div>`
-        : `<div class="w-12 h-16 sm:w-16 sm:h-20 rounded-xl bg-[#0f2342] text-white font-extrabold text-lg sm:text-xl flex items-center justify-center select-none">
+        : `<div class="w-12 h-16 sm:w-16 sm:h-20 rounded-xl ${fallbackBgClass} text-white font-extrabold text-lg sm:text-xl flex items-center justify-center select-none">
              ${initialChar}
            </div>`;
 
+      const cardClass = isChiefCard
+        ? 'roster-card roster-card-chief group relative overflow-hidden bg-white rounded-2xl border p-2.5 sm:p-4 flex items-center gap-2.5 sm:gap-4 min-w-0'
+        : 'roster-card group bg-white rounded-2xl border border-slate-200/90 p-2.5 sm:p-4 flex items-center gap-2.5 sm:gap-4 min-w-0';
+
+      const chiefTopBar = isChiefCard
+        ? `<div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#d92638] via-[#f59e0b] to-[#0f2342]"></div>`
+        : '';
+
       return `
-        <article class="roster-card group bg-white rounded-2xl border border-slate-200/90 p-2.5 sm:p-4 flex items-center gap-2.5 sm:gap-4 min-w-0">
+        <article class="${cardClass}">
+          ${chiefTopBar}
           <button
             type="button"
             onclick="openPhotoLightbox('${escapeHtml(cardKey)}')"
@@ -580,8 +649,8 @@
               ${jerseyHtml}
             </div>
 
-            <!-- 第 2 行：職務標籤（無則空行對齊） -->
-            <div class="flex flex-wrap items-center gap-1 sm:gap-1.5 min-h-[20px]">
+            <!-- 第 2 行：幹部徽章 / 跨組兼任標籤（無則空行對齊） -->
+            <div class="flex flex-wrap items-center gap-1 sm:gap-1.5 min-h-[22px]">
               ${roleRowHtml}
             </div>
 
@@ -599,7 +668,7 @@
       const entry = cardRegistry.get(cardKey);
       if (!entry) return;
 
-      const { person, groupType } = entry;
+      const { person, subGroup } = entry;
       const lightbox = document.getElementById('photoLightbox');
       const imgEl = document.getElementById('lightboxImg');
       const fallbackEl = document.getElementById('lightboxFallback');
@@ -612,7 +681,7 @@
       const hiResUrl = toDirectPhotoUrl(person.photo_url, 1200);
       const initialChar = displayName.charAt(0) || '?';
       const jerseyNo = String(person.note ?? '').trim();
-      const roleTags = getRoleTags(person, groupType);
+      const roleTags = getRoleTags(person, subGroup);
       const certItems = getCertificateItems(person);
 
       nameEl.textContent = displayName;
@@ -625,9 +694,7 @@
         jerseyEl.classList.add('hidden');
       }
 
-      roleTagsEl.innerHTML = roleTags.map(tag =>
-        `<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-[#0f2342]/10 text-[#0f2342]">${escapeHtml(tag)}</span>`
-      ).join('');
+      roleTagsEl.innerHTML = roleTags.map(tag => renderRoleTagBadge(tag, 'lightbox')).join('');
 
       badgesEl.innerHTML = certItems.map(item =>
         `<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold border ${getLevelBadgeClass(item.grade)}">${escapeHtml(item.label)}</span>`
@@ -676,22 +743,35 @@
       }
     });
 
+    function renderSubSection(subId, countId, gridId, list, subGroup) {
+      const subEl = document.getElementById(subId);
+      const countEl = document.getElementById(countId);
+      const gridEl = document.getElementById(gridId);
+
+      countEl.textContent = `${list.length} 人`;
+      gridEl.innerHTML = list.map((p, idx) => buildPersonCard(p, subGroup, idx)).join('');
+      subEl.classList.toggle('hidden', list.length === 0);
+      return list.length;
+    }
+
     function renderAll() {
       cardRegistry.clear();
 
       const keyword = String(document.getElementById('searchInput').value || '').trim().toLowerCase();
 
-      // 拆出外聘人員（名稱含 (聘) 或 （聘））與一般組別名單
-      const guestAll = allStaff.filter(p => isGuestStaff(p.name));
-      const regularAll = allStaff.filter(p => !isGuestStaff(p.name));
+      // 裁判組子分區：裁判長 / 裁判員 / 外聘裁判員
+      const judgeAll = allStaff.filter(p => parseRoles(p.role).isJudge);
+      const chiefJudgeAll = judgeAll.filter(p => parseRoles(p.role).isChiefJudge);
+      const guestJudgeAll = judgeAll.filter(p => !parseRoles(p.role).isChiefJudge && isGuestStaff(p.name));
+      const judgeMemberAll = judgeAll.filter(p => !parseRoles(p.role).isChiefJudge && !isGuestStaff(p.name));
 
-      const totalJudges = regularAll.filter(p => parseRoles(p.role).isJudge).length;
-      const totalRecords = regularAll.filter(p => parseRoles(p.role).isRecord).length;
-      const totalGuests = guestAll.length;
+      // 紀錄組子分區：紀錄長 / 紀錄員
+      const recordAll = allStaff.filter(p => parseRoles(p.role).isRecord);
+      const chiefRecordAll = recordAll.filter(p => parseRoles(p.role).isRecordChief);
+      const recordMemberAll = recordAll.filter(p => !parseRoles(p.role).isRecordChief);
 
-      document.getElementById('statJudgeCount').textContent = `${totalJudges} 人`;
-      document.getElementById('statRecordCount').textContent = `${totalRecords} 人`;
-      document.getElementById('statGuestCount').textContent = `${totalGuests} 人`;
+      document.getElementById('statJudgeCount').textContent = `${judgeAll.length} 人`;
+      document.getElementById('statRecordCount').textContent = `${recordAll.length} 人`;
 
       const matchFilter = p => {
         if (!keyword) return true;
@@ -701,37 +781,39 @@
         return displayName.includes(keyword) || rawName.includes(keyword) || note.includes(keyword);
       };
 
-      const filteredJudges = regularAll.filter(p => parseRoles(p.role).isJudge && matchFilter(p));
-      const filteredRecords = regularAll.filter(p => parseRoles(p.role).isRecord && matchFilter(p));
-      const filteredGuests = guestAll.filter(matchFilter);
+      const chiefJudgeList = chiefJudgeAll.filter(matchFilter);
+      const judgeMemberList = judgeMemberAll.filter(matchFilter);
+      const guestJudgeList = guestJudgeAll.filter(matchFilter);
 
-      document.getElementById('judgeBadgeCount').textContent = `${filteredJudges.length} 人`;
-      document.getElementById('recordBadgeCount').textContent = `${filteredRecords.length} 人`;
-      document.getElementById('guestBadgeCount').textContent = `${filteredGuests.length} 人`;
+      const chiefRecordList = chiefRecordAll.filter(matchFilter);
+      const recordMemberList = recordMemberAll.filter(matchFilter);
 
-      const judgeSection = document.getElementById('judgeSection');
-      const recordSection = document.getElementById('recordSection');
-      const guestSection = document.getElementById('guestSection');
-      const messageEl = document.getElementById('messageState');
+      const judgeVisibleCount =
+        renderSubSection('chiefJudgeSub', 'chiefJudgeCount', 'chiefJudgeGrid', chiefJudgeList, 'chief_judge') +
+        renderSubSection('judgeMemberSub', 'judgeMemberCount', 'judgeMemberGrid', judgeMemberList, 'judge_member') +
+        renderSubSection('guestJudgeSub', 'guestJudgeCount', 'guestJudgeGrid', guestJudgeList, 'guest_judge');
+
+      const recordVisibleCount =
+        renderSubSection('chiefRecordSub', 'chiefRecordCount', 'chiefRecordGrid', chiefRecordList, 'chief_record') +
+        renderSubSection('recordMemberSub', 'recordMemberCount', 'recordMemberGrid', recordMemberList, 'record_member');
+
+      document.getElementById('judgeBadgeCount').textContent = `${judgeVisibleCount} 人`;
+      document.getElementById('recordBadgeCount').textContent = `${recordVisibleCount} 人`;
 
       const showJudge = activeTab === 'all' || activeTab === 'judge';
       const showRecord = activeTab === 'all' || activeTab === 'record';
-      const showGuest = activeTab === 'all' || activeTab === 'guest';
 
-      document.getElementById('judgeGrid').innerHTML = filteredJudges.map((p, idx) => buildPersonCard(p, 'judge', idx)).join('');
-      document.getElementById('recordGrid').innerHTML = filteredRecords.map((p, idx) => buildPersonCard(p, 'record', idx)).join('');
-      document.getElementById('guestGrid').innerHTML = filteredGuests.map((p, idx) => buildPersonCard(p, 'guest', idx)).join('');
+      const judgeSection = document.getElementById('judgeSection');
+      const recordSection = document.getElementById('recordSection');
+      const messageEl = document.getElementById('messageState');
 
-      judgeSection.classList.toggle('hidden', !showJudge || filteredJudges.length === 0);
-      recordSection.classList.toggle('hidden', !showRecord || filteredRecords.length === 0);
-      guestSection.classList.toggle('hidden', !showGuest || filteredGuests.length === 0);
+      const displayJudge = showJudge && judgeVisibleCount > 0;
+      const displayRecord = showRecord && recordVisibleCount > 0;
 
-      const hasAnyVisible =
-        (showJudge && filteredJudges.length > 0) ||
-        (showRecord && filteredRecords.length > 0) ||
-        (showGuest && filteredGuests.length > 0);
+      judgeSection.classList.toggle('hidden', !displayJudge);
+      recordSection.classList.toggle('hidden', !displayRecord);
 
-      if (!hasAnyVisible && allStaff.length > 0) {
+      if (!displayJudge && !displayRecord && allStaff.length > 0) {
         showMessage('找不到符合條件的人員', '請嘗試清除搜尋關鍵字或切換分組頁籤。');
       } else if (allStaff.length === 0) {
         showMessage('目前後端 Users 沒有可顯示的名單', '請確認 Users 工作表中 role 欄位包含 judge 或 record 且 active 為啟用狀態。');
